@@ -35,10 +35,10 @@ using namespace ShUtil;
 
 #include "dist_util.hpp"
 
-class VectorTest : public Shader {
+class CornerTest : public Shader {
 public:
-  VectorTest(int mode);
-  ~VectorTest();
+  CornerTest(int mode);
+  ~CornerTest();
 
   bool init();
 
@@ -61,8 +61,8 @@ private:
   static ShAttrib2f m_celloffset, m_cellperiod;
 };
 
-VectorTest::VectorTest(int mode)
-  : Shader(std::string("Vector Graphics: Vector Test") + 
+CornerTest::CornerTest(int mode)
+  : Shader(std::string("Vector Graphics: Corner Test") + 
 	  ((mode == 0) ? ": Isotropically Antialiased" : 
 	  ((mode == 1) ? ": Anisotropically Antialiased" : 
 	  ((mode == 2) ? ": Aliased" : 
@@ -112,53 +112,65 @@ VectorTest::VectorTest(int mode)
   }
 }
 
-VectorTest::~VectorTest()
+CornerTest::~CornerTest()
 {
 }
 
-bool VectorTest::init()
+bool CornerTest::init()
 {
   std::cerr << "Initializing " << name() << std::endl;
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
   // a test consisting of two contours (a letter A, actually)
-  const int N = 11;
-  // const int N = 22;
-  ShAttrib4f L[N];
+  const int K = 11;
+  ShAttrib4f c[K];
+  ShAttrib4f d[K];
 
-  // Data for a simple "A" character
-  L[0] = ShAttrib4f(0.3,0.0,0.0,0.0);
-  L[1] = ShAttrib4f(0.0,0.0,0.5,1.5);
-  L[2] = ShAttrib4f(0.5,1.5,0.9,1.5);
-  L[3] = ShAttrib4f(0.9,1.5,1.4,0.0);
-  L[4] = ShAttrib4f(1.4,0.0,1.1,0.0);
-  L[5] = ShAttrib4f(1.1,0.0,1.0,0.3);
-  L[6] = ShAttrib4f(1.0,0.3,0.4,0.3);
-  L[7] = ShAttrib4f(0.4,0.3,0.3,0);
-  L[8] = ShAttrib4f(0.5,0.6,0.9,0.6);
-  L[9] = ShAttrib4f(0.9,0.6,0.7,1.2);
-  L[10] = ShAttrib4f(0.7,1.2,0.5,0.6);
+  // Data for a simple "A" character 
+  // (normals are computed later, 0's for now)
+  c[0] = ShAttrib4f(0.0,0.0, 0.0,0.0);
+  d[0] = ShAttrib4f(0.15,0.0, 0.25,0.75);
 
-  // An Evil Hack: contract each line segment by epsilon.
-  // This resolves the ambiguity over which line segment is "closer"
-  // when a shared vertex is the closest point on a line segment, and
-  // allows the correct sign to be determined based only on the closest
-  // line segment.   By splitting the vertex by contracting both 
-  // vertices by the same amount, this gives a plane separating the
-  // two new vertices that is at the right angle for "sharp" miter rules
-  // when using the pseudodistance for outline and "Bold" versions of
-  // glyphs.
-  const float eps = 0.0001;
-  for (int i=0; i<N; i++) {
-    ShVector2f d = normalize(L[i](2,3) - L[i](0,1));
-    L[i](0,1) += d * eps;
-    L[i](2,3) -= d * eps;
-  }
+  c[1] = ShAttrib4f(0.5,1.5, 0.0,0.0);
+  d[1] = ShAttrib4f(-0.25,-0.75, 0.2,0.0);
+  
+  c[2] = ShAttrib4f(0.9,1.5, 0.0,0.0);
+  d[2] = ShAttrib4f(-0.2,-0.0, 0.25,-0.75);
+  
+  c[3] = ShAttrib4f(1.4,0.0, 0.0,0.0);
+  d[3] = ShAttrib4f(-0.25,0.75, -0.15,0.0);
+  
+  c[4] = ShAttrib4f(1.1,0.0, 0.0,0.0);
+  d[4] = ShAttrib4f(0.15,0.0, -0.05,0.15);
+  
+  c[5] = ShAttrib4f(1.0,0.3, 0.0,0.0);
+  d[5] = ShAttrib4f(0.05,-0.15, -0.3,0.0);
+  
+  c[6] = ShAttrib4f(0.4,0.3, 0.0,0.0);
+  d[6] = ShAttrib4f(0.3,0.0, -0.05,-0.15);
+  
+  c[7] = ShAttrib4f(0.3,0.0, 0.0,0.0);
+  d[7] = ShAttrib4f(0.05,0.15, -0.15,0.0);
+  
+  c[8] = ShAttrib4f(0.9,0.6, 0.0,0.0);
+  d[8] = ShAttrib4f(-0.2,0.0, -0.1,0.3);
+  
+  c[9] = ShAttrib4f(0.7,1.2, 0.0,0.0);
+  d[9] = ShAttrib4f(0.1,-0.3, -0.1,-0.3);
+  
+  c[10] = ShAttrib4f(0.5,0.6, 0.0,0.0);
+  d[10] = ShAttrib4f(0.1,0.3, 0.2,0.0);
 
-  // Convert second point to a vector to that point
-  for (int i=0; i<N; i++) {
-    L[i](2,3) = L[i](2,3) - L[i](0,1);
+  // compute normals of separating planes
+  for (int i=0; i<K; i++) {
+      ShVector2f g[2];
+      g[0] = normalize(d[i](0,1));
+      g[1] = normalize(d[i](2,3));
+      ShVector2f v = g[0] + g[1];
+      c[i](2) = v(1);
+      c[i](3) = -v(0);
+      c[i](2,3) *= sign(c[i](2,3)|d[i](2,3));
   }
 
   fsh = SH_BEGIN_FRAGMENT_PROGRAM {
@@ -170,7 +182,7 @@ bool VectorTest::init()
     // x = (x - m_celloffset) % m_cellperiod; // tile plane 
 
     // compute signed distance map, sign field, and gradient of distance map
-    ShAttrib4f r = segdists_da(L,N,x);
+    ShAttrib4f r = cornerdists(c,d,K,x);
 
     switch (m_mode) {
       case 0: {
@@ -276,32 +288,32 @@ bool VectorTest::init()
   return true;
 }
 
-bool VectorTest::m_done_init = false;
-ShAttrib1f VectorTest::m_scale = ShAttrib1f(6.0);
-ShVector2f VectorTest::m_offset = ShVector2f(0.13,0.13);
-ShAttrib2f VectorTest::m_celloffset = ShAttrib2f(0.2,0.2);
-ShAttrib2f VectorTest::m_cellperiod = ShAttrib2f(2.0,2.0);
-ShAttrib1f VectorTest::m_size = ShAttrib1f(2.0);
-ShAttrib1f VectorTest::m_fw = ShAttrib1f(1.0);
-ShAttrib2f VectorTest::m_thres = ShAttrib2f(0.0,0.05);
-ShColor3f VectorTest::m_color1 = ShColor3f(0.0, 0.0, 0.0);
-ShColor3f VectorTest::m_color2 = ShColor3f(1.0, 1.0, 1.0);
-ShColor3f VectorTest::m_vcolor1 = ShColor3f(1.0, 0.0, 1.0);
-ShColor3f VectorTest::m_vcolor2 = ShColor3f(1.0, 1.0, 0.0);
+bool CornerTest::m_done_init = false;
+ShAttrib1f CornerTest::m_scale = ShAttrib1f(6.0);
+ShVector2f CornerTest::m_offset = ShVector2f(0.13,0.13);
+ShAttrib2f CornerTest::m_celloffset = ShAttrib2f(0.2,0.2);
+ShAttrib2f CornerTest::m_cellperiod = ShAttrib2f(2.0,2.0);
+ShAttrib1f CornerTest::m_size = ShAttrib1f(2.0);
+ShAttrib1f CornerTest::m_fw = ShAttrib1f(1.0);
+ShAttrib2f CornerTest::m_thres = ShAttrib2f(0.0,0.05);
+ShColor3f CornerTest::m_color1 = ShColor3f(0.0, 0.0, 0.0);
+ShColor3f CornerTest::m_color2 = ShColor3f(1.0, 1.0, 1.0);
+ShColor3f CornerTest::m_vcolor1 = ShColor3f(1.0, 0.0, 1.0);
+ShColor3f CornerTest::m_vcolor2 = ShColor3f(1.0, 1.0, 0.0);
 
-VectorTest vtest_iaa = VectorTest(0);
-VectorTest vtest_aaa = VectorTest(1);
-VectorTest vtest_naa = VectorTest(2);
-VectorTest vtest_iaa_outline = VectorTest(3);
-VectorTest vtest_aaa_outline = VectorTest(4);
-VectorTest vtest_grad = VectorTest(5);
-VectorTest vtest_fw = VectorTest(6);
-VectorTest vtest_pd_iaa_outline = VectorTest(7);
-VectorTest vtest_pd_aaa_outline = VectorTest(8);
-VectorTest vtest_biased_distance = VectorTest(9);
-VectorTest vtest_grey_biased_distance = VectorTest(10);
-VectorTest vtest_distance = VectorTest(11);
-VectorTest vtest_biased_pdistance = VectorTest(12);
-VectorTest vtest_grey_biased_pdistance = VectorTest(13);
-VectorTest vtest_pdistance = VectorTest(14);
+static CornerTest iaa = CornerTest(0);
+static CornerTest aaa = CornerTest(1);
+static CornerTest naa = CornerTest(2);
+static CornerTest iaa_outline = CornerTest(3);
+static CornerTest aaa_outline = CornerTest(4);
+static CornerTest grad = CornerTest(5);
+static CornerTest fw = CornerTest(6);
+static CornerTest pd_iaa_outline = CornerTest(7);
+static CornerTest pd_aaa_outline = CornerTest(8);
+static CornerTest biased_distance = CornerTest(9);
+static CornerTest grey_biased_distance = CornerTest(10);
+static CornerTest distance = CornerTest(11);
+static CornerTest biased_pdistance = CornerTest(12);
+static CornerTest grey_biased_pdistance = CornerTest(13);
+static CornerTest pdistance = CornerTest(14);
 

@@ -35,10 +35,10 @@ using namespace ShUtil;
 
 #include "dist_util.hpp"
 
-class VectorTest : public Shader {
+class VectorTest2 : public Shader {
 public:
-  VectorTest(int mode);
-  ~VectorTest();
+  VectorTest2(int mode);
+  ~VectorTest2();
 
   bool init();
 
@@ -46,7 +46,6 @@ public:
   ShProgram fragment() { return fsh;}
 
 private:
-
   ShProgram vsh, fsh;
   
   int m_mode;
@@ -61,8 +60,8 @@ private:
   static ShAttrib2f m_celloffset, m_cellperiod;
 };
 
-VectorTest::VectorTest(int mode)
-  : Shader(std::string("Vector Graphics: Vector Test") + 
+VectorTest2::VectorTest2(int mode)
+  : Shader(std::string("Vector Graphics: Vector Test 2") + 
 	  ((mode == 0) ? ": Isotropically Antialiased" : 
 	  ((mode == 1) ? ": Anisotropically Antialiased" : 
 	  ((mode == 2) ? ": Aliased" : 
@@ -112,11 +111,11 @@ VectorTest::VectorTest(int mode)
   }
 }
 
-VectorTest::~VectorTest()
+VectorTest2::~VectorTest2()
 {
 }
 
-bool VectorTest::init()
+bool VectorTest2::init()
 {
   std::cerr << "Initializing " << name() << std::endl;
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
@@ -140,37 +139,15 @@ bool VectorTest::init()
   L[9] = ShAttrib4f(0.9,0.6,0.7,1.2);
   L[10] = ShAttrib4f(0.7,1.2,0.5,0.6);
 
-  // An Evil Hack: contract each line segment by epsilon.
-  // This resolves the ambiguity over which line segment is "closer"
-  // when a shared vertex is the closest point on a line segment, and
-  // allows the correct sign to be determined based only on the closest
-  // line segment.   By splitting the vertex by contracting both 
-  // vertices by the same amount, this gives a plane separating the
-  // two new vertices that is at the right angle for "sharp" miter rules
-  // when using the pseudodistance for outline and "Bold" versions of
-  // glyphs.
-  const float eps = 0.0001;
-  for (int i=0; i<N; i++) {
-    ShVector2f d = normalize(L[i](2,3) - L[i](0,1));
-    L[i](0,1) += d * eps;
-    L[i](2,3) -= d * eps;
-  }
-
-  // Convert second point to a vector to that point
-  for (int i=0; i<N; i++) {
-    L[i](2,3) = L[i](2,3) - L[i](0,1);
-  }
-
   fsh = SH_BEGIN_FRAGMENT_PROGRAM {
     ShInputTexCoord2f tc;
     ShOutputColor3f o;
 
     // transform texture coords (should be in vertex shader really, but)
     ShAttrib2f x = (tc - m_offset) * m_size;
-    // x = (x - m_celloffset) % m_cellperiod; // tile plane 
 
     // compute signed distance map, sign field, and gradient of distance map
-    ShAttrib4f r = segdists_da(L,N,x);
+    ShAttrib4f r = segdists(L,N,x);
 
     switch (m_mode) {
       case 0: {
@@ -276,32 +253,32 @@ bool VectorTest::init()
   return true;
 }
 
-bool VectorTest::m_done_init = false;
-ShAttrib1f VectorTest::m_scale = ShAttrib1f(6.0);
-ShVector2f VectorTest::m_offset = ShVector2f(0.13,0.13);
-ShAttrib2f VectorTest::m_celloffset = ShAttrib2f(0.2,0.2);
-ShAttrib2f VectorTest::m_cellperiod = ShAttrib2f(2.0,2.0);
-ShAttrib1f VectorTest::m_size = ShAttrib1f(2.0);
-ShAttrib1f VectorTest::m_fw = ShAttrib1f(1.0);
-ShAttrib2f VectorTest::m_thres = ShAttrib2f(0.0,0.05);
-ShColor3f VectorTest::m_color1 = ShColor3f(0.0, 0.0, 0.0);
-ShColor3f VectorTest::m_color2 = ShColor3f(1.0, 1.0, 1.0);
-ShColor3f VectorTest::m_vcolor1 = ShColor3f(1.0, 0.0, 1.0);
-ShColor3f VectorTest::m_vcolor2 = ShColor3f(1.0, 1.0, 0.0);
+bool VectorTest2::m_done_init = false;
+ShAttrib1f VectorTest2::m_scale = ShAttrib1f(6.0);
+ShVector2f VectorTest2::m_offset = ShVector2f(0.13,0.13);
+ShAttrib2f VectorTest2::m_celloffset = ShAttrib2f(0.2,0.2);
+ShAttrib2f VectorTest2::m_cellperiod = ShAttrib2f(2.0,2.0);
+ShAttrib1f VectorTest2::m_size = ShAttrib1f(2.0);
+ShAttrib1f VectorTest2::m_fw = ShAttrib1f(1.0);
+ShAttrib2f VectorTest2::m_thres = ShAttrib2f(0.0,0.05);
+ShColor3f VectorTest2::m_color1 = ShColor3f(0.0, 0.0, 0.0);
+ShColor3f VectorTest2::m_color2 = ShColor3f(1.0, 1.0, 1.0);
+ShColor3f VectorTest2::m_vcolor1 = ShColor3f(1.0, 0.0, 1.0);
+ShColor3f VectorTest2::m_vcolor2 = ShColor3f(1.0, 1.0, 0.0);
 
-VectorTest vtest_iaa = VectorTest(0);
-VectorTest vtest_aaa = VectorTest(1);
-VectorTest vtest_naa = VectorTest(2);
-VectorTest vtest_iaa_outline = VectorTest(3);
-VectorTest vtest_aaa_outline = VectorTest(4);
-VectorTest vtest_grad = VectorTest(5);
-VectorTest vtest_fw = VectorTest(6);
-VectorTest vtest_pd_iaa_outline = VectorTest(7);
-VectorTest vtest_pd_aaa_outline = VectorTest(8);
-VectorTest vtest_biased_distance = VectorTest(9);
-VectorTest vtest_grey_biased_distance = VectorTest(10);
-VectorTest vtest_distance = VectorTest(11);
-VectorTest vtest_biased_pdistance = VectorTest(12);
-VectorTest vtest_grey_biased_pdistance = VectorTest(13);
-VectorTest vtest_pdistance = VectorTest(14);
+static VectorTest2 vtest_iaa = VectorTest2(0);
+static VectorTest2 vtest_aaa = VectorTest2(1);
+static VectorTest2 vtest_naa = VectorTest2(2);
+static VectorTest2 vtest_iaa_outline = VectorTest2(3);
+static VectorTest2 vtest_aaa_outline = VectorTest2(4);
+static VectorTest2 vtest_grad = VectorTest2(5);
+static VectorTest2 vtest_fw = VectorTest2(6);
+static VectorTest2 vtest_pd_iaa_outline = VectorTest2(7);
+static VectorTest2 vtest_pd_aaa_outline = VectorTest2(8);
+static VectorTest2 vtest_biased_distance = VectorTest2(9);
+static VectorTest2 vtest_grey_biased_distance = VectorTest2(10);
+static VectorTest2 vtest_distance = VectorTest2(11);
+static VectorTest2 vtest_biased_pdistance = VectorTest2(12);
+static VectorTest2 vtest_grey_biased_pdistance = VectorTest2(13);
+static VectorTest2 vtest_pdistance = VectorTest2(14);
 

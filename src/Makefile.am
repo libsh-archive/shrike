@@ -16,7 +16,8 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 ShTrackball.hpp ShTrackball.cpp \
 		 Timer.hpp Timer.cpp \
 		 ShrikeGl.cpp ShrikeGl.hpp \
-		 util.hpp util.cpp utilimpl.hpp
+		 util.hpp util.cpp utilimpl.hpp \
+		 dist_util.hpp dist_util.cpp 
 
 # shrike_SOURCES += shaders/DiffuseShader.cpp
 # shrike_SOURCES += shaders/DiscoShader.cpp
@@ -25,7 +26,7 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 # shrike_SOURCES += shaders/SimpleDiffuse.cpp
 # shrike_SOURCES += shaders/WorleyShader.cpp
 # shrike_SOURCES += shaders/TexShader.cpp
-# #shrike_SOURCES += shaders/CelShader.cpp
+# shrike_SOURCES += shaders/CelShader.cpp
 # shrike_SOURCES += shaders/Ashikhmin.cpp
 # shrike_SOURCES += shaders/Texter.cpp
 # shrike_SOURCES += shaders/Text.cpp shaders/Text.hpp
@@ -81,6 +82,8 @@ shrike_SOURCES += shaders/LCDSmall.hpp shaders/LCDSmall.cpp
 # shrike_SOURCES += shaders/AnisotropicDiffusion.cpp
 shrike_SOURCES += shaders/VectorText.cpp
 shrike_SOURCES += shaders/VectorTest.cpp
+shrike_SOURCES += shaders/VectorTest2.cpp
+shrike_SOURCES += shaders/CornerTest.cpp
 shrike_SOURCES += shaders/ConicTest.cpp
 # # Disabled large texture demo, to reduce the need for a new shmedia.
 # # shrike_SOURCES += shaders/LargeTexture.cpp

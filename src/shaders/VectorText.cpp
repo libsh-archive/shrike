@@ -34,9 +34,8 @@
 using namespace SH;
 using namespace ShUtil;
 
-#include "util.hpp"
-#define PACK
-#define NEIGHBOURS 9
+#include "dist_util.hpp"
+#define PACK4
 
 class VectorText : public Shader {
 public:
@@ -49,114 +48,6 @@ public:
   ShProgram fragment() { return fsh;}
 
 private:
-
-/* SegDist
- *
- * Compute distance and gradient from a point to a line segment.
- *
- * This functions returns the unsigned distance, an evaluation of the
- * plane equation (whose sign lets us know which side of the edge
- * we are on), and the gradient of the distance to a line segment.  
- * These are packed into the components of a 4-tuple.   
- *
- * We depend on dead-code elimination (which is supposed to work 
- * on components of tuples) to get rid of computations that are not 
- * needed.   
- */
-ShAttrib4f //< true distance, signed value (dist from line), gradient vector
-segdist (
-    ShAttrib4f L,  //< line segment (0,1 point 0, 2,3 point 1)
-    ShPoint2f  x   //< test point
-) {
-    // return value
-    ShAttrib4f r;
-
-    // compute 2D vectors from first endpoint to x (delta(0,1)) and
-    // from second endpoint to x (delta(2,3)).
-    ShAttrib4f delta = x(0,1,0,1) - L;
-
-    // compute tangent d and normal d 
-    ShAttrib4f dn = L(2,3,1,2) - L(0,1,3,0);
-    // make normal unit length, store as result gradient
-    r(2,3) = normalize(dn(2,3));
-
-    // compute distance to line by projecting delta(0,1) onto normal
-    r(1) = (r(2,3)|delta(0,1));  // signed distance from line
-    // fix signs to get unsigned distance and its gradient
-    r(0,2,3) = cond(r(1) > 0.0,r(1,2,3),-r(1,2,3)); 
-
-    // compute dot products of d with delta vectors
-    ShAttrib4f c = dn(0,1,0,1) * delta;
-    c(0,1) = c(0,2) + c(1,3);  // c(0) = d|delta(0,1), c(1) = d|delta(2,3)
-
-    // compute lengths of delta vectors
-    ShAttrib4f s = delta * delta;  // square all components
-    s(1,2) = s(0,2) + s(1,3);      // squared lengths
-
-    // pick smaller lengths and vectors
-    s(0) = sqrt(min(s(1),s(2))); // smaller length
-    s(1,2) = cond(s(1) < s(2),delta(0,1),delta(2,3)); // appropriate gradient
-    s(1,2) = s(1,2) * (ShAttrib1f(1.0)/s(0)); // normalize 
-
-    // replace distances if beyond ends of line
-    r(0,2,3) = cond(c(0) > 0.0,r(0,2,3),s(0,1,2));
-    r(0,2,3) = cond(c(1) < 0.0,r(0,2,3),s(0,1,2));
-
-    return r;
-}
-
-ShAttrib4f //< square distance, sign (plane equation), unnorm gradient vector
-segdist_t (
-    ShAttrib4f L,  //< line segment (0,1 point 0, 2,3 point 1)
-    ShPoint2f  x   //< test point
-) {
-    // compute 2D vector from first endpoint to x 
-    ShAttrib2f v = x - L(0,1);
-    // compute tangent  
-    ShAttrib2f d = L(2,3) - L(0,1);
-    // compute squared length of tangent
-    ShAttrib1f d2 = (d|d);
-    // compute t value of closest point on line
-    ShAttrib1f t = (v|d)/d2;
-    // clamp to range [0,1]
-    t = pos(t);
-    t = sat(t);
-    // compute point on line 
-    ShAttrib2f p = L(0,1) + t*d;
-
-    // configure return value
-    ShAttrib4f r;
-    // compute vector from p to x (is gradient)
-    r(2,3) = x - p;
-    // compute squared distance
-    r(0) = (r(2,3)|r(2,3));
-    // compute sign using plane equation; normal is (-d(1),d(0))
-    // r(1) = v(1)*d(0) - v(0)*d(1); (works fine for sign, bad pseudodistance)
-    r(1) = (v(1)*d(0) - v(0)*d(1))*rsqrt(d2);
-
-    return r;
-}
-
-ShAttrib4f //< signed distance, signed value (dist from line), gradient vector
-segdists (
-    ShAttrib4f L[],  //< line segments (0,1 point 0, 2,3 point 1)
-    int N,           // number of line segments
-    ShPoint2f  x    //< test point
-) {
-    ShAttrib4f r = segdist_t(L[0],x);
-    ShAttrib4f nr;
-    for (int i=1; i<N; i++) {
-       nr = segdist_t(L[i],x);
-       r = cond(nr(0) < r(0),nr,r);
-    }
-    // compute true distance from squared distance
-    r(0) = sqrt(r(0));  // is also length of gradient
-    // transfer sign 
-    r(0) = cond(r(1) < 0.0, -r(0), r(0));
-    // normalize gradient
-    r(2,3) = r(2,3)/r(0);
-    return r;
-}
 
   ShProgram vsh, fsh;
   
@@ -229,7 +120,7 @@ bool VectorText::init()
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
   ShFont font;
-  font.loadFont("/home/mmccool/dev/vectortexture/freetype/d.txt");
+  font.loadFont("/home/zqin/dev/freetype/d.txt");
 
   int width = font.width();
   int height = font.height();
@@ -275,13 +166,13 @@ bool VectorText::init()
   std::cerr << " the image halfy is " << font.halfy() << std::endl;
 #endif
 
-#ifdef PACK
+#ifdef PACK9
   std::cerr << "Initializing " << name() << std::endl;
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
   ShFont font;
-  font.loadFont("/home/mmccool/dev/vectortexture/freetype/p.txt");
+  font.loadFont("/home/zqin/dev/freetype/p.txt");
 
   int width = font.width();
   int height = font.height();
@@ -320,6 +211,44 @@ bool VectorText::init()
   size[8] = ShAttrib2f(1.0/width,   1.0/height) - temp;
 #endif
 
+#ifdef PACK4
+  std::cerr << "Initializing " << name() << std::endl;
+  vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
+  vsh = shSwizzle("texcoord", "posh") << vsh;
+
+  ShFont font;
+  font.loadFont("/home/zqin/dev/freetype/p.txt");
+
+  int width = font.width();
+  int height = font.height();
+  int elements = 4;
+
+  // textures for line segment endpoints
+  ShUnclamped< ShArrayRect<ShAttrib4f> > ftexture(width, height);
+  ftexture.memory(font.memory(0));
+
+  //debug info
+  for(int i=0; i<height; i++) {
+	  for(int j=0; j<width; j++) {
+		  std::cout << i << " " << j << std::endl;
+		  for(int m=0; m<elements; m++) {
+			  int index = (i * width + j) * elements + m;
+			  std::cout << font.coords(0)[index] << " ";
+		  }
+		  std::cout << std::endl;
+	  }
+  }
+
+  std::cerr << " the image width is " << font.width() << std::endl;
+  std::cerr << " the image height is " << font.height() << std::endl;
+
+  ShAttrib2f size[4];
+  size[0] = ShAttrib2f(-0.5/width, -0.5/height);
+  size[1] = ShAttrib2f( 0.5/width, -0.5/height);
+  size[2] = ShAttrib2f(-0.5/width,  0.5/height);
+  size[3] = ShAttrib2f( 0.5/width,  0.5/height);
+#endif
+
   fsh = SH_BEGIN_FRAGMENT_PROGRAM {
     ShInputTexCoord2f tc;
     ShOutputColor3f o;
@@ -337,16 +266,28 @@ bool VectorText::init()
     ShAttrib4f r = segdists(L,edges,x);
 #endif
 
-#ifdef PACK
+#ifdef PACK9
     ShAttrib2f x = tc;
-    ShAttrib4f L[NEIGHBOURS];
+    ShAttrib4f L[9];
 
-    for(int i=0; i<NEIGHBOURS; i++) {
+    for(int i=0; i<9; i++) {
 	ShAttrib2f y = tc + size[i];
     	L[i] = ftexture(y); 
     }
   
-    ShAttrib4f r = segdists(L,NEIGHBOURS,x);
+    ShAttrib4f r = segdists(L,9,x);
+#endif
+
+#ifdef PACK4
+    ShAttrib2f x = tc;
+    ShAttrib4f L[4];
+
+    for(int i=0; i<4; i++) {
+	ShAttrib2f y = tc + size[i];
+    	L[i] = ftexture(y); 
+    }
+  
+    ShAttrib4f r = segdists(L,4,x);
 #endif
 
     switch (m_mode) {
