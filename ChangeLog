@@ -1,3 +1,7 @@
+2004-11-11 Bryan Chan   <b8chan@cgl.uwaterloo.ca>
+  * src/UniformPanel.cpp:
+  Fixed bugs so that non-f uniforms don't cause the panel to bomb out.
+  
 2004-11-08 Bryan Chan   <b8chan@cgl.uwaterloo.ca>
   * src/UniformPanel.cpp:
   Small updates to work with variants after storage type branch
