@@ -1,5 +1,9 @@
 2004-07-09  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
+	* src/shaders/VertexBranching.cpp: Added shader to illustrate
+	branching in the vertex program. Works on
+	NV_vertex_program2_option-capable cards.
+
 	* src/shaders/Checkerboard.cpp: Added this shader.
 
 	* src/shaders/Derivatives.cpp: Added this shader.

@@ -56,6 +56,7 @@ shrike_SOURCES += shaders/LafortuneShader.cpp
 shrike_SOURCES += shaders/HairPhysics.cpp
 shrike_SOURCES += shaders/Derivatives.cpp
 shrike_SOURCES += shaders/Checkerboard.cpp
+shrike_SOURCES += shaders/VertexBranching.cpp
 
 # this is a hack and should be removed eventually
 # shrike_SOURCES += DummyShader.cpp
