@@ -549,7 +549,7 @@ class Worley2D: public WorleyShader {
 
     void initfsh() {
       ShProgram worleysh = shWorley<4, 2, float>(useTexture) << coeff; 
-      worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "posv") << fillcast<2>(freq));
+      worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
 
       // make polkadots by clamping the scalar result from worley
       color1 =  ShColor3f(1.0, 1.0f, 1.0f); 
