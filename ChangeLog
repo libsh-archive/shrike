@@ -1,5 +1,8 @@
 2004-07-27  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
+	* Added copyright statements to the heads of all the files that
+	were missing.
+
 	* src/shaders/WorleyShader.cpp: Change from kill to discard.
 
 2004-07-15  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
