@@ -65,7 +65,8 @@ bool LuciteShader::init()
   ShImage test_image;
   test_image.loadPng(std::string(SHMEDIA_DIR "/envmaps/aniroom/") + imageNames[0] + ".png");
 
-  ShTextureCube<ShColor4f> cubemap(test_image.width(), test_image.height());
+  ShTextureCube<ShColor4f> SH_DECL(cubemap) =
+	  ShTextureCube<ShColor4f>(test_image.width(), test_image.height());
   {
     for (int i = 0; i < 6; i++) {
       ShImage image;
@@ -74,25 +75,29 @@ bool LuciteShader::init()
     }
   }
 
-  ShAttrib3f theta = ShAttrib3f(1.32f,1.3f,1.28f);
-  theta.name("relative indices of refraction");
-  theta.range(0.0f,2.0f);
+  ShAttrib3f SH_DECL(eta) = ShAttrib3f(1.32f,1.3f,1.28f);
+  eta.title("relative indices of refraction");
+  eta.description("relative indices of refraction for each color component to model dispersion");
+  eta.range(0.0f,2.0f);
 
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
-    ShInputPosition4f ipos;
-    ShInputNormal3f inorm;
+    ShInputPosition4f SH_DECL(ipos);
+    ShInputNormal3f SH_DECL(inorm);
     
-    ShOutputPosition4f opos;    // Position in NDC
-    ShOutputNormal3f onorm;     // view-space normal
-    ShOutputVector3f reflv;     // reflection vector
+    ShOutputPosition4f SH_DECL(opos);    // Position in NDC
+    ShOutputNormal3f SH_DECL(onorm);     // view-space normal
+    ShOutputVector3f SH_DECL(reflv);     // reflection vector
     ShOutputVector3f refrv[3];  // refraction vectors (per RGB channel)
-    ShOutputAttrib3f fres;      // fresnel terms (per RGB channel)
+    refrv[0].name("refrv[0]");  // should be nicer way to name these
+    refrv[1].name("refrv[1]");
+    refrv[2].name("refrv[2]");
+    ShOutputAttrib3f SH_DECL(fres);      // fresnel terms (per RGB channel)
 
     opos = Globals::mvp | ipos; // Compute NDC position
     onorm = Globals::mv | inorm; // Compute view-space normal
     onorm = normalize(onorm);
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
-    ShPoint3f viewv = -normalize(posv); // Compute view vector
+    ShPoint3f SH_DECL(posv) = (Globals::mv | ipos)(0,1,2); // Compute view-space position
+    ShPoint3f SH_DECL(viewv) = -normalize(posv); // Compute view vector
 
     reflv = reflect(viewv,onorm); // Compute reflection vector
 
@@ -100,29 +105,34 @@ bool LuciteShader::init()
     reflv = Globals::mv_inverse | reflv;
 
     for (int i=0; i<3; i++) {
-    	refrv[i] = refract(viewv,onorm,theta[i]); // Compute refraction vectors
+    	refrv[i] = refract(viewv,onorm,eta[i]); // Compute refraction vectors
 
         // actually do refraction lookup in model space
         refrv[i] = Globals::mv_inverse | refrv[i];
 
-        fres[i] = fresnel(viewv,onorm,theta[i]); // Compute fresnel term
+        fres[i] = fresnel(viewv,onorm,eta[i]); // Compute fresnel term
     }
   } SH_END;
+  vsh.name("LuciteShader::vsh");
   
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
-    ShInputPosition4f posh;
-    ShInputNormal3f n;  // normal
-    ShInputVector3f reflv;     // reflection vector
+    ShInputPosition4f SH_DECL(posh);
+    ShInputNormal3f SH_DECL(n);  // normal
+    ShInputVector3f SH_DECL(reflv);     // reflection vector
     ShInputVector3f refrv[3];     // refraction vectors (per RGB channel)
-    ShInputAttrib3f fres;         // fresnel terms (per RGB channel)
+    refrv[0].name("refrv[0]");  // should be nicer way to name these
+    refrv[1].name("refrv[1]");
+    refrv[2].name("refrv[2]");
+    ShInputAttrib3f SH_DECL(fres);         // fresnel terms (per RGB channel)
 
-    ShOutputColor3f result;
+    ShOutputColor3f SH_DECL(result);
     
     result = fres*cubemap(reflv)(0,1,2);
     for (int i=0; i<3; i++) {
         result[i] += (1.0f-fres[i])*cubemap(refrv[i])(i); 
     }
   } SH_END;
+  fsh.name("LuciteShader::fsh");
 
   return true;
 }
