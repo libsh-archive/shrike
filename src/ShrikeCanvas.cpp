@@ -228,12 +228,12 @@ void ShrikeCanvas::setupView(int nsplit, int x, int y)
   ShMatrix4x4f split;
   
   if (nsplit > 1) {
-    split[0][0] = 2.0;
-    split[1][1] = 2.0;
+    split[0][0] = nsplit;
+    split[1][1] = nsplit;
     split[2][2] = 1.0;
     split[3][3] = 1.0;
-    split[0][3] = (float)(1-x*2);
-    split[1][3] = (float)(1-y*2);
+    split[0][3] = (float)(nsplit - 1 - x*2);
+    split[1][3] = (float)(nsplit - 1 - y*2);
     float values[16];
     for (int i = 0; i < 16; i++) split[i%4](i/4).getValues(&values[i]);
     glMultMatrixf(values);
@@ -253,28 +253,31 @@ void ShrikeCanvas::setupView(int nsplit, int x, int y)
 
 void ShrikeCanvas::screenshot(const std::string& filename)
 {
-  ShImage final(m_width*2, m_height*2, 3);
+  int mult = 4;
+  ShImage final(m_width*mult, m_height*mult, 3);
   float* fd = final.data();
     
-  for (int y = 0; y < 2; y++) for (int x = 0; x < 2; x++) {
+  for (int y = 0; y < mult; y++) for (int x = 0; x < mult; x++) {
     ShImage img(m_width, m_height, 3);
   
-    setupView(2, x, y);
+    setupView(mult, x, y);
     render();
     
     glReadPixels(0, 0, m_width, m_height, GL_RGB, GL_FLOAT, img.data());
 
     const float* id = img.data();
     for (int b = 0; b < m_height; b++) for (int a = 0; a < m_width; a++) {
-      int row = (m_height * 2 - 1) - (m_height * y + b);
+      int row = m_height*(mult - y) - b - 1;
       int col = m_width * x + a;
       for (int i = 0; i < 3; i++) {
-        fd[(row * m_width * 2 + col)*3 + i ] = id[(b * m_width + a)*3 + i];
+        fd[(row * m_width * mult + col)*3 + i ] = id[(b * m_width + a)*3 + i];
       }
     }
-//     std::ostringstream s;
-//     s << "_" << x << "_" << y;
-//     img.savePng(filename + s.str());
+#if 0
+     std::ostringstream s;
+     s << "_" << x << "_" << y;
+     img.savePng(filename + s.str());
+#endif
   }
   final.savePng(filename);
 
