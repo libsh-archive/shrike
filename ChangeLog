@@ -1,5 +1,7 @@
 2004-07-27  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
+	* src/ShrikeCanvas.cpp (motion): Change from inv to inverse.
+
 	* Added copyright statements to the heads of all the files that
 	were missing.
 

@@ -125,7 +125,7 @@ void ShrikeCanvas::motion(wxMouseEvent& event)
     if (event.ShiftDown()) {
       ShTrackball t;
       t.resize(m_width, m_height);
-      Globals::lightDirW = inv(Globals::mv) | t.rotate(m_last_x, m_last_y, cur_x, cur_y) | Globals::mv | Globals::lightDirW;
+      Globals::lightDirW = inverse(Globals::mv) | t.rotate(m_last_x, m_last_y, cur_x, cur_y) | Globals::mv | Globals::lightDirW;
     } else {
       m_camera.orbit(m_last_x, m_last_y, cur_x, cur_y, m_width, m_height);
     }
@@ -272,7 +272,7 @@ void ShrikeCanvas::setupView(int nsplit, int x, int y)
   m_camera.glModelView();
 
   Globals::mv = m_camera.shModelView();
-  Globals::mv_inverse = inv(Globals::mv);
+  Globals::mv_inverse = inverse(Globals::mv);
   Globals::mvp = m_camera.shModelViewProjection(split);
   Globals::lightPos = Globals::mv | ShPoint3f(Globals::lightDirW * Globals::lightLenW);
 }
