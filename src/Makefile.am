@@ -31,8 +31,11 @@ shrike_SOURCES += EdgeGooch.cpp
 shrike_SOURCES += Textures.cpp
 shrike_SOURCES += Pants.cpp
 shrike_SOURCES += EnvMapShader.cpp
-shrike_SOURCES += DummyShader.cpp
 shrike_SOURCES += ShinyBumpMapShader.cpp
+shrike_SOURCES += HomomorphicShader.cpp
+
+# this is a hack and should be removed eventually
+shrike_SOURCES += DummyShader.cpp
 
 AM_CXXFLAGS = `${WX_CONFIG} --cxxflags` -Wall
 AM_CPPFLAGS = `${WX_CONFIG} --cppflags`
