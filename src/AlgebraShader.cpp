@@ -4,6 +4,7 @@
 #include <list>
 #include "Shader.hpp"
 #include "Globals.hpp"
+#include "ShrikeCanvas.hpp"
 
 using namespace SH;
 using namespace ShUtil;
@@ -11,6 +12,10 @@ using namespace ShUtil;
 // VCS direction and up
 ShVector3f lightDir;
 ShVector3f lightUp;
+ShAttrib1f width;
+ShAttrib1f invwidth;
+ShAttrib1f height;
+ShAttrib1f invheight;
 
 class AlgebraWrapper: public Shader {
   public:
@@ -108,6 +113,12 @@ void AlgebraWrapper::render() {
   lightDir = -normalize(Globals::mv | Globals::lightDirW); 
   ShVector3f horiz = cross(lightDir, ShConstant3f(0.0f, 1.0f, 0.0f));
   lightUp = cross(horiz, lightDir);
+
+  const ShrikeCanvas *canvas = ShrikeCanvas::instance();
+  width = canvas->m_width;
+  invwidth = 1.0f / width;
+  height = canvas->m_height;
+  invheight = 1.0f / height;
 
   // set up lighting crap
   Shader::render();
@@ -208,11 +219,12 @@ bool AlgebraShader::init_all()
   ShTexture2D<ShColor3f> halftoneTex(image.width(), image.height());
   halftoneTex.memory(image.memory());
 
-  ShAttrib1f SH_NAMEDECL(halftoneScale, "Scaling Factor") = ShConstant1f(0.005f);
-  halftoneScale.range(0.001f, 0.010f);
 
   postsh[0] = keep<ShColor3f>("result"); 
-  postsh[1] = ShKernelPost::halftone<ShColor3f>(halftoneTex) << halftoneScale;
+
+  ShAttrib1f SH_NAMEDECL(htscale, "Scaling Factor") = ShConstant1f(50.0f);
+  htscale.range(1.0f, 400.0f);
+  postsh[1] = ShKernelPost::halftone<ShColor3f>(halftoneTex) << (mul<ShAttrib1f>() << htscale << invheight);
 
   return true;
 }
