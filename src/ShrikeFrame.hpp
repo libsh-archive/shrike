@@ -42,6 +42,8 @@ public:
   void quit(wxCommandEvent& event);
   void openModel(wxCommandEvent& event);
 
+  void close(wxCloseEvent& event);
+
   void onShaderSelect(wxTreeEvent& event);
   
   void setShader(Shader* shader);

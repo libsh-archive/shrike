@@ -29,6 +29,7 @@ BEGIN_EVENT_TABLE(ShrikeFrame, wxFrame)
   EVT_MENU(SHRIKE_MENU_VIEW_FULLSCREEN, ShrikeFrame::fullscreen)
   EVT_MENU(SHRIKE_MENU_VIEW_WIREFRAME, ShrikeFrame::wireframe)
   EVT_MENU(SHRIKE_MENU_VIEW_FPS, ShrikeFrame::fps)
+  EVT_CLOSE(ShrikeFrame::close)
   EVT_KEY_DOWN(ShrikeFrame::keyDown)
   //  EVT_LISTBOX(SHRIKE_LISTBOX_SHADERS, ShrikeFrame::onShaderSelect)
   EVT_TREE_SEL_CHANGED(SHRIKE_TREECTRL_SHADERS, ShrikeFrame::onShaderSelect)
@@ -156,7 +157,13 @@ void ShrikeFrame::shaderProps(wxCommandEvent& event)
 
 void ShrikeFrame::quit(wxCommandEvent& event)
 {
-  Close(true);
+  Destroy();
+  //  Close(true);
+}
+
+void ShrikeFrame::close(wxCloseEvent& event)
+{
+  Destroy();
 }
 
 void ShrikeFrame::onShaderSelect(wxTreeEvent& event)

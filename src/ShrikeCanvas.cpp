@@ -52,6 +52,7 @@ ShrikeCanvas* ShrikeCanvas::instance()
 
 void ShrikeCanvas::paint()
 {
+  wxPaintDC dc(this);
   render();
 }
 
