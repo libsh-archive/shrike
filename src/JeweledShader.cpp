@@ -40,6 +40,18 @@ bool JeweledShader::init()
   texture_scale.name("Texture Scale");
   texture_scale.range(0.0,10.0);
 
+  ShAttrib1f theta(1.5);
+  theta.name("Index of Refraction");
+  theta.range(0.0,3.0);
+
+  ShAttrib2f threshold(0.45,0.55);
+  threshold.name("Texture thresholds");
+  threshold.range(0.0,1.0);
+
+  ShAttrib1f width(0.01);
+  width.name("Texture transition width");
+  width.range(0.0,0.2);
+
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;// model-space position
     ShInputNormal3f inorm; // model-space normal
@@ -51,6 +63,7 @@ bool JeweledShader::init()
     ShOutputVector3f view;   // direction to eye (surface frame)
     ShOutputTexCoord2f otc;  // tex coords passed through
     ShOutputVector3f reflv;  // reflection vector
+    ShOutputAttrib1f fres;   // fresnel term
 
     otc = tc * texture_scale;
     opos = Globals::mvp | ipos; // Compute NDC position
@@ -63,6 +76,8 @@ bool JeweledShader::init()
     ShVector3f lightv = normalize(Globals::lightPos - posv); // Compute light direction
     ShVector3f viewv = -normalize(posv); // Compute view vector
     reflv = reflect(viewv,n);  // view-space reflection vector
+    reflv = Globals::mv_inverse | reflv;  // do env map lookup in model space
+    fres = fresnel(viewv,n,theta);
 
     // compute local surface frame (in view space)
     // ShVector3f t = normalize(itan - (itan|n)*n);
@@ -81,106 +96,99 @@ bool JeweledShader::init()
   ShImage image;
 
 #define NMATS 3
+#define LMAT 0
+#define UMAT 2
   ShTexture2D<ShColor3f> ptex[NMATS];
   ShTexture2D<ShColor3f> qtex[NMATS];
 
-  image.loadPng(SHMEDIA_DIR "/brdfs/satin/satinp.png");
+  image.loadPng(SHMEDIA_DIR "/brdfs/mystique/mystique64_0.png");
   ptex[0].size(image.width(), image.height());
   ptex[0].memory(image.memory());
-  // ptex[0].name("Satin p texture");
-
-  image.loadPng(SHMEDIA_DIR "/brdfs/satin/satinq.png");
-  qtex[0].size(image.width(), image.height());
-  qtex[0].memory(image.memory());
-  // ptex[0].name("Satin q texture");
-  
-  image.loadPng(SHMEDIA_DIR "/brdfs/mystique/mystique64_0.png");
-  ptex[1].size(image.width(), image.height());
-  ptex[1].memory(image.memory());
-  // ptex[1].name("Mystique q texture");
+  ptex[0].name("Mystique p texture");
 
   image.loadPng(SHMEDIA_DIR "/brdfs/mystique/mystique64_1.png");
+  qtex[0].size(image.width(), image.height());
+  qtex[0].memory(image.memory());
+  qtex[0].name("Mystique q texture");
+
+  image.loadPng(SHMEDIA_DIR "/brdfs/satin/satinp.png");
+  ptex[1].size(image.width(), image.height());
+  ptex[1].memory(image.memory());
+  ptex[1].name("Satin p texture");
+
+  image.loadPng(SHMEDIA_DIR "/brdfs/satin/satinq.png");
   qtex[1].size(image.width(), image.height());
   qtex[1].memory(image.memory());
+  qtex[1].name("Satin q texture");
 
   image.loadPng(SHMEDIA_DIR "/brdfs/garnetred/garnetred64_0.png");
   ptex[2].size(image.width(), image.height());
   ptex[2].memory(image.memory());
-  // ptex[1].name("Garnet red q texture");
+  ptex[2].name("Garnet red p texture");
 
   image.loadPng(SHMEDIA_DIR "/brdfs/garnetred/garnetred64_1.png");
   qtex[2].size(image.width(), image.height());
   qtex[2].memory(image.memory());
+  qtex[2].name("Garnet red q texture");
 
   // Specular highlight (to be added when needed...)
   image.loadPng(SHMEDIA_DIR "/brdfs/specular.png");
   ShTexture2D<ShColor3f> stex(image.width(), image.height());
   stex.memory(image.memory());
-  // stex.name("Specular highlight texture");
+  stex.name("Specular highlight texture");
   
   // Cube map for mirror reflection
   std::string imageNames[6] = {"left", "right", "top", "bottom", "back", "front"};
-  ShTextureCube<ShColor4f> env(image.width(), image.height());
+  ShTextureCube<ShColor4f> env;
+  env.name("Environment map");
   {
     for (int i = 0; i < 6; i++) {
       ShImage image;
       image.loadPng(std::string(SHMEDIA_DIR "/envmaps/aniroom/") + imageNames[i] + ".png");
       env.memory(image.memory(), static_cast<ShCubeDirection>(i));
+      env.size(image.width(), image.height());
     }
   }
   
-  ShWrapRepeat< ShTexture2D<ShColor3f> > mat[NMATS];
+  ShWrapRepeat< ShTexture2D<ShColor3f> > mat;
 
-  // Material map, channel 0
-  image.loadPng(SHMEDIA_DIR "/mats/goldknot_ch1.png");
-  // image.loadPng(SHMEDIA_DIR "/mats/colourknot_ch1.png");
-  mat[0].size(image.width(), image.height());
-  mat[0].memory(image.memory());
-  // mat[0].name("Filgiree material map");
+  // Material map (threshold based...)
+  image.loadPng(SHMEDIA_DIR "/textures/halftone.png");
+  mat.size(image.width(), image.height());
+  mat.memory(image.memory());
+  mat.name("Filgiree distance map");
   
-  // Material map, channel 1
-  image.loadPng(SHMEDIA_DIR "/mats/colourknot_ch2_ch4.png");
-  mat[1].size(image.width(), image.height());
-  mat[1].memory(image.memory());
-  // mat[1].name("Base material map");
-  
-  // Material map, channel 2
-  image.loadPng(SHMEDIA_DIR "/mats/colourknot_ch3.png");
-  mat[2].size(image.width(), image.height());
-  mat[2].memory(image.memory());
-  // mat[2].name("Knot interior material map");
-
   // Scale factors
   ShColor3f alpha[NMATS];
   ShAttrib1f diffuse[NMATS];
   ShAttrib1f specular[NMATS];
   ShAttrib1f mirror[NMATS];
 
-  // for satin
-  alpha[0] = ShColor3f(0.762367,0.762367,0.762367);
-  alpha[0].name("Satin correction color");
-  diffuse[0] = ShAttrib1f(1.0);
-  diffuse[0].range(0.0,5.0);
-  diffuse[0].name("Satin diffuse scale");
-  specular[0] = ShAttrib1f(0.0);
-  specular[0].range(0.0,1.0);
-  specular[0].name("Satin specular scale");
-  mirror[0] = ShAttrib1f(0.05);
-  mirror[0].range(0.0,1.0);
-  mirror[0].name("Satin mirror scale");
-
   // for mystique
-  alpha[1] = ShColor3f(0.0011786,0.165452,0.0338959);
-  alpha[1].name("Mystique correction color");
-  diffuse[1] = ShAttrib1f(10.0);
-  diffuse[1].range(0.0,20.0);
-  diffuse[1].name("Mystique diffuse scale");
-  specular[1] = ShAttrib1f(0.3);
+  alpha[0] = ShColor3f(0.0011786,0.165452,0.0338959);
+  alpha[0].name("Mystique correction color");
+  diffuse[0] = ShAttrib1f(10.0);
+  diffuse[0].range(0.0,20.0);
+  diffuse[0].name("Mystique diffuse scale");
+  specular[0] = ShAttrib1f(0.3);
+  specular[0].range(0.0,1.0);
+  specular[0].name("Mystique specular scale");
+  mirror[0] = ShAttrib1f(0.07);
+  mirror[0].range(0.0,1.0);
+  mirror[0].name("Mystique mirror scale");
+
+  // for satin
+  alpha[1] = ShColor3f(0.762367,0.762367,0.762367);
+  alpha[1].name("Satin correction color");
+  diffuse[1] = ShAttrib1f(1.0);
+  diffuse[1].range(0.0,5.0);
+  diffuse[1].name("Satin diffuse scale");
+  specular[1] = ShAttrib1f(0.0);
   specular[1].range(0.0,1.0);
-  specular[1].name("Mystique specular scale");
-  mirror[1] = ShAttrib1f(0.07);
+  specular[1].name("Satin specular scale");
+  mirror[1] = ShAttrib1f(0.05);
   mirror[1].range(0.0,1.0);
-  mirror[1].name("Mystique mirror scale");
+  mirror[1].name("Satin mirror scale");
 
   // for garnet red
   alpha[2] = ShColor3f(0.0410592,0.0992037,0.0787714);
@@ -209,6 +217,7 @@ bool JeweledShader::init()
     ShInputVector3f view;
     ShInputTexCoord2f u;
     ShInputVector3f reflv;  
+    ShInputAttrib1f fres;  
 
     ShOutputColor3f result;
 
@@ -225,16 +234,24 @@ bool JeweledShader::init()
     ShTexCoord2f vu = parabolic_norm(view);
 
     // Look up shared specular highlight component 
-    ShColor3f spec = stex(hu);
+    ShColor3f spec = fres * stex(hu);
     // Look up shared mirror reflection component 
-    ShColor3f mirr = env(reflv)(0,1,2);
+    ShColor3f mirr = fres * env(reflv)(0,1,2);
 
     // BUG: doesn't work (satin always white) if this not here...
     // in theory, should not be needed, bug in compiler?
     result = ShColor3f(0.0,0.0,0.0);
     
+    // threshold the filgiree distance texture
+    ShAttrib1f m = mat(u)(0);
+    ShAttrib3f mask;
+    mask(1) = sstep(m,threshold(0),width);
+    mask(2) = sstep(m,threshold(1),width);
+    mask(0) = ShAttrib1f(1.0) - mask(1);
+    mask(1) = mask(1) - mask(2);
+
     // sum contributions of all materials
-    for (int i=0; i<NMATS; i++) {
+    for (int i=LMAT; i<=UMAT; i++) {
        ShColor3f f;
 
        // Incorporate diffuse scale, correction factor, and irradiance
@@ -250,8 +267,13 @@ bool JeweledShader::init()
        // Add in mirror term (should use Fresnel here) 
        f += mirror[i] * mirr;
 
-       // accumulate, masked by material map
-       result += f * mat[i](u);
+       //f = ShColor3f(i == 0 ? 1.0 : 0.0, i == 1 ? 1.0 : 0.0, i == 2 ? 1.0 : 0.0);
+       // mask by material map and fresnel term
+       f *= (1.0f - fres);
+       f *= mask(i);
+
+       // accumulate
+       result += f;
     }
     // Take into account light power and colour
     result *= light_power * light_color;

@@ -36,9 +36,11 @@ shrike_SOURCES += HomomorphicShader.cpp
 shrike_SOURCES += SatinShader.cpp
 shrike_SOURCES += JeweledShader.cpp
 shrike_SOURCES += AlgebraShader.cpp
+shrike_SOURCES += GlassShader.cpp
+shrike_SOURCES += LuciteShader.cpp
 
 # this is a hack and should be removed eventually
-shrike_SOURCES += DummyShader.cpp
+# shrike_SOURCES += DummyShader.cpp
 
 AM_CXXFLAGS = `${WX_CONFIG} --cxxflags` -Wall
 AM_CPPFLAGS = `${WX_CONFIG} --cppflags`

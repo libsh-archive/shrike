@@ -9,12 +9,12 @@ using namespace ShUtil;
 
 #include "util.hpp"
 
-class ShinyBumpMapShader : public Shader {
+class GlassShader : public Shader {
 public:
   ShProgram vsh, fsh;
 
-  ShinyBumpMapShader();
-  ~ShinyBumpMapShader();
+  GlassShader();
+  ~GlassShader();
 
   bool init();
   void bind();
@@ -23,16 +23,16 @@ public:
   ShProgram fragment() { return fsh;}
 };
 
-ShinyBumpMapShader::ShinyBumpMapShader()
-  : Shader("Shiny Bump Map Shader")
+GlassShader::GlassShader()
+  : Shader("Glass")
 {
 }
 
-ShinyBumpMapShader::~ShinyBumpMapShader()
+GlassShader::~GlassShader()
 {
 }
 
-bool ShinyBumpMapShader::init()
+bool GlassShader::init()
 {
   std::cerr << "Initializing " << name() << std::endl;
 
@@ -49,60 +49,51 @@ bool ShinyBumpMapShader::init()
     }
   }
 
+  ShAttrib1f theta = ShAttrib1f(1.3f);
+  theta.name("relative indices of refraction");
+  theta.range(0.0f,2.0f);
+
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
     ShInputNormal3f inorm;
-    ShInputVector3f itan;
     
     ShOutputPosition4f opos; // Position in NDC
-    ShInOutTexCoord2f tc;    // texture coordinates
-    ShOutputNormal3f onorm; // view-space normal
-    ShOutputVector3f otan; // view-space tangent
-    ShOutputVector3f viewv;  // view vector
+    ShOutputNormal3f onorm;  // view-space normal
+    ShOutputVector3f reflv; // Compute reflection vector
+    ShOutputVector3f refrv; // Compute refraction vector
+    ShOutputAttrib1f fres; // Compute fresnel term
 
     opos = Globals::mvp | ipos; // Compute NDC position
     onorm = Globals::mv | inorm; // Compute view-space normal
-    otan = Globals::mv | itan; // Compute view-space tangent
+    onorm = normalize(onorm);
     ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
-    viewv = -ShVector3f(posv); // Compute view vector
+    ShVector3f viewv = -normalize(posv); // Compute view vector
+
+    reflv = reflect(viewv,onorm); // Compute reflection vector
+    refrv = refract(viewv,onorm,theta); // Compute refraction vector
+    fres = fresnel(viewv,onorm,theta); // Compute fresnel term
+
+    // actually do reflection and refraction lookup in model space
+    reflv = Globals::mv_inverse | reflv;
+    refrv = Globals::mv_inverse | refrv;
   } SH_END;
-
-  ShImage image;
-  image.loadPng(SHMEDIA_DIR "/bumpmaps/bumps_normals.png");
-  ShTexture2D<ShVector3f> bump(image.width(),image.height());
-  bump.memory(image.memory());
-
-  ShAttrib3f SH_DECL(scale) = ShAttrib3f(2.0,2.0,1.0);
-  scale.range(0.0f,10.0f);
   
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputPosition4f posh;
-    ShInputTexCoord2f u;
-    ShInputNormal3f n;
-    ShInputVector3f t;
-    ShInputVector3f v;
+    ShInputNormal3f n;  // normal
+    ShInputVector3f reflv; // Compute reflection vector
+    ShInputVector3f refrv; // Compute refraction vector
+    ShInputAttrib1f fres; // Compute fresnel term
 
     ShOutputColor3f result;
     
-    ShVector3f s = cross(t,n);
-    t = normalize(t);
-    s = normalize(s);
-    n = normalize(n);
-    ShVector3f b = bump(u) - ShAttrib3f(0.5,0.5,0.0);
-    b *= scale;
-    ShVector3f bn = t * b(0) + s * b(1) + n * b(2);
-    ShVector3f r = reflect(v,bn); // Compute reflection vector
-
-    // actually do reflection lookup in model space
-    r = Globals::mv_inverse | r;
-
-    result = cubemap(r)(0,1,2); 
+    result = fres*cubemap(reflv)(0,1,2) + (1.0f-fres)*cubemap(refrv)(0,1,2); 
   } SH_END;
 
   return true;
 }
 
-void ShinyBumpMapShader::bind()
+void GlassShader::bind()
 {
   vsh->code()->print(std::cerr);
   fsh->code()->print(std::cerr);
@@ -111,4 +102,4 @@ void ShinyBumpMapShader::bind()
   shBindShader(fsh);
 }
 
-ShinyBumpMapShader the_shinybumpmap_shader;
+GlassShader the_glass_shader;
