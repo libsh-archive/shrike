@@ -227,7 +227,7 @@ bool VectorText::init()
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
   ShFont font;
-  font.loadFont("/home/zqin/vector_graphics/tools/freetype/d.txt");
+  font.loadFont("/home/zqin/vectortexture/freetype/d.txt");
 
   int width = font.width();
   int height = font.height();
