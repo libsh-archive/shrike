@@ -40,6 +40,7 @@ shrike_SOURCES += JeweledShader.cpp
 shrike_SOURCES += AlgebraShader.cpp
 shrike_SOURCES += GlassShader.cpp
 shrike_SOURCES += LuciteShader.cpp
+shrike_SOURCES += CookTorrance.cpp
 
 # this is a hack and should be removed eventually
 # shrike_SOURCES += DummyShader.cpp
