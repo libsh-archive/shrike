@@ -386,9 +386,15 @@ void ShrikeFrame::screenshot(wxCommandEvent& event)
 
 wxTreeCtrl* ShrikeFrame::initShaderList(wxWindow* parent)
 {
+#ifndef WIN32
   wxTreeCtrl* tree = new wxTreeCtrl(parent, SHRIKE_TREECTRL_SHADERS,
                                     wxDefaultPosition, wxDefaultSize,
                                     wxTR_HAS_BUTTONS | wxTR_HIDE_ROOT | wxTR_NO_LINES);
+#else
+  wxTreeCtrl* tree = new wxTreeCtrl(parent, SHRIKE_TREECTRL_SHADERS,
+                                    wxDefaultPosition, wxDefaultSize,
+                                    wxTR_HAS_BUTTONS | wxTR_HIDE_ROOT | wxTR_LINES_AT_ROOT);
+#endif
 
   wxTreeItemId root = tree->AddRoot("");
 
