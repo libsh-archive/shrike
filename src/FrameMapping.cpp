@@ -9,7 +9,7 @@ using namespace ShUtil;
 
 #define IMG_TEXTURE 1 
 #define GEN_TEXTURE 0 
-#define USE_QUAT 1 
+#define USE_QUAT 1
 
 namespace {
 struct FrameMap {
@@ -181,15 +181,15 @@ FrameMap FrameMapping::genFrameMap(const ShImage& img, int& width, int& height)
       if (val < 0.000001) {
 #if (USE_QUAT)
         result.quaternionMap(j, i, 0) = 1;
-        result.quaternionMap(j, i, 1) = 0;
-        result.quaternionMap(j, i, 2) = 0;
-        result.quaternionMap(j, i, 3) = 0;
+        result.quaternionMap(j, i, 1) = 0.5;
+        result.quaternionMap(j, i, 2) = 0.5;
+        result.quaternionMap(j, i, 3) = 0.5;
 #else
-        result.normalMap(j, i, 0) = 0;
+        result.normalMap(j, i, 0) = 0.5;
         result.normalMap(j, i, 1) = 1;
-        result.normalMap(j, i, 2) = 0;
-        result.tangentMap(j, i, 0) = 0;
-        result.tangentMap(j, i, 1) = 0;
+        result.normalMap(j, i, 2) = 0.5;
+        result.tangentMap(j, i, 0) = 0.5;
+        result.tangentMap(j, i, 1) = 0.5;
         result.tangentMap(j, i, 2) = 1;
 #endif
       }
