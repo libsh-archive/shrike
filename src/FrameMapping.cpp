@@ -18,16 +18,16 @@ struct FrameMap {
 #if (USE_QUAT)
   quaternionMap(width, height, 4)
 #else
-  tangentMap(width, height, 3), 
-    normalMap(width, height, 3) 
+  normalMap(width, height, 3), 
+  tangentMap(width, height, 3) 
 #endif
   {}
 
 #if (USE_QUAT)
   ShImage quaternionMap;
 #else
-  ShImage tangentMap;
   ShImage normalMap;
+  ShImage tangentMap;
 #endif
 };
 
@@ -135,7 +135,7 @@ FrameMap FrameMapping::genFrameMap(const ShImage& img, int& width, int& height)
   int h = img.height();
   FrameMap result(w, h);
   float dx, dy;
-  float scale = 0.1;
+  float scale = 2.0;
   for (int i = 0; i < h; i++)
   {
     for (int j = 0; j < w; j++)
@@ -170,9 +170,9 @@ FrameMap FrameMapping::genFrameMap(const ShImage& img, int& width, int& height)
         dy = 0.5*((img(j, i-1, 0) + img(j, i-1, 1) + img(j, i-1, 2))/3.0 - 
             (img(j, i+1, 0) + img(j, i+1, 1) + img(j, i+1, 2))/3.0);
       }
-      ShVector3f vZ = normalize(ShVector3f(0, scale*dx, 1));
-      ShVector3f vX = normalize(ShVector3f(1, -scale*dy, 0));
-      ShVector3f gradient = ShVector3f(-scale*dy, 0, scale*dx);
+      ShVector3f vZ = normalize(ShVector3f(0, scale*dy, 1));
+      ShVector3f vX = normalize(ShVector3f(1, scale*dx, 0));
+      ShVector3f gradient = ShVector3f(scale*dx, 0, scale*dy);
       ShAttrib1f norm = dot(gradient, gradient);
       float val;
       norm.getValues(&val);
@@ -196,18 +196,18 @@ FrameMap FrameMapping::genFrameMap(const ShImage& img, int& width, int& height)
         //if (val > 1.0)
         //  gradient = normalize(gradient);
         
-        //ShVector3f normal = ShVector3f(0, 1, 0) + gradient;
+        //ShVector3f normal = normalize(ShVector3f(0, 1, 0) + gradient);
         ShVector3f normal = normalize(cross(vZ, vX));
         //normal = normalize(normal);
        
         ShVector3f tangent = normalize(cross(cross(gradient, normal), normal));
 #if (USE_QUAT)
         
-        ShVector3f tan2 = cross(normal, tangent);
+        ShVector3f tangent2 = cross(normal, tangent);
         ShMatrix4x4f rot;
-        rot[0](0) = tan2(0);
-        rot[1](0) = tan2(1);
-        rot[2](0) = tan2(2);
+        rot[0](0) = tangent2(0);
+        rot[1](0) = tangent2(1);
+        rot[2](0) = tangent2(2);
         rot[0](1) = normal(0);
         rot[1](1) = normal(1);
         rot[2](1) = normal(2);
@@ -254,11 +254,11 @@ bool FrameMapping::init()
   ShAttrib1f SH_DECL(mapTangent) = 1.0f;
   mapTangent.range(0.0f, 1.0f);
 #if (USE_QUAT)
-  ShUnclamped< ShArrayRect<ShVector4f> > quaternionMap(w, h);
+  ShUnclamped< ShTextureRect<ShVector4f> > quaternionMap(w, h);
   quaternionMap.memory(fmap.quaternionMap.memory());
 #else
-  ShUnclamped< ShArrayRect<ShVector3f> > normalMap(w, h);
-  ShUnclamped< ShArrayRect<ShVector3f> > tangentMap(w, h);
+  ShUnclamped< ShTextureRect<ShVector3f> > normalMap(w, h);
+  ShUnclamped< ShTextureRect<ShVector3f> > tangentMap(w, h);
   normalMap.memory(fmap.normalMap.memory());
   tangentMap.memory(fmap.tangentMap.memory());
 #endif
@@ -321,64 +321,44 @@ bool FrameMapping::init()
     ShColor3f diffuse = diffuse1;
     ShAttrib2f tc = texcoord;
     tc = tc*texDim;
+    
+    ShVector3f tan2 = cross(normal, tan1);
+    ShMatrix4x4f rot;
+    
+    rot[0](0) = tan2(0);
+    rot[1](0) = tan2(1);
+    rot[2](0) = tan2(2);
+    rot[0](1) = normal(0);
+    rot[1](1) = normal(1);
+    rot[2](1) = normal(2);
+    rot[0](2) = tan1(0);
+    rot[1](2) = tan1(1);
+    rot[2](2) = tan1(2);
 #if (USE_QUAT)
     ShQuaternionf frame(quaternionMap(tc));
     frame.setUnit(true);
-    normal.setUnit(true);
-    tan1.setUnit(true);
-    normal = (frame.inverse()*normal*frame).getVector()(1,2,3);
-    tan1 = (frame.inverse()*tan1*frame).getVector()(1,2,3);
+    ShVector3f ymap = ShVector3f(0,1,0);
+    ymap.setUnit(true);
+    ShVector3f zmap = ShVector3f(0,0,1);
+    zmap.setUnit(true);
+    ymap = ((frame.inverse()*ymap*frame).getVector())(1,2,3);
+    zmap = (frame.inverse()*zmap*frame).getVector()(1,2,3);
 #else
-    /*
-    ShAttrib2f weight = frac(tc);
-    ShVector3f ymapLeft = normalMap(tc+ShAttrib2f(-1.0, 1.0));
-    ShVector3f ymapRight = normalMap(tc+ShAttrib2f(1.0, 1.0));
-    ShVector3f ymapDown = weight(0)*ymapRight + (1.0 - weight(0))*ymapLeft;
-    ymapLeft = normalMap(tc+ShAttrib2f(-1.0, -1.0));
-    ymapRight = normalMap(tc+ShAttrib2f(1.0, -1.0));
-    ShVector3f ymapUp = weight(0)*ymapRight + (1.0 - weight(0))*ymapLeft;
-    ShVector3f ymap = weight(1)*ymapDown + (1.0 - weight(1))*ymapUp;
-   */
-    /*
-    ShAttrib2f weight = frac(tc);
-    ShVector3f ymapLeft = normalMap(tc+ShAttrib2f(-1.0, 0.0));
-    ShVector3f ymapRight = normalMap(tc+ShAttrib2f(1.0, 0.0));
-    ShVector3f ymapUp = normalMap(tc+ShAttrib2f(0.0, -1.0));
-    ShVector3f ymapDown = normalMap(tc+ShAttrib2f(0.0, 1.0));
-    ShVector3f ymap = 
-      0.5*(weight(0)*ymapLeft + (1.0 - weight(0))*ymapRight) + 
-      0.5*(weight(1)*ymapUp + (1.0 - weight(1))*ymapDown);
-    */
-    ShVector3f ymap = normalMap(tc);
-    ShVector3f zmap = tangentMap(tc);
-    ShVector3f xmap = cross(ymap, zmap);
-    ShMatrix4x4f rot;
     
-    rot[0](0) = xmap(0);
-    rot[1](0) = xmap(1);
-    rot[2](0) = xmap(2);
-    rot[0](1) = ymap(0);
-    rot[1](1) = ymap(1);
-    rot[2](1) = ymap(2);
-    rot[0](2) = zmap(0);
-    rot[1](2) = zmap(1);
-    rot[2](2) = zmap(2);
+    ShVector3f zmap = tangentMap(tc);
+    ShVector3f ymap = normalMap(tc);
+#endif
+    ShVector3f xmap = cross(ymap, zmap);
 
-    ShVector3f oldNormal = normal;
-    normal = (mapNormal > 0.5)*(rot | normal) + (mapNormal <= 0.5)*normal;
-    tan1 = (mapTangent > 0.5)*(rot | tan1) + (mapTangent <= 0.5)*tan1;
+    normal = (mapNormal > 0.5)*(rot | ymap) + (mapNormal <= 0.5)*normal;
+    tan1 = (mapTangent > 0.5)*(rot | zmap) + (mapTangent <= 0.5)*tan1;
 #endif
-#endif
-    ShVector3f tan2 = cross(normal, tan1);
-   
+    tan2 = cross(normal, tan1);
+ 
     color = ashikhmin(nu, nv, normalize(normal), normalize(halfvec), 
         normalize(lightvec), normalize(viewvec), tan1, tan2, specular, diffuse)
       + ambient;
-    /*
-    color(0) = abs(dot((normal - oldNormal), (normal - oldNormal)));
-    color(1) = color(0);
-    color(2) = color(0);
-*/
+  
   } SH_END_PROGRAM;
     
   return true;
