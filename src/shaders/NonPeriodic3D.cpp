@@ -149,20 +149,20 @@ bool NonPeriodic3D::init()
 
     tc = scale*tc;
   
-    body = normalize(body);
+    ShVector3f nbody = normalize(body);
     ShVector3f v1;
-    v1[0] = 1.0/body(0);
-    v1[1] = -1.0/body(1);
+    v1[0] = 1.0/nbody(0);
+    v1[1] = -1.0/nbody(1);
     v1[2] = 0.0;
     v1 = normalize(v1);
 
-    ShVector3f v2 = cross(body,v1);
+    ShVector3f v2 = cross(nbody,v1);
     v2 = normalize(v2);
     
     ShPoint3f p = tc(0)*v1 + tc(1)*v2;
     p = modPoint(p);
     
-    result = testCube(body, p);
+    result = testCube(nbody, p);
     
   } SH_END;
   return true;
