@@ -20,6 +20,8 @@ public:
   void reshape();
   void motion(wxMouseEvent& event);
 
+  void resetView();
+  
   void setShader(Shader* shader);
   
   static ShrikeCanvas* instance();

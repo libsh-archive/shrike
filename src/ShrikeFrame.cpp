@@ -18,6 +18,8 @@ BEGIN_EVENT_TABLE(ShrikeFrame, wxFrame)
   EVT_MENU(SHRIKE_MENU_SHADER_PROPS, ShrikeFrame::shaderProps)
   EVT_MENU(SHRIKE_MENU_SHADER_SHOW_VSH, ShrikeFrame::showVsh)
   EVT_MENU(SHRIKE_MENU_SHADER_SHOW_FSH, ShrikeFrame::showFsh)
+  EVT_MENU(SHRIKE_MENU_SHADER_REINIT, ShrikeFrame::reinit)
+  EVT_MENU(SHRIKE_MENU_VIEW_RESET, ShrikeFrame::resetView)
   EVT_LISTBOX(SHRIKE_LISTBOX_SHADERS, ShrikeFrame::onShaderSelect)
 END_EVENT_TABLE()
 
@@ -38,12 +40,19 @@ ShrikeFrame::ShrikeFrame()
 
   wxMenu* shaderMenu = new wxMenu();
   shaderMenu->Append(SHRIKE_MENU_SHADER_PROPS, "&Properties");
-  shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_VSH, "Show &vertex program");
-  shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_FSH, "Show &fragment program");
+  shaderMenu->AppendSeparator();
+  shaderMenu->Append(SHRIKE_MENU_SHADER_REINIT, "Re&initialize");
+  shaderMenu->AppendSeparator();
+  shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_VSH, "Show &vertex assembly");
+  shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_FSH, "Show &fragment assembly");
+
+  wxMenu* viewMenu = new wxMenu();
+  viewMenu->Append(SHRIKE_MENU_VIEW_RESET, "&Reset");
   
   wxMenuBar* menuBar = new wxMenuBar();
   menuBar->Append(fileMenu, "&File");
   menuBar->Append(shaderMenu, "&Shader");
+  menuBar->Append(viewMenu, "&View");
   
   SetMenuBar(menuBar);
 
@@ -131,6 +140,18 @@ void ShrikeFrame::showFsh(wxCommandEvent& event)
 {
   if (!m_shader) return;
   showProgram(m_shader->fragment(), "Fragment");
+}
+
+void ShrikeFrame::reinit(wxCommandEvent& event)
+{
+  if (!m_shader) return;
+  m_shader->init();
+  setShader(m_shader);
+}
+
+void ShrikeFrame::resetView(wxCommandEvent& event)
+{
+  m_canvas->resetView();
 }
 
 void ShrikeFrame::showProgram(const ShProgram& program,

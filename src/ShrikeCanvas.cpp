@@ -26,13 +26,13 @@ ShrikeCanvas::ShrikeCanvas(wxWindow* parent, ShObjMesh* model)
     m_shader(0),
     m_showLight(true)
 {
-  m_camera.move(0, 0.0, -7.0);
   m_instance = this;
   Globals::mv.internal(true);
   Globals::mvp.internal(true);
   Globals::lightPos.internal(true);
   Globals::lightDirW.internal(true);
   Globals::lightLenW.internal(true);
+  resetView();
 }
 
 ShrikeCanvas* ShrikeCanvas::instance()
@@ -200,5 +200,16 @@ void ShrikeCanvas::reshape()
     SetCurrent();
     glViewport(0, 0, m_width, m_height);
     setupView();
+  }
+}
+
+void ShrikeCanvas::resetView()
+{
+  m_camera = Camera();
+  m_camera.move(0, 0.0, -7.0);
+  if (GetContext()) {
+    SetCurrent();
+    setupView();
+    render();
   }
 }

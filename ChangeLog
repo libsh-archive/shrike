@@ -1,3 +1,17 @@
+2004-03-09  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/ShrikeFrame.cpp: Added a "Reset View" menu item.
+
+	* src/ShrikeFrame.hpp: Added a reset view event.
+
+	* src/ShrikeCanvas.cpp (resetView): Added this function.
+
+	* src/Logo.cpp (render): Use an S object file from Houdini.
+
+	* src/ShrikeFrame.cpp (reinit): Implemented reinit.
+
+	* src/ShrikeFrame.hpp: Added reinitialize function + event.
+
 2004-03-08  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/ShrikeCanvas.cpp (render): Call back the shader to do the

@@ -10,8 +10,13 @@ enum {
   SHRIKE_MENU_QUIT,
   
   SHRIKE_MENU_SHADER_PROPS,
+  
   SHRIKE_MENU_SHADER_SHOW_VSH,
   SHRIKE_MENU_SHADER_SHOW_FSH,
+
+  SHRIKE_MENU_SHADER_REINIT,
+
+  SHRIKE_MENU_VIEW_RESET,
 
   SHRIKE_LISTBOX_SHADERS
 };
@@ -33,10 +38,14 @@ public:
   void shaderProps(wxCommandEvent& event);
   void showVsh(wxCommandEvent& event);
   void showFsh(wxCommandEvent& event);
-  void showProgram(const SH::ShProgram& program,
-                   std::string name);
+  void reinit(wxCommandEvent& event);
+
+  void resetView(wxCommandEvent& event);
   
 private:
+  void showProgram(const SH::ShProgram& program,
+                   std::string name);
+
   wxListBox* initShaderList(wxWindow* parent);
 
   ShrikeCanvas* m_canvas;

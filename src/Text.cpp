@@ -154,12 +154,13 @@ ShProgram doText(const std::string& text)
     case 'h':
       {
         float vh = 60.0;
+        float hs = 10.0;
         float ro = 22.5;
         float w = 12.0;
         float ri = ro - w;
-        letter = u(u(s(s(circ(px + ro, py + ro, ro), circ(px + ro, py + ro, ri)),
-                     rect(px, py, ro + ro, ro)),
-                   rect(px + ro + ri, py, w, ro)),
+        letter = u(u(s(s(circ(px + ro, py + ro - hs, ro), circ(px + ro, py + ro - hs, ri)),
+                     rect(px, py - hs, ro + ro, ro)),
+                   rect(px + ro + ri, py, w, ro - hs)),
                  rect(px, py, w, vh));
         px += ro + ro;
       }
