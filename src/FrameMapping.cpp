@@ -8,8 +8,7 @@ using namespace SH;
 using namespace ShUtil;
 
 #define IMG_TEXTURE 1 
-#define GEN_TEXTURE 0 
-#define USE_QUAT 1
+#define USE_QUAT 0 
 
 namespace {
 struct FrameMap {
@@ -130,155 +129,37 @@ void FrameMapping::mapImage(ShImage& image)
   }
 }
 
-FrameMap FrameMapping::genFrameMap(const ShImage& img, int& width, int& height)
-{
-  int w = img.width();
-  int h = img.height();
-  FrameMap result(w, h);
-  float dx, dy;
-  float scale = 2.0;
-  for (int i = 0; i < h; i++)
-  {
-    for (int j = 0; j < w; j++)
-    {
-      if (j == 0) 
-      {
-        dx = ((img(j, i, 0) + img(j, i, 1) + img(j, i, 2))/3.0 - 
-            (img(j+1, i, 0) + img(j+1, i, 1) + img(j+1, i, 2))/3.0);
-      }
-      else if (j == img.width()-1) 
-      {
-        dx = ((img(j-1, i, 0) + img(j-1, i, 1) + img(j-1, i, 2))/3.0 - 
-            (img(j, i, 0) + img(j, i, 1) + img(j, i, 2))/3.0);
-      }
-      else 
-      {
-        dx = 0.5*((img(j-1, i, 0) + img(j-1, i, 1) + img(j-1, i, 2))/3.0 - 
-            (img(j+1, i, 0) + img(j+1, i, 1) + img(j+1, i, 2))/3.0);
-      }
-      if (i == 0) 
-      {
-        dy = ((img(j, i, 0) + img(j, i, 1) + img(j, i, 2))/3.0 - 
-            (img(j, i+1, 0) + img(j, i+1, 1) + img(j, i+1, 2))/3.0);
-      }
-      else if (i == img.height()-1) 
-      {
-        dy = ((img(j, i-1, 0) + img(j, i-1, 1) + img(j, i-1, 2))/3.0 - 
-            (img(j, i, 0) + img(j, i, 1) + img(j, i, 2))/3.0);
-      }
-      else 
-      {
-        dy = 0.5*((img(j, i-1, 0) + img(j, i-1, 1) + img(j, i-1, 2))/3.0 - 
-            (img(j, i+1, 0) + img(j, i+1, 1) + img(j, i+1, 2))/3.0);
-      }
-      ShVector3f vZ = normalize(ShVector3f(0, scale*dy, 1));
-      ShVector3f vX = normalize(ShVector3f(1, scale*dx, 0));
-      ShVector3f gradient = ShVector3f(scale*dx, 0, scale*dy);
-      ShAttrib1f norm = dot(gradient, gradient);
-      
-      float val;
-      norm.getValues(&val);
-      if (val < 0.000001) {
-#if (USE_QUAT)
-        result.quaternionMap(j, i, 0) = 1;
-        result.quaternionMap(j, i, 1) = 0.5;
-        result.quaternionMap(j, i, 2) = 0.5;
-        result.quaternionMap(j, i, 3) = 0.5;
-#else
-        result.normalMap(j, i, 0) = 0.5;
-        result.normalMap(j, i, 1) = 1;
-        result.normalMap(j, i, 2) = 0.5;
-        result.tangentMap(j, i, 0) = 0.5;
-        result.tangentMap(j, i, 1) = 0.5;
-        result.tangentMap(j, i, 2) = 1;
-#endif
-      }
-      else 
-      {
-        ShVector3f normal = normalize(cross(vZ, vX));
-        ShVector3f tangent = normalize(cross(cross(gradient, normal), normal));
-#if (USE_QUAT)
-        ShVector3f tangent2 = cross(normal, tangent);
-        ShMatrix4x4f rot;
-        rot[0](0) = tangent2(0);
-        rot[1](0) = tangent2(1);
-        rot[2](0) = tangent2(2);
-        rot[0](1) = normal(0);
-        rot[1](1) = normal(1);
-        rot[2](1) = normal(2);
-        rot[0](2) = tangent(0);
-        rot[1](2) = tangent(1);
-        rot[2](2) = tangent(2);
-        ShQuaternionf frame(rot);
-        frame.normalize();
-        float vals[4];
-        frame.getVector().getValues(vals);
-        result.quaternionMap(j, i, 0) = (vals[0] + 1.0)/2;
-        result.quaternionMap(j, i, 1) = (vals[1] + 1.0)/2;
-        result.quaternionMap(j, i, 2) = (vals[2] + 1.0)/2;
-        result.quaternionMap(j, i, 3) = (vals[3] + 1.0)/2;
-#else
-        float values[3];
-        normal.getValues(values);
-        result.normalMap(j, i, 0) = (values[0] + 1.0)/2;
-        result.normalMap(j, i, 1) = (values[1] + 1.0)/2;
-        result.normalMap(j, i, 2) = (values[2] + 1.0)/2;
-        tangent.getValues(values);
-        result.tangentMap(j, i, 0) = (values[0] + 1.0)/2;
-        result.tangentMap(j, i, 1) = (values[1] + 1.0)/2;
-        result.tangentMap(j, i, 2) = (values[2] + 1.0)/2;
-#endif
-        
-      }
-    }
-  }
-  width = w;
-  height = h;
-  return result;
-}
 
 bool FrameMapping::init()
 {
   //ShEnvironment::optimizationLevel = 0;
 #if (IMG_TEXTURE)
-  int w, h;
-#if (GEN_TEXTURE)
-  ShImage texImg;
-  texImg.loadPng(SHMEDIA_DIR "/textures/spiral.png");
-  FrameMap fmap = genFrameMap(texImg, w, h);
-#else
   FrameMap fmap;
-#endif
   
   ShAttrib1f SH_DECL(mapNormal) = 1.0f;
   mapNormal.range(0.0f, 1.0f);
   ShAttrib1f SH_DECL(mapTangent) = 1.0f;
   mapTangent.range(0.0f, 1.0f);
 #if (USE_QUAT)
-#if (!GEN_TEXTURE)
+  int w, h;
   fmap.quaternionMap.loadPng(SHMEDIA_DIR "/bumpmaps/frames.png");
   w = fmap.quaternionMap.width();
   h = fmap.quaternionMap.height();
-#else
-  fmap.quaternionMap.savePng16(SHMEDIA_DIR "/bumpmaps/frames.png");
-#endif
   mapImage(fmap.quaternionMap);
   ShUnclamped< ShTextureRect<ShVector4f> > quaternionMap(w, h);
   quaternionMap.memory(fmap.quaternionMap.memory());
 #else
-#if (!GEN_TEXTURE)
+  int w, h, w2, h2;
   fmap.normalMap.loadPng(SHMEDIA_DIR "/bumpmaps/frame_normals.png");
   fmap.tangentMap.loadPng(SHMEDIA_DIR "/bumpmaps/frame_tangents.png");
   w = fmap.normalMap.width();
   h = fmap.normalMap.height();
-#else
-  fmap.normalMap.savePng16(SHMEDIA_DIR "/bumpmaps/frame_normals.png");
-  fmap.tangentMap.savePng16(SHMEDIA_DIR "/bumpmaps/frame_tangents.png");
-#endif
+  w2 = fmap.tangentMap.width();
+  h2 = fmap.tangentMap.height();
   mapImage(fmap.normalMap);
   mapImage(fmap.tangentMap);
   ShUnclamped< ShTextureRect<ShVector3f> > normalMap(w, h);
-  ShUnclamped< ShTextureRect<ShVector3f> > tangentMap(w, h);
+  ShUnclamped< ShTextureRect<ShVector3f> > tangentMap(w2, h2);
   normalMap.memory(fmap.normalMap.memory());
   tangentMap.memory(fmap.tangentMap.memory());
 #endif
@@ -346,32 +227,32 @@ bool FrameMapping::init()
     ShVector3f tan2 = cross(normal, tan1);
     ShMatrix4x4f rot;
     
-    rot[0](0) = tan2(0);
-    rot[1](0) = tan2(1);
-    rot[2](0) = tan2(2);
-    rot[0](1) = normal(0);
-    rot[1](1) = normal(1);
-    rot[2](1) = normal(2);
-    rot[0](2) = tan1(0);
-    rot[1](2) = tan1(1);
-    rot[2](2) = tan1(2);
+    rot[0](1) = tan2(0);
+    rot[1](1) = tan2(1);
+    rot[2](1) = tan2(2);
+    rot[0](2) = normal(0);
+    rot[1](2) = normal(1);
+    rot[2](2) = normal(2);
+    rot[0](0) = tan1(0);
+    rot[1](0) = tan1(1);
+    rot[2](0) = tan1(2);
 #if (USE_QUAT)
     ShQuaternionf frame(quaternionMap(tc));
-    ShVector3f ymap = ShVector3f(0,1,0);
     ShVector3f zmap = ShVector3f(0,0,1);
+    ShVector3f xmap = ShVector3f(1,0,0);
     ShMatrix4x4f mat = frame.getMatrix();
-    ymap = mat | ymap;
     zmap = mat | zmap;
-    //ymap = (frame.inverse()*ymap*frame).getVector()(1,2,3);
-    //zmap = (frame.inverse()*zmap*frame).getVector()(1,2,3);
+    xmap = mat | xmap;
 #else
-    ShVector3f zmap = tangentMap(tc);
-    ShVector3f ymap = normalMap(tc);
+    ShVector3f zmap = normalMap(tc);
+    ShVector3f xmap = tangentMap(tc);
+    xmap(2) = 0;
+    xmap = normalize(cross(cross(xmap, zmap), zmap));
 #endif
-    ShVector3f xmap = cross(ymap, zmap);
+    ShVector3f ymap = cross(zmap, xmap);
 
-    normal = (mapNormal > 0.5)*(rot | ymap) + (mapNormal <= 0.5)*normal;
-    tan1 = (mapTangent > 0.5)*(rot | zmap) + (mapTangent <= 0.5)*tan1;
+    normal = (mapNormal > 0.5)*(rot | zmap) + (mapNormal <= 0.5)*normal;
+    tan1 = (mapTangent > 0.5)*(rot | xmap) + (mapTangent <= 0.5)*tan1;
 #endif
     tan2 = cross(normal, tan1);
 

@@ -80,7 +80,7 @@ GrView::GrView(wxWindow* parent)
   if (FcPatternGetInteger (matched, FC_INDEX, 0, &id) != FcResultMatch)
     ;
 
-  std::cerr << "Font filename: " << filename << std::endl;
+//   std::cerr << "Font filename: " << filename << std::endl;
 
   m_font = new OGLFT::TranslucentTexture((char*)filename, point, 100);
 
@@ -91,7 +91,7 @@ GrView::GrView(wxWindow* parent)
   m_font->setAdvance(false);
   m_font->setForegroundColor( 0., 0.0, 0.0, 1.0);
 
-  std::cerr << "Font advance: " << m_font->advance() << std::endl;
+//   std::cerr << "Font advance: " << m_font->advance() << std::endl;
   
   FcPatternDestroy (sans);
   FcPatternDestroy (matched);
@@ -253,6 +253,7 @@ int GrView::pick(int ev_x, int ev_y)
     
   for (; I != last; ++I) {
     (*I)->draw_box();
+    (*I)->draw_edges();
   }
   int hits = glRenderMode(GL_RENDER);
   std::cerr << "hits = " << hits << std::endl;
@@ -264,20 +265,20 @@ int GrView::pick(int ev_x, int ev_y)
   for (int i = 0; i < hits; i++) {
     GlHit* hit = (GlHit*)p;
 
-      std::cerr << "Hit: " << std::endl
-      << "  depth = " << hit->min_depth << std::endl
-      << "  #name = " << hit->num_names << std::endl
-      << "  name  = " << hit->names[hit->num_names - 1] << std::endl
-      << "  type  = ";
-      switch (m_pickables[hit->names[hit->num_names - 1]].type) {
-      case PICK_NODE:
-      std::cerr << "node"; break;
-      case PICK_PORT:
-      std::cerr << "port"; break;
-      case PICK_EDGE:
-      std::cerr << "edge"; break;
-      }
-      std::cerr << std::endl;
+//       std::cerr << "Hit: " << std::endl
+//       << "  depth = " << hit->min_depth << std::endl
+//       << "  #name = " << hit->num_names << std::endl
+//       << "  name  = " << hit->names[hit->num_names - 1] << std::endl
+//       << "  type  = ";
+//       switch (m_pickables[hit->names[hit->num_names - 1]].type) {
+//       case PICK_NODE:
+//       std::cerr << "node"; break;
+//       case PICK_PORT:
+//       std::cerr << "port"; break;
+//       case PICK_EDGE:
+//       std::cerr << "edge"; break;
+//       }
+//       std::cerr << std::endl;
       
     if (first || hit->min_depth < min_depth) {
       min_depth = hit->min_depth;
@@ -366,7 +367,7 @@ void GrView::mdown(wxMouseEvent& event)
     }
     if (id >= 0 && m_pickables[id].type == PICK_NODE) {
       GrNode* node = reinterpret_cast<GrNode*>(m_pickables[id].data);
-      if (node == m_inputs_vtx || node == m_outputs_vtx || node == m_inputs_frg || node == m_outputs_frg) {
+      if (node == m_inputs_vtx || node == m_inbetween || node == m_outputs_frg) {
         wxMenu* menu = new wxMenu();
 
         {
@@ -402,6 +403,10 @@ void GrView::mdown(wxMouseEvent& event)
     } else if (id >= 0 && m_pickables[id].type == PICK_PORT) {
       GrPort* port = reinterpret_cast<GrPort*>(m_pickables[id].data);
       PopupMenu(port->contextMenu(), event.GetX(), event.GetY());
+      changed = true;
+    } else if (id >= 0 && m_pickables[id].type == PICK_EDGE) {
+      GrEdge* edge = reinterpret_cast<GrEdge*>(m_pickables[id].data);
+      unjoin(edge->from, edge->to);
       changed = true;
     }
   }
@@ -479,19 +484,22 @@ void GrView::init()
   m_init = true;
 
   
-  ShProgram prg_in_vtx = SH_BEGIN_PROGRAM("gpu:vertex") {} SH_END;
-  prg_in_vtx->name("Inputs (vertex)");
-  ShProgram prg_out_vtx = SH_BEGIN_PROGRAM("gpu:vertex") {} SH_END;
-  prg_out_vtx->name("Outputs (vertex)");
-  ShProgram prg_in_frg = SH_BEGIN_PROGRAM("gpu:fragment") {} SH_END;
-  prg_in_frg->name("Inputs (fragment)");
-  ShProgram prg_out_frg = SH_BEGIN_PROGRAM("gpu:fragment") {} SH_END;
-  prg_out_frg->name("Outputs (fragment)");
+  ShProgram prg_in_vtx = SH_BEGIN_PROGRAM("gpu:vertex") {
+    ShInOutPosition4f SH_DECL(pos);
+  } SH_END;
+  prg_in_vtx->name("Inputs");
+  ShProgram prg_inbetween = SH_BEGIN_PROGRAM("") {
+    ShInOutPosition4f SH_DECL(pos);
+  } SH_END;
+  prg_inbetween->name("Interpolants");
+  ShProgram prg_out_frg = SH_BEGIN_PROGRAM("gpu:fragment") {
+    ShInOutColor4f SH_DECL(color);
+  } SH_END;
+  prg_out_frg->name("Outputs");
 
   m_inputs_vtx = addProgram(prg_in_vtx, 0, m_height/2);
-  m_outputs_vtx = addProgram(prg_out_vtx, m_width/2, m_height/2);
-  m_inputs_frg = addProgram(prg_in_frg, 0, m_height/2);
-  m_outputs_frg = addProgram(prg_out_frg, m_width/2, m_height/2);
+  m_inbetween = addProgram(prg_inbetween, m_width/2, m_height/2);
+  m_outputs_frg = addProgram(prg_out_frg, m_width, m_height/2);
 
 }
 
@@ -514,12 +522,12 @@ private:
 
 void GrView::keydown(wxKeyEvent& event)
 {
-  std::cerr << "Key down: " << event.GetKeyCode() << std::endl;
+//   std::cerr << "Key down: " << event.GetKeyCode() << std::endl;
   if (event.GetKeyCode() == 'G') {
-    std::cerr << "Generating program" << std::endl;
-    ShProgram vsh = generateShader(m_inputs_vtx, m_outputs_vtx);
+//     std::cerr << "Generating program" << std::endl;
+    ShProgram vsh = generateShader(m_inputs_vtx, m_inbetween);
     if (!vsh) return;
-    ShProgram fsh = generateShader(m_inputs_frg, m_outputs_frg);
+    ShProgram fsh = generateShader(m_inbetween, m_outputs_frg);
     if (!fsh) return;
 
     vsh->code()->print(std::cerr);

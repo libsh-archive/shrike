@@ -11,6 +11,8 @@ struct GrEdge {
     : from(from), to(to)
   {
   }
+
+  int pickid;
   
   GrPort* from;
   GrPort* to;
@@ -40,7 +42,7 @@ public:
   
   bool in() const { return m_in; }
 
-  typedef std::list<GrEdge> EdgeList;
+  typedef std::list<GrEdge*> EdgeList;
   EdgeList::iterator begin_edges() { return m_edges.begin(); }
   EdgeList::iterator end_edges() { return m_edges.end(); }
 

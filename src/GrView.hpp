@@ -68,8 +68,7 @@ private:
   } m_current_edge;
 
   GrNode* m_inputs_vtx;
-  GrNode* m_outputs_vtx;
-  GrNode* m_inputs_frg;
+  GrNode* m_inbetween;
   GrNode* m_outputs_frg;
   
   DECLARE_EVENT_TABLE()

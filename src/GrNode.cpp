@@ -72,12 +72,13 @@ void GrNode::clearMarked()
   for (PortList::iterator I = m_input_ports.begin(); I != m_input_ports.end(); ++I) {
     GrPort* port = *I;
     for (GrPort::EdgeList::iterator J = port->begin_edges(); J != port->end_edges(); ++J) {
-      if (J->to != port) {
+      GrEdge* edge = *J;
+      if (edge->to != port) {
         std::cerr << "Skipping something" << std::endl;
         continue;
       }
       std::cerr << "Marking something else as clear" << std::endl;
-      J->from->parent()->clearMarked();
+      edge->from->parent()->clearMarked();
     }
   }
 }

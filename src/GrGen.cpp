@@ -46,8 +46,9 @@ void makeVariableInfoNode(GrNode* node)
   for (GrNode::PortList::iterator I = node->inputs_begin(); I != node->inputs_end(); ++I) {
     GrPort* port = *I;
     for (GrPort::EdgeList::iterator J = port->begin_edges(); J != port->end_edges(); ++J) {
-      if (J->to == port) {
-        info_in_map[port->var()] = new InVarInfo(J->from, port);
+      GrEdge* edge = *J;
+      if (edge->to == port) {
+        info_in_map[port->var()] = new InVarInfo(edge->from, port);
         break;
       }
     }
@@ -56,10 +57,11 @@ void makeVariableInfoNode(GrNode* node)
   for (GrNode::PortList::iterator I = node->outputs_begin(); I != node->outputs_end(); ++I) {
     GrPort* port = *I;
     for (GrPort::EdgeList::iterator J = port->begin_edges(); J != port->end_edges(); ++J) {
+      GrEdge* edge = *J;
       // TODO: Handle multiple out edges
-      if (J->from == port) {
+      if (edge->from == port) {
         std::cerr << "Making out info for " << port->var()->name() << "[" << port->var().object() << "]"  << std::endl;
-        info_out_map[port->var()] = new OutVarInfo(J->to->parent()->program(), port);
+        info_out_map[port->var()] = new OutVarInfo(edge->to->parent()->program(), port);
         break;
       } else {
         std::cerr << "Edge mismatch for " << port->var()->name() << std::endl;
@@ -71,8 +73,9 @@ void makeVariableInfoNode(GrNode* node)
   for (GrNode::PortList::iterator I = node->inputs_begin(); I != node->inputs_end(); ++I) {
     GrPort* port = *I;
     for (GrPort::EdgeList::iterator J = port->begin_edges(); J != port->end_edges(); ++J) {
-      if (J->to != port) continue;
-      makeVariableInfoNode(J->from->parent());
+      GrEdge* edge = *J;
+      if (edge->to != port) continue;
+      makeVariableInfoNode(edge->from->parent());
     }
   }
 }

@@ -2,6 +2,7 @@
 #include <fstream>
 #include <wx/splitter.h>
 #include <wx/colordlg.h>
+#include <wx/treectrl.h>
 #include <sh/ShObjMesh.hpp>
 #include "GrView.hpp"
 #include "ShrikeFrame.hpp"
@@ -25,9 +26,19 @@ BEGIN_EVENT_TABLE(ShrikeFrame, wxFrame)
   EVT_MENU(SHRIKE_MENU_VIEW_BACKGROUND, ShrikeFrame::setBackground)
   EVT_MENU(SHRIKE_MENU_VIEW_FULLSCREEN, ShrikeFrame::fullscreen)
   EVT_KEY_DOWN(ShrikeFrame::keyDown)
-  EVT_LISTBOX(SHRIKE_LISTBOX_SHADERS, ShrikeFrame::onShaderSelect)
+  //  EVT_LISTBOX(SHRIKE_LISTBOX_SHADERS, ShrikeFrame::onShaderSelect)
+  EVT_TREE_SEL_CHANGED(SHRIKE_TREECTRL_SHADERS, ShrikeFrame::onShaderSelect)
 END_EVENT_TABLE()
 
+struct ShaderTreeData : public wxTreeItemData {
+  ShaderTreeData(Shader* shader)
+    : shader(shader)
+  {
+  }
+  
+  Shader* shader;
+};
+  
 ShrikeFrame::ShrikeFrame()
   : wxFrame(0, -1, "Shrike", wxDefaultPosition, wxSize(400, 600)),
     m_shader(0), m_fullscreen(false)
@@ -122,9 +133,13 @@ void ShrikeFrame::quit(wxCommandEvent& event)
   Close(true);
 }
 
-void ShrikeFrame::onShaderSelect(wxCommandEvent& event)
+void ShrikeFrame::onShaderSelect(wxTreeEvent& event)
 {
-  Shader* shader = reinterpret_cast<Shader*>(event.GetClientData());
+  wxTreeItemId item = event.GetItem();
+  ShaderTreeData* data =
+    dynamic_cast<ShaderTreeData*>(m_shaderList->GetItemData(item));
+  if (!data) return;
+  Shader* shader = data->shader;
   setShader(shader);
 }
 
@@ -193,7 +208,6 @@ void ShrikeFrame::showProgram(const ShProgram& program,
 
   frame->Show();
 }
-
 void ShrikeFrame::fullscreen(wxCommandEvent& event)
 {
   setFullscreen(event.IsChecked());
@@ -230,17 +244,56 @@ ShrikeFrame* ShrikeFrame::instance()
   return m_instance;
 }
 
-wxListBox* ShrikeFrame::initShaderList(wxWindow* parent)
+wxTreeCtrl* ShrikeFrame::initShaderList(wxWindow* parent)
 {
-  wxListBox* box = new wxListBox(parent, SHRIKE_LISTBOX_SHADERS,
-                                 wxDefaultPosition, wxDefaultSize, 0, 0,
-                                 wxLB_SINGLE | wxLB_SORT);
+  wxTreeCtrl* tree = new wxTreeCtrl(parent, SHRIKE_TREECTRL_SHADERS,
+                                    wxDefaultPosition, wxDefaultSize,
+                                    wxTR_HAS_BUTTONS | wxTR_HIDE_ROOT | wxTR_NO_LINES);
 
+  wxTreeItemId root = tree->AddRoot("");
+
+  std::map<std::string, wxTreeItemId> nodes;
+  
   for (Shader::iterator I = Shader::begin(); I != Shader::end(); ++I) {
     Shader* shader = *I;
-    box->Append(shader->name().c_str(), shader);
+    std::list<std::string> nodelist;
+    std::string name = shader->name();
+    while (1) {
+      std::string::size_type i = name.find(": ");
+      if (i == std::string::npos) {
+        nodelist.push_back(name);
+        break;
+      } else {
+        nodelist.push_back(name.substr(0, i));
+        name = name.substr(i + 2);
+      }
+    }
+
+    wxTreeItemId last = root;
+    std::string fullname;
+    for (std::list<std::string>::iterator N = nodelist.begin();
+         N != nodelist.end(); ++N) {
+      std::list<std::string>::iterator M = N;
+      ++M;
+      std::string name = *N;
+      if (!fullname.empty()) fullname += ":";
+      fullname += name;
+      ShaderTreeData* data = 0;
+      if (M == nodelist.end()) data = new ShaderTreeData(shader);
+      if (nodes.find(fullname) == nodes.end()) {
+        nodes[fullname] = tree->AppendItem(last, name.c_str(), -1, -1,
+                                           data);
+      } else {
+        if (data && tree->GetItemData(nodes[fullname]) == 0) {
+          tree->SetItemData(nodes[fullname], data);
+        }
+      }
+      last = nodes[fullname];
+    }
   }
-  return box;
+
+  tree->SortChildren(root);
+  return tree;
 }
 
 ShrikeFrame* ShrikeFrame::m_instance = 0;

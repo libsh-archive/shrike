@@ -133,12 +133,13 @@ GrPort::GrPort(GrNode* parent, const SH::ShVariableNodePtr& var,
 GrPort::~GrPort()
 {
   for (EdgeList::iterator I = m_edges.begin(); I != m_edges.end(); ++I) {
-    for (EdgeList::iterator J = I->to->m_edges.begin(); J != I->to->m_edges.end(); ++J) {
-      if (I->from == J->from && I->to == J->to) {
-        I->to->m_edges.erase(J);
+    for (EdgeList::iterator J = (*I)->to->m_edges.begin(); J != (*I)->to->m_edges.end(); ++J) {
+      if ((*I)->from == (*J)->from && (*I)->to == (*J)->to) {
+        (*I)->to->m_edges.erase(J);
         break;
       }
     }
+    delete *I;
   }
 }
 
@@ -210,15 +211,21 @@ double GrPort::global_y() const
 
 void GrPort::draw_edges()
 {
+  glPushAttrib(GL_LINE_BIT);
+  glLineWidth(2.0);
   for (EdgeList::const_iterator I = m_edges.begin(); I != m_edges.end(); ++I) {
-    if (this != I->from) continue;
+    GrEdge* edge = *I;
+    if (this != edge->from) continue;
     double x_from = global_x();
     double y_from = global_y();
-    double x_to = I->to->global_x();
-    double y_to = I->to->global_y();
+    double x_to = edge->to->global_x();
+    double y_to = edge->to->global_y();
 
+    glPushName(edge->pickid);
     draw_edge(x_from, y_from, x_to, y_to);
+    glPopName();
   }
+  glPopAttrib();
 }
 
 
@@ -226,7 +233,7 @@ void GrPort::draw_edge(double x_from, double y_from, double x_to, double y_to)
 {
   double border = 2.0;
   double port_width = 8.0;
-  
+
   glColor3f(0.0, 0.0, 0.0);
   glBegin(GL_LINE_STRIP); {
     glVertex3f(x_from, y_from, 0.1);
@@ -239,21 +246,26 @@ void GrPort::draw_edge(double x_from, double y_from, double x_to, double y_to)
 
 void join(GrPort* a, GrPort* b)
 {
-  a->m_edges.push_back(GrEdge(a, b));
-  b->m_edges.push_back(GrEdge(a, b));
+  GrEdge* edge = new GrEdge(a, b);
+
+  edge->pickid = a->parent()->view()->addPicker(PICK_EDGE, edge);
+
+  a->m_edges.push_back(edge);
+  b->m_edges.push_back(edge);
 }
 
 void unjoin(GrPort* a, GrPort* b)
 {
   for (GrPort::EdgeList::iterator I = a->m_edges.begin(); I != a->m_edges.end(); ++I) {
-    if (I->from == a && I->to == b) {
+    if ((*I)->from == a && (*I)->to == b) {
       a->m_edges.erase(I);
       break;
     }
   }
   for (GrPort::EdgeList::iterator I = b->m_edges.begin(); I != b->m_edges.end(); ++I) {
-    if (I->from == a && I->to == b) {
+    if ((*I)->from == a && (*I)->to == b) {
       b->m_edges.erase(I);
+      delete *I;
       break;
     }
   }

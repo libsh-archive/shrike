@@ -26,10 +26,11 @@ public:
     m_view->addProgram(m_programs[i], m_x, m_y);
   }
 
-  void append(const ShProgram& program)
+  void append(const ShProgram& program,
+              const std::string& label = program->name())
   {
     m_programs.push_back(program);
-    Append(m_programs.size() - 1, program->name().c_str());
+    Append(m_programs.size() - 1, label.c_str());
   }
   
 private:
@@ -49,9 +50,17 @@ wxMenu* makeProgramMenu(GrView* view, int evx, int evy)
 {
   wxMenu* menu = new wxMenu();
 
+  wxMenu* arithmetic = new wxMenu();
+
   ProgramMenu* arithmetic = new ProgramMenu(view, evx, evy);
 
-  arithmetic->append(add<ShAttrib4f>());
+  ProgramMenu* addm = new ProgramMenu(view, evx, evy);
+  addm->append(add<ShAttrib1f>(), "1");
+  addm->append(add<ShAttrib1f>(), "2");
+  addm->append(add<ShAttrib1f>(), "3");
+  addm->append(add<ShAttrib1f>(), "4");
+  arithmetic->Append(0, "add", addm);
+
   arithmetic->append(sub<ShAttrib4f>());
   arithmetic->append(mul<ShAttrib4f>());
   arithmetic->append(div<ShAttrib4f>());
