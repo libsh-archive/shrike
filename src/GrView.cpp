@@ -18,6 +18,7 @@
 #include "GrMonitor.hpp"
 #include "GrGen.hpp"
 #include "GrProgramMenu.hpp"
+#include "GrReverse.hpp"
 
 #include "ShrikeFrame.hpp"
 #include "ShrikeCanvas.hpp"
@@ -441,6 +442,9 @@ void GrView::mdown(wxMouseEvent& event)
           menu->Append(0, ShSemanticTypeName[SH_POSITION], var_menu);
         }
         PopupMenu(menu, event.GetX(), event.GetY());
+      } else {
+        decompose(node);
+        changed = true;
       }
     } else if (id >= 0 && m_pickables[id].type == PICK_PORT) {
       GrPort* port = reinterpret_cast<GrPort*>(m_pickables[id].data);

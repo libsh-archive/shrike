@@ -15,6 +15,7 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 GrNode.hpp GrNode.cpp \
 		 GrPort.hpp GrPort.cpp \
 		 GrGen.hpp GrGen.cpp \
+		 GrReverse.hpp GrReverse.cpp \
 		 GrMonitor.hpp GrMonitor.cpp \
 		 GrProgramMenu.hpp GrProgramMenu.cpp \
 		 GrLayout.cpp \

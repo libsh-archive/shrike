@@ -160,7 +160,6 @@ ShProgram generateShader(GrNode* root_node, GrNode* final_node)
   } 
   
   bool done = false;
-  int offset = 0;
     
   ShProgramNode::VarList::iterator OI = p->outputs.begin();
   while (1) {
