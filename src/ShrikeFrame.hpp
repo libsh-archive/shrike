@@ -57,7 +57,7 @@ public:
   static ShrikeFrame* instance();
   
 private:
-  void showProgram(const SH::ShProgram& program,
+  void showProgram(SH::ShProgram program,
                    std::string name);
 
   wxTreeCtrl* initShaderList(wxWindow* parent);

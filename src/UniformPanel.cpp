@@ -295,7 +295,7 @@ void UniformPanel::setShader(Shader* shader)
   if (shader) {
     int p = 0;
     for (ShProgram prg = shader->vertex(); p < 2; prg = shader->fragment(), p++) {
-      for (ShProgramNode::VarList::iterator I = prg->uniforms.begin(); I != prg->uniforms.end(); ++I) {
+      for (ShProgramNode::VarList::iterator I = prg.node()->uniforms.begin(); I != prg.node()->uniforms.end(); ++I) {
         ShVariableNodePtr var = *I;
         if (var->kind() != SH_TEMP) continue;
         if (var->internal()) continue;
@@ -328,7 +328,7 @@ void UniformPanel::setShader(Shader* shader)
           sizer->Add(vsizer, 1, wxEXPAND);
         }
       }
-      for (ShProgramNode::TexList::iterator I = prg->textures.begin(); I != prg->textures.end(); ++I) {
+      for (ShProgramNode::TexList::iterator I = prg.node()->textures.begin(); I != prg.node()->textures.end(); ++I) {
         ShTextureNodePtr tex = *I;
         if (tex->dims() == SH_TEXTURE_3D || tex->dims() == SH_TEXTURE_CUBE) continue;
 

@@ -1,6 +1,14 @@
+2004-06-16  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/ShrikeFrame.cpp (showProgram): You guessed it... More fixes
+	for the new ShProgram class.
+
+	* src/ShrikeFrame.hpp: Fixes for the new ShProgram class.
+
+	* src/UniformPanel.cpp (setShader): Fixes for new ShProgram class.
+
 2004-06-11  Bryan Chan <b8chan@uwaterloo.ca>
-  * src/ShrikeCanvas.?pp (renderObject):
-  Usese display lists. (Fix issue120) 
+	* src/ShrikeCanvas.?pp (renderObject): Uses display lists. (Fix issue120) 
 
 2004-06-10  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 

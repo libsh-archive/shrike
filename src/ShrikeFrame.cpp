@@ -211,11 +211,11 @@ void ShrikeFrame::setBackground(wxCommandEvent& event)
   m_canvas->setBackground(c.Red(), c.Green(), c.Blue());
 }
 
-void ShrikeFrame::showProgram(const ShProgram& program,
+void ShrikeFrame::showProgram(ShProgram program,
                               std::string name)
 {
-  if (!program) return;
-  if (!program->code(ShEnvironment::backend)) return;
+  if (!program.node()) return;
+  if (!program.node()->code()) return;
 
   std::string title = name + " Shader Code";
   wxFrame* frame = new wxFrame(0, -1, title.c_str());
@@ -226,7 +226,7 @@ void ShrikeFrame::showProgram(const ShProgram& program,
                                        wxTE_MULTILINE | wxTE_READONLY);
   
   std::ostream stream(control);
-  program->code(ShEnvironment::backend)->print(stream);
+  program.node()->code()->print(stream);
 
   frame->Show();
 }
