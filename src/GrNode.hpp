@@ -25,14 +25,31 @@ public:
   void draw_edges(); // Draws outgoing edges only.
   void draw_labels();
 
+  void combine(const SH::ShProgram& addon);
+  
   void moveTo(double x, double y);
 
   double x() const { return m_x; }
   double y() const { return m_y; }
 
   GrView* view() const { return m_view; }
+
+  typedef std::vector<GrPort*> PortList;
+
+  PortList::iterator inputs_begin() { return m_input_ports.begin(); }
+  PortList::iterator inputs_end() { return m_input_ports.end(); }
+  PortList::iterator outputs_begin() { return m_output_ports.begin(); }
+  PortList::iterator outputs_end() { return m_output_ports.end(); }
+  
+  void clearMarked();
+  void mark(bool marked) { m_marked = marked; }
+  bool marked() const { return m_marked; }
+
+  SH::ShProgram program() { return m_program; }
   
 private:
+
+  void calcSizes();
   
   SH::ShProgram m_program;
   double m_x, m_y;
@@ -47,10 +64,10 @@ private:
   unsigned int m_gl_name;
 
   static unsigned int m_max_gl_name;
-
-  typedef std::list<GrPort*> PortList;
   
-  PortList m_ports;
+  PortList m_input_ports, m_output_ports;
+
+  bool m_marked;
 };
 
 #endif

@@ -34,22 +34,22 @@ SimplePhong::~SimplePhong()
 bool SimplePhong::init()
 {
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
-    ShInputPosition4f ipos;
-    ShInputNormal3f inorm;
+    ShInputPosition4f SH_DECL(ipos);
+    ShInputNormal3f SH_DECL(inorm);
     
-    ShOutputPosition4f opos; // Position in NDC
-    ShOutputNormal3f onorm;
-    ShInOutTexCoord2f tc; // pass through tex coords
-    ShOutputVector3f halfv;
-    ShOutputVector3f lightv; // direction to light
+    ShOutputPosition4f SH_DECL(opos); // Position in NDC
+    ShOutputNormal3f SH_DECL(onorm);
+    ShInOutTexCoord2f SH_DECL(tc); // pass through tex coords
+    ShOutputVector3f SH_DECL(halfv);
+    ShOutputVector3f SH_DECL(lightv); // direction to light
 
     opos = Globals::mvp | ipos; // Compute NDC position
     onorm = Globals::mv | inorm; // Compute view-space normal
 
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
+    ShPoint3f SH_DECL(posv) = (Globals::mv | ipos)(0,1,2); // Compute view-space position
     lightv = normalize(Globals::lightPos - posv); // Compute light direction
 
-    ShPoint3f viewv = -normalize(posv); // Compute view vector
+    ShPoint3f SH_DECL(viewv) = -normalize(posv); // Compute view vector
     halfv = normalize(viewv + lightv); // Compute half vector
   } SH_END;
   
@@ -59,20 +59,20 @@ bool SimplePhong::init()
   exponent.range(5.0f, 500.0f);
   
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
-    ShInputNormal3f normal;
-    ShInputTexCoord2f tc; // ignore texcoords
-    ShInputVector3f half;
-    ShInputVector3f light;
-    ShInputPosition4f posh;
+    ShInputNormal3f SH_DECL(normal);
+    ShInputTexCoord2f SH_DECL(tc); // ignore texcoords
+    ShInputVector3f SH_DECL(half);
+    ShInputVector3f SH_DECL(light);
+    ShInputPosition4f SH_DECL(posh);
 
-    ShOutputColor3f result;
+    ShOutputColor3f SH_DECL(result);
     
     normal = normalize(normal);
     half = normalize(half);
     light = normalize(light);
 
     // Compute phong lighting.
-    ShAttrib1f irrad = pos(normal | light);
+    ShAttrib1f SH_DECL(irrad) = pos(normal | light);
     result = diffuse * irrad + specular * pow(pos(normal | half), exponent);
   } SH_END;
   return true;

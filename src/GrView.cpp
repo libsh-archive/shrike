@@ -15,7 +15,10 @@
 
 #include "GrNode.hpp"
 #include "GrPort.hpp"
-#include "Shader.hpp"
+#include "GrGen.hpp"
+#include "GrProgramMenu.hpp"
+
+#include "ShrikeFrame.hpp"
 
 using namespace SH;
 
@@ -38,6 +41,7 @@ void unproject(int xi, int yi, double& x, double& y, double& z)
 BEGIN_EVENT_TABLE(GrView, wxGLCanvas)
   EVT_PAINT(GrView::paint)
   EVT_SIZE(GrView::reshape)
+  EVT_KEY_DOWN(GrView::keydown)
   EVT_MOTION(GrView::motion)
   EVT_LEFT_DOWN(GrView::mdown)
   EVT_LEFT_UP(GrView::mup)
@@ -45,43 +49,6 @@ BEGIN_EVENT_TABLE(GrView, wxGLCanvas)
   EVT_RIGHT_UP(GrView::mup)
   EVT_MIDDLE_DOWN(GrView::mdown)
   EVT_MOUSEWHEEL(GrView::mousewheel)
-END_EVENT_TABLE()
-
-class ProgramMenu : public wxMenu {
-public:
-  ProgramMenu(GrView* view,
-              int x, int y, // Coordinates to pass to addProgram
-              const std::string& title = "", int style = 0)
-    : wxMenu(title.c_str(), style),
-      m_view(view),
-      m_x(x), m_y(y)
-  {
-  }
-
-  void select(wxCommandEvent& event)
-  {
-    int i = event.GetId();
-    if (i < 0 || i >= m_programs.size()) return;
-    m_view->addProgram(m_programs[i], m_x, m_y);
-  }
-
-  void append(const ShProgram& program)
-  {
-    m_programs.push_back(program);
-    Append(m_programs.size() - 1, program->name().c_str());
-  }
-  
-private:
-  std::vector<ShProgram> m_programs;
-
-  GrView* m_view;
-  int m_x, m_y;
-  
-  DECLARE_EVENT_TABLE()
-};
-
-BEGIN_EVENT_TABLE(ProgramMenu, wxMenu)
-  EVT_MENU(-1, ProgramMenu::select)
 END_EVENT_TABLE()
   
 GrView::GrView(wxWindow* parent)
@@ -128,6 +95,7 @@ GrView::GrView(wxWindow* parent)
   
   FcPatternDestroy (sans);
   FcPatternDestroy (matched);
+
 }
 
 GrView::~GrView()
@@ -227,13 +195,15 @@ void GrView::mousewheel(wxMouseEvent& event)
   paint();
 }
 
-void GrView::addProgram(const ShProgram& program, int xi, int yi)
+GrNode* GrView::addProgram(const ShProgram& program, int xi, int yi)
 {
   double x, y, z;
   unproject(xi, m_height - yi, x,y,z);
-  
-  m_nodes.push_back(new GrNode(program, x, y, m_font, this));
+
+  GrNode* node = new GrNode(program, x, y, m_font, this);
+  m_nodes.push_back(node);
   paint();
+  return node;
 }
 
 int GrView::addPicker(PickType type, void* data)
@@ -323,6 +293,47 @@ int GrView::pick(int ev_x, int ev_y)
     
 }
 
+
+class VarMenu : public wxMenu {
+public:
+  VarMenu(GrNode* node, ShVariableSpecialType type,
+          const std::string& title = "", int style = 0)
+    : wxMenu(title.c_str(), style),
+      m_node(node),
+      m_type(type)
+  {
+    for (int i = 1; i <= 4; i++) {
+      std::ostringstream os;
+      os << "Sh" << ShVariableSpecialTypeName[m_type] << i << "f";
+      std::string s = os.str();
+      Append(i, s.c_str());
+    }
+  }
+
+  void select(wxCommandEvent& event)
+  {
+    int i = event.GetId();
+    if (i < 1) return;
+
+    ShProgram prg = SH_BEGIN_PROGRAM() {
+      ShVariable var(new ShVariableNode(SH_INOUT, i, m_type));
+    } SH_END;
+    m_node->combine(prg);
+  }
+  
+private:
+
+  GrNode* m_node;
+  ShVariableSpecialType m_type;
+  
+  DECLARE_EVENT_TABLE()
+};
+
+BEGIN_EVENT_TABLE(VarMenu, wxMenu)
+  EVT_MENU(-1, VarMenu::select)
+END_EVENT_TABLE()
+
+
 void GrView::mdown(wxMouseEvent& event)
 {
   bool changed = false;
@@ -348,59 +359,51 @@ void GrView::mdown(wxMouseEvent& event)
   }
 
   if (event.RightDown()) {
-    wxMenu* menu = new wxMenu();
-    ProgramMenu* arithmetic = new ProgramMenu(this, event.GetX(), event.GetY());
-
-    arithmetic->append(add<ShAttrib4f>());
-    arithmetic->append(sub<ShAttrib4f>());
-    arithmetic->append(mul<ShAttrib4f>());
-    arithmetic->append(div<ShAttrib4f>());
-    arithmetic->append(lerp<ShAttrib4f, ShAttrib1f>());
-    arithmetic->append(sqrt<ShAttrib4f>());
-    arithmetic->AppendSeparator();
-    arithmetic->append(fmod<ShAttrib4f>());
-    arithmetic->append(frac<ShAttrib4f>());
-    arithmetic->AppendSeparator();
-    arithmetic->append(min<ShAttrib4f>());
-    arithmetic->append(max<ShAttrib4f>());
-    arithmetic->AppendSeparator();
-    
-    menu->Append(0, "Arithmetic", arithmetic);
-
-    ProgramMenu* boolean = new ProgramMenu(this, event.GetX(), event.GetY());
-
-    boolean->append(slt<ShAttrib4f>());
-    boolean->append(sle<ShAttrib4f>());
-    boolean->append(sgt<ShAttrib4f>());
-    boolean->append(sge<ShAttrib4f>());
-    boolean->append(seq<ShAttrib4f, ShAttrib1f>());
-    boolean->append(sne<ShAttrib4f, ShAttrib1f>());
-
-    menu->Append(0, "Boolean", boolean);
-
-    ProgramMenu* trig = new ProgramMenu(this, event.GetX(), event.GetY());
-
-    trig->append(acos<ShAttrib4f>());
-    trig->append(asin<ShAttrib4f>());
-    trig->append(cos<ShAttrib4f>());
-    trig->append(sin<ShAttrib4f>());
-
-    menu->Append(0, "Trigonometric", trig);
-
-    ProgramMenu* shaders = new ProgramMenu(this, event.GetX(), event.GetY());
-    for (Shader::iterator I = Shader::begin(); I != Shader::end(); I++) {
-      Shader* shader = *I;
-      if (!shader->firstTimeInit()) continue;
-      ShProgram vsh = shader->vertex(); // TODO: Clone program
-      ShProgram fsh = shader->fragment(); // TODO: Clone program
-      vsh->name(shader->name() + " (vertex)");
-      fsh->name(shader->name() + " (fragment)");
-      shaders->append(vsh);
-      shaders->append(fsh);
+    int id = pick(event.GetX(), event.GetY());
+    if (id < 0) {
+      wxMenu* menu = makeProgramMenu(this, event.GetX(), event.GetY());
+      PopupMenu(menu, event.GetX(), event.GetY());
     }
-    menu->Append(0, "Shaders", shaders);
+    if (id >= 0 && m_pickables[id].type == PICK_NODE) {
+      GrNode* node = reinterpret_cast<GrNode*>(m_pickables[id].data);
+      if (node == m_inputs_vtx || node == m_outputs_vtx || node == m_inputs_frg || node == m_outputs_frg) {
+        wxMenu* menu = new wxMenu();
 
-    PopupMenu(menu, event.GetX(), event.GetY());
+        {
+          VarMenu* var_menu = new VarMenu(node, SH_ATTRIB);
+          menu->Append(0, ShVariableSpecialTypeName[SH_ATTRIB], var_menu);
+        }
+        {
+          VarMenu* var_menu = new VarMenu(node, SH_POINT);
+          menu->Append(0, ShVariableSpecialTypeName[SH_POINT], var_menu);
+        }
+        {
+          VarMenu* var_menu = new VarMenu(node, SH_VECTOR);
+          menu->Append(0, ShVariableSpecialTypeName[SH_VECTOR], var_menu);
+        }
+        {
+          VarMenu* var_menu = new VarMenu(node, SH_NORMAL);
+          menu->Append(0, ShVariableSpecialTypeName[SH_NORMAL], var_menu);
+        }
+        {
+          VarMenu* var_menu = new VarMenu(node, SH_TEXCOORD);
+          menu->Append(0, ShVariableSpecialTypeName[SH_TEXCOORD], var_menu);
+        }
+        {
+          VarMenu* var_menu = new VarMenu(node, SH_COLOR);
+          menu->Append(0, ShVariableSpecialTypeName[SH_COLOR], var_menu);
+        }
+        {
+          VarMenu* var_menu = new VarMenu(node, SH_POSITION);
+          menu->Append(0, ShVariableSpecialTypeName[SH_POSITION], var_menu);
+        }
+        PopupMenu(menu, event.GetX(), event.GetY());
+      }
+    } else if (id >= 0 && m_pickables[id].type == PICK_PORT) {
+      GrPort* port = reinterpret_cast<GrPort*>(m_pickables[id].data);
+      PopupMenu(port->contextMenu(), event.GetX(), event.GetY());
+      changed = true;
+    }
   }
   
   if (changed) {
@@ -472,6 +475,57 @@ void GrView::init()
   glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
   setupView();
-  
+
   m_init = true;
+
+  
+  ShProgram prg_in_vtx = SH_BEGIN_PROGRAM("gpu:vertex") {} SH_END;
+  prg_in_vtx->name("Inputs (vertex)");
+  ShProgram prg_out_vtx = SH_BEGIN_PROGRAM("gpu:vertex") {} SH_END;
+  prg_out_vtx->name("Outputs (vertex)");
+  ShProgram prg_in_frg = SH_BEGIN_PROGRAM("gpu:fragment") {} SH_END;
+  prg_in_frg->name("Inputs (fragment)");
+  ShProgram prg_out_frg = SH_BEGIN_PROGRAM("gpu:fragment") {} SH_END;
+  prg_out_frg->name("Outputs (fragment)");
+
+  m_inputs_vtx = addProgram(prg_in_vtx, 0, m_height/2);
+  m_outputs_vtx = addProgram(prg_out_vtx, m_width/2, m_height/2);
+  m_inputs_frg = addProgram(prg_in_frg, 0, m_height/2);
+  m_outputs_frg = addProgram(prg_out_frg, m_width/2, m_height/2);
+
+}
+
+class SimpleShader : public Shader {
+public:
+  SimpleShader(const ShProgram& vsh, const ShProgram& fsh)
+    : Shader("Constructed Shader"), m_vsh(vsh), m_fsh(fsh)
+  {
+  }
+
+  bool init() { return true; }
+
+  ShProgram vertex() { return m_vsh; }
+  ShProgram fragment() { return m_fsh; }
+
+private:
+  ShProgram m_vsh;
+  ShProgram m_fsh;
+};
+
+void GrView::keydown(wxKeyEvent& event)
+{
+  std::cerr << "Key down: " << event.GetKeyCode() << std::endl;
+  if (event.GetKeyCode() == 'G') {
+    std::cerr << "Generating program" << std::endl;
+    ShProgram vsh = generateShader(m_inputs_vtx, m_outputs_vtx);
+    if (!vsh) return;
+    ShProgram fsh = generateShader(m_inputs_frg, m_outputs_frg);
+    if (!fsh) return;
+
+    vsh->code()->print(std::cerr);
+    fsh->code()->print(std::cerr);
+
+    SimpleShader* s = new SimpleShader(vsh, fsh);
+    ShrikeFrame::instance()->setShader(s);
+  }
 }

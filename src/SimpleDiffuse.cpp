@@ -34,30 +34,30 @@ SimpleDiffuse::~SimpleDiffuse()
 bool SimpleDiffuse::init()
 {
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
-    ShInputPosition4f ipos;
-    ShInputNormal3f inorm;
+    ShInputPosition4f SH_DECL(ipos);
+    ShInputNormal3f SH_DECL(inorm);
     
-    ShOutputPosition4f opos; // Position in NDC
-    ShOutputNormal3f onorm;
-    ShInOutTexCoord2f tc; // pass through tex coords
-    ShOutputVector3f lightv; // direction to light
+    ShOutputPosition4f SH_DECL(opos); // Position in NDC
+    ShOutputNormal3f SH_DECL(onorm);
+    ShInOutTexCoord2f SH_DECL(tc); // pass through tex coords
+    ShOutputVector3f SH_DECL(lightv); // direction to light
 
     opos = Globals::mvp | ipos; // Compute NDC position
     onorm = Globals::mv | inorm; // Compute view-space normal
 
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
+    ShPoint3f SH_DECL(posv) = (Globals::mv | ipos)(0,1,2); // Compute view-space position
     lightv = normalize(Globals::lightPos - posv); // Compute light direction
   } SH_END;
   
   ShColor3f SH_DECL(color) = ShColor3f(.2, 0.5, 0.9);
   
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
-    ShInputNormal3f normal;
-    ShInputTexCoord2f tc; // ignore texcoords
-    ShInputVector3f light;
-    ShInputPosition4f posh;
+    ShInputNormal3f SH_DECL(normal);
+    ShInputTexCoord2f SH_DECL(tc); // ignore texcoords
+    ShInputVector3f SH_DECL(light);
+    ShInputPosition4f SH_DECL(posh);
 
-    ShOutputColor3f result;
+    ShOutputColor3f SH_DECL(result);
     
     normal = normalize(normal);
     light = normalize(light);

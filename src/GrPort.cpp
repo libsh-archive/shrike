@@ -1,8 +1,124 @@
 #include "GrPort.hpp"
+#include <sstream>
 #include <GL/gl.h>
+#include <wx/wx.h>
 #include "GrView.hpp"
 
 using namespace SH;
+
+struct TypeColor {
+  ShVariableSpecialType type;
+  float color[3];
+};
+  
+static TypeColor type_colors[] = {
+  SH_POINT, {1.0, 0.0, 0.0},
+  SH_POSITION, {1.0, 0.5, 0.5},
+  SH_VECTOR, {0.0, 1.0, 0.0},
+  SH_NORMAL, {0.0, 0.0, 1.0},
+  SH_COLOR, {1.0, 1.0, 0.0},
+  SH_TEXCOORD, {0.0, 1.0, 1.0},
+  SH_ATTRIB, {0.5, 0.5, 0.5}
+};
+
+
+class PortSizeMenu : public wxMenu {
+public:
+  PortSizeMenu(GrPort* port,
+               const std::string& title = "", int style = 0)
+    : wxMenu(title.c_str(), style),
+      m_port(port)
+  {
+    for (int i = 1; i <= 4; i++) {
+      std::ostringstream os;
+      os << i;
+      std::string s = os.str();
+      Append(i, s.c_str());
+    }
+  }
+
+  void select(wxCommandEvent& event)
+  {
+    int i = event.GetId();
+    if (i < 1) return;
+
+    m_port->var()->size(i);
+  }
+  
+private:
+
+  GrPort* m_port;
+  
+  DECLARE_EVENT_TABLE()
+};
+
+BEGIN_EVENT_TABLE(PortSizeMenu, wxMenu)
+  EVT_MENU(-1, PortSizeMenu::select)
+END_EVENT_TABLE()
+
+class PortTypeMenu : public wxMenu {
+public:
+  PortTypeMenu(GrPort* port,
+               const std::string& title = "", int style = 0)
+    : wxMenu(title.c_str(), style),
+      m_port(port)
+  {
+    {
+      ShVariableSpecialType s = SH_ATTRIB;
+      Append((int)s, ShVariableSpecialTypeName[s]);
+    }
+    {
+      ShVariableSpecialType s = SH_POINT;
+      Append((int)s, ShVariableSpecialTypeName[s]);
+    }
+    {
+      ShVariableSpecialType s = SH_VECTOR;
+      Append((int)s, ShVariableSpecialTypeName[s]);
+    }
+    {
+      ShVariableSpecialType s = SH_NORMAL;
+      Append((int)s, ShVariableSpecialTypeName[s]);
+    }
+    {
+      ShVariableSpecialType s = SH_COLOR;
+      Append((int)s, ShVariableSpecialTypeName[s]);
+    }
+    {
+      ShVariableSpecialType s = SH_TEXCOORD;
+      Append((int)s, ShVariableSpecialTypeName[s]);
+    }
+    {
+      ShVariableSpecialType s = SH_POSITION;
+      Append((int)s, ShVariableSpecialTypeName[s]);
+    }
+  }
+
+  void select(wxCommandEvent& event)
+  {
+    int i = event.GetId();
+    
+    m_port->var()->specialType((ShVariableSpecialType)i);
+  }
+  
+private:
+
+  GrPort* m_port;
+  
+  DECLARE_EVENT_TABLE()
+};
+BEGIN_EVENT_TABLE(PortTypeMenu, wxMenu)
+  EVT_MENU(-1, PortTypeMenu::select)
+END_EVENT_TABLE()
+
+wxMenu* GrPort::contextMenu()
+{
+  wxMenu* menu = new wxMenu();
+  menu->Append(0, "Type", new PortTypeMenu(this));
+  menu->Append(0, "Size", new PortSizeMenu(this));
+
+  return menu;
+}
+
 
 GrPort::GrPort(GrNode* parent, const SH::ShVariableNodePtr& var,
                double x, double y,
@@ -34,8 +150,16 @@ void GrPort::draw()
   double y = m_y + m_parent->y();
 
   glPushName(m_gl_name);
-  
-  glColor3f(1.0, 0.0, 1.0);
+
+  float* color;
+  for (int i = 0; ; i++) {
+    if (type_colors[i].type == m_var->specialType()
+        || type_colors[i].type == SH_ATTRIB) {
+      color = type_colors[i].color;
+      break;
+    }
+  }
+  glColor3fv(color);
   glBegin(GL_QUADS); {
     glVertex3f(x, y, 0.1);
     glVertex3f(x, y + port_width, 0.1);
@@ -49,6 +173,25 @@ void GrPort::draw()
     glVertex3f(x, y + port_width, 0.1);
     glVertex3f(x + port_width, y + port_width, 0.1);
     glVertex3f(x + port_width, y, 0.1);
+  } glEnd();
+
+  glBegin(GL_LINES); {
+    {
+      glVertex3f(x + port_width/3.0, y, 0.1);
+      glVertex3f(x + port_width/3.0, y + port_width, 0.1);
+    }
+    if (m_var->size() >= 2) {
+      glVertex3f(x + 2.0*port_width/3.0, y, 0.1);
+      glVertex3f(x + 2.0*port_width/3.0, y + port_width, 0.1);
+    }
+    if (m_var->size() >= 3) {
+      glVertex3f(x, y + port_width/3.0, 0.1);
+      glVertex3f(x + port_width, y + port_width/3.0, 0.1);
+    }
+    if (m_var->size() >= 4) {
+      glVertex3f(x, y + 2.0*port_width/3.0, 0.1);
+      glVertex3f(x + port_width, y + 2.0*port_width/3.0, 0.1);
+    }
   } glEnd();
   
   glPopName();

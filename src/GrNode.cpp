@@ -26,8 +26,64 @@ GrNode::GrNode(const SH::ShProgram& program,
     m_x(x), m_y(y),
     m_face(face),
     m_view(view),
-    m_gl_name(view->addPicker(PICK_NODE, this))
- {
+    m_gl_name(view->addPicker(PICK_NODE, this)),
+    m_marked(false)
+{
+
+  calcSizes();
+
+  ShProgramNode::VarList::const_iterator I;
+  { // Set up ports
+    double y;
+    y = m_height - m_font_height - (m_height - m_font_height * m_program->inputs.size())/2.0;
+    for (I = m_program->inputs.begin(); I != m_program->inputs.end(); ++I) {
+      m_input_ports.push_back(new GrPort(this, *I, border, y, true));
+      y -= m_font_height;
+    }
+    
+    y = m_height - m_font_height - (m_height - m_font_height * m_program->outputs.size())/2.0;
+    for (I = m_program->outputs.begin(); I != m_program->outputs.end(); ++I) {
+      m_output_ports.push_back(new GrPort(this, *I, - border + m_width - port_width, y, false));
+      y -= m_font_height;
+    }
+  }
+}
+
+GrNode::~GrNode()
+{
+  for (PortList::iterator I = m_input_ports.begin(); I != m_input_ports.end(); ++I) {
+    delete *I;
+  }
+  for (PortList::iterator I = m_output_ports.begin(); I != m_output_ports.end(); ++I) {
+    delete *I;
+  }
+}
+
+void GrNode::clearMarked()
+{
+  if (!m_marked) return;
+
+  m_marked = false;
+
+  std::cerr << "Marking something as clear" << std::endl;
+  
+  // TODO: This is hideous. Maybe I should rethink the graph
+  // representation.
+  for (PortList::iterator I = m_input_ports.begin(); I != m_input_ports.end(); ++I) {
+    GrPort* port = *I;
+    for (GrPort::EdgeList::iterator J = port->begin_edges(); J != port->end_edges(); ++J) {
+      if (J->to != port) {
+        std::cerr << "Skipping something" << std::endl;
+        continue;
+      }
+      std::cerr << "Marking something else as clear" << std::endl;
+      J->from->parent()->clearMarked();
+    }
+  }
+}
+
+void GrNode::calcSizes()
+{
   // Compute width, height
 
   m_width = 0;
@@ -60,12 +116,11 @@ GrNode::GrNode(const SH::ShProgram& program,
 
   m_width = m_in_width + m_out_width;
 
-  if (!program->name().empty()) {
-    OGLFT::BBox bbox = m_face->measure(program->name().c_str());
+  if (!m_program->name().empty()) {
+    OGLFT::BBox bbox = m_face->measure(m_program->name().c_str());
     double width = bbox.x_max_ - bbox.x_min_;
     if (width > m_width) m_width = width;
   }
-
   
   m_width += border * 2.0;
   m_width += port_width * 2.0;
@@ -73,27 +128,48 @@ GrNode::GrNode(const SH::ShProgram& program,
   m_height += border * 2.0;
   m_width += io_sep;
 
+}
+
+void GrNode::combine(const ShProgram& program)
+{
+ 
+  int prev_inputs = m_program->inputs.size();
+  int prev_outputs = m_program->outputs.size();
+ 
+  std::string name = m_program->name();
+  m_program = m_program & program;
+  m_program->name(name);
+
+  // TODO: operator& should probably keep the name.
+  
+  calcSizes();
+
+  ShProgramNode::VarList::const_iterator I;
   { // Set up ports
     double y;
     y = m_height - m_font_height - (m_height - m_font_height * m_program->inputs.size())/2.0;
-    for (I = m_program->inputs.begin(); I != m_program->inputs.end(); ++I) {
-      m_ports.push_back(new GrPort(this, *I, border, y, true));
+    int i = 0;
+    for (I = m_program->inputs.begin(); I != m_program->inputs.end(); ++I, ++i) {
+      if (i < prev_inputs) {
+        m_input_ports[i]->move(border, y);
+      } else {
+        m_input_ports.push_back(new GrPort(this, *I, border, y, true));
+      }
       y -= m_font_height;
     }
-    
-    y = m_height - m_font_height - (m_height - m_font_height * m_program->outputs.size())/2.0;
-    for (I = m_program->outputs.begin(); I != m_program->outputs.end(); ++I) {
-      m_ports.push_back(new GrPort(this, *I, - border + m_width - port_width, y, false));
-      y -= m_font_height;
-    }
-  }
-}
 
-GrNode::~GrNode()
-{
-  for (PortList::iterator I = m_ports.begin(); I != m_ports.end(); ++I) {
-    delete *I;
+    i = 0;
+    y = m_height - m_font_height - (m_height - m_font_height * m_program->outputs.size())/2.0;
+    for (I = m_program->outputs.begin(); I != m_program->outputs.end(); ++I, ++i) {
+      if (i < prev_outputs) {
+        m_output_ports[i]->move(m_width - border - port_width, y);
+      } else {
+        m_output_ports.push_back(new GrPort(this, *I, m_width - border - port_width, y, false));
+      }
+      y -= m_font_height;
+    }
   }
+  
 }
 
 void GrNode::draw_box()
@@ -153,7 +229,10 @@ void GrNode::draw_box()
     glVertex3f(m_x, m_y + m_height, 0.0);
   } glEnd();
 
-  for (PortList::iterator I = m_ports.begin(); I != m_ports.end(); ++I) {
+  for (PortList::iterator I = m_input_ports.begin(); I != m_input_ports.end(); ++I) {
+    (*I)->draw();
+  }
+  for (PortList::iterator I = m_output_ports.begin(); I != m_output_ports.end(); ++I) {
     (*I)->draw();
   }
   
@@ -163,7 +242,7 @@ void GrNode::draw_box()
 
 void GrNode::draw_edges()
 {
-  for (PortList::iterator I = m_ports.begin(); I != m_ports.end(); ++I) {
+  for (PortList::iterator I = m_output_ports.begin(); I != m_output_ports.end(); ++I) {
     (*I)->draw_edges();
   }
 }

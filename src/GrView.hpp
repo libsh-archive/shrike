@@ -28,7 +28,9 @@ public:
   void mdown(wxMouseEvent& event);
   void mup(wxMouseEvent& event);
 
-  void addProgram(const SH::ShProgram& program, int x, int y);
+  void keydown(wxKeyEvent& event);
+  
+  GrNode* addProgram(const SH::ShProgram& program, int x, int y);
   
   int addPicker(PickType type, void* data);
   int pick(int x, int y);
@@ -64,6 +66,11 @@ private:
   struct {
     double x_from, y_from, x_to, y_to;
   } m_current_edge;
+
+  GrNode* m_inputs_vtx;
+  GrNode* m_outputs_vtx;
+  GrNode* m_inputs_frg;
+  GrNode* m_outputs_frg;
   
   DECLARE_EVENT_TABLE()
 };
