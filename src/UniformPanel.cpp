@@ -49,12 +49,12 @@ class AttribSlider : public wxSlider {
 public:
   AttribSlider(wxWindow* parent, ShVariableNodePtr var, int i)
     : wxSlider(parent, -1, 0, 
-               (int)((*variant_convert<SH_FLOAT, SH_HOST>(var->lowBoundVariant()))[i] * 100.0f), 
-               (int)((*variant_convert<SH_FLOAT, SH_HOST>(var->highBoundVariant()))[i] * 100.0f),
+               (int)((*variant_convert<float, SH_HOST>(var->lowBoundVariant()))[i] * 100.0f), 
+               (int)((*variant_convert<float, SH_HOST>(var->highBoundVariant()))[i] * 100.0f),
                wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL | wxSL_LABELS), 
       m_var(var), m_index(i)
   {
-    setFloatValue((*variant_convert<SH_FLOAT, SH_HOST>(var->getVariant()))[i]);
+    setFloatValue((*variant_convert<float, SH_HOST>(var->getVariant()))[i]);
   }
 
   void setFloatValue(float value)
@@ -64,7 +64,7 @@ public:
   
   void scroll(wxScrollEvent& event)
   {
-    m_var->setVariant(new ShDataVariant<SH_FLOAT, SH_HOST>(1, event.GetPosition()/100.0f),m_index);
+    m_var->setVariant(new ShDataVariant<float, SH_HOST>(1, event.GetPosition()/100.0f),m_index);
     ShrikeCanvas::instance()->render();
   }
 
@@ -169,11 +169,11 @@ void UniformTimer::Notify()
 
     AttribSlider* slider = I->slider;
     for (int i = 0; i < var->size(); i++) {
-      float val = (*variant_convert<SH_FLOAT, SH_HOST>(var->getVariant()))[i];
-      float low = (*variant_convert<SH_FLOAT, SH_HOST>(var->lowBoundVariant()))[i];
-      float high = (*variant_convert<SH_FLOAT, SH_HOST>(var->highBoundVariant()))[i];
+      float val = (*variant_convert<float, SH_HOST>(var->getVariant()))[i];
+      float low = (*variant_convert<float, SH_HOST>(var->lowBoundVariant()))[i];
+      float high = (*variant_convert<float, SH_HOST>(var->highBoundVariant()))[i];
       val = std::fmod((val + I->step) - low, high - low) + low; 
-      var->setVariant(new ShDataVariant<SH_FLOAT, SH_HOST>(1, val), i);
+      var->setVariant(new ShDataVariant<float, SH_HOST>(1, val), i);
       if (slider) {
         slider->setFloatValue(val);
         slider = slider->next();
@@ -213,8 +213,8 @@ public:
   void check(wxCommandEvent& event)
   {
     if (event.IsChecked()) {
-      float high = (*variant_convert<SH_FLOAT, SH_HOST>(m_node->highBoundVariant()))[0];
-      float low = (*variant_convert<SH_FLOAT, SH_HOST>(m_node->lowBoundVariant()))[0];
+      float high = (*variant_convert<float, SH_HOST>(m_node->highBoundVariant()))[0];
+      float low = (*variant_convert<float, SH_HOST>(m_node->lowBoundVariant()))[0];
       UniformTimer::instance()->add(m_node,
                                     (high - low)/80.0f,
                                     m_slider);
@@ -323,7 +323,7 @@ public:
     wxColourData data;
 
     
-    const ShDataVariant<SH_FLOAT, SH_HOST> &variant = (*variant_convert<SH_FLOAT, SH_HOST>(m_node->getVariant()));
+    const ShDataVariant<float, SH_HOST> &variant = (*variant_convert<float, SH_HOST>(m_node->getVariant()));
     wxColour old(static_cast<unsigned char>(variant[0] * 255.0),
                  static_cast<unsigned char>(variant[1] * 255.0),
                  static_cast<unsigned char>(variant[2] * 255.0));
@@ -334,9 +334,9 @@ public:
     if (dialog.ShowModal() == wxID_OK) {
       wxColourData& cd = dialog.GetColourData();
       wxColour& c = cd.GetColour();
-      m_node->setVariant(new ShDataVariant<SH_FLOAT, SH_HOST>(1, (float)c.Red()/255.0f), 0);
-      m_node->setVariant(new ShDataVariant<SH_FLOAT, SH_HOST>(1, (float)c.Green()/255.0f), 1);
-      m_node->setVariant(new ShDataVariant<SH_FLOAT, SH_HOST>(1, (float)c.Blue()/255.0f), 2);
+      m_node->setVariant(new ShDataVariant<float, SH_HOST>(1, (float)c.Red()/255.0f), 0);
+      m_node->setVariant(new ShDataVariant<float, SH_HOST>(1, (float)c.Green()/255.0f), 1);
+      m_node->setVariant(new ShDataVariant<float, SH_HOST>(1, (float)c.Blue()/255.0f), 2);
       
       ShrikeCanvas::instance()->render();
     }
@@ -387,8 +387,8 @@ void UniformPanel::addVar(const ShVariableNodePtr& var,
     DepButton* button = new DepButton(this, var);
     sizer->Add(button);
   } else if (var->specialType() == SH_COLOR
-      && (*variant_convert<SH_FLOAT, SH_HOST>(var->lowBoundVariant()))[0] == 0.0
-      && (*variant_convert<SH_FLOAT, SH_HOST>(var->highBoundVariant()))[0] == 1.0) {
+      && (*variant_convert<float, SH_HOST>(var->lowBoundVariant()))[0] == 0.0
+      && (*variant_convert<float, SH_HOST>(var->highBoundVariant()))[0] == 1.0) {
     ColorButton* button = new ColorButton(this, var);
     sizer->Add(button);
   } else {

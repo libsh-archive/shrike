@@ -1,3 +1,6 @@
+2004-11-28 Bryan Chan  <b8chan@cgl.uwaterloo.ca>
+  Undid the typename -> ShValueType changes since trunk uses typenames again.
+  
 2004-11-11 Bryan Chan   <b8chan@cgl.uwaterloo.ca>
   * src/UniformPanel.cpp:
   Fixed bugs so that non-f uniforms don't cause the panel to bomb out.

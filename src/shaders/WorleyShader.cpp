@@ -102,8 +102,8 @@ class GradientWorley: public WorleyShader {
     GradientWorley(bool useTexture): WorleyShader("Gradients", useTexture) {}
 
     void initfsh() {
-      DefaultGenFactory<2, SH_FLOAT> genFactory(useTexture);
-      DistSqGradientPropFactory<2, SH_FLOAT> propFactory; 
+      DefaultGenFactory<2, float> genFactory(useTexture);
+      DistSqGradientPropFactory<2, float> propFactory; 
 
       ShProgram worleysh = shWorley<4>(&genFactory, &propFactory); 
       worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
@@ -136,8 +136,8 @@ class OrganicWorley: public WorleyShader {
     OrganicWorley(bool useTexture): WorleyShader("Organic", useTexture) {}
 
     void initfsh() {
-      DefaultGenFactory<2, SH_FLOAT> genFactory(useTexture);
-      DistSqGradientPropFactory<2, SH_FLOAT> propFactory; 
+      DefaultGenFactory<2, float> genFactory(useTexture);
+      DistSqGradientPropFactory<2, float> propFactory; 
 
       ShProgram worleysh = shWorley<4>(&genFactory, &propFactory); 
       worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
@@ -186,9 +186,9 @@ class BlueOrbWorley: public WorleyShader {
     BlueOrbWorley(bool useTexture): WorleyShader("BlueOrb", useTexture) {}
 
     void initfsh() {
-      DefaultGenFactory<2, SH_FLOAT> genFactory(useTexture);
-      Dist_InfGradientPropFactory<2, SH_FLOAT> propFactory; 
-      Dist_1PropFactory<2, SH_FLOAT> dist1Factory;
+      DefaultGenFactory<2, float> genFactory(useTexture);
+      Dist_InfGradientPropFactory<2, float> propFactory; 
+      Dist_1PropFactory<2, float> dist1Factory;
 
       coeff = ShConstAttrib4f(-1.0f, 1.0f, 0.0f, 0.0f);
 
@@ -268,7 +268,7 @@ class PolkaDotWorley: public WorleyShader {
     PolkaDotWorley(bool useTexture): WorleyShader("Polka Dot", useTexture) {}
 
     void initfsh() {
-      ShProgram worleysh = shWorley<4, 2, SH_FLOAT>(useTexture);
+      ShProgram worleysh = shWorley<4, 2, float>(useTexture);
       worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
       worleysh = (dot<ShAttrib4f>() << coeff) << worleysh;
 
@@ -299,9 +299,9 @@ class LavaWorley: public WorleyShader {
       ShAttrib4f SH_NAMEDECL(coeff2, "Worley coefficient 2") = ShConstAttrib4f(0, 1, 1, 0);
       ShAttrib1f SH_NAMEDECL(freq2, "Worley frequency 2") = freq * 2.131313f;
 
-      DefaultGenFactory<2, SH_FLOAT> genFactory(useTexture);
-      DistSqPropFactory<2, SH_FLOAT> distSqPropFactory;
-      Dist_1PropFactory<2, SH_FLOAT> dist_1PropFactory;
+      DefaultGenFactory<2, float> genFactory(useTexture);
+      DistSqPropFactory<2, float> distSqPropFactory;
+      Dist_1PropFactory<2, float> dist_1PropFactory;
 
       ShProgram worleysh = shWorley<4>(&genFactory, &dist_1PropFactory);
       worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
@@ -334,8 +334,8 @@ class GiraffeWorley: public WorleyShader {
       coeff = ShConstAttrib4f(-1, 1, 0, 0);
       ShAttrib4f SH_NAMEDECL(coeff2, "Worley coefficient 2") = ShConstAttrib4f(0, -1, 1, 0);
 
-      DefaultGenFactory<2, SH_FLOAT> genFactory(useTexture);
-      Dist_1PropFactory<2, SH_FLOAT> dist_1PropFactory;
+      DefaultGenFactory<2, float> genFactory(useTexture);
+      Dist_1PropFactory<2, float> dist_1PropFactory;
       ShProgram worleysh = shWorley<4>(&genFactory, &dist_1PropFactory);
       worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
       worleysh = (dot<ShAttrib4f>() << coeff) << worleysh;
@@ -376,8 +376,8 @@ class CircuitWorley: public WorleyShader {
       coeff = ShConstAttrib4f(0, 0, 0, 1);
       ShAttrib1f SH_NAMEDECL(freq2, "Worley frequency 2") = freq * 2.131313f;
 
-      DefaultGenFactory<2, SH_FLOAT> genFactory(useTexture);
-      Dist_1PropFactory<2, SH_FLOAT> dist_1PropFactory;
+      DefaultGenFactory<2, float> genFactory(useTexture);
+      Dist_1PropFactory<2, float> dist_1PropFactory;
       ShProgram worleysh = shWorley<4>(&genFactory, &dist_1PropFactory);
       worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
       worleysh = (dot<ShAttrib4f>() << coeff) << worleysh;
@@ -438,13 +438,13 @@ class CrackedWorley: public WorleyShader {
 
       ShProgram worleysh;
 
-      DistSqPropFactory<2, SH_FLOAT> propFactory;
+      DistSqPropFactory<2, float> propFactory;
 
       if (m_animate) {
-        LerpGenFactory<2, SH_FLOAT> genFactory(m_time, useTexture);
+        LerpGenFactory<2, float> genFactory(m_time, useTexture);
         worleysh = shWorley<4>(&genFactory, &propFactory);
       } else {
-        DefaultGenFactory<2, SH_FLOAT> genFactory(useTexture);
+        DefaultGenFactory<2, float> genFactory(useTexture);
         worleysh = shWorley<4>(&genFactory, &propFactory); 
       }
 
@@ -494,11 +494,11 @@ class StoneWorley: public WorleyShader {
 
       freq = ShConstAttrib1f(16.0f);
 
-      DefaultGenFactory<2, SH_FLOAT> genFactory(useTexture);
-      //NullGenFactory<2, SH_FLOAT> genFactory;
-      DistSqGradientPropFactory<2, SH_FLOAT> distPropFactory;
-      CellnoisePropFactory<1, 2, SH_FLOAT> noisePropFactory(useTexture);
-      PropertyFactory<4, 2, SH_FLOAT> *propFactory = combine(&distPropFactory, &noisePropFactory);
+      DefaultGenFactory<2, float> genFactory(useTexture);
+      //NullGenFactory<2, float> genFactory;
+      DistSqGradientPropFactory<2, float> distPropFactory;
+      CellnoisePropFactory<1, 2, float> noisePropFactory(useTexture);
+      PropertyFactory<4, 2, float> *propFactory = combine(&distPropFactory, &noisePropFactory);
 
       ShProgram worleysh = shWorley<4>(&genFactory, propFactory); // pass in coefficients 
       worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
@@ -596,8 +596,8 @@ class TurbulentWorley: public WorleyShader {
 
       ShProgram worleysh[N];
       for(int i = N - 1; i >= 0; --i) {
-        DefaultGenFactory<2, SH_FLOAT> genFactory(useTexture);
-        Dist_1PropFactory<2, SH_FLOAT> distFactory;
+        DefaultGenFactory<2, float> genFactory(useTexture);
+        Dist_1PropFactory<2, float> distFactory;
         worleysh[i] = shWorley<4>(&genFactory, &distFactory); 
         ShProgram multiplier = SH_BEGIN_PROGRAM() {
           ShInOutTexCoord2f SH_DECL(texcoord);
@@ -654,10 +654,10 @@ class MosaicWorley: public WorleyShader {
       ShAttrib1f SH_DECL(texScale) = ShConstAttrib1f(32.0);
       texScale.range(0.0f, image.width() / 16.0f);
 
-      DefaultGenFactory<2, SH_FLOAT> genFactory(useTexture);
-      //NullGenFactory<2, SH_FLOAT> genFactory;
-      DistSqPropFactory<2, SH_FLOAT> distFactory;
-      Tex2DPropFactory<ShColor3f, SH_FLOAT> tex2dFactory(mosaicTex, texScale);
+      DefaultGenFactory<2, float> genFactory(useTexture);
+      //NullGenFactory<2, float> genFactory;
+      DistSqPropFactory<2, float> distFactory;
+      Tex2DPropFactory<ShColor3f, float> tex2dFactory(mosaicTex, texScale);
 
       coeff = ShConstAttrib4f(-1.0f, 1.0f, 0.0f, 0.0f);
 
@@ -742,7 +742,7 @@ class Worley3D: public WorleyShader {
     Worley3D(bool useTexture): WorleyShader("3D", useTexture) {}
 
     void initfsh() {
-      ShProgram worleysh = shWorley<1, 3, SH_FLOAT>(useTexture);  // only keep closest neighbour
+      ShProgram worleysh = shWorley<1, 3, float>(useTexture);  // only keep closest neighbour
       worleysh = worleysh << (mul<ShTexCoord3f>("texcoord", "freq", "posv") << fillcast<3>(freq));
 
       // make polkadots by clamping the scalar result from worley
@@ -761,7 +761,7 @@ class Worley3D: public WorleyShader {
 // replace these with inline nibbles later on
 class Worley2D: public WorleyShader {
   public:
-    Worley2D(bool useTexture, ShConstAttrib4f c, PropertyFactory<1, 2, SH_FLOAT> *distFactory, std::string name)
+    Worley2D(bool useTexture, ShConstAttrib4f c, PropertyFactory<1, 2, float> *distFactory, std::string name)
       : WorleyShader(std::string("2D: ") + name, useTexture),
         m_distFactory(distFactory),
         m_coeff(c) {
@@ -774,15 +774,15 @@ class Worley2D: public WorleyShader {
     }
     // Lerp factory that starts with a fixed grid at time = 0 (good to see how
     // grid jittering works)
-    struct FixedLerpFactory: GridGenFactory<2, SH_FLOAT> {
-      FixedLerpFactory(const ShGeneric<1, SH_FLOAT> &time, bool useTexture)
+    struct FixedLerpFactory: GridGenFactory<2, float> {
+      FixedLerpFactory(const ShGeneric<1, float> &time, bool useTexture)
         : m_time(time), m_useTexture(useTexture){}
 
       private:
-        const ShGeneric<1, SH_FLOAT> &m_time;
+        const ShGeneric<1, float> &m_time;
         bool m_useTexture;
 
-        void makePos(Generator<2, SH_FLOAT> &g) const {
+        void makePos(Generator<2, float> &g) const {
           ShAttrib1f lastTime = floor(m_time);
           ShAttrib1f timeOffset = frac(m_time);
           ShAttrib3f offsetCell;
@@ -803,8 +803,8 @@ class Worley2D: public WorleyShader {
       coeff = m_coeff;
       FixedLerpFactory genFactory(m_time, useTexture);
 
-      DistSqPropFactory<2, SH_FLOAT> euclideanDistFactory; 
-      PropertyFactory<2, 2, SH_FLOAT> *propFactory = combine(m_distFactory, &euclideanDistFactory); 
+      DistSqPropFactory<2, float> euclideanDistFactory; 
+      PropertyFactory<2, 2, float> *propFactory = combine(m_distFactory, &euclideanDistFactory); 
 
       ShProgram worleysh = shWorley<4>(&genFactory, propFactory); 
       worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
@@ -834,27 +834,27 @@ class Worley2D: public WorleyShader {
     }
 
     static ShAttrib1f m_time;
-    PropertyFactory<1, 2, SH_FLOAT> *m_distFactory;
+    PropertyFactory<1, 2, float> *m_distFactory;
     ShConstAttrib4f m_coeff;
 };
 ShAttrib1f Worley2D::m_time = 1.0f;
 
 // Basic Examples:
-Worley2D worley2dNothing(true, ShConstAttrib4f(0.0f, 0.0f, 0.0f, 0.0f), new DistSqPropFactory<2, SH_FLOAT>(), "Points Only");
-Worley2D worley2dF1(true, ShConstAttrib4f(1.0f, 0.0f, 0.0f, 0.0f), new DistSqPropFactory<2, SH_FLOAT>(), "Euclidean Distance Squared: F1");
-Worley2D worley2dF2(true, ShConstAttrib4f(0.0f, 1.0f, 0.0f, 0.0f), new DistSqPropFactory<2, SH_FLOAT>(), "Euclidean Distance Squared: F2");
-Worley2D worley2dF3(true, ShConstAttrib4f(0.0f, 0.0f, 1.0f, 0.0f), new DistSqPropFactory<2, SH_FLOAT>(), "Euclidean Distance Squared: F3");
-Worley2D worley2dF4(true, ShConstAttrib4f(0.0f, 0.0f, 0.0f, 1.0f), new DistSqPropFactory<2, SH_FLOAT>(), "Euclidean Distance Squared: F4");
+Worley2D worley2dNothing(true, ShConstAttrib4f(0.0f, 0.0f, 0.0f, 0.0f), new DistSqPropFactory<2, float>(), "Points Only");
+Worley2D worley2dF1(true, ShConstAttrib4f(1.0f, 0.0f, 0.0f, 0.0f), new DistSqPropFactory<2, float>(), "Euclidean Distance Squared: F1");
+Worley2D worley2dF2(true, ShConstAttrib4f(0.0f, 1.0f, 0.0f, 0.0f), new DistSqPropFactory<2, float>(), "Euclidean Distance Squared: F2");
+Worley2D worley2dF3(true, ShConstAttrib4f(0.0f, 0.0f, 1.0f, 0.0f), new DistSqPropFactory<2, float>(), "Euclidean Distance Squared: F3");
+Worley2D worley2dF4(true, ShConstAttrib4f(0.0f, 0.0f, 0.0f, 1.0f), new DistSqPropFactory<2, float>(), "Euclidean Distance Squared: F4");
 
-Worley2D worley2dL1F1(true, ShConstAttrib4f(1.0f, 0.0f, 0.0f, 0.0f), new Dist_1PropFactory<2, SH_FLOAT>(), "Manhattan(L1) Distance: F1");
-Worley2D worley2dL1F2(true, ShConstAttrib4f(0.0f, 1.0f, 0.0f, 0.0f), new Dist_1PropFactory<2, SH_FLOAT>(), "Manhattan(L1) Distance: F2");
-Worley2D worley2dL1F3(true, ShConstAttrib4f(0.0f, 0.0f, 1.0f, 0.0f), new Dist_1PropFactory<2, SH_FLOAT>(), "Manhattan(L1) Distance: F3");
-Worley2D worley2dL1F4(true, ShConstAttrib4f(0.0f, 0.0f, 0.0f, 1.0f), new Dist_1PropFactory<2, SH_FLOAT>(), "Manhattan(L1) Distance: F4");
+Worley2D worley2dL1F1(true, ShConstAttrib4f(1.0f, 0.0f, 0.0f, 0.0f), new Dist_1PropFactory<2, float>(), "Manhattan(L1) Distance: F1");
+Worley2D worley2dL1F2(true, ShConstAttrib4f(0.0f, 1.0f, 0.0f, 0.0f), new Dist_1PropFactory<2, float>(), "Manhattan(L1) Distance: F2");
+Worley2D worley2dL1F3(true, ShConstAttrib4f(0.0f, 0.0f, 1.0f, 0.0f), new Dist_1PropFactory<2, float>(), "Manhattan(L1) Distance: F3");
+Worley2D worley2dL1F4(true, ShConstAttrib4f(0.0f, 0.0f, 0.0f, 1.0f), new Dist_1PropFactory<2, float>(), "Manhattan(L1) Distance: F4");
 
-Worley2D worley2dInfF1(true, ShConstAttrib4f(1.0f, 0.0f, 0.0f, 0.0f), new Dist_InfPropFactory<2, SH_FLOAT>(), "L Infinity Distance: F1");
-Worley2D worley2dInfF2(true, ShConstAttrib4f(0.0f, 1.0f, 0.0f, 0.0f), new Dist_InfPropFactory<2, SH_FLOAT>(), "L Infinity Distance: F2");
-Worley2D worley2dInfF3(true, ShConstAttrib4f(0.0f, 0.0f, 1.0f, 0.0f), new Dist_InfPropFactory<2, SH_FLOAT>(), "L Infinity Distance: F3");
-Worley2D worley2dInfF4(true, ShConstAttrib4f(0.0f, 0.0f, 0.0f, 1.0f), new Dist_InfPropFactory<2, SH_FLOAT>(), "L Infinity Distance: F4");
+Worley2D worley2dInfF1(true, ShConstAttrib4f(1.0f, 0.0f, 0.0f, 0.0f), new Dist_InfPropFactory<2, float>(), "L Infinity Distance: F1");
+Worley2D worley2dInfF2(true, ShConstAttrib4f(0.0f, 1.0f, 0.0f, 0.0f), new Dist_InfPropFactory<2, float>(), "L Infinity Distance: F2");
+Worley2D worley2dInfF3(true, ShConstAttrib4f(0.0f, 0.0f, 1.0f, 0.0f), new Dist_InfPropFactory<2, float>(), "L Infinity Distance: F3");
+Worley2D worley2dInfF4(true, ShConstAttrib4f(0.0f, 0.0f, 0.0f, 1.0f), new Dist_InfPropFactory<2, float>(), "L Infinity Distance: F4");
 
 Worley3D worley3d(true);
 
