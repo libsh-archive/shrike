@@ -13,7 +13,7 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 Globals.hpp Globals.cpp \
 		 Camera.hpp Camera.cpp \
 		 ShTrackball.hpp ShTrackball.cpp \
-		 util.cpp
+		 util.hpp util.cpp utilimpl.hpp
 
 shrike_SOURCES += shaders/DiffuseShader.cpp
 shrike_SOURCES += shaders/DiscoShader.cpp

@@ -1,5 +1,5 @@
 
-#include "utilimpl.cpp"
+#include "utilimpl.hpp"
 
 /** Compute Lambert's law.   
  * Note that input vectors do not have to be normalized, this
