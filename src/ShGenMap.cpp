@@ -56,8 +56,8 @@ int main(int argc, char** argv)
         tan1(2) = 0;
         if (argc > 3) 
         {
-          int j2 = ((float)w2/(float)w)*j;
-          int i2 = ((float)h2/(float)h)*i;
+          int j2 = int((float(w2)/float(w))*j);
+          int i2 = int((float(h2)/float(h))*i);
           
           tan1 = SH::ShVector3f(2*normalImage2(j2, i2, 0) - 1, 
               2*normalImage2(j2, i2, 1) - 1, 
