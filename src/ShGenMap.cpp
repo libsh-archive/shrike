@@ -159,7 +159,7 @@ int main(int argc, char** argv)
 					angle = (u-i) / sqrt((u-i)*(u-i)+bump*bump);
 					if(angle < outputImage1(i, j, 2) && bump>0)
 				  	outputImage1(i, j, 2) = angle;
-	      }
+				}
  		    angle = 0.0;
     	  v = j;
       	while(v<inputImage.height())

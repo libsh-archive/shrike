@@ -96,11 +96,12 @@ bool HorizonMapping::init()
     ShAttrib1f ls = surface | light;
     ShAttrib1f ln = normal | light;
 
-    result = ShColor3f(bump(u)(0)/2+0.5, bump(u)(1)/2+0.5, bump(u)(2)/2+0.5); // draw the bumps
-
-    ShColor3f shadow = ShColor3f(0.5,0.5,0.5); // substracted to the color to make shadows
-
-    ShAttrib1f cosAngle = sqrt(lt*lt+ls*ls) / sqrt(lt*lt+ls*ls+ln*ln); // compute the light angle
+    ShColor3f shadow = ShColor3f(0.5,0.5,0.5); // will substracted to the color to make shadows
+    
+		result = bump(u)/2 + shadow; // draw the elevation map
+		
+		ShAttrib1f normS = lt*lt+ls*ls; // for norm of light vector on the suface plane
+    ShAttrib1f cosAngle = sqrt(normS) / sqrt(normS+ln*ln); // compute the light angle
 		
 		// get normalized values
     ShVector2f lightS = ShVector2f(lt,ls);
@@ -110,34 +111,28 @@ bool HorizonMapping::init()
 
 		ShAttrib1f b = 2*lt*lt-1; // 2*cos(phi)*cos(phi)-1
     ShAttrib1f bb = b*b;
-		ShAttrib2f basis = ShAttrib2f(bb,1.0-bb);
-										
-		ShAttrib2f b1,b2,b3,b4,b5,b6,b7,b8; // the basis functions used to blend
-		b1 = cond( min( min(lt<0.0, b>0.0), ls>0.0), basis, ShAttrib2f(0.0,0.0));
-		b2 = cond( min( min(lt<0.0, b<0.0), ls>0.0), basis, ShAttrib2f(0.0,0.0));
-		b3 = cond( min( min(lt>0.0, b<0.0), ls>0.0), basis, ShAttrib2f(0.0,0.0));
-		b4 = cond( min( min(lt>0.0, b>0.0), ls>0.0), basis, ShAttrib2f(0.0,0.0));
-		b5 = cond( min( min(lt>0.0, b>0.0), ls<0.0), basis, ShAttrib2f(0.0,0.0));
-		b6 = cond( min( min(lt>0.0, b<0.0), ls<0.0), basis, ShAttrib2f(0.0,0.0));
-		b7 = cond( min( min(lt<0.0, b<0.0), ls<0.0), basis, ShAttrib2f(0.0,0.0));
-		b8 = cond( min( min(lt<0.0, b>0.0), ls<0.0), basis, ShAttrib2f(0.0,0.0));
+		ShAttrib1f bb2 = 1.0-bb;
+		ShAttrib1f null = 0.0;
+		
+		// define the basis functions
+		ShAttrib1f b1 = cond( min(-lt, b), bb, null);
+		ShAttrib1f b2 = cond( min(ls, -b), bb, null);
+		ShAttrib1f b3 = cond( min(lt, b), bb, null);
+		ShAttrib1f b4 = cond( min(-ls, -b), bb, null);
+		ShAttrib1f b5 = cond( min(-lt, ls), bb2, null);
+		ShAttrib1f b6 = cond( min(lt, ls), bb2, null);
+		ShAttrib1f b7 = cond( min(lt, -ls), bb2, null);
+		ShAttrib1f b8 = cond( min(-lt, -ls), bb2, null);
 
 		// the interpolated horizon value
-		ShAttrib1f cosHorizon = b1(0)*horizon1(u)(0) + b1(1)*horizon2(u)(0) +
-														b2(0)*horizon1(u)(1) + b2(1)*horizon2(u)(0) +
-														b3(0)*horizon1(u)(1) + b3(1)*horizon2(u)(1) +
-														b4(0)*horizon1(u)(2) + b4(1)*horizon2(u)(1) +
-														b5(0)*horizon1(u)(2) + b5(1)*horizon2(u)(2) +
-														b6(0)*horizon1(u)(3) + b6(1)*horizon2(u)(2) +
-														b7(0)*horizon1(u)(3) + b7(1)*horizon2(u)(3) +
-														b8(0)*horizon1(u)(0) + b8(1)*horizon2(u)(3);
+		ShAttrib1f cosHorizon = b1*horizon1(u)(0) + b2*horizon1(u)(1) + b3*horizon1(u)(2) + b4*horizon1(u)(3) +
+														b5*horizon2(u)(0) + b6*horizon2(u)(1) +	b7*horizon2(u)(2) + b8*horizon2(u)(3);
 
-		ShAttrib1f x = abs(cosAngle-cosHorizon)*softness;
-		shadow = ((pow(M_E, 2*x) - 1) / (pow(M_E, 2*x) + 1))*shadow; // use tanh to create soft shadows
+		ShAttrib1f x = softness*abs(cosAngle-cosHorizon);
+		shadow = ((pow(M_E, 2*x) - 1) / (pow(M_E, 2*x) + 1))*shadow; // use homemade tanh to create soft shadows
+		
 		result = cond( cosAngle>cosHorizon, result-shadow, result); // draw shadows in function of the angle
 
-		//result = ShColor3f(cosAngle, ShAttrib1f(0.0), ShAttrib1f(0.0));
-		
   } SH_END;
   return true;
 }

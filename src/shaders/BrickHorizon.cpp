@@ -162,7 +162,8 @@ bool BrickHorizon::init()
 		ShAttrib1f ls = light | surface;
 		ShAttrib1f ln = light | normal;
 
-		ShAttrib1f cosAngle = sqrt(lt*lt+ls*ls) / sqrt(lt*lt+ls*ls+ln*ln);
+		ShAttrib1f normS = lt*lt+ls*ls;
+		ShAttrib1f cosAngle = sqrt(normS) / sqrt(normS+ln*ln);
 		
 		ShVector2f lightS = ShVector2f(lt,ls);
 		lightS = normalize(lightS);
@@ -171,18 +172,8 @@ bool BrickHorizon::init()
 		
 		ShAttrib1f b = 2.0*lt*lt-1;
 		ShAttrib1f bb = b*b;
+		ShAttrib1f bb2 = 1.0-bb;
 		
-		ShAttrib2f b1,b2,b3,b4,b5,b6,b7,b8; // the basis functions used to blend
-		b1 = cond( min( min(lt<0.0, b>0.0), ls>0.0), ShAttrib2f(bb,1.0-bb), ShAttrib2f(0.0,0.0));
-		b2 = cond( min( min(lt<0.0, b<0.0), ls>0.0), ShAttrib2f(bb,1.0-bb), ShAttrib2f(0.0,0.0));
-		b3 = cond( min( min(lt>0.0, b<0.0), ls>0.0), ShAttrib2f(bb,1.0-bb), ShAttrib2f(0.0,0.0));
-		b4 = cond( min( min(lt>0.0, b>0.0), ls>0.0), ShAttrib2f(bb,1.0-bb), ShAttrib2f(0.0,0.0));
-		b5 = cond( min( min(lt>0.0, b>0.0), ls<0.0), ShAttrib2f(bb,1.0-bb), ShAttrib2f(0.0,0.0));
-		b6 = cond( min( min(lt>0.0, b<0.0), ls<0.0), ShAttrib2f(bb,1.0-bb), ShAttrib2f(0.0,0.0));
-		b7 = cond( min( min(lt<0.0, b<0.0), ls<0.0), ShAttrib2f(bb,1.0-bb), ShAttrib2f(0.0,0.0));
-		b8 = cond( min( min(lt<0.0, b>0.0), ls<0.0), ShAttrib2f(bb,1.0-bb), ShAttrib2f(0.0,0.0));
-
-
 		ShAttrib1f brickHeight2 = brickHeight*brickHeight;
 		ShAttrib1f horizonLoc; // position of the horizon
 	
@@ -191,9 +182,6 @@ bool BrickHorizon::init()
 		
 		ShAttrib1f horizon1 = hole, horizon2 = hole, horizon3 = hole, horizon4 = hole,
 							 horizon5 = hole, horizon6 = hole, horizon7 = hole, horizon8 = hole;
-		
-//		ShAttrib1f horizon1 = 1.0, horizon2 = 1.0, horizon3 = 1.0, horizon4 = 1.0,
-//							 horizon5 = 1.0, horizon6 = 1.0, horizon7 = 1.0, horizon8 = 1.0;
 		
 		horizonLoc = min(tc(0)<2*mortarsize(0),tc(1)>2*mortarsize(1));
 		horizon1 = cond(horizonLoc, tc(0)/sqrt(tc(0)*tc(0)+brickHeight*brickHeight), horizon1);
@@ -275,15 +263,22 @@ bool BrickHorizon::init()
 		horizonLoc = min(tc(0)<2*mortarsize(0), tc(1)>=1.0-tc(0));
 		horizon8 = cond(horizonLoc, sqrt(diag)/sqrt(diag+brickHeight2), horizon8);
 		
-		// interpolate the horizon with the 8 values found
-		ShAttrib1f cosHorizon = b1(0)*horizon1 + b1(1)*horizon5 +
-														b2(0)*horizon2 + b2(1)*horizon5 +
-														b3(0)*horizon2 + b3(1)*horizon6 +
-														b4(0)*horizon3 + b4(1)*horizon6 +
-														b5(0)*horizon3 + b5(1)*horizon7 +
-														b6(0)*horizon4 + b6(1)*horizon7 +
-														b7(0)*horizon4 + b7(1)*horizon8 +
-														b8(0)*horizon1 + b8(1)*horizon8;
+		// define the basis functions
+		ShAttrib1f null = 0.0;
+		ShAttrib1f b1 = cond( min(-lt, b), bb, null);
+		ShAttrib1f b2 = cond( min(ls, -b), bb, null);
+		ShAttrib1f b3 = cond( min(lt, b), bb, null);
+		ShAttrib1f b4 = cond( min(-ls, -b), bb, null);
+		ShAttrib1f b5 = cond( min(-lt, ls), bb2, null);
+		ShAttrib1f b6 = cond( min(lt, ls), bb2, null);
+		ShAttrib1f b7 = cond( min(lt, -ls), bb2, null);
+		ShAttrib1f b8 = cond( min(-lt, -ls), bb2, null);
+
+		// the interpolated horizon value
+		ShAttrib1f cosHorizon = b1*horizon1 + b2*horizon2 + b3*horizon3 + b4*horizon4 +
+														b5*horizon5 + b6*horizon6 +	b7*horizon7 + b8*horizon8;
+	
+
 		
 		ShAttrib1f x = abs(cosAngle-cosHorizon)*intensity;
 		shadow = ((pow(M_E, 2*x) - 1) / (pow(M_E, 2*x) + 1))*shadow; // use tanh to create soft shadows

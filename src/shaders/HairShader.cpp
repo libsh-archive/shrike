@@ -26,7 +26,7 @@ public:
 };
 
 HairFiber::HairFiber()
-  : Shader("Marschner Hair")
+  : Shader("Marschner Hair Fiber")
 {
 }
 
@@ -76,12 +76,13 @@ bool HairFiber::init()
 
   } SH_END;
 
-	ShAttrib2f SH_DECL(scale) = ShAttrib2f(100,100);
+	ShAttrib1f SH_DECL(scale) = ShAttrib1f(100);
 	scale.range(1.0,500.0);
 	
   ShColor3f SH_DECL(color) = ShColor3f(0.74,0.47,0.47);
 
 	ShAttrib1f SH_DECL(a) = ShAttrib1f(0.8);
+	a.name("exentricity");
 	a.range(0.0,1.0);
 
 	ShAttrib3f SH_DECL(sigmaa) = ShAttrib3f(0.44,0.64,0.9);
@@ -102,15 +103,14 @@ bool HairFiber::init()
     light = normalize(light);
 		eye = normalize(eye);
 		half = normalize(half);
-
-		//normal(0) += 0.4*cellnoise<1>(scale(0)*tc(0), false);
-		//normal(1) += 0.4*cellnoise<1>(scale(1)*tc(0), false);
 		normal = normalize(normal);
 		ShVector3f surface = cross(normal, tangent);
 
-		//ShVector3f azimut = (0.7*cellnoise<1>(100*tc(0), false)+0.3) * normal;
+		//ShVector3f azimut = (0.7*cellnoise<1>(100*tc(0), true)+0.3) * normal;
 		//azimut = normalize(azimut);
-
+		
+		a += 0.2*cellnoise<1>(scale*tc(0), true); // change the exentricity
+		
 		ShAttrib1f eta = 1.55;
 		
 		ShAttrib1f sinThetai = light | surface;
@@ -133,9 +133,8 @@ bool HairFiber::init()
 		ShAttrib1f Mr = cosThetah*0.998629535 + sinThetah*0.052335956; // remove 3 degrees
 		Mr = pow(Mr,50);
 
-		ShAttrib1f cosGammai = sqrt((cosPhi + 1) / 2.0);
-		
 		// Compute Nr
+		ShAttrib1f cosGammai = sqrt((cosPhi + 1) / 2.0); // cos(phi/2)
 		ShAttrib1f eta1 = sqrt(eta*eta - 1.0 + cosThetad2) / cosThetad;
 		ShAttrib1f Nr = (eta1-1.0)/(eta1+1.0);
 		Nr *= Nr;
@@ -153,24 +152,6 @@ bool HairFiber::init()
 		ShAttrib1f etastar = 0.5*(etastar1+etastar2 + cosThetah*(etastar1-etastar2));
 		eta1 = sqrt(etastar*etastar - 1.0 + cosThetad2) / cosThetad;
 
-/*		
- 		ShAttrib1f eta2 = eta1*eta1;
-		ShAttrib1f foo =  pow((eta2-2.0)/eta2,3.0/2.0);		
-		ShAttrib1f d = -8.0/(eta2*eta2) - 1.0 + 8.0/eta2 - cosPhi;
-		ShAttrib1f c = 8.0/eta1 * foo;
-		ShAttrib1f b = 32.0/(eta2*eta2) + 2 - 24.0/eta2;
-		ShAttrib1f a = 24.0*foo/(eta1*(eta2-2)) - 8*foo/eta1;
-		d /= a;
-		c /= a;
-		b /= a;
-		ShAttrib1f Q = c/3 - b*b/9;
-		ShAttrib1f R = b*c/6 - d/2 - b*b*b/27;
-		ShAttrib1f D = Q*Q*Q + R*R;
-		ShAttrib1f S = cond(R+sqrt(D), pow(max(0.0,R+sqrt(D)),1.0/3.0), ShAttrib1f(0.0));
-		ShAttrib1f T = cond(R-sqrt(D), pow(max(0.0,R-sqrt(D)),1.0/3.0), ShAttrib1f(0.0));
-		cosGammai = -b/3.0 + S+T;
-*/
-
 		// solve a*x^3 + b*x^2 + c*x + d = 0
 		ShAttrib1f M_PI3 = M_PI*M_PI*M_PI;
 		ShAttrib1f phi = acos(cosPhi);
@@ -182,7 +163,7 @@ bool HairFiber::init()
 		ShAttrib1f gammai = S+T;
 
 		ShAttrib1f angle = cond(-D, acos(R/sqrt(-Q*Q*Q)), ShAttrib1f(0.0));
-		gammai = cond(-D, 2.0*sqrt(-Q)*cos(angle/3.0), gammai);
+		gammai = cond(-D, 2.0*sqrt(-Q)*cos(angle/3.0), gammai); // test if 3 solutions
 		cosGammai = cos(gammai);
 		ShAttrib1f dPhidh = abs(cosGammai / ((24.0*c/M_PI-4.0) - 96.0*c*gammai*gammai/(M_PI3)));
 		ShAttrib1f Ntrt = N2(eta1, cosGammai, sigmaa(0));
@@ -195,12 +176,12 @@ bool HairFiber::init()
 		cosGammai = cos(gammai);
 		dPhidh = abs(cosGammai / ((24.0*c/M_PI-4.0) - 96.0*c*gammai*gammai/(M_PI3)));
 		Ntrt2 += N2(eta1, cosGammai, sigmaa(0));
-		Ntrt = cond(-D, Ntrt+Ntrt2, Ntrt);
+		Ntrt = cond(-D, Ntrt+Ntrt2, Ntrt); // test if 3 solutions
 		
 		ShColor3f white = ShColor3f(1.0,1.0,1.0);
 		result = white * 10 * Mr*Nr / cosThetad2;
-		result += color * 4 * Mtrt*Ntrt / cosThetad2;
-		//result += color * 0.2 * pos(light|normal); // add a diffuse term
+		result = color * 4 * Mtrt*Ntrt / cosThetad2;
+		result += color * 0.2 * pos(light|normal); // add a diffuse term
 
 	} SH_END;
   return true;
