@@ -80,6 +80,7 @@ shrike_SOURCES += shaders/LCDSmall.hpp shaders/LCDSmall.cpp
 # shrike_SOURCES += shaders/GaussianBlur.cpp
 # shrike_SOURCES += shaders/AnisotropicDiffusion.cpp
 shrike_SOURCES += shaders/VectorText.cpp
+shrike_SOURCES += shaders/VectorTest.cpp
 # # Disabled large texture demo, to reduce the need for a new shmedia.
 # # shrike_SOURCES += shaders/LargeTexture.cpp
 # # shrike_SOURCES += shaders/ClipMap.cpp
