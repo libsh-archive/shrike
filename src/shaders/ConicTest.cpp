@@ -30,6 +30,8 @@
 #include "Shader.hpp"
 #include "Globals.hpp"
 
+#define N_ITER 1
+
 using namespace SH;
 using namespace ShUtil;
 
@@ -239,7 +241,7 @@ bool ConicTest::init()
 		A(0,1) = cc(0,0) + (cc(1,1) + cc(2,2)*G(0,1)*G(0,1))*G(0,1);
 
 	    // refine estimate using reguli-falsi
-		for (int i=0; i<3; i++) {
+		for (int i=0; i<N_ITER; i++) {
 		  G(2) = (A(0)*G(1) - A(1)*G(0))/(A(0) - A(1));
 		  A(2) = cc(0) + (cc(1) + cc(2)*G(2)*G(2))*G(2);
 		  ShAttrib1f c = (A(2)*A(0) > 0.0);
