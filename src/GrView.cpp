@@ -15,6 +15,7 @@
 
 #include "GrNode.hpp"
 #include "GrPort.hpp"
+#include "GrMonitor.hpp"
 #include "GrGen.hpp"
 #include "GrProgramMenu.hpp"
 
@@ -125,6 +126,10 @@ void GrView::paint()
   if (m_connecting) {
     GrPort::draw_edge(m_current_edge.x_from, m_current_edge.y_from, m_current_edge.x_to, m_current_edge.y_to);
   }
+
+  for (MonitorList::iterator I = m_monitors.begin(); I != m_monitors.end(); ++I) {
+    (*I)->draw();
+  }
   
   SwapBuffers();
 }
@@ -204,6 +209,11 @@ GrNode* GrView::addProgram(const ShProgram& program, int xi, int yi)
   m_nodes.push_back(node);
   paint();
   return node;
+}
+
+void GrView::addMonitor(GrMonitor* monitor)
+{
+  m_monitors.push_back(monitor);
 }
 
 int GrView::addPicker(PickType type, void* data)
@@ -533,6 +543,12 @@ void GrView::keydown(wxKeyEvent& event)
     vsh->code()->print(std::cerr);
     fsh->code()->print(std::cerr);
 
+    // Should really have an ShProgramNode::clone()
+    ShProgram vshcopy = shRange(0, -1) << vsh;
+    
+    for (MonitorList::iterator I = m_monitors.begin(); I != m_monitors.end(); ++I) {
+      (*I)->setVertexProgram(vshcopy);
+    }
     SimpleShader* s = new SimpleShader(vsh, fsh);
     ShrikeFrame::instance()->setShader(s);
   } else if (event.GetKeyCode() == 'L') {

@@ -31,6 +31,8 @@ public:
   
   static ShrikeCanvas* instance();
   
+  void setupViewCur();
+  void renderCur();
 private:
   void init();
   void setupView();

@@ -117,9 +117,15 @@ void ShrikeCanvas::render()
 {
   SetCurrent();
   init();
-  
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+  renderCur();
+  SwapBuffers();
+}
+
+void ShrikeCanvas::renderCur()
+{
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  
   if (m_shader) m_shader->render();
 
   glDisable(GL_FRAGMENT_PROGRAM_ARB);
@@ -143,7 +149,6 @@ void ShrikeCanvas::render()
   
   glFlush();
   
-  SwapBuffers();
 }
 
 void ShrikeCanvas::renderObject()
@@ -175,6 +180,11 @@ void ShrikeCanvas::renderObject()
 void ShrikeCanvas::setupView()
 {
   SetCurrent();
+  setupViewCur();
+}
+
+void ShrikeCanvas::setupViewCur()
+{
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   m_camera.glProjection((float)m_width/m_height);

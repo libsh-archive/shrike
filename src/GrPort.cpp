@@ -3,6 +3,8 @@
 #include <GL/gl.h>
 #include <wx/wx.h>
 #include "GrView.hpp"
+#include "GrMonitor.hpp"
+#include "GrNode.hpp"
 
 using namespace SH;
 
@@ -110,9 +112,41 @@ BEGIN_EVENT_TABLE(PortTypeMenu, wxMenu)
   EVT_MENU(-1, PortTypeMenu::select)
 END_EVENT_TABLE()
 
+class PortCtxtMenu : public wxMenu {
+public:
+
+  PortCtxtMenu(GrPort* port,
+               const std::string& title = "", int style = 0)
+    : wxMenu(title.c_str(), style),
+      m_port(port)
+  {
+    Append(1, "Monitor");
+  }
+  
+  void select(wxCommandEvent& event)
+  {
+    if (event.GetId() == 1) {
+      if (m_port->monitor()) {
+      } else {
+        GrMonitor* monitor = new GrMonitor(m_port->global_x(), m_port->global_y());
+        m_port->monitor(monitor);
+        m_port->parent()->view()->addMonitor(monitor);
+      }
+    }
+  }
+  
+private:
+  GrPort* m_port;
+
+  DECLARE_EVENT_TABLE()
+};
+BEGIN_EVENT_TABLE(PortCtxtMenu, wxMenu)
+  EVT_MENU(-1, PortCtxtMenu::select)
+END_EVENT_TABLE()
+  
 wxMenu* GrPort::contextMenu()
 {
-  wxMenu* menu = new wxMenu();
+  PortCtxtMenu* menu = new PortCtxtMenu(this);
   menu->Append(0, "Type", new PortTypeMenu(this));
   menu->Append(0, "Size", new PortSizeMenu(this));
 
@@ -126,7 +160,8 @@ GrPort::GrPort(GrNode* parent, const SH::ShVariableNodePtr& var,
   : m_parent(parent), m_var(var),
     m_x(x), m_y(y),
     m_gl_name(parent->view()->addPicker(PICK_PORT, this)),
-    m_in(in)
+    m_in(in),
+    m_monitor(0)
 {
 }
 

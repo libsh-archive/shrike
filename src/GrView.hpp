@@ -11,6 +11,8 @@ namespace OGLFT {
 
 class GrNode;
 class GrPort;
+class GrMonitor;
+
 enum PickType {
   PICK_NODE,
   PICK_PORT,
@@ -31,6 +33,8 @@ public:
   void keydown(wxKeyEvent& event);
   
   GrNode* addProgram(const SH::ShProgram& program, int x, int y);
+
+  void addMonitor(GrMonitor* monitor);
   
   int addPicker(PickType type, void* data);
   int pick(int x, int y);
@@ -60,6 +64,9 @@ private:
   
   typedef std::vector<GrNode*> NodeList;
   NodeList m_nodes;
+
+  typedef std::list<GrMonitor*> MonitorList;
+  MonitorList m_monitors;
 
   GrNode* m_selected;
   GrPort* m_connecting;

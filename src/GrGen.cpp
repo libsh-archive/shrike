@@ -1,10 +1,12 @@
 #include "GrGen.hpp"
 #include <map>
+#include <list>
 #include <algorithm>
 #include <iterator>
 #include <sh/sh.hpp>
 #include "GrNode.hpp"
 #include "GrPort.hpp"
+#include "GrMonitor.hpp"
 
 using namespace SH;
 
@@ -15,11 +17,12 @@ struct VarInfo {
 };
 
 struct OutVarInfo : public VarInfo {
-  OutVarInfo(const ShProgram& target, GrPort* port)
-    : VarInfo(port), target(target)
+  OutVarInfo(const ShProgram& target, GrPort* port, GrNode* target_node)
+    : VarInfo(port), target(target), target_node(target_node)
   {
   }
   ShProgram target;
+  GrNode* target_node;
 };
 
 struct InVarInfo : public VarInfo {
@@ -61,7 +64,7 @@ void makeVariableInfoNode(GrNode* node)
       // TODO: Handle multiple out edges
       if (edge->from == port) {
         std::cerr << "Making out info for " << port->var()->name() << "[" << port->var().object() << "]"  << std::endl;
-        info_out_map[port->var()] = new OutVarInfo(edge->to->parent()->program(), port);
+        info_out_map[port->var()] = new OutVarInfo(edge->to->parent()->program(), port, edge->to->parent());
         break;
       } else {
         std::cerr << "Edge mismatch for " << port->var()->name() << std::endl;
@@ -96,7 +99,7 @@ OutVarInfo* out_info(const ShVariableNodePtr& var)
 {
   if (!info_out_map[var]) {
     std::cerr << "Did not have info for output " << var->name() << "[" << var.object() << "]" << std::endl;
-    info_out_map[var] = new OutVarInfo(0, 0);
+    info_out_map[var] = new OutVarInfo(0, 0, 0);
   }
   return info_out_map[var];
 }
@@ -130,6 +133,21 @@ ShProgram generateShader(GrNode* root_node, GrNode* final_node)
     std::cerr << "Root has no outputs. What's going on?" << std::endl;
     return 0;
   }
+
+  if (final->target() == "gpu:fragment") {
+    int count = 0;
+    for (GrNode::PortList::iterator TN = root_node->outputs_begin(); TN != root_node->outputs_end(); ++TN) {
+      GrPort* port = *TN;
+      if (port->monitor()) {
+        ShProgram adapt = SH_BEGIN_PROGRAM("gpu:fragment") {
+          ShVariable v(new ShVariableNode(SH_INOUT, port->var()->size(), SH_COLOR));
+        } SH_END;
+        ShProgram monprog = adapt << (shSwizzle(count) << p);
+        port->monitor()->setFragmentProgram(monprog);
+      }
+      count++;
+    }
+  } 
   
   bool done = false;
   
@@ -150,7 +168,7 @@ ShProgram generateShader(GrNode* root_node, GrNode* final_node)
     // based on this output's target's input requirements
     ShManipulator<int> perm;
     ShProgram target = out_info(output)->target;
-
+    GrNode* target_node = out_info(output)->target_node;
     
     // If we run into a problem setting up this target program, we'll
     // skip it and assume we can deal with it later.
@@ -210,10 +228,24 @@ ShProgram generateShader(GrNode* root_node, GrNode* final_node)
         //std::advance(I, target->outputs.size());
         ShProgramNode::VarList::iterator L = leftovers.begin();
         ShProgramNode::VarList::iterator T = target->outputs.begin();
+        GrNode::PortList::iterator TN = target_node->outputs_begin();
         for (int count = 0; I != p->outputs.end(); ++I, ++count) {
           if (count < target->outputs.size()) {
             info_out_map[*I] = out_info(*T);
+
+            GrPort* port = *TN;
+            if (port->monitor()) {
+              if (final->target() == "gpu:fragment") {
+                std::cerr << "Setting up monitor fragment program" << std::endl;
+                ShProgram adapt = SH_BEGIN_PROGRAM("gpu:fragment") {
+                  ShVariable v(new ShVariableNode(SH_INOUT, (*T)->size(), SH_COLOR));
+                } SH_END;
+                ShProgram monprog = adapt << (shSwizzle(count) << p);
+                port->monitor()->setFragmentProgram(monprog);
+              } 
+            }
             ++T;
+            ++TN;
           } else {
             info_out_map[*I] = out_info(*L);
             ++L;
@@ -246,6 +278,7 @@ ShProgram generateShader(GrNode* root_node, GrNode* final_node)
   }
 
   p = shRange(0, (int)final->outputs.size() - 1) << p;
+
   
 //   while (!consumed_output_program) {
 //     o = next_unassigned_output;

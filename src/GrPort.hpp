@@ -1,10 +1,14 @@
 #ifndef GRPORT_HPP
 #define GRPORT_HPP
 
+#include <list>
 #include "sh/ShVariableNode.hpp"
-#include "GrNode.hpp"
 
 class wxMenu;
+
+class GrNode;
+class GrMonitor;
+class GrPort;
 
 struct GrEdge {
   GrEdge(GrPort* from, GrPort* to)
@@ -24,6 +28,10 @@ public:
          double x, double y, // bottom-left coordinates, rel. to parent node
          bool in);
   ~GrPort();
+
+  GrMonitor* monitor() const { return m_monitor; }
+
+  void monitor(GrMonitor* monitor) { m_monitor = monitor; }
   
   void draw();
 
@@ -58,6 +66,7 @@ private:
   double m_x, m_y;
   unsigned int m_gl_name;
   bool m_in;
+  GrMonitor* m_monitor;
 
   EdgeList m_edges;
 };
