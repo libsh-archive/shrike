@@ -13,7 +13,6 @@ public:
   ~DiffuseShader();
 
   bool init();
-  void bind();
 
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
@@ -39,15 +38,6 @@ bool DiffuseShader::init()
   ShColor3f SH_DECL(color) = ShColor3f(.5, 0.9, 0.2);
   fsh = ShKernelLib::shDiffuse<ShColor3f>() << color;
   return true;
-}
-
-void DiffuseShader::bind()
-{
-  vsh->code()->print(std::cerr);
-  fsh->code()->print(std::cerr);
-  std::cerr << "Binding " << name() << std::endl;
-  shBindShader(vsh);
-  shBindShader(fsh);
 }
 
 DiffuseShader the_diffuse_shader;

@@ -18,6 +18,8 @@ public:
   void reshape();
   void motion(wxMouseEvent& event);
 
+  void usingShaders(bool on);
+  
   static ShrikeCanvas* instance();
   
 private:

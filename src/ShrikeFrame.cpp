@@ -85,6 +85,7 @@ void ShrikeFrame::setShader(wxCommandEvent& event)
   Shader* shader = reinterpret_cast<Shader*>(event.GetClientData());
   m_canvas->SetCurrent();
   shader->bind();
+  m_canvas->usingShaders(shader != 0);
   m_canvas->render();
   m_panel->setShader(shader);
 }

@@ -16,8 +16,9 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 WorleyShader.cpp \
 		 TexShader.cpp \
 	         CelShader.cpp \
-		 WobbleShader.cpp \
 		 Ashikhmin.cpp \
+		 Texter.cpp \
+		 WobbleShader.cpp \
 		 FrameMapping.cpp
 
 AM_CXXFLAGS = `${WX_CONFIG} --cxxflags` -Wall

@@ -13,6 +13,9 @@ Shader::~Shader()
 void Shader::bind() {
   SH::ShProgram vsh = vertex();
   SH::ShProgram fsh = fragment();
+  std::cerr << "Binding " << name() << std::endl;
+  vsh->code()->print(std::cerr);
+  fsh->code()->print(std::cerr);
   SH::shBindShader(vsh);
   SH::shBindShader(fsh);
 }

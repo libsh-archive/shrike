@@ -50,6 +50,18 @@ void ShrikeCanvas::setModel(ShObjMesh* model)
   render();
 }
 
+void ShrikeCanvas::usingShaders(bool on)
+{
+  SetCurrent();
+  if (on) {
+    glEnable(GL_VERTEX_PROGRAM_ARB);
+    glEnable(GL_FRAGMENT_PROGRAM_ARB);
+  } else {
+    glDisable(GL_VERTEX_PROGRAM_ARB);
+    glDisable(GL_FRAGMENT_PROGRAM_ARB);
+  }
+}
+
 void ShrikeCanvas::motion(wxMouseEvent& event)
 {
   if (!event.Dragging()) {
@@ -140,8 +152,6 @@ void ShrikeCanvas::init()
   if (m_init) return;
 
   glEnable(GL_DEPTH_TEST);
-  glEnable(GL_VERTEX_PROGRAM_ARB);
-  glEnable(GL_FRAGMENT_PROGRAM_ARB);
 
   glClearColor(0.2, 0.2, 0.2, 1.0);
   setupView();
