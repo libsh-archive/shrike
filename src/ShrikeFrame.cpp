@@ -39,7 +39,7 @@ struct ShaderTreeData : public wxTreeItemData {
 };
   
 ShrikeFrame::ShrikeFrame()
-  : wxFrame(0, -1, "Shrike", wxDefaultPosition, wxSize(400, 600)),
+  : wxFrame(0, -1, "Shrike", wxDefaultPosition, wxSize(600, 400)),
     m_shader(0), m_fullscreen(false)
 {
   m_instance = this;

@@ -54,13 +54,13 @@ ShAttrib1f
 fresnel (
    ShVector3f v, 
    ShNormal3f n, 
-   ShAttrib1f theta
+   ShAttrib1f eta
 ) {
    ShVector3f r = reflect(v,n);
    v = normalize(v);   
    n = normalize(n);   
    ShAttrib1f c = pos(n|v);
-   ShAttrib1f s = (theta - 1.0f)/(theta + 1.0f);
+   ShAttrib1f s = (eta - 1.0f)/(eta + 1.0f);
    s = s*s;
    // return c*1.0f + (1.0f - c)*0.1f;
    return s + (1.0f - s)*pow((1.0f - c),5);

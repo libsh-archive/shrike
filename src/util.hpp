@@ -53,13 +53,13 @@ refract (
  * don't worry about it.   It's better to use these anyways to keep
  * shaders easy to understand and modular.
  *
- * The parameter theta is the relative index of refraction.
+ * The parameter eta is the relative index of refraction.
  */
 ShAttrib1f
 fresnel (
    ShVector3f v, 
    ShNormal3f n, 
-   ShAttrib1f theta
+   ShAttrib1f eta
 );
 
 // TODO: reflect of point about plane should also be supported
