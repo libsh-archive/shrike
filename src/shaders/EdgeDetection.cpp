@@ -38,7 +38,7 @@
 
 using namespace SH;
 using namespace ShUtil;
-
+using namespace std;
 
 class EdgeDetection : public Shader {
 public:
@@ -60,7 +60,9 @@ public:
 	
 private:
 	ShObjMesh* m_model;
-  unsigned int _iTexture; 
+  ShHostMemoryPtr newmem;
+  ShTextureRect<ShColor3f> img;
+  int vp[4];
 };
 
 EdgeDetection::EdgeDetection()
@@ -75,18 +77,14 @@ EdgeDetection::~EdgeDetection()
 
 void EdgeDetection::render()
 {
-	// render the object in a buffer
+  int newvp[4];
+	glGetIntegerv(GL_VIEWPORT, newvp); // get the size to adapte the texture size after
 	shBind(vsh_model);
-	shBind(fsh_model);
-	int vp[4];
-  Shader::render();
-	glGetIntegerv(GL_VIEWPORT, vp);
+	shBind(fsh_model); // just render white
 	glClear(GL_COLOR_BUFFER_BIT);
 	glClear(GL_DEPTH_BUFFER_BIT);
-	glViewport(0, 0, 512,512);
-	glClear(GL_COLOR_BUFFER_BIT);
   float values[4];
-  glBegin(GL_TRIANGLES);
+  glBegin(GL_TRIANGLES); // render the object
   for(ShObjMesh::FaceSet::iterator I = m_model->faces.begin(); I != m_model->faces.end(); ++I) {
     ShObjEdge *e = (*I)->edge;
     do {
@@ -105,19 +103,25 @@ void EdgeDetection::render()
     } while(e != (*I)->edge);
   }
 	glEnd();
-	glBindTexture(GL_TEXTURE_2D, _iTexture);
-	glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, 512, 512); // copy the buffer to a texture
-	glViewport(vp[0], vp[1], vp[2], vp[3]);
-
-	// render the texture
+  glFlush();
+  newmem->hostStorage()->dirty(); // needed to update the value after
+  if(newvp[0] != vp[0] || newvp[1] != vp[1] || newvp[2] != vp[2] || newvp[3] != vp[3]) // check if the texture size has to be changed
+  {
+    for(int i=0 ; i<4 ; i++)
+      vp[i] = newvp[i]; // set the new size
+    newmem = new ShHostMemory((vp[2]-vp[0])*(vp[3]-vp[1])*3*sizeof(float)); // allocate memory
+    img.size(vp[2]-vp[0],vp[3]-vp[1]); // change the size
+    img.memory(newmem);
+  }
+  glReadBuffer(GL_BACK);
+	glReadPixels(vp[0], vp[1], vp[2], vp[3], GL_RGB, GL_FLOAT, newmem->hostStorage()->data()); // read the buffer
+  glReadBuffer(GL_FRONT);
 	shBind(vsh_edge);
-	shBind(fsh_edge);
+	shBind(fsh_edge); // edge detection
 	glClear(GL_COLOR_BUFFER_BIT);
-	glClear(GL_DEPTH_BUFFER_BIT);
-  glBindTexture(GL_TEXTURE_2D, _iTexture);
-	glEnable(GL_TEXTURE_2D);
+	glClear(GL_DEPTH_BUFFER_BIT); // to avoid the object(s) already rendered
   
-	glBegin(GL_QUADS); { // just render a square with the texture
+	glBegin(GL_QUADS); { // just render a squaree with the texture
 	  glTexCoord2f(0.0, 0.0);
 	  glVertex2f(-1.0, -1.0);
 	  glTexCoord2f(0.0, 1.0);
@@ -126,7 +130,9 @@ void EdgeDetection::render()
 	  glVertex2f(1.0, 1.0);
 	  glTexCoord2f(1.0, 0.0);
 	  glVertex2f(1.0, -1.0);
-	} glEnd(); 
+	}
+  glEnd(); 
+  
 }
 
 bool EdgeDetection::init()
@@ -138,19 +144,11 @@ bool EdgeDetection::init()
   } else {
     return false;
   }
-
-	ShTexture2D<ShColor3f> img(512,512);
-	ShHostMemoryPtr newmem = new ShHostMemory(515*512*3*sizeof(float));
+  for(int i=0 ; i<4 ; i++)
+    vp[i] = 0;
+	newmem = new ShHostMemory(3*sizeof(float)); // the real size will be specified in render()
 	img.memory(newmem);
 		
-	glGenTextures(1, &_iTexture);
-	glBindTexture(GL_TEXTURE_2D, _iTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 512, 512, 0, GL_RGB, GL_FLOAT, newmem->hostStorage()->data());
-  
 	vsh_model = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
 		ShOutputPosition4f opos;
@@ -159,7 +157,7 @@ bool EdgeDetection::init()
   } SH_END;
 	
   vsh_edge = SH_BEGIN_PROGRAM("gpu:vertex") {
-    ShInOutPosition4f ipos;
+    ShInOutPosition4f ipos; // no change
     ShInOutTexCoord2f tc;
   } SH_END;
 
@@ -177,7 +175,7 @@ bool EdgeDetection::init()
 		
 		ShAttrib2f offset1(0.001953125,0.0);
 		ShAttrib2f offset2(0.0,0.001953125);
-		
+	
 		result = 8.0 * (img(u) - 0.125 *(img(u-offset1-offset2) + 
 																		 img(u-offset1) +
 																		 img(u-offset1+offset2) +
