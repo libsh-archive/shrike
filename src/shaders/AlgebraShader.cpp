@@ -200,7 +200,7 @@ ShProgram worleySurface() {
     ShAttrib1f SH_NAMEDECL(freq, "Worley Frequency") = ShConstAttrib1f(16.0f);
     freq.range(0.1f, 64.0f);
 
-    ShProgram worleysh = shWorley<4, 2, float>(false); // pass in coefficient
+    ShProgram worleysh = shWorley<4, 2, SH_FLOAT>(false); // pass in coefficient
     worleysh = (dot<ShAttrib4f>() << coeff) << worleysh; 
 
     ShProgram scaler = SH_BEGIN_PROGRAM() {
@@ -292,9 +292,9 @@ namespace {
   /* Ashikhmin Surface Atom from Stefanus' demo...
    * Move some of this into the utils library later */
   template<int N>
-  ShGeneric<N, float> pow5(const ShGeneric<N, float>& f)
+  ShGeneric<N, SH_FLOAT> pow5(const ShGeneric<N, SH_FLOAT>& f)
   {
-    ShAttrib<N, SH_TEMP, float> t =  f * f;
+    ShAttrib<N, SH_TEMP, SH_FLOAT> t =  f * f;
     return t * t * f;
   }
 

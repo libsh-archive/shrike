@@ -1,3 +1,15 @@
+2004-11-08 Bryan Chan   <b8chan@cgl.uwaterloo.ca>
+  * src/UniformPanel.cpp:
+  Small updates to work with variants after storage type branch
+  merged into main.
+
+	* src/utilimpl.hpp 
+    src/shaders/WorleyShader.cpp
+		AlgebraShader.cpp
+		Ashikhmin.cpp:
+	Replaced c++ typename storage type params with ShValueType 
+	enum values.
+
 2004-11-05  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/shaders/SimplePhong.cpp: Made "Simple Phong" simpler.

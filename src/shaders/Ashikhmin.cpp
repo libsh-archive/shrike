@@ -57,9 +57,9 @@ Ashikhmin::~Ashikhmin()
 }
 
 template<int N>
-ShGeneric<N, float> pow5(const ShGeneric<N, float>& f)
+ShGeneric<N, SH_FLOAT> pow5(const ShGeneric<N, SH_FLOAT>& f)
 {
-  ShAttrib<N, SH_TEMP, float> t =  f * f;
+  ShAttrib<N, SH_TEMP, SH_FLOAT> t =  f * f;
   return t * t * f;
 }
 
