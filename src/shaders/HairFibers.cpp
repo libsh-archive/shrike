@@ -134,11 +134,11 @@ bool HairFiber::init()
 		ShVector3f surface = cross(normal, tangent);
 		surface = normalize(surface);
 
-		normal(0) += 0.4*cellnoise<1>(scale(0)*tc(0), false, false);
-		normal(1) += 0.4*cellnoise<1>(scale(1)*tc(0), false, false);
+		normal(0) += 0.4*cellnoise<1>(scale(0)*tc(0), false);
+		normal(1) += 0.4*cellnoise<1>(scale(1)*tc(0), false);
 		normal = normalize(normal);
 
-		ShVector3f azimut = (0.7*cellnoise<1>(100*tc(0), false, false)+0.3) * normal;
+		ShVector3f azimut = (0.7*cellnoise<1>(100*tc(0), false)+0.3) * normal;
 		azimut = normalize(azimut);
 
 		ShAttrib1f thetai = M_PI/2 - acos(light | surface);

@@ -358,7 +358,7 @@ class StoneWorley: public WorleyShader {
         ShOutputColor3f SH_DECL(ks);
 
         ShAttrib1f inGrout = result(0) < threshold;
-        kd = noiseColor * sturbulence<1>(turbulenceAmps, texcoord * noiseFreq, useTexture);
+        kd = noiseColor * sturbulence<1>(texcoord * noiseFreq, turbulenceAmps, useTexture);
         kd = lerp(inGrout, ShConstColor3f(1.0f, 1.0f, 1.0f), result(1,1,1) * color1 + kd);
         ks = specularColor; 
         //halfVec = 0.5*(normal + normalize(lightVec));

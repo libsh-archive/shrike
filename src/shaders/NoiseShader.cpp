@@ -83,7 +83,7 @@ class SimpleWoodNoise: public NoiseShader {
 
         posm *= bandFreq;
         ShAttrib1f inband = sqrt(posm(0,1) | posm(0,1)); // concentric rings
-        ShAttrib1f noise = noiseScale * snoise<1>(posm * noiseFreq, useTexture);
+        ShAttrib1f noise = noiseScale * sperlin<1>(posm * noiseFreq, useTexture);
         inband = frac(inband + noise); // add noise
 
         ShOutputColor3f SH_DECL(kd) = lerp(inband, diffuseIn, diffuseOut);
@@ -118,8 +118,8 @@ class ComplexWoodNoise: public NoiseShader {
 
         posm *= bandFreq;
         ShAttrib1f inband = sqrt(posm(0,1) | posm(0,1)); // concentric rings
-        ShAttrib1f spacenoise = spaceNoiseScale * snoise<1>(inband * spaceNoiseFreq, useTexture);  
-        ShAttrib1f noise = noiseScale * sturbulence<1>(turbAmp, posm * noiseFreq, useTexture);
+        ShAttrib1f spacenoise = spaceNoiseScale * sperlin<1>(inband * spaceNoiseFreq, useTexture);  
+        ShAttrib1f noise = noiseScale * sturbulence<1>(posm * noiseFreq, turbAmp, useTexture);
         inband = frac(inband + noise + spacenoise); // add noise
 
         ShOutputColor3f SH_DECL(kd) = lerp(inband, diffuseIn, diffuseOut);
@@ -150,7 +150,7 @@ class MarbleNoise: public NoiseShader {
 
         posm *= bandFreq;
         ShAttrib1f inband = posm(0); 
-        ShAttrib1f noise = noiseScale * sturbulence<1>(octaveAmps, posm * noiseFreq, useTexture);
+        ShAttrib1f noise = noiseScale * sturbulence<1>(posm * noiseFreq, octaveAmps, useTexture);
         inband = frac(inband + noise); // add noise
 
         ShColor3f bandColor = lerp(smoothstep(bandrange(0), bandrange(1), inband), color1, color2);

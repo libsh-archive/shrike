@@ -115,7 +115,7 @@ bool BrickWall::init()
     ShVector3f normDeformation;
 
     for(int i=0 ; i<2 ; i++) {
-      bumpnorm[i] += 0.03*cellnoise<1>(changeNorm, false, false); // add noise to make a rough surface
+      bumpnorm[i] += 0.03*cellnoise<1>(changeNorm, false); // add noise to make a rough surface
     }
 
     // set the limits of edges
@@ -139,7 +139,7 @@ bool BrickWall::init()
     ShInputAttrib1f changeColor;
     ShOutputColor3f brickVariations;  
     for(int i=0 ; i<3 ; i++) {
-      brickVariations[i] = colorVariations(i) * cellnoise<1>(changeColor, false, false);
+      brickVariations[i] = colorVariations(i) * cellnoise<1>(changeColor, false);
     }
     brickVariations += brick;
     

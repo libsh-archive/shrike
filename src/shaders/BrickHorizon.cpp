@@ -106,7 +106,7 @@ bool BrickHorizon::init()
     ShInOutNormal3f normal;
     
     for(int i=0 ; i<2 ; i++) {
-      normal[i] += 0.05*cellnoise<1>(changeNorm, false, false); // add noise to make a rough surface
+      normal[i] += 0.05*cellnoise<1>(changeNorm, false); // add noise to make a rough surface
     }
 	  //normal = normalize(normal); // normalize the new normal
   } SH_END;
@@ -118,7 +118,7 @@ bool BrickHorizon::init()
     ShInputAttrib1f changeColor;
     ShOutputColor3f brickVariations;  
     for(int i=0 ; i<3 ; i++) {
-      brickVariations[i] = colorVariations(i) * cellnoise<1>(changeColor, false, false);
+      brickVariations[i] = colorVariations(i) * cellnoise<1>(changeColor, false);
     }
     brickVariations += brick;
   } SH_END;
@@ -187,7 +187,7 @@ bool BrickHorizon::init()
 		ShAttrib1f horizonLoc; // position of the horizon
 	
 		// create a horizon value for a brick, to make some "holes" in the surface
-		ShAttrib1f hole = 1.0-0.4*cellnoise<1>(10000*tc(0)*tc(1), false, false); 
+		ShAttrib1f hole = 1.0-0.4*cellnoise<1>(10000*tc(0)*tc(1), false); 
 		
 		ShAttrib1f horizon1 = hole, horizon2 = hole, horizon3 = hole, horizon4 = hole,
 							 horizon5 = hole, horizon6 = hole, horizon7 = hole, horizon8 = hole;
