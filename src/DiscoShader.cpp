@@ -61,8 +61,13 @@ bool DiscoShader::init()
     ShAttrib1f timeoffset = time / timestep;
     p(2) = timeoffset;
 
-    // use cellnoise to find colour of a cell
-    ks = kd = cellnoise<3>(p); 
+    // use cellnoise to find colour of a cell and use power to make 
+    // colours funkier (and maybe add environment mapping sweetness?)
+    kd = 2.0f * cellnoise<3>(p);
+    kd(0) = pow(kd(0), ShConstant1f(2.0f));
+    kd(1) = pow(kd(1), ShConstant1f(2.0f));
+    kd(2) = pow(kd(2), ShConstant1f(2.0f));
+    ks = kd;
   } SH_END;
   
   fsh = ShKernelLib::shPhong<ShColor3f>() << shExtract("specExp") << exponent; 
