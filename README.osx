@@ -1,0 +1,18 @@
+Additional Mac OSX Notes
+========================
+
+The Mac OSX build of shrike requires an additional post-processing step.  After the regular build (read INSTALL), run
+  ./macos_build.sh
+to run some post-processing on the build.  You should then try running it with
+  src/shrike
+Suggestions on how to integrate this into automake would be greatly appreciated.  Someday, we might make a bundle too.
+
+This was built against wxMac-2.4.2.
+
+This is an initial version and has some quirks:
+
+It appears that many of the ARB backend shaders work.  Since Sh's ATI backend and floating point buffers don't work, these backends don't work.   
+
+Some shaders produce an error regarding GL_MAX_PROGRAM_INSTRUCTION_COUNT.  On my Powerbook w/ GeForce FX 5200, this amount is 1024 for fragment shaders, so I'm not sure yet why this is unhappy.
+
+Sometimes the main window appears to be missing.  In fact, there is a mini-version of it that needs to be resized.
