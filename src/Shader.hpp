@@ -17,6 +17,8 @@ public:
   virtual SH::ShProgram vertex() = 0;
   
   virtual void render();
+
+  bool firstTimeInit();
   
   const std::string& name() const;
 
@@ -54,6 +56,8 @@ protected:
 private:
   std::string m_name;
 
+  bool m_has_been_init;
+  
 
   StringParamList m_stringParams;
 

@@ -9,8 +9,7 @@ namespace OGLFT {
 
 class GrNode {
 public:
-  GrNode(const std::string& label,
-         const SH::ShProgram& program,
+  GrNode(const SH::ShProgram& program,
          double x, double y,
          OGLFT::Face* face);
   
@@ -20,7 +19,6 @@ public:
   
 private:
 
-  std::string m_label;
   SH::ShProgram m_program;
   double m_x, m_y;
   OGLFT::Face* m_face;

@@ -1,3 +1,21 @@
+2004-03-11  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/ShrikeFrame.cpp (setShader): Use firstTimeInit() here
+	instead of initializing everything in initShaderList(). This cuts
+	down the startup time a lot.
+
+	* src/Shader.cpp (firstTimeInit): Implement firstTimeInit(), which
+	only calls init() once.
+
+	* src/Shader.hpp: Add a prototype for firstTimeInit().
+
+	* src/Textures.cpp: Added a simple example of using textures.
+
+	* src/Pants.cpp: Added this really cool new shader. Thanks to
+	Craig Kaplan.
+
+	* src/NonPeriodic.cpp: Added this new shader. Thanks to Craig Kaplan.
+
 2004-03-09  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/ShrikeFrame.cpp: Added a "Reset View" menu item.

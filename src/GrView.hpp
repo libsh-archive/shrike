@@ -3,6 +3,7 @@
 
 #include <wx/glcanvas.h>
 #include <list>
+#include <sh/ShProgram.hpp>
 
 namespace OGLFT {
   class Face;
@@ -19,6 +20,8 @@ public:
   void motion(wxMouseEvent& event);
   void mousewheel(wxMouseEvent& event);
   void mdown(wxMouseEvent& event);
+
+  void addProgram(const SH::ShProgram& program, int x, int y);
   
 private:
   void init();
