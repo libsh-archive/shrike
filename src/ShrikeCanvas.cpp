@@ -26,6 +26,7 @@
 //////////////////////////////////////////////////////////////////////////////
 #include <sstream>
 
+#include <sh/sh.hpp>
 #include "ShrikeGl.hpp"
 //#include <wx/wx.h>
 #include <wx/glcanvas.h>
@@ -36,7 +37,6 @@
 #include <sh/sh.hpp>
 #include "Timer.hpp"
 #include "shaders/LCDSmall.hpp"
-
 
 void shrikeGlCheckError(const char* desc, const char* file, int line) {
   GLenum errnum = glGetError();
@@ -105,6 +105,7 @@ ShrikeCanvas::ShrikeCanvas(wxWindow* parent, ShObjMesh* model)
     m_shader(0),
     m_showLight(true),
     m_showFps(false),
+    m_fps_shaders(0),
     m_bg_r(0.2), m_bg_g(0.2), m_bg_b(0.2),
     m_bg(0.2, 0.2, 0.2)
 {
@@ -159,11 +160,9 @@ void ShrikeCanvas::setShader(Shader* shader)
   SetCurrent();
   SHRIKE_GL_CHECK_CURRENT_ERROR;
   if (shader) {
-    SHRIKE_GL_CHECK_ERROR(glEnable(GL_VERTEX_PROGRAM_ARB));
-    SHRIKE_GL_CHECK_ERROR(glEnable(GL_FRAGMENT_PROGRAM_ARB));
+    shader->bind();
   } else {
-    SHRIKE_GL_CHECK_ERROR(glDisable(GL_VERTEX_PROGRAM_ARB));
-    SHRIKE_GL_CHECK_ERROR(glDisable(GL_FRAGMENT_PROGRAM_ARB));
+    shUnbind();
   }
   SHRIKE_GL_CHECK_CURRENT_ERROR;
   m_shader = shader;
@@ -229,11 +228,16 @@ void ShrikeCanvas::render()
   
   SHRIKE_GL_CHECK_ERROR(glClear(GL_COLOR_BUFFER_BIT + GL_DEPTH_BUFFER_BIT));
 
-  if (m_shader) m_shader->render();
+  if (m_shader) {
+    m_shader->bind();
+    m_shader->render();
+  }
 
+  shUnbind();
+  /*
   SHRIKE_GL_CHECK_ERROR(glDisable(GL_FRAGMENT_PROGRAM_ARB));
   SHRIKE_GL_CHECK_ERROR(glDisable(GL_VERTEX_PROGRAM_ARB));
-
+  */
   ShPoint3f lp = Globals::lightDirW * Globals::lightLenW;
   float pos[3];
   lp.getValues(pos);
@@ -246,12 +250,8 @@ void ShrikeCanvas::render()
   } SHRIKE_GL_IGNORE_ERROR(glEnd()); // On ATI we get spurious errors here
 
   if (m_shader) {
-    SHRIKE_GL_CHECK_ERROR(glEnable(GL_FRAGMENT_PROGRAM_ARB));
-    SHRIKE_GL_CHECK_ERROR(glEnable(GL_VERTEX_PROGRAM_ARB));
-    //glFlush();
     SHRIKE_GL_CHECK_ERROR(glFinish());
   }
-  
   
   if (m_showFps && m_shader) {
     ShTimer end = ShTimer::now();
@@ -259,8 +259,7 @@ void ShrikeCanvas::render()
 
     m_fps = 1.0 / elapsed;
     SHRIKE_GL_CHECK_ERROR(glDisable(GL_DEPTH_TEST));
-    shBind(m_fpsVsh);
-    shBind(m_fpsFsh);
+    shBind(*m_fps_shaders);
     double width = 160.0/GetClientSize().GetWidth();
     double height = 80.0/GetClientSize().GetHeight(); 
     SHRIKE_GL_CHECK_ERROR(glBegin(GL_QUADS)); {
@@ -272,11 +271,8 @@ void ShrikeCanvas::render()
       glVertex2f(-1.0 + width, -1.0 + height);
       glTexCoord2f(1.0, 0.0);
       glVertex2f(-1.0 + width, -1.0);
-    } SHRIKE_GL_CHECK_ERROR(glEnd());
+    } SHRIKE_GL_IGNORE_ERROR(glEnd());
     SHRIKE_GL_CHECK_ERROR(glEnable(GL_DEPTH_TEST));
-
-    m_shader->bind(); // rebind shader
-    SHRIKE_GL_CHECK_CURRENT_ERROR;
   }
   SHRIKE_GL_CHECK_CURRENT_ERROR;
   SwapBuffers();
@@ -401,8 +397,6 @@ void ShrikeCanvas::init()
   SHRIKE_GL_CHECK_ERROR(glClearColor(m_bg_r, m_bg_g, m_bg_b, 1.0));
   setupView();
   
-  shSetBackend("arb");
-
   m_fpsVsh = SH_BEGIN_PROGRAM("gpu:vertex"); {
     ShInOutPosition4f SH_DECL(pos);
     ShInOutTexCoord2f SH_DECL(u);
@@ -417,6 +411,8 @@ void ShrikeCanvas::init()
     //discard(1.0f - indigit); // TODO should be using this, but it won't fit on ATI
     result = lerp(indigit, yellow, m_bg); 
   } SH_END;
+
+  m_fps_shaders = new ShProgramSet(m_fpsVsh, m_fpsFsh);
   
   m_init = true;
   SHRIKE_GL_CHECK_CURRENT_ERROR;

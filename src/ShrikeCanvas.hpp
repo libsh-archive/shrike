@@ -84,11 +84,13 @@ private:
   SH::ShProgram m_fpsVsh;
   SH::ShProgram m_fpsFsh;
   bool m_showFps;
+  SH::ShProgramSet* m_fps_shaders;
 
   float m_bg_r;
   float m_bg_g;
   float m_bg_b;
   SH::ShColor3f m_bg;
+
   
   static ShrikeCanvas* m_instance;
   

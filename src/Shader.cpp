@@ -30,13 +30,15 @@
 Shader::Shader(const std::string& name)
   : m_name(name),
     m_has_been_init(false),
-    m_failed(false)
+    m_failed(false),
+    m_shaders(0)
 {
   append(this);
 }
 
 Shader::~Shader()
 {
+  delete m_shaders;
 }
 
 void Shader::set_failed(bool failed)
@@ -58,10 +60,10 @@ bool Shader::firstTimeInit()
 }
 
 void Shader::bind() {
-  SH::ShProgram vsh = vertex();
-  SH::ShProgram fsh = fragment();
-  SH::shBind(vsh);
-  SH::shBind(fsh);
+  if (!m_shaders) {
+    m_shaders = new SH::ShProgramSet(vertex(), fragment());
+  }
+  SH::shBind(*m_shaders);
 }
 
 const std::string& Shader::name() const

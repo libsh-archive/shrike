@@ -60,7 +60,7 @@ public:
   
   ShProgram vsh, edgevsh;
   ShProgram fsh, edgefsh; 
-
+  
 private:
   ShObjMesh m_obj;
   const ShObjMesh *m_canvasobj; 
@@ -68,16 +68,26 @@ private:
   ShAttrib1f aspect;
   GLuint displayList;
   GLuint edgeDisplayList; 
+
+  ShProgramSet* m_fill_shaders;
+  ShProgramSet* m_edge_shaders;
   
   static EdgeGooch* instance;
 };
 
 EdgeGooch::EdgeGooch()
-  : Shader("Non Photorealistic: Sillhouetted Gooch") { 
-    m_canvasobj = 0;
+  : Shader("Non Photorealistic: Sillhouetted Gooch"),
+    m_canvasobj(0),
+    m_fill_shaders(0),
+    m_edge_shaders(0)
+{ 
 }
 
-EdgeGooch::~EdgeGooch() { }
+EdgeGooch::~EdgeGooch()
+{
+  delete m_fill_shaders;
+  delete m_edge_shaders;
+}
 
 void EdgeGooch::bind() { }
 
@@ -94,14 +104,12 @@ void EdgeGooch::render() {
   aspect = canvas->GetClientSize().GetWidth() 
     / (float)canvas->GetClientSize().GetHeight(); 
 
-  // render fill 
-  shBind(vsh);
-  shBind(fsh);
+  // render fill
+  shBind(*m_fill_shaders);
   glCallList(displayList);
 
   eyePosm = Globals::mv_inverse | ShPoint3f(0, 0, 0);
-  shBind(edgevsh);
-  shBind(edgefsh);
+  shBind(*m_edge_shaders);
   glCallList(edgeDisplayList);
 }
 
@@ -204,6 +212,11 @@ bool EdgeGooch::init()
     ShOutputColor4f SH_DECL(kd) = ShConstAttrib4f(0.0f, 0.0f, 0.0f, 1.0f);
   } SH_END;
 
+  delete m_fill_shaders;
+  delete m_edge_shaders;
+  m_fill_shaders = new ShProgramSet(vsh, fsh);
+  m_edge_shaders = new ShProgramSet(edgevsh, edgefsh);
+  
   return true;
 }
 

@@ -36,7 +36,7 @@ using namespace SH;
 
 Camera::Camera()
 {
-  proj = perspective(45, 1, 1, 100);
+  proj = perspective(45, 1, 1, 3000);
 }
 
 void printMatrix(std::ostream& out, const ShMatrix4x4f& mat)
@@ -80,7 +80,7 @@ void Camera::glModelView()
 
 void Camera::glProjection(float aspect)
 {
-  proj = perspective(45, aspect, 1, 100);
+  proj = perspective(45, aspect, 1, 3000);
   float values[16];
   for (int i = 0; i < 16; i++) proj[i%4](i/4).getValues(&values[i]);
   glMultMatrixf(values);

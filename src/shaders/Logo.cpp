@@ -62,12 +62,17 @@ private:
   ShPoint3f saw, sbw;
 
   ShObjMesh* m_model;
+
+  ShProgramSet* m_shadow_set;
+  ShProgramSet* m_object_set;
   
   static Logo* instance;
 };
 
 Logo::Logo()
-  : Shader("Vector Graphics: Sh Logo")
+  : Shader("Vector Graphics: Sh Logo"),
+    m_shadow_set(0),
+    m_object_set(0)
 {
   saw = ShPoint3f(0, 1.35, 0);
   sbw = ShPoint3f(1, 1.35, 0);
@@ -79,16 +84,17 @@ Logo::Logo()
 
 Logo::~Logo()
 {
+  delete m_shadow_set;
+  delete m_object_set;
 }
 
 void Logo::bind()
 {
-  shBind(vsh);
 }
 
 void Logo::render()
 {
-  shBind(fsh_h);
+  shBind(*m_shadow_set);
 
   float r = 10.0;
   
@@ -104,8 +110,8 @@ void Logo::render()
     glVertex3f( r, 0.0, -r);
   } glEnd();
 
-  shBind(fsh_s);
-
+  shBind(*m_object_set);
+  
   float values[4];
   glBegin(GL_TRIANGLES);
   for(ShObjMesh::FaceSet::iterator I = m_model->faces.begin();
@@ -199,6 +205,12 @@ bool Logo::init()
 
   fsh_s = s_renderer;
   fsh_h = h_renderer << doText("h") << scaler_h << warper;
+
+  delete m_shadow_set;
+  delete m_object_set;
+
+  m_object_set = new ShProgramSet(vsh, fsh_s);
+  m_shadow_set = new ShProgramSet(vsh, fsh_h);
   
   return true;
 }

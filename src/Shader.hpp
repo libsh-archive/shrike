@@ -94,6 +94,8 @@ private:
 
   StringParamList m_stringParams;
 
+  SH::ShProgramSet* m_shaders;
+  
   static list* getList();
   
   static void append(Shader* shader);

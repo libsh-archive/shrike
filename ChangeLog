@@ -1,21 +1,33 @@
+2005-03-04  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/ShrikeApp.cpp (ShrikeApp): Added an optional argument
+	specifying the backend to use.
+
+	* src/shaders/EdgeGooch.cpp: Use ShProgramSets.
+
+	* src/Shader.cpp: Use an ShProgramSet to bind.
+
+	* src/ShrikeCanvas.cpp: Use ShProgramSets, and shUnbind().
+
+	* src/Camera.cpp (Camera): Use a far plane that's actually far.
+
 2004-11-28 Bryan Chan  <b8chan@cgl.uwaterloo.ca>
-  Undid the typename -> ShValueType changes since trunk uses typenames again.
+	Undid the typename -> ShValueType changes since trunk uses
+	typenames again.
   
 2004-11-11 Bryan Chan   <b8chan@cgl.uwaterloo.ca>
-  * src/UniformPanel.cpp:
-  Fixed bugs so that non-f uniforms don't cause the panel to bomb out.
+
+	* src/UniformPanel.cpp: Fixed bugs so that non-f uniforms don't
+	cause the panel to bomb out.
   
 2004-11-08 Bryan Chan   <b8chan@cgl.uwaterloo.ca>
-  * src/UniformPanel.cpp:
-  Small updates to work with variants after storage type branch
-  merged into main.
 
-	* src/utilimpl.hpp 
-    src/shaders/WorleyShader.cpp
-		AlgebraShader.cpp
-		Ashikhmin.cpp:
-	Replaced c++ typename storage type params with ShValueType 
-	enum values.
+	* src/UniformPanel.cpp: Small updates to work with variants after
+	storage type branch merged into main.
+
+	* src/utilimpl.hpp, src/shaders/WorleyShader.cpp,
+	AlgebraShader.cpp, Ashikhmin.cpp: Replaced c++ typename storage
+	type params with ShValueType enum values.
 
 2004-11-05  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 

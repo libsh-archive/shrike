@@ -26,6 +26,7 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "ShrikeApp.hpp"
 #include "ShrikeFrame.hpp"
+#include <sh/sh.hpp>
 
 IMPLEMENT_APP(ShrikeApp)
 
@@ -35,6 +36,14 @@ ShrikeApp::ShrikeApp()
   
 bool ShrikeApp::OnInit()
 {
+  std::string backend_name = "arb";
+
+  if (argc > 1) {
+    backend_name = argv[1];
+  }
+  
+  SH::shSetBackend(backend_name);
+
   ShrikeFrame* frame = new ShrikeFrame;
   frame->Show(true);
   
