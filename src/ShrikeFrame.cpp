@@ -273,13 +273,17 @@ bool ShrikeFrame::setShader(Shader* shader)
   } catch (const ShBackendException& e) {
     shader->set_failed(true);
     showError("A Backend error occured trying to initialize or bind this program.\n"
-              "This probably indicates that your graphics card does not have the resources required to run this program.",
+              "This probably indicates that your graphics card\n"
+              "does not have the resources required to run this program.",
               e.message());
     return false;
   } catch (const ShException& e) {
     shader->set_failed(true);
     showError("An Sh error occured trying to initialize or bind this program.\n"
-              "This probably indicates an error in the shader program.",
+              "This probably indicates an error in the shader program,\n"
+              "or an error trying to run the shader on your hardware\n"
+              "(e.g. running out of instructions). It may also be a missing\n"
+              "or corrupt texture image.",
               e.message());
     return false;
   } catch (...) {

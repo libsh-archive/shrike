@@ -1,5 +1,7 @@
 2004-10-22  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
+	* src/ShrikeFrame.cpp (setShader): Improve error message a little.
+
 	* src/UniformPanel.cpp (setShader): Handle palettes.
 
 	* src/Shader.cpp (Shader::Shader): Initialize m_failed.
