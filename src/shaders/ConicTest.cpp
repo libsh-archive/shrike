@@ -226,7 +226,7 @@ bool ConicTest::init()
 
 	    // generate interval guaranteed to have solution
 		ShAttrib3f G;
-		G(0,1) = ShAttrib2f(s*sign(x(0))*sqrt(pos(x(1))),s*x(0));
+		G(0,1) = ShAttrib2f(sign(x(0))*sqrt(pos(x(1)))/s,x(0)/s);
 
 		// set up coefficients for distance cubic 
 		ShAttrib3f cc;
@@ -239,7 +239,7 @@ bool ConicTest::init()
 		A(0,1) = cc(0,0) + (cc(1,1) + cc(2,2)*G(0,1)*G(0,1))*G(0,1);
 
 	    // refine estimate using reguli-falsi
-		for (int i=0; i<5; i++) {
+		for (int i=0; i<3; i++) {
 		  G(2) = (A(0)*G(1) - A(1)*G(0))/(A(0) - A(1));
 		  A(2) = cc(0) + (cc(1) + cc(2)*G(2)*G(2))*G(2);
 		  ShAttrib1f c = (A(2)*A(0) > 0.0);
@@ -270,7 +270,7 @@ bool ConicTest::init()
         ShAttrib4f r; // square distance, sign (plane equation), unnorm gradient vector
 		r(2,3) = cP - x;
 		r(0) = r(2,3) | r(2,3);
-		r(1) = (uP - x) | N;  // useful for pseudodistance
+		r(1) = (uP - x) | normalize(N);  // useful for pseudodistance
 
 		// r(0,1) = cond(t>0.5,ShAttrib2f(t,t),ShAttrib2f(t,-t));
 
@@ -284,30 +284,46 @@ bool ConicTest::init()
 	  }
   };
 
+  struct BezierControl {
+      ShAttrib2f P[3];
+      BezierControl() {}
+      void control (
+          double p0x, double p0y,
+          double p1x, double p1y,
+          double p2x, double p2y
+      ) {
+	  P[0] = ShAttrib2f(p0x,p0y);
+	  P[1] = ShAttrib2f(p1x,p1y);
+	  P[2] = ShAttrib2f(p2x,p2y);
+      }
+      void contract (double eps = 0.0001) {
+          ShVector2f d0 = normalize(P[1] - P[0]);
+          P[0] += d0 * eps;
+	      ShVector2f d1 = normalize(P[2] - P[1]);
+          P[2] -= d1 * eps;
+      }
+  };
+
   // Data for a test character (a D)
-  // const int N = 6;
-  // Conic C[N];
-  // C[0].bezier(0.1,0.1, 0.2,0.5, 0.1,0.9);  
-  // C[1].bezier(0.1,0.9, 0.9,0.9, 0.9,0.5);  
-  // C[2].bezier(0.9,0.5, 0.9,0.1, 0.1,0.1);  
-  // C[3].bezier(0.3,0.2, 0.7,0.2, 0.7,0.5);  
-  // C[4].bezier(0.7,0.5, 0.7,0.8, 0.3,0.8);  
-  // C[5].bezier(0.3,0.8, 0.4,0.5, 0.3,0.2);  
+  const int N = 6;
+  BezierControl B[N];
+  B[0].control(0.1,0.1, 0.2,0.5, 0.1,0.9);  
+  B[1].control(0.1,0.9, 0.9,0.9, 0.9,0.5);  
+  B[2].control(0.9,0.5, 0.9,0.1, 0.1,0.1);  
+  B[3].control(0.3,0.2, 0.7,0.2, 0.7,0.5);  
+  B[4].control(0.7,0.5, 0.7,0.8, 0.3,0.8);  
+  B[5].control(0.3,0.8, 0.4,0.5, 0.3,0.2);  
 
   // Simple test data
-  const int N = 1;
-  Conic C[N];
-  C[0].bezier(0.1,0.5, 0.5,0.1, 0.9,0.5);  
+  // const int N = 1;
+  // BezierControl B[N];
+  // B[0].control(0.1,0.5, 0.5,0.1, 0.9,0.5);  
 
-  // Evil hack: contract endpoints
-  /*
-  const float eps = 0.0001;
+  Conic C[N];
   for (int i=0; i<N; i++) {
-    ShVector2f d = normalize(L[i](2,3) - L[i](0,1));
-    L[i](0,1) += d * eps;
-    L[i](2,3) -= d * eps;
+      B[i].contract();
+      C[i].bezier(B[i].P[0],B[i].P[1],B[i].P[2]);
   }
-  */
 
   fsh = SH_BEGIN_FRAGMENT_PROGRAM {
     ShInputTexCoord2f tc;
