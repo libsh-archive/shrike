@@ -1,3 +1,9 @@
+2004-07-09  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/shaders/Checkerboard.cpp: Added this shader.
+
+	* src/shaders/Derivatives.cpp: Added this shader.
+
 2004-07-05  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/util.cpp: Remove refract function.

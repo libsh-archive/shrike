@@ -18,6 +18,8 @@ public:
   ShProgram fragment() { return fsh;}
   
   ShProgram vsh, fsh;
+
+  static TexShader instance;
 };
 
 TexShader::TexShader()
@@ -42,5 +44,5 @@ bool TexShader::init()
 }
 
 
-TexShader the_tex_shader;
+TexShader TexShader::instance = TexShader();
 
