@@ -1,8 +1,6 @@
 #include <sh/sh.hpp>
-#include <sh/shutil.hpp>
 
 using namespace SH;
-using namespace ShUtil;
 
 // TODO: these should be in standard library
 

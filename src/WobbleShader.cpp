@@ -54,7 +54,7 @@ bool WobbleShader::init()
   
   vsh = vsh << shExtract("posm") << wobbler;
   ShColor3f SH_DECL(diffuse) = ShColor3f(1.0, 1.0, 1.0);
-  ShConstant3f lightColor(1.0f, 1.0f, 1.0f);
+  ShConstColor3f lightColor(1.0f, 1.0f, 1.0f);
   fsh = ShKernelSurface::diffuse<ShColor3f>() << diffuse << lightColor;
   return true;
 }

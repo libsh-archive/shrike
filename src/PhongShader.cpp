@@ -48,7 +48,7 @@ bool PhongShader::init()
   ShTexture2D<ShColor3f> spectex(image.width(), image.height());
   spectex.memory(image.memory());
   
-  ShConstant3f lightColor(1.0f, 1.0f, 1.0f);
+  ShConstColor3f lightColor(1.0f, 1.0f, 1.0f);
   fsh = ShKernelSurface::phong<ShColor3f>();
   fsh = fsh << namedCombine(access(difftex), access(spectex));
   fsh = fsh << shExtract("specExp") << exponent;

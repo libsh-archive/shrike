@@ -55,7 +55,7 @@ FrameMapping::~FrameMapping()
 }
 
 template<int N>
-ShVariableN<N, float> pow5(const ShVariableN<N, float>& f)
+ShGeneric<N, float> pow5(const ShGeneric<N, float>& f)
 {
   ShAttrib<N, SH_TEMP, float> t =  f * f;
   return t * t * f;

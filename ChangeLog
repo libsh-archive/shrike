@@ -1,3 +1,7 @@
+2004-04-07  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* Ever so many fixes for the new Sh.
+
 2004-04-04  Michael McCool <mmccool@uwaterloo.ca>
 	* src/JeweledShader.cpp:
 	a complex "hero" shader that uses three brdfs, a specular map,
