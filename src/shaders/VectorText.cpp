@@ -85,7 +85,7 @@ VectorText::VectorText(int mode)
   if (!m_done_init) {
     // Initialize parameters and static variables
     m_scale.name("scale");
-    m_scale.range(0.0, 100.0);
+    m_scale.range(0.0, 30.0);
 
     m_fw.name("filter width");
     m_fw.range(0.0, 10.0);
@@ -229,7 +229,6 @@ bool VectorText::init()
   ftexture.memory(font.memory(0));
   flag.memory(font.memory(1));
 
-  /*
   //debug info
   for(int i=0; i<height; i++) {
 	  for(int j=0; j<width; j++) {
@@ -247,7 +246,6 @@ bool VectorText::init()
 	  }
 	  std::cout << std::endl;
   }
-  */
 
   std::cerr << " the image width is " << font.width() << std::endl;
   std::cerr << " the image height is " << font.height() << std::endl;
@@ -265,41 +263,43 @@ bool VectorText::init()
     ShOutputColor3f o;
 
     // transform texture coords (should be in vertex shader really, but)
+    ShAttrib2f x = m_size*tc - m_offset;
+
 #ifdef NOPACK
-    //ShAttrib2f x = tc * m_size - m_offset;
-    ShAttrib2f x = tc - m_offset;
     ShAttrib4f L[edges];
 
     for(int i=0; i<edges; i++) {
     	L[i] = ftexture[i](x); 
     }
   
-    ShAttrib4f r = segdists(L,edges,x);
+    ShAttrib4f r = segdists_a(L,edges,x);
 #endif
 
 #ifdef PACK9
-    ShAttrib2f x = tc;
     ShAttrib4f L[9];
 
     for(int i=0; i<9; i++) {
-	ShAttrib2f y = tc + size[i];
+	ShAttrib2f y = x + size[i];
     	L[i] = ftexture(y); 
     }
   
-    ShAttrib4f r = segdists(L,9,x);
+    ShAttrib4f r = segdists_a(L,9,x);
 #endif
 
 #ifdef PACK4
-    ShAttrib2f x = tc;
     ShAttrib4f L[4];
 
     for(int i=0; i<4; i++) {
-	ShAttrib2f y = tc + size[i];
+	ShAttrib2f y = x + size[i];
     	L[i] = ftexture(y); 
     }
   
-    ShAttrib4f r = segdists(L,4,x);
+    ShAttrib4f r = segdists_a(L,4,x);
 #endif
+
+    // mask off the entirely inside and entirely outside cells
+    // (this lets us reuse their storage for adjacent boundary cells)
+    r(0,1) += 1.0e13*flag(x + size[0]);
 
     switch (m_mode) {
       case 0: {
@@ -406,9 +406,9 @@ bool VectorText::init()
 }
 
 bool VectorText::m_done_init = false;
-ShAttrib1f VectorText::m_scale = ShAttrib1f(512);
+ShAttrib1f VectorText::m_scale = ShAttrib1f(1.0);
 ShVector2f VectorText::m_offset = ShVector2f(0.000976562,0.000976562);
-ShAttrib1f VectorText::m_size = ShAttrib1f(512);
+ShAttrib1f VectorText::m_size = ShAttrib1f(1.0);
 ShAttrib1f VectorText::m_fw = ShAttrib1f(1.0);
 ShAttrib2f VectorText::m_thres = ShAttrib2f(0.0,0.05);
 ShColor3f VectorText::m_color1 = ShColor3f(0.0, 0.0, 0.0);
