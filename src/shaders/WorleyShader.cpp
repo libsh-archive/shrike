@@ -458,8 +458,8 @@ class MosaicWorley: public WorleyShader {
 
       coeff = ShConstAttrib4f(-1.0f, 1.0f, 0.0f, 0.0f);
 
-      ShAttrib4f SH_DECL(colorCoeff) = ShConstAttrib4f(1.0f, 0.0f, 0.0f, 0.0f);
-      colorCoeff.range(-2.0f, 2.0f);
+      ShAttrib4f SH_DECL(colorCoeff) = ShConstAttrib4f(3.0f, 0.0f, 0.0f, 0.0f);
+      colorCoeff.range(-4.0f, 4.0f);
 
       ShProgram worleysh = shWorley<4>(&genFactory, combine(&distFactory, &tex2dFactory)) 
         << coeff << colorCoeff << colorCoeff << colorCoeff; // pass in coefficient
