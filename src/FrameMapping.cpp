@@ -243,9 +243,10 @@ FrameMap FrameMapping::genFrameMap(const ShImage& img, int& width, int& height)
 
 bool FrameMapping::init()
 {
+  //ShEnvironment::optimizationLevel = 0;
 #if (IMG_TEXTURE)
   ShImage texImg;
-  texImg.loadPng(SHMEDIA_DIR "/textures/dots.png");
+  texImg.loadPng(SHMEDIA_DIR "/textures/abcd.png");
   int w, h;
   FrameMap fmap = genFrameMap(texImg, w, h);
   ShAttrib2f texDim = ShAttrib2f(w, h);
