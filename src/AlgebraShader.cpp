@@ -19,8 +19,8 @@ ShAttrib1f invheight;
 
 class AlgebraWrapper: public Shader {
   public:
-    AlgebraWrapper(std::string name, int lightidx, int surfidx, int postidx) 
-      : Shader(name), lightidx(lightidx), surfidx(surfidx), postidx(postidx) {}
+    AlgebraWrapper(std::string name, int lightidx, int surfmapidx, int surfidx, int postidx) 
+      : Shader(name), lightidx(lightidx), surfmapidx(surfmapidx), surfidx(surfidx), postidx(postidx) {}
 
     bool init(); 
     void render();
@@ -29,7 +29,7 @@ class AlgebraWrapper: public Shader {
     ShProgram fragment() { return fsh;}
 
   private:
-    int lightidx, surfidx, postidx;
+    int lightidx, surfmapidx, surfidx, postidx;
     ShProgram vsh, fsh;
 };
 
@@ -51,11 +51,15 @@ private:
   friend class AlgebraWrapper;
 
   static const int LIGHT = 3;
-  static const int SURFACE = 6;
+  static const int SURFMAP = 2;
+  static const int SURFACE = 4;
   static const int POST = 2;
 
   static ShProgram lightsh[LIGHT];
   static const char* lightName[LIGHT];
+
+  static ShProgram surfmapsh[SURFMAP];
+  static const char* surfmapName[SURFMAP];
 
   static ShProgram surfsh[SURFACE];
   static const char* surfName[SURFACE];
@@ -70,6 +74,7 @@ private:
 
 AlgebraShader::ShaderList AlgebraShader::shaders;
 ShProgram AlgebraShader::lightsh[AlgebraShader::LIGHT];
+ShProgram AlgebraShader::surfmapsh[AlgebraShader::SURFMAP];
 ShProgram AlgebraShader::surfsh[AlgebraShader::SURFACE];
 ShProgram AlgebraShader::postsh[AlgebraShader::POST];
 bool AlgebraShader::doneInit = false;
@@ -80,27 +85,34 @@ const char* AlgebraShader::lightName[] = {
   "Textured Hemispherical Light"
 };
 
+const char*  AlgebraShader::surfmapName[] = {
+  "Identity Mapping",
+  "Bump Mapping"
+};
+
 const char* AlgebraShader::surfName[] = {
   "Null Surface",
   "Diffuse Surface",
-  "Specular Surface",
-  "Phong Surface",
+//  "Specular Surface",
+//  "Phong Surface",
   "Textured Phong Surface",
   "Gooch Surface"
 };
 
 const char* AlgebraShader::postName[] = {
   "Null Postprocessor",
-  "Halftone Postprocessor"
+  "Halftone Postprocessor",
 };
 
 bool AlgebraWrapper::init() {
   AlgebraShader::init_all();
   ShProgram lightsh = AlgebraShader::lightsh[lightidx];
+  ShProgram surfmapsh = AlgebraShader::surfmapsh[surfmapidx];
   ShProgram surfsh = AlgebraShader::surfsh[surfidx];
   ShProgram postsh = AlgebraShader::postsh[postidx];
 
-  fsh = namedConnect(lightsh, surfsh);
+  fsh = namedCombine(lightsh, surfmapsh);
+  fsh = namedConnect(fsh, surfsh);
   fsh = namedConnect(fsh, postsh);
 
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
@@ -130,10 +142,14 @@ AlgebraShader::AlgebraShader()
 {
 
   for(int i = 0; i < LIGHT; ++i) {
-    for(int j = 0; j < SURFACE; ++j) {
-      for(int k = 0; k < POST; ++k) {
-        std::string name = std::string("Algebra: ") + lightName[i] + " - " + surfName[j] + " - " + postName[k];
-        shaders.push_back(new AlgebraWrapper(name, i, j, k)); 
+    for(int j = 0; j < SURFMAP; ++j) {
+      for(int k = 0; k < SURFACE; ++k) {
+        for(int l = 0; l < POST; ++l) {
+          std::string name = std::string("Algebra: ") + 
+            lightName[i] + ": " + surfmapName[j] + ": " +
+            surfName[k] + ": " + postName[l];
+          shaders.push_back(new AlgebraWrapper(name, i, j, k, l)); 
+        }
       }
     }
   }
@@ -162,6 +178,7 @@ bool AlgebraShader::init_all()
 {
 
   if( doneInit ) return true; 
+  int i;
   doneInit = true;
 
   ShImage image;
@@ -182,8 +199,9 @@ bool AlgebraShader::init_all()
   specExp.range(0.0f, 256.0f);
 
 // ****************** Make light shaders
-  lightsh[0] = ShKernelLight::pointLight<ShColor3f>() << lightColor;
-  lightsh[1] = ShKernelLight::spotLight<ShColor3f>() << lightColor << falloff << lightAngle << lightDir;
+  i = 0;
+  lightsh[i++] = ShKernelLight::pointLight<ShColor3f>() << lightColor;
+  lightsh[i++] = ShKernelLight::spotLight<ShColor3f>() << lightColor << falloff << lightAngle << lightDir;
 
 
   ShAttrib1f SH_NAMEDECL(texLightScale, "Mask Scaling Factor") = ShConstant1f(5.0f);
@@ -191,16 +209,38 @@ bool AlgebraShader::init_all()
   image.loadPng(SHMEDIA_DIR "/mats/inv_oriental038.png");
   ShTexture2D<ShColor3f> lighttex(image.width(), image.height());
   lighttex.memory(image.memory());
-  lightsh[2] = ShKernelLight::texLight2D(lighttex) << texLightScale << lightAngle << lightDir << lightUp;
+  lightsh[i++] = ShKernelLight::texLight2D(lighttex) << texLightScale << lightAngle << lightDir << lightUp;
 
   //lightsh[1] = ShKernelLight::spotLight(ShColor3f>() << lightColor << falloff << lightAngle << lightDir;
   //lightName[1] = "Spot Light";
   
+// ****************** Make bump/frame mapping shaders 
+  i = 0;
+  surfmapsh[i++] = keep<ShNormal3f>("normal"); 
+
+  image.loadPng(SHMEDIA_DIR "/bumpmaps/bumps_normals.png");
+  ShTexture2D<ShColor3f> normaltex(image.width(), image.height());
+  normaltex.memory(image.memory());
+
+  ShAttrib1f SH_NAMEDECL(bumpScale, "Bump Scaling Factor") = ShConstant1f(1.0f);
+  bumpScale.range(0.0f, 10.0f);
+
+  // make a VCS bump mapper by reading in normal map and extracting gradients
+  surfmapsh[i] = SH_BEGIN_PROGRAM() {
+    ShInputTexCoord2f SH_DECL(texcoord);
+    ShOutputAttrib2f SH_DECL(gradient);
+    ShColor3f norm = normaltex(texcoord) - ShConstant3f(0.5, 0.5, 0.0);
+    gradient = norm(0,1) * bumpScale;
+  } SH_END;
+  surfmapsh[i] = ShKernelSurfMap::vcsBump() << surfmapsh[i];
+  i++;
+  
 // ****************** Make surface shaders 
-  surfsh[0] = ShKernelSurface::null<ShColor3f>(); 
-  surfsh[1] = ShKernelSurface::diffuse<ShColor3f>() << kd;
-  surfsh[2] = ShKernelSurface::specular<ShColor3f>() << ks << specExp;
-  surfsh[3] = ShKernelSurface::phong<ShColor3f>() << kd << ks << specExp;
+  i = 0;
+  surfsh[i++] = ShKernelSurface::null<ShColor3f>(); 
+  surfsh[i++] = ShKernelSurface::diffuse<ShColor3f>() << kd;
+  //surfsh[i++] = ShKernelSurface::specular<ShColor3f>() << ks << specExp;
+  //surfsh[i++] = ShKernelSurface::phong<ShColor3f>() << kd << ks << specExp;
 
   image.loadPng(SHMEDIA_DIR "/textures/rustkd.png");
   ShTexture2D<ShColor3f> difftex(image.width(), image.height());
@@ -210,21 +250,29 @@ bool AlgebraShader::init_all()
   ShTexture2D<ShColor3f> spectex(image.width(), image.height());
   spectex.memory(image.memory());
 
-  surfsh[4] = ShKernelSurface::phong<ShColor3f>() << ( access(difftex) & access(spectex) );
-  surfsh[4] = surfsh[4] << shExtract("specExp") << specExp;
-  surfsh[5] = ShKernelSurface::gooch<ShColor3f>() << kd << cool << warm; 
+  surfsh[i] = ShKernelSurface::phong<ShColor3f>() << ( access(difftex) & access(spectex) );
+  surfsh[i] = surfsh[i] << shExtract("specExp") << specExp;
+  i++;
+  surfsh[i++] = ShKernelSurface::gooch<ShColor3f>() << kd << cool << warm; 
 
 // ******************* Make postprocessing shaders
+  i = 0;
   image.loadPng(SHMEDIA_DIR "/textures/halftone.png");
   ShTexture2D<ShColor3f> halftoneTex(image.width(), image.height());
   halftoneTex.memory(image.memory());
 
 
-  postsh[0] = keep<ShColor3f>("result"); 
+  postsh[i++] = keep<ShColor3f>("result"); 
 
   ShAttrib1f SH_NAMEDECL(htscale, "Scaling Factor") = ShConstant1f(50.0f);
   htscale.range(1.0f, 400.0f);
-  postsh[1] = ShKernelPost::halftone<ShColor3f>(halftoneTex) << (mul<ShAttrib1f>() << htscale << invheight);
+  postsh[i++] = ShKernelPost::halftone<ShColor3f>(halftoneTex) << (mul<ShAttrib1f>() << htscale << invheight);
+
+  /*
+  ShAttrib1f SH_NAMEDECL(noiseScale, "Noise Amount") = ShConstant1f(0.2f);
+  noiseScale.range(0.0f, 1.0f);
+  postsh[i++] = ShKernelPost::noisify<ShColor3f>() << (mul<ShAttrib1f>() << htscale << invheight)<< noiseScale; 
+  */
 
   return true;
 }
