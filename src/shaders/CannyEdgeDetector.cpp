@@ -106,11 +106,8 @@ void CannyEdgeDetectorShader::render()
     newmem = new ShHostMemory((vp[2]-vp[0])*(vp[3]-vp[1])*3*sizeof(float)); // allocate memory
     newimg.size(vp[2]-vp[0],vp[3]-vp[1]); // change the size
     newimg.memory(newmem);
-    ShImage foo(vp[2]-vp[0],vp[3]-vp[1],3);
     glReadBuffer(GL_BACK);
     glReadPixels(vp[0], vp[1], vp[2], vp[3], GL_RGB, GL_FLOAT, newmem->hostStorage()->data()); // read the buffer
-    glReadPixels(vp[0], vp[1], vp[2], vp[3], GL_RGB, GL_FLOAT, foo.data()); // read the buffer
-    foo.savePng("foo.png");
     glReadBuffer(GL_FRONT);
     // 2nd pass
     shBind(fsh_2nd);
