@@ -102,9 +102,9 @@ bool SimplePhong::init()
     // Compute phong lighting.
     ShMatrix3x3f identity = ShMatrix3x3f();
     ShMatrix3x1f normalmat; // to transpose the normal
-    normalmat[0] = sqrt(2) * normal[0]; // need to multiply the matrix by 2
-    normalmat[1] = sqrt(2) * normal[1];
-    normalmat[2] = sqrt(2) * normal[2];
+    normalmat[0] = sqrt(2.0) * normal[0]; // need to multiply the matrix by 2
+    normalmat[1] = sqrt(2.0) * normal[1];
+    normalmat[2] = sqrt(2.0) * normal[2];
     ShMatrix3x3f Householder = (normalmat | transpose(normalmat));
     Householder -= identity; // Compuse Householder transformation matrix
     ShMatrix1x3f viewtranspose; // to transpose the view vector
@@ -192,9 +192,9 @@ bool ModifiedPhong::init()
     ShAttrib1f irrad = pos(normal | light);
     ShMatrix3x3f identity = ShMatrix3x3f();
     ShMatrix3x1f normalmat; // to transpose the normal
-    normalmat[0] = sqrt(2) * normal[0]; // need to multiply the matrix by 2
-    normalmat[1] = sqrt(2) * normal[1];
-    normalmat[2] = sqrt(2) * normal[2];
+    normalmat[0] = sqrt(2.0) * normal[0]; // need to multiply the matrix by 2
+    normalmat[1] = sqrt(2.0) * normal[1];
+    normalmat[2] = sqrt(2.0) * normal[2];
     ShMatrix3x3f Householder =  normalmat | transpose(normalmat);
     Householder -= identity; // Compuse Householder transformation matrix
     ShMatrix1x3f viewtranspose; // to transpose the view vector

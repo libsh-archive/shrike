@@ -25,10 +25,9 @@
 // distribution.
 //////////////////////////////////////////////////////////////////////////////
 #include <sstream>
-#define GL_GLEXT_LEGACY
-#include <GL/gl.h>
-#include <GL/glext.h>
-#undef GL_GLEXT_LEGACY
+
+#include "ShrikeGl.hpp"
+//#include <wx/wx.h>
 #include <wx/glcanvas.h>
 #include "ShrikeCanvas.hpp"
 #include "ShrikeFrame.hpp"
@@ -37,6 +36,7 @@
 #include <sh/sh.hpp>
 #include "Timer.hpp"
 #include "shaders/LCDSmall.hpp"
+
 
 using namespace SH;
 using namespace ShUtil;
@@ -78,6 +78,7 @@ ShrikeCanvas* ShrikeCanvas::instance()
 
 void ShrikeCanvas::paint()
 {
+  wxPaintDC dc(this);
   render();
 }
 
@@ -124,10 +125,14 @@ void ShrikeCanvas::motion(wxMouseEvent& event)
   if (event.LeftIsDown()) {
     if (event.ShiftDown()) {
       ShTrackball t;
-      t.resize(m_width, m_height);
-      Globals::lightDirW = inverse(Globals::mv) | t.rotate(m_last_x, m_last_y, cur_x, cur_y) | Globals::mv | Globals::lightDirW;
+      t.resize(GetClientSize().GetWidth(), GetClientSize().GetHeight());
+      ShMatrix4x4f m;
+      m = inverse(Globals::mv);
+      m = m | t.rotate(m_last_x, m_last_y, cur_x, cur_y);
+      m = m | Globals::mv;
+      Globals::lightDirW = m | Globals::lightDirW;
     } else {
-      m_camera.orbit(m_last_x, m_last_y, cur_x, cur_y, m_width, m_height);
+      m_camera.orbit(m_last_x, m_last_y, cur_x, cur_y, GetClientSize().GetWidth(), GetClientSize().GetHeight());
     }
   }
   if (event.MiddleIsDown()) {
@@ -191,8 +196,8 @@ void ShrikeCanvas::render()
     glDisable(GL_DEPTH_TEST);
     shBind(m_fpsVsh);
     shBind(m_fpsFsh);
-    double width = 160.0/m_width;
-    double height = 80.0/m_height; 
+    double width = 160.0/GetClientSize().GetWidth();
+    double height = 80.0/GetClientSize().GetHeight(); 
     glBegin(GL_QUADS); {
       glTexCoord2f(0.0, 0.0);
       glVertex2f(-1.0, -1.0);
@@ -265,7 +270,7 @@ void ShrikeCanvas::setupView(int nsplit, int x, int y)
     glMultMatrixf(values);
   }
   
-  m_camera.glProjection((float)m_width/m_height);
+  m_camera.glProjection((float)GetClientSize().GetWidth()/GetClientSize().GetHeight());
 
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -280,23 +285,23 @@ void ShrikeCanvas::setupView(int nsplit, int x, int y)
 void ShrikeCanvas::screenshot(const std::string& filename)
 {
   int mult = 4;
-  ShImage final(m_width*mult, m_height*mult, 3);
+  ShImage final(GetClientSize().GetWidth()*mult, GetClientSize().GetHeight()*mult, 3);
   float* fd = final.data();
     
   for (int y = 0; y < mult; y++) for (int x = 0; x < mult; x++) {
-    ShImage img(m_width, m_height, 3);
+    ShImage img(GetClientSize().GetWidth(), GetClientSize().GetHeight(), 3);
   
     setupView(mult, x, y);
     render();
     
-    glReadPixels(0, 0, m_width, m_height, GL_RGB, GL_FLOAT, img.data());
+    glReadPixels(0, 0, GetClientSize().GetWidth(), GetClientSize().GetHeight(), GL_RGB, GL_FLOAT, img.data());
 
     const float* id = img.data();
-    for (int b = 0; b < m_height; b++) for (int a = 0; a < m_width; a++) {
-      int row = m_height*(mult - y) - b - 1;
-      int col = m_width * x + a;
+    for (int b = 0; b < GetClientSize().GetHeight(); b++) for (int a = 0; a < GetClientSize().GetWidth(); a++) {
+      int row = GetClientSize().GetHeight()*(mult - y) - b - 1;
+      int col = GetClientSize().GetWidth() * x + a;
       for (int i = 0; i < 3; i++) {
-        fd[(row * m_width * mult + col)*3 + i ] = id[(b * m_width + a)*3 + i];
+        fd[(row * GetClientSize().GetWidth() * mult + col)*3 + i ] = id[(b * GetClientSize().GetWidth() + a)*3 + i];
       }
     }
 #if 0
@@ -314,6 +319,8 @@ void ShrikeCanvas::screenshot(const std::string& filename)
 void ShrikeCanvas::init()
 {
   if (m_init) return;
+
+  shrikeGlInit();
 
   glEnable(GL_DEPTH_TEST);
 
@@ -344,7 +351,7 @@ void ShrikeCanvas::reshape()
 {
   if (GetContext()) {
     SetCurrent();
-    glViewport(0, 0, m_width, m_height);
+    glViewport(0, 0, GetClientSize().GetWidth(), GetClientSize().GetHeight());
     setupView();
   }
 }

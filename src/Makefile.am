@@ -14,6 +14,7 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 Camera.hpp Camera.cpp \
 		 ShTrackball.hpp ShTrackball.cpp \
 		 Timer.hpp Timer.cpp \
+		 ShrikeGl.cpp ShrikeGl.hpp \
 		 util.hpp util.cpp utilimpl.hpp
 
 shrike_SOURCES += shaders/DiffuseShader.cpp

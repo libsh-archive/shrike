@@ -24,6 +24,15 @@
 // 3. This notice may not be removed or altered from any source
 // distribution.
 //////////////////////////////////////////////////////////////////////////////
+#ifdef WIN32
+#define _USE_MATH_DEFINES
+#include <windows.h>
+#endif
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 #include <GL/gl.h>
 #include "ShTrackball.hpp"
 #include "Camera.hpp"
@@ -112,10 +121,10 @@ void Camera::orbit(int sx, int sy, int x, int y, int w, int h)
 //-------------------------------------------------------------------
 // perspective 
 //-------------------------------------------------------------------
-ShMatrix4x4f Camera::perspective(float fov, float aspect, float near, float far)
+ShMatrix4x4f Camera::perspective(float fov, float aspect, float near_, float far_)
 {
-  float zmin = near;
-  float zmax = far;
+  float zmin = near_;
+  float zmax = far_;
   float ymax = zmin*tan(fov*(M_PI/360));
   float ymin = -ymax;
   float xmin = ymin*aspect;

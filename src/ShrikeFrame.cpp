@@ -55,6 +55,7 @@ BEGIN_EVENT_TABLE(ShrikeFrame, wxFrame)
   EVT_MENU(SHRIKE_MENU_VIEW_FULLSCREEN, ShrikeFrame::fullscreen)
   EVT_MENU(SHRIKE_MENU_VIEW_WIREFRAME, ShrikeFrame::wireframe)
   EVT_MENU(SHRIKE_MENU_VIEW_FPS, ShrikeFrame::fps)
+  EVT_CLOSE(ShrikeFrame::close)
   EVT_KEY_DOWN(ShrikeFrame::keyDown)
   //  EVT_LISTBOX(SHRIKE_LISTBOX_SHADERS, ShrikeFrame::onShaderSelect)
   EVT_TREE_SEL_CHANGED(SHRIKE_TREECTRL_SHADERS, ShrikeFrame::onShaderSelect)
@@ -182,7 +183,13 @@ void ShrikeFrame::shaderProps(wxCommandEvent& event)
 
 void ShrikeFrame::quit(wxCommandEvent& event)
 {
-  Close(true);
+  Destroy();
+  //  Close(true);
+}
+
+void ShrikeFrame::close(wxCloseEvent& event)
+{
+  Destroy();
 }
 
 void ShrikeFrame::onShaderSelect(wxTreeEvent& event)
@@ -272,13 +279,20 @@ void ShrikeFrame::showProgram(ShProgram program,
   std::string title = name + " Shader Code";
   wxFrame* frame = new wxFrame(0, -1, title.c_str());
 
+
   wxTextCtrl* control = new wxTextCtrl(frame, -1, "",
                                        wxDefaultPosition,
                                        wxDefaultSize,
                                        wxTE_MULTILINE | wxTE_READONLY);
-  
+
+#ifndef NO_TEXT_WINDOW_STREAM
   std::ostream stream(control);
   program.node()->code()->print(stream);
+#else
+  std::ostringstream s;
+  program.node()->code()->print(s);
+  control->AppendText(s.str().c_str());
+#endif
 
   frame->Show();
 }
@@ -297,8 +311,7 @@ void ShrikeFrame::showInterface(ShProgram program,
                                        wxDefaultSize,
                                        wxTE_MULTILINE | wxTE_READONLY);
   
-  std::ostream stream(control);
-  stream << program.describe_interface();
+  control->AppendText(program.describe_interface().c_str());
 
   frame->Show();
 }

@@ -27,6 +27,8 @@
 #include <sh/sh.hpp>
 #include <sh/shutil.hpp>
 #include <iostream>
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include "Shader.hpp"
 #include "Globals.hpp"
 

@@ -24,12 +24,11 @@
 // 3. This notice may not be removed or altered from any source
 // distribution.
 //////////////////////////////////////////////////////////////////////////////
+
+#include <wx/wx.h>
 #include <sh/sh.hpp>
 #include <sh/shutil.hpp>
-#define GL_GLEXT_LEGACY
-#include <GL/gl.h>
-#include <GL/glext.h>
-#undef GL_GLEXT_LEGACY
+#include "ShrikeGl.hpp"
 #include <iostream>
 #include "Shader.hpp"
 #include "Globals.hpp"
@@ -68,7 +67,7 @@ void TangentArrows::render()
   float vs[4];
   glBegin(GL_LINES);
   const ShUtil::ShObjMesh& m_obj = *ShrikeCanvas::instance()->getModel();
-  for(ShObjMesh::FaceSet::iterator I = m_obj.faces.begin();
+  for(ShObjMesh::FaceSet::const_iterator I = m_obj.faces.begin();
       I != m_obj.faces.end(); ++I) {
     ShObjMesh::Edge* e = (*I)->edge;
     do {
@@ -152,7 +151,7 @@ void NormalArrows::render()
   float vs[4];
   glBegin(GL_LINES);
   const ShUtil::ShObjMesh& m_obj = *ShrikeCanvas::instance()->getModel();
-  for(ShObjMesh::FaceSet::iterator I = m_obj.faces.begin();
+  for(ShObjMesh::FaceSet::const_iterator I = m_obj.faces.begin();
       I != m_obj.faces.end(); ++I) {
     ShObjMesh::Edge* e = (*I)->edge;
     do {

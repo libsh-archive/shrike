@@ -36,6 +36,13 @@ using namespace SH;
 using namespace ShUtil;
 #include "util.hpp"
 
+#ifdef max
+#undef max
+#endif
+#ifdef min
+#undef min
+#endif
+
 // VCS direction and up
 ShVector3f lightDir;
 ShVector3f lightUp;
@@ -151,9 +158,9 @@ void AlgebraWrapper::render() {
   lightUp = cross(horiz, lightDir);
 
   const ShrikeCanvas *canvas = ShrikeCanvas::instance();
-  width = canvas->m_width;
+  width = canvas->GetClientSize().GetWidth();
   invwidth = 1.0f / width;
-  height = canvas->m_height;
+  height = canvas->GetClientSize().GetHeight();
   invheight = 1.0f / height;
 
   // set up lighting crap

@@ -33,6 +33,13 @@
 #include <wx/colordlg.h>
 #include "ShrikeCanvas.hpp"
 
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+
 using namespace SH;
 
 UniformPanel::UniformPanel(wxWindow* parent)
