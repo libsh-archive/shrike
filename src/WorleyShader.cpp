@@ -54,7 +54,7 @@ bool WorleyShader::init() {
 
   coeff.name("Worley coefficient");
   coeff = ShConstant4f(1.0, 0.0, 0.0, 0.0);
-  coeff.range(-10.0f, 10.0f);
+  coeff.range(-3.0f, 3.0f);
 
   exponent.name("specular exponent");
   exponent = 35.0;    
@@ -128,8 +128,9 @@ class LavaWorley: public WorleyShader {
     void initfsh() {
       coeff = ShConstant4f(-1, 1.2, 0, 0);
       ShAttrib4f SH_NAMEDECL(coeff2, "Worley coefficient 2") = ShConstant4f(0, 1, 1, 0);
+      ShAttrib1f SH_NAMEDECL(freq2, "Worley frequency 2") = freq * 2.131313f;
       ShProgram worleysh = makeWorleySh(L1, coeff, freq, false); 
-      ShProgram worleysh2 = makeWorleySh(L2_SQ, coeff2, freq * 2.131313f, false); 
+      ShProgram worleysh2 = makeWorleySh(L2_SQ, coeff2, freq2, false); 
 
       worleysh = sub<ShAttrib1f>() << namedCombine(worleysh, worleysh2);
 
@@ -185,7 +186,8 @@ class CircuitWorley: public WorleyShader {
     void initfsh() {
       coeff = ShConstant4f(0, 0, 0, 1);
       ShProgram worleysh = makeWorleySh(L1, coeff, freq, false); 
-      ShProgram worleysh2 = makeWorleySh(L1, coeff, freq * 2.131313f, false); 
+      ShAttrib1f SH_NAMEDECL(freq2, "Worley frequency 2") = freq * 2.131313f;
+      ShProgram worleysh2 = makeWorleySh(L1, coeff, freq2, false); 
 
       color1 = ShColor3f(0.0, 0.2, 0.8);
       color2 =  ShColor3f(0.6, 0.6, 0.7);
@@ -209,6 +211,38 @@ class CircuitWorley: public WorleyShader {
     }
 };
 
+class CrackedWorley: public WorleyShader {
+  public:
+    CrackedWorley(bool useTexture): WorleyShader("Cracked Worley", useTexture) {}
+
+    void initfsh() {
+      ShAttrib1f SH_DECL(time); 
+      time.range(0.0f, 6.0f);
+
+      color1 = ShColor3f(3.0, 0.75, 0.0);
+      color2 =  ShColor3f(0.0f, 0.0f, 0.0f);
+
+      ShColor3f specularColor(0.5, 0.5, 0.5);
+
+      coeff = ShConstant4f(2.5, -1.25, 0, 0);
+
+      ShWorleyLerpingPointGen<float> generator(time);
+      ShProgram worleysh = worleyProgram<4, float>(L2_SQ, useTexture, generator) << coeff; // pass in coefficient
+      worleysh = worleysh << ( mul<ShTexCoord2f>("texcoord") << fillcast<2>(freq)); // multiply by worley frequency
+      worleysh = shDrop("gradient") << worleysh; 
+
+      ShProgram clamper = SH_BEGIN_PROGRAM() {
+        ShInOutAttrib1f SH_DECL(scalar) = clamp(0.0f, 1.0f, scalar);
+      } SH_END;
+      worleysh = clamper << worleysh;
+
+      ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
+      colorsh = colorsh & ( keep<ShColor3f>("ks") << specularColor); 
+      fsh = fsh << colorsh << worleysh;
+    }
+};
+
+CrackedWorley cracked(true);
 OrganicWorley organic(false);
 PolkaDotWorley polka(false);
 LavaWorley lava(false);
