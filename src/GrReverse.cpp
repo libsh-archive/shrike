@@ -9,6 +9,48 @@
 using namespace SH;
 using namespace ShUtil;
 
+GrPort* makeSwizzle(const ShVariable& var,
+                    GrPort* source,
+                    GrView* view)
+{
+  ShProgram splitp = SH_BEGIN_PROGRAM() {
+    ShVariable in(new ShVariableNode(SH_INPUT, var.node()->size(),
+                                     var.node()->specialType()));
+    if (var.node()->hasName()) in.name(var.name());
+    for (int i = 0; i < var.node()->size(); i++) {
+      ShVariable out(new ShVariableNode(SH_OUTPUT, 1, var.node()->specialType()));
+      // TODO out.name()
+      ShVariable ini(in(i));
+      shASN(out, ini);
+    }
+  } SH_END;
+  splitp->name("split");
+
+  GrNode* split = view->addProgram(splitp, 0, 0);
+
+  join(source, *split->inputs_begin());
+
+  ShProgram joinp = SH_BEGIN_PROGRAM() {
+    ShVariable out(new ShVariableNode(SH_OUTPUT, var.size(),
+                                     var.node()->specialType()));
+    if (var.node()->hasName()) out.name(var.name());
+    for (int i = 0; i < var.size(); i++) {
+      ShVariable in(new ShVariableNode(SH_INPUT, 1, var.node()->specialType()));
+      // TODO in.name()
+      ShVariable outi(out(i));
+      shASN(outi, in);
+    }
+  } SH_END;
+  joinp->name("join");
+
+  GrNode* joinn = view->addProgram(joinp, 0, 0);
+  for (int i = 0; i < var.size(); i++) {
+    join(*(split->outputs_begin() + var.swizzle()[i]), *(joinn->inputs_begin() + i));
+  }
+
+  return *joinn->outputs_begin();
+}
+
 void decompose(GrNode* source)
 {
   if (!source) {
@@ -58,6 +100,26 @@ void decompose(GrNode* source)
   for (ShBasicBlock::ShStmtList::iterator I = block->begin(); I != block->end(); ++I) {
     const ShStatement& stmt = *I;
 
+    GrPort* sources[opInfo[stmt.op].arity];
+    
+    for (int i = 0; i < opInfo[stmt.op].arity; i++) {
+      if (!(stmt.src[i].hasValues() || stmt.src[i].node()->kind() == SH_TEXTURE)) {
+        sources[i] = varmap[stmt.src[i].node()];
+        if (!sources[i]) {
+          std::cerr << "No source for " << stmt.src[i].name() << std::endl;
+          std::cerr << "(src[" << i << "] in " << opInfo[stmt.op].name << std::endl;
+          abort();
+        }
+
+        if (!stmt.src[i].swizzle().identity()) {
+          sources[i] = makeSwizzle(stmt.src[i], sources[i], view);
+        }
+        
+      } else {
+        sources[i] = 0;
+      }
+    }
+    
     ShProgram nibble = SH_BEGIN_PROGRAM() {
       ShVariable dest(new ShVariableNode(SH_OUTPUT, stmt.dest.node()->size(),
                                          stmt.dest.node()->specialType()),
@@ -153,21 +215,16 @@ void decompose(GrNode* source)
     } SH_END;
 
     nibble->name(opInfo[stmt.op].name);
+
+    
     
     GrNode* nn = view->addProgram(nibble, 0, 0);
-    
+
     GrNode::PortList::iterator P = nn->inputs_begin();
     for (int i = 0; i < opInfo[stmt.op].arity; i++) {
-      if (!(stmt.src[i].hasValues() || stmt.src[i].node()->kind() == SH_TEXTURE)) {
-        GrPort* port = varmap[stmt.src[i].node()];
-        if (!port) {
-          std::cerr << "No source for " << stmt.src[i].name() << std::endl;
-          std::cerr << "(src[" << i << "] in " << opInfo[stmt.op].name << std::endl;
-          abort();
-        }
-        join(port, *P);
-        ++P;
-      }
+      if (!sources[i]) continue;
+      join(sources[i], *P);
+      ++P;
     }
 
     varmap[stmt.dest.node()] = *nn->outputs_begin();
