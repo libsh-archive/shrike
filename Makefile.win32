@@ -1,12 +1,30 @@
+# -*- makefile -*-
+
 all: recurse-all
+all-release: recurse-all-release
+all-debug: recurse-all-debug
 clean: recurse-clean
 install: recurse-install
+install-release: recurse-install-release
+install-debug: recurse-install-debug
 
 recurse-all:
 	$(MAKE) -C src -f Makefile.win32 all
+
+recurse-all-release:
+	$(MAKE) -C src -f Makefile.win32 all-release
+
+recurse-all-debug:
+	$(MAKE) -C src -f Makefile.win32 all-debug
 
 recurse-clean:
 	$(MAKE) -C src -f Makefile.win32 clean
 
 recurse-install:
 	$(MAKE) -C src -f Makefile.win32 install
+
+recurse-install-release:
+	$(MAKE) -C src -f Makefile.win32 install-release
+
+recurse-install-debug:
+	$(MAKE) -C src -f Makefile.win32 install-debug

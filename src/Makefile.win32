@@ -1,16 +1,29 @@
 # -*- makefile -*-
+include ../win32.mk
 
+INCLUDES += -I.
+INCLUDES += -IHDRImages
+INCLUDES += -I$(SH_INSTALLDIR)\include
+
+ALL_TARGETS =
+INSTALL_TARGETS = 
 RELEASE_TARGETS = shrike.exe
 DEBUG_TARGETS = shriked.exe
 
-all: all-release all-debug
+ifeq ($(BUILD_RELEASE), 1)
+	ALL_TARGETS += all-release
+	INSTALL_TARGETS += install-release
+endif
 
+ifeq ($(BUILD_DEBUG), 1)
+	ALL_TARGETS += all-debug
+	INSTALL_TARGETS += install-debug
+endif
+
+all: $(ALL_TARGETS)
+install: $(INSTALL_TARGETS)
 all-release: $(RELEASE_TARGETS)
 all-debug: $(DEBUG_TARGETS)
-
-CLEANFILES = $(RELEASE_TARGETS) $(DEBUG_TARGETS) *.idb *.pdb *.ilk
-CLEANFILES += HDRImages\*.obj HDRImages\*.d
-CLEANFILES += shaders\*.obj shaders\*.d
 
 shrike_SOURCES = Camera.hpp Camera.cpp
 shrike_SOURCES += Globals.hpp Globals.cpp
@@ -125,16 +138,25 @@ shrike.exe: $(shrike_RELEASE_OBJECTS)
 shriked.exe: $(shrike_DEBUG_OBJECTS)
 	$(LD) /out:$@ $^ $(DEBUG_LDFLAGS) $(shrike_DEBUG_LDADD)
 
-install: $(RELEASE_TARGETS) $(DEBUG_TARGETS)
+install-common:
 	-mkdir $(SH_INSTALLDIR)
+
+install-release: $(RELEASE_TARGETS) install-common
 	copy shrike.exe $(SH_INSTALLDIR)
+
+install-debug: $(DEBUG_TARGETS) install-common
 	copy shriked.exe $(SH_INSTALLDIR)
 	copy shriked.pdb $(SH_INSTALLDIR)
 
+clean:
+	-del $(RELEASE_TARGETS) $(DEBUG_TARGETS)
+	-del *.obj *.d
+	-del HDRImages\*.obj HDRImages\*.d
+	-del shaders\*.obj shaders\*.d
+	-del *.idb *.pdb *.ilk
+
 shrike_DEPENDS = $(shrike_CXXFILES:.cpp=.r.d) $(shrike_CXXFILES:.cpp=.d.d)
 
-include ../win32.mk
-INCLUDES += -I.
-INCLUDES += -IHDRImages
-INCLUDES += -I$(SH_INSTALLDIR)\include
+ifeq ($(GEN_DEPENDENCIES), 1)
 -include $(shrike_DEPENDS)
+endif

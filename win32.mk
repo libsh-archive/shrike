@@ -1,4 +1,9 @@
-# install location
+# build options
+GEN_DEPENDENCIES=1
+BUILD_RELEASE=1
+BUILD_DEBUG=1
+
+# install locations
 SH_INSTALLDIR = \dev\install
 SHMEDIA_DIR = \"\\\\dev\\\\shmedia\"
 
@@ -30,9 +35,6 @@ DEBUG_CXXFLAGS = $(CXXFLAGS) $(DEBUG_CPPFLAGS) /MDd /Zi /Od
 LDFLAGS = 
 RELEASE_LDFLAGS = $(LDFLAGS)
 DEBUG_LDFLAGS = $(LDFLAGS) /DEBUG
-
-clean:
-	del *.lib *.obj *.d $(CLEANFILES)
 
 %.r.obj: %.cpp
 	$(CXX) /Fo$@ /c $< $(RELEASE_CXXFLAGS)

@@ -1,3 +1,9 @@
+2004-10-08  Kevin Moule  <krmoule@cgl.uwaterloo.ca>
+
+	* Makefile.win32, src/Makefile.win32, win32.mk: Updated makefiles
+	to support release/debug only builds, turning off dependency
+	generetion and explicit targets for release and debug builds.
+
 2004-10-07  Kevin Moule  <krmoule@cgl.uwaterloo.ca>
 
 	* win32.mk, src/Makefile.win32: Shrike needs glext.h, added
