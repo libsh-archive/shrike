@@ -1,3 +1,7 @@
+2004-07-15  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/shaders/FragmentLooping.cpp: Added fragment looping demo.
+
 2004-07-14  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/shaders/FragmentBranching.cpp: Add simple fragment branching demo.
