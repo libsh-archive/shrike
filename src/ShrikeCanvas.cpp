@@ -307,7 +307,7 @@ void ShrikeCanvas::init()
     ShInputTexCoord2f SH_DECL(u);
     ShOutputColor3f SH_DECL(result);
     ShAttrib1f indigit = lcdSmall(u, m_fps, 4, 0, false, false, 0.23, 1.0, 0.026);
-    //kill(1.0f - indigit); // TODO should be using this, but it won't fit on ATI
+    //discard(1.0f - indigit); // TODO should be using this, but it won't fit on ATI
     result = lerp(indigit, yellow, m_bg); 
   } SH_END;
   

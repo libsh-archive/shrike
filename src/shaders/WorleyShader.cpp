@@ -688,7 +688,7 @@ class MosaicWorley: public WorleyShader {
         ShAttrib1f inEdge = dist < threshold; 
         
         for(int i = 0; i < 3; ++i) color(i) = dot(result[i+1], colorCoeff);
-        kill((color|ShConstAttrib3f(1.0f, 1.0f, 1.0f)) < killThreshold);
+        discard((color|ShConstAttrib3f(1.0f, 1.0f, 1.0f)) < killThreshold);
         color = lerp(inEdge, ShConstColor3f(0.0f, 0.0f, 0.0f), color); 
         fres = lerp(inEdge, ShConstAttrib1f(1.0f), fres); 
       } SH_END;
