@@ -401,9 +401,9 @@ void HairPhysics::initHair() {
     ShOutputVector3f halfv;
 
     // add simple physics
-    gravity += windForce * sin(M_PI*windTime); // add the effect of the wind
-    ipos += 0.5*gravity*t*t + V*t; // compute the position relative to the length
-    ShVector3f isurf = V + gravity*t; // surface vector = velocity
+    ShVector3f accel = gravity + windForce * sin(M_PI*windTime); // add the effect of the wind
+    ipos += 0.5*accel*t*t + V*t; // compute the position relative to the length
+    ShVector3f isurf = V + accel*t; // surface vector = velocity
     inorm = cross(itan,isurf); // compute the normal according to the velocity
   
     // collision with the face
