@@ -15,6 +15,7 @@ public:
   void renderObject();
   
   void setModel(ShUtil::ShObjMesh* model);
+  const ShUtil::ShObjMesh* getModel() const;
   
   void paint();
   void reshape();

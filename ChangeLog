@@ -1,3 +1,6 @@
+2004-03-18  Bryan Chan <b8chan@uwaterloo.ca>
+	* src/EdgeGooch.cpp: Added Gooch w sillhouette shader.
+	
 2004-03-15  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/ShrikeFrame.cpp: Add a menu item to change the background colour.

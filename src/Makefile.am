@@ -25,6 +25,7 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 Logo.cpp \
 		 NonPeriodic.cpp \
 		 NoiseShader.cpp \
+		 EdgeGooch.cpp \
 		 Textures.cpp \
 		 Pants.cpp
 

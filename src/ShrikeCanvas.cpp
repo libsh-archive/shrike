@@ -54,6 +54,11 @@ void ShrikeCanvas::setModel(ShObjMesh* model)
   render();
 }
 
+const ShObjMesh* ShrikeCanvas::getModel() const {
+  return m_model;
+}
+
+
 void ShrikeCanvas::setShader(Shader* shader)
 {
   SetCurrent();
