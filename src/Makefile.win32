@@ -8,11 +8,11 @@ all: all-release all-debug
 all-release: $(RELEASE_TARGETS)
 all-debug: $(DEBUG_TARGETS)
 
-CLEANFILES  = $(RELEASE_TARGETS) $(DEBUG_TARGETS) *.idb *.pdb
+CLEANFILES = $(RELEASE_TARGETS) $(DEBUG_TARGETS) *.idb *.pdb *.ilk
 CLEANFILES += HDRImages\*.obj HDRImages\*.d
 CLEANFILES += shaders\*.obj shaders\*.d
 
-shrike_SOURCES  = Camera.hpp Camera.cpp
+shrike_SOURCES = Camera.hpp Camera.cpp
 shrike_SOURCES += Globals.hpp Globals.cpp
 shrike_SOURCES += ShTrackball.hpp ShTrackball.cpp
 shrike_SOURCES += Shader.hpp Shader.cpp
@@ -91,7 +91,7 @@ shrike_CXXFILES = $(filter %.cpp,$(shrike_SOURCES))
 shrike_RELEASE_OBJECTS = $(shrike_CXXFILES:.cpp=.r.obj)
 shrike_DEBUG_OBJECTS = $(shrike_CXXFILES:.cpp=.d.obj)
 
-shrike_RELEASE_LDADD  = $(SH_INSTALLDIR)\lib\libsh.lib
+shrike_RELEASE_LDADD = $(SH_INSTALLDIR)\lib\libsh.lib
 shrike_RELEASE_LDADD += $(SH_INSTALLDIR)\lib\libshutil.lib
 shrike_RELEASE_LDADD += $(WXWIN_RELEASE_LDADD)
 shrike_RELEASE_LDADD += opengl32.lib wsock32.lib
@@ -99,7 +99,7 @@ shrike_RELEASE_LDADD += kernel32.lib user32.lib gdi32.lib
 shrike_RELEASE_LDADD += shell32.lib ole32.lib comctl32.lib
 shrike_RELEASE_LDADD += comdlg32.lib rpcrt4.lib advapi32.lib
 
-shrike_DEBUG_LDADD  = $(SH_INSTALLDIR)\lib\libshd.lib
+shrike_DEBUG_LDADD = $(SH_INSTALLDIR)\lib\libshd.lib
 shrike_DEBUG_LDADD += $(SH_INSTALLDIR)\lib\libshutild.lib
 shrike_DEBUG_LDADD += $(WXWIN_DEBUG_LDADD)
 shrike_DEBUG_LDADD += opengl32.lib wsock32.lib
@@ -117,6 +117,7 @@ install: $(RELEASE_TARGETS) $(DEBUG_TARGETS)
 	-mkdir $(SH_INSTALLDIR)
 	copy shrike.exe $(SH_INSTALLDIR)
 	copy shriked.exe $(SH_INSTALLDIR)
+	copy shriked.pdb $(SH_INSTALLDIR)
 
 shrike_DEPENDS = $(shrike_CXXFILES:.cpp=.r.d) $(shrike_CXXFILES:.cpp=.d.d)
 
