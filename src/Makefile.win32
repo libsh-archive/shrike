@@ -27,13 +27,13 @@ all-debug: $(DEBUG_TARGETS)
 
 shrike_SOURCES = Camera.hpp Camera.cpp
 shrike_SOURCES += Globals.hpp Globals.cpp
-shrike_SOURCES += ShTrackball.hpp ShTrackball.cpp
 shrike_SOURCES += Shader.hpp Shader.cpp
 shrike_SOURCES += ShrikeApp.hpp ShrikeApp.cpp
 shrike_SOURCES += ShrikeCanvas.hpp ShrikeCanvas.cpp
 shrike_SOURCES += ShrikeFrame.hpp ShrikeFrame.cpp
 shrike_SOURCES += ShrikeGl.hpp ShrikeGl.cpp
 shrike_SOURCES += ShrikePropsDialog.hpp ShrikePropsDialog.cpp
+shrike_SOURCES += ShTrackball.hpp ShTrackball.cpp
 shrike_SOURCES += Timer.hpp Timer.cpp
 shrike_SOURCES += UniformPanel.hpp UniformPanel.cpp
 shrike_SOURCES += util.hpp utilimpl.hpp util.cpp
@@ -47,7 +47,6 @@ shrike_SOURCES += HDRImages\HDRMipmap.hpp
 shrike_SOURCES += HDRImages\HDRProbe.hpp
 shrike_SOURCES += HDRImages\HDRToneMap.hpp
 shrike_SOURCES += HDRImages\LargeTexture.hpp
-shrike_SOURCES += shaders\ClipMap.hpp
 
 # shaders
 shrike_SOURCES += shaders\AlgebraShader.cpp
@@ -57,10 +56,10 @@ shrike_SOURCES += shaders\Banks.cpp
 shrike_SOURCES += shaders\BrickHorizon.cpp
 shrike_SOURCES += shaders\BrickWall.cpp
 shrike_SOURCES += shaders\BumpMapShader.cpp
-shrike_SOURCES += shaders\CannyEdgeDetector.cpp
+#shrike_SOURCES += shaders\CannyEdgeDetector.cpp
 #shrike_SOURCES += shaders\CelShader.cpp
 shrike_SOURCES += shaders\Checkerboard.cpp
-shrike_SOURCES += shaders\ClipMap.cpp
+#shrike_SOURCES += shaders\ClipMap.hpp shaders\ClipMap.cpp
 shrike_SOURCES += shaders\CookTorrance.cpp
 shrike_SOURCES += shaders\CubeMap.cpp
 shrike_SOURCES += shaders\Derivatives.cpp
@@ -94,10 +93,10 @@ shrike_SOURCES += shaders\LCDSmall.hpp shaders\LCDSmall.cpp
 shrike_SOURCES += shaders\Logo.cpp
 shrike_SOURCES += shaders\LuciteShader.cpp
 shrike_SOURCES += shaders\NoiseShader.cpp
-shrike_SOURCES += shaders\NonPeriodic.cpp
 shrike_SOURCES += shaders\NonPeriodic3D.cpp
-shrike_SOURCES += shaders\Pants.cpp
+shrike_SOURCES += shaders\NonPeriodic.cpp
 shrike_SOURCES += shaders\PaletteExample.cpp
+shrike_SOURCES += shaders\Pants.cpp
 shrike_SOURCES += shaders\PhongShader.cpp
 shrike_SOURCES += shaders\SatinShader.cpp
 shrike_SOURCES += shaders\ShinyBumpMapShader.cpp
@@ -112,8 +111,8 @@ shrike_SOURCES += shaders\Text.hpp shaders\Text.cpp
 shrike_SOURCES += shaders\Texter.cpp
 shrike_SOURCES += shaders\Textures.cpp
 shrike_SOURCES += shaders\VertexBranching.cpp
-shrike_SOURCES += shaders\WorleyShader.cpp
 shrike_SOURCES += shaders\WobbleShader.cpp
+shrike_SOURCES += shaders\WorleyShader.cpp
 
 shrike_CXXFILES = $(filter %.cpp,$(shrike_SOURCES))
 shrike_RELEASE_OBJECTS = $(shrike_CXXFILES:.cpp=.r.obj)
