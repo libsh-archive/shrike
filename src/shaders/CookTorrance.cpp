@@ -84,14 +84,6 @@ bool CookTorranceBeckmann::init()
     half = normalize(half);
 
     // Beckman's distribution function
-    /*ShAttrib1f normalDotHalf = (normal | half);
-    ShAttrib1f normalDotHalf2 = normalDotHalf * normalDotHalf;
-    ShAttrib1f roughness2 = roughness * roughness;
-    ShAttrib1f exponent = -(1 - normalDotHalf2) /
-	    (normalDotHalf2 * roughness2); // Compute the exponent value
-    ShAttrib1f D = pow(M_E, exponent) /
-	    (roughness2 * normalDotHalf2*normalDotHalf2); // Compute the distribution function
-	    */
     ShAttrib1f D = beckmann(normal, half, roughness);
 
     // Fresnel term
@@ -157,12 +149,9 @@ bool CookTorranceBlinn::init()
 
     ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
     lightv = normalize(Globals::lightPos - posv); // Compute light direction
-    //lightv = (mToTangent | lightv);
 
     ShPoint3f viewv = -normalize(posv); // view vector
     eyev = normalize(viewv - posv);
-    //eyev = (mToTangent | viewv); // Compute eye direction
-
     halfv = normalize(viewv + lightv); // Compute half vector
     
   } SH_END;

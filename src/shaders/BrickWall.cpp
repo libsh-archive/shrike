@@ -171,8 +171,7 @@ bool BrickID::init()
          
   } SH_END;
  
-  
-  fsh = select <<
+ fsh = select <<
 	  ((((keep<ShNormal3f>() & keep<ShAttrib1f>() & brickModifier) <<
 	  (bumpmap & keep<ShAttrib1f>() & keep<ShAttrib1f>()) <<
 	  brickID)) & keep<ShVector3f>() & keep<ShVector3f>());

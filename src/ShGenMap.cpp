@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cmath>
 #include <sh/sh.hpp>
 
 using namespace std;
@@ -14,6 +15,7 @@ int main(int argc, char** argv)
     cout << " shgenmap n <png file> : Create normal map" << endl;
     cout << " shgenmap q <png file> : Create quaternion map using the same png file" << endl;
     cout << " shgenmap q <png file1> <png file2> : Create quaternion map using 2 different png files (1 for normal, 2 for tangent)" << endl;
+		cout << " shgenmap h <png file> : Create horizon maps (generate 2 files, one for 4 horizon directions)" << endl;
     exit(1);
   }
   string type(argv[1]);
@@ -101,6 +103,119 @@ int main(int argc, char** argv)
     }
     outputImage.savePng16(outFileName);
   }
-  
+	else if (type == "h")
+	{
+  	string inFileName(argv[2]);
+  	string outFileName1 = inFileName.substr(0,inFileName.size() - 4) +  "_horizon1.png";
+  	string outFileName2 = inFileName.substr(0,inFileName.size() - 4) +  "_horizon2.png";
+		
+		SH::ShImage inputImage;
+    inputImage.loadPng(inFileName);
+		SH::ShImage outputImage1(inputImage.width(), inputImage.height(), 4);
+		SH::ShImage outputImage2(inputImage.width(), inputImage.height(), 4);
+
+		int size_bump = 20;
+		// clear the images
+		for(int i=0 ; i<inputImage.width() ; i++)
+    	for(int j=0; j<inputImage.height() ; j++)
+				for(int u=0 ; u<4 ; u++) {
+					outputImage1(i, j, u) = 1.0;
+					outputImage2(i, j, u) = 1.0;
+				}
+		// compute angle and direction
+		for(int i=0 ; i<inputImage.width() ; i++)
+		{
+    	for(int j=0; j<inputImage.height() ; j++)
+			{
+				float angle = 0.0;
+				float bump;
+				int u,v;
+ 	   	 	u=i;
+ 	   	 	// search the maximum angle for all directions
+ 	   	 	while(u>0)
+				{
+					u--;
+					bump = size_bump*(inputImage(u,j,0)-inputImage(i,j,0));
+					angle = (i-u) / sqrt((i-u)*(i-u)+bump*bump);
+					if(angle < outputImage1(i, j, 0) && bump>0)
+					  outputImage1(i, j, 0) = angle;
+   	  	}
+   	   	angle = 0.0;
+	      v = j;
+  	    while(v>0)
+				{
+					v--;
+					bump = size_bump*(inputImage(i,v,0)-inputImage(i,j,0));
+					angle = (j-v) / sqrt((j-v)*(j-v)+bump*bump);
+					if(angle < outputImage1(i, j, 1) && bump>0)
+				  	outputImage1(i, j, 1) = angle;
+      	}
+			  angle = 0.0;
+    	  u = i;
+				while(u<inputImage.width())
+				{
+					u++;
+					bump = size_bump*(inputImage(u, j, 0)-inputImage(i, j, 0));
+					angle = (u-i) / sqrt((u-i)*(u-i)+bump*bump);
+					if(angle < outputImage1(i, j, 2) && bump>0)
+				  	outputImage1(i, j, 2) = angle;
+	      }
+ 		    angle = 0.0;
+    	  v = j;
+      	while(v<inputImage.height())
+				{
+					v++;
+					bump = size_bump*(inputImage(i, v, 0)-inputImage(i, j, 0));
+					angle = (v-j) / sqrt((v-j)*(v-j)+bump*bump);
+					if(angle < outputImage1(i, j, 3) && bump>0)
+					  outputImage1(i, j, 3) = angle;
+	      }
+	      angle = 0.0;
+	      u = i;v = j;
+ 		    while(u>0 && v>0)
+				{
+					u--;
+					v--;
+					bump = size_bump*(inputImage(u, v, 0)-inputImage(i, j, 0));
+	        angle = sqrt((float)((u-i)*(u-i)+(j-v)*(j-v))) / sqrt((i-u)*(i-u)+(j-v)*(j-v)+bump*bump);
+					if(angle < outputImage2(i, j, 0) && bump>0)
+					  outputImage2(i, j, 0) = angle;
+	      }
+  	    u = i;v = j;
+   			while(u<inputImage.width() && v>0)
+				{
+        	u++;
+					v--;
+					bump = size_bump*(inputImage(u, v, 0)-inputImage(i, j, 0));
+	        angle = sqrt((float)((u-i)*(u-i)+(j-v)*(j-v))) / sqrt((u-i)*(u-i)+(j-v)*(j-v)+bump*bump);
+					if(angle < outputImage2(i, j, 1) && bump>0)
+					  outputImage2(i, j, 1) = angle;
+ 	    	}
+      	u = i;v = j;
+      	while(u<inputImage.width() && v<inputImage.height())
+				{
+        	u++;
+					v++;
+					bump = size_bump*(inputImage(u, v, 0)-inputImage(i, j, 0));
+        	angle = sqrt((float)((u-i)*(u-i)+(j-v)*(j-v))) / sqrt((u-i)*(u-i)+(j-v)*(j-v)+bump*bump);
+					if(angle < outputImage2(i, j, 2) && bump>0)
+				  	outputImage2(i, j, 2) = angle;
+      	}
+ 	     	u = i;v = j;
+	      while(u>0 && v<inputImage.height())
+				{
+   		    u--;
+					v++;
+					bump = size_bump*(inputImage(u, v, 0)-inputImage(i, j, 0));
+	 	  	  angle = sqrt((float)((u-i)*(u-i)+(j-v)*(j-v))) / sqrt((u-i)*(u-i)+(j-v)*(j-v)+bump*bump);
+					if(angle < outputImage2(i, j, 3) && bump>0)
+				 	 outputImage2(i, j, 3) = angle;
+      	}
+			}
+		}
+		
+    outputImage1.savePng(outFileName1);
+    outputImage2.savePng(outFileName2);
+	}
   return 0;
 }

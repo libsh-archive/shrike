@@ -56,7 +56,6 @@ fresnel (
    ShNormal3f n, 
    ShAttrib1f eta
 ) {
-   ShVector3f r = reflect(v,n);
    v = normalize(v);   
    n = normalize(n);   
    ShAttrib1f c = pos(n|v);
