@@ -1,4 +1,6 @@
-bin_PROGRAMS = shrike
+# shgenmap is a tool to generate 16 bit png files to use as bumpmaps, not sure
+# if we want to keep it in this directory
+bin_PROGRAMS = shrike shgenmap
 
 shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 ShrikeFrame.hpp ShrikeFrame.cpp \
@@ -46,3 +48,7 @@ AM_CXXFLAGS = `${WX_CONFIG} --cxxflags` -Wall
 AM_CPPFLAGS = `${WX_CONFIG} --cppflags`
 shrike_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
 shrike_LDADD = -lsh -lshutil
+
+shgenmap_SOURCES = ShGenMap.cpp
+shgenmap_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
+shgenmap_LDADD = -lsh -lshutil
