@@ -1,9 +1,10 @@
 #include "UniformPanel.hpp"
-#include <sh/sh.hpp>
+#include <sh/ShProgram.hpp>
 #include <iostream>
 #include <cmath>
 #include <utility>
 #include <algorithm>
+#include <wx/colordlg.h>
 #include "ShrikeCanvas.hpp"
 
 using namespace SH;
@@ -201,6 +202,85 @@ BEGIN_EVENT_TABLE(AnimCheckBox, wxCheckBox)
   EVT_CHECKBOX(-1, AnimCheckBox::check)
 END_EVENT_TABLE()
 
+class TextureButton : public wxButton {
+public:
+  TextureButton(wxWindow* parent,
+                const ShTextureNodePtr& node,
+                const ShProgram& program)
+    : wxButton(parent, -1, "Set texture"),
+      m_node(node),
+      m_program(program)
+  {
+  }
+
+  void clicked(wxCommandEvent& event)
+  {
+    wxFileDialog* dialog = new wxFileDialog(this, "Open Texture",
+                                            SHMEDIA_DIR "/textures", "",
+                                            "PNG Images (*.png)|*.png", wxOPEN);
+
+    if (dialog->ShowModal() == wxID_OK) {
+      ShImage img;
+      img.loadPng(dialog->GetPath().c_str());
+      m_node->memory(img.memory());
+      if (m_node->dims() == SH_TEXTURE_1D) {
+        m_node->setTexSize(img.width() * img.height());
+      } else {
+        m_node->setTexSize(img.width(), img.height());
+      }
+      shBindShader(m_program);
+      ShrikeCanvas::instance()->render();
+    }
+  }
+  
+private:
+
+  ShTextureNodePtr m_node;
+  ShProgram m_program;
+  
+  DECLARE_EVENT_TABLE()
+};
+
+BEGIN_EVENT_TABLE(TextureButton, wxButton)
+  EVT_BUTTON(-1, TextureButton::clicked)
+END_EVENT_TABLE()
+
+class ColorButton : public wxButton {
+public:
+  ColorButton(wxWindow* parent,
+              const ShVariableNodePtr& node)
+    : wxButton(parent, -1, "Set colour"),
+      m_node(node)
+  {
+  }
+
+  void clicked(wxCommandEvent& event)
+  {
+    wxColourDialog dialog(this);
+
+    if (dialog.ShowModal() == wxID_OK) {
+      wxColourData& cd = dialog.GetColourData();
+      wxColour& c = cd.GetColour();
+
+      m_node->setValue(0, (float)c.Red()/255.0);
+      m_node->setValue(1, (float)c.Green()/255.0);
+      m_node->setValue(2, (float)c.Blue()/255.0);
+      
+      ShrikeCanvas::instance()->render();
+    }
+  }
+  
+private:
+
+  ShVariableNodePtr m_node;
+  
+  DECLARE_EVENT_TABLE()
+};
+
+BEGIN_EVENT_TABLE(ColorButton, wxButton)
+  EVT_BUTTON(-1, ColorButton::clicked)
+END_EVENT_TABLE()
+
 void UniformPanel::setShader(Shader* shader)
 {
   DestroyChildren();
@@ -214,8 +294,7 @@ void UniformPanel::setShader(Shader* shader)
   if (shader) {
     int p = 0;
     for (ShProgram prg = shader->vertex(); p < 2; prg = shader->fragment(), p++) {
-      for (ShProgramNode::VarList::iterator I = prg->uniforms.begin(); I != prg->uniforms.end();
-           I++) {
+      for (ShProgramNode::VarList::iterator I = prg->uniforms.begin(); I != prg->uniforms.end(); ++I) {
         ShVariableNodePtr var = *I;
         if (var->kind() != SH_TEMP) continue;
         if (var->internal()) continue;
@@ -229,16 +308,55 @@ void UniformPanel::setShader(Shader* shader)
         lps->Add(label, 0, wxALIGN_CENTER);
         lp->SetSizerAndFit(lps);
         sizer->Add(lp, 0, wxEXPAND);
-        wxSizer* vsizer = new wxBoxSizer(wxVERTICAL);
-        AttribSlider* last = 0;
-        for (int i = 0; i < var->size(); i++) {
-          AttribSlider* slider = new AttribSlider(this, var, i);
-          if (i == 0) cb->slider(slider);
-          vsizer->Add(slider, 0, wxEXPAND);
-          if (last) last->next(slider);
-          last = slider;
+
+        if (var->specialType() == SH_COLOR
+            && var->lowBound() == 0.0
+            && var->highBound() == 1.0) {
+          ColorButton* button = new ColorButton(this, var);
+          sizer->Add(button);
+        } else {
+          wxSizer* vsizer = new wxBoxSizer(wxVERTICAL);
+          AttribSlider* last = 0;
+          for (int i = 0; i < var->size(); i++) {
+            AttribSlider* slider = new AttribSlider(this, var, i);
+            if (i == 0) cb->slider(slider);
+            vsizer->Add(slider, 0, wxEXPAND);
+            if (last) last->next(slider);
+            last = slider;
+          }
+          sizer->Add(vsizer, 1, wxEXPAND);
         }
-        sizer->Add(vsizer, 1, wxEXPAND);
+      }
+      for (ShProgramNode::TexList::iterator I = prg->textures.begin(); I != prg->textures.end(); ++I) {
+        ShTextureNodePtr tex = *I;
+        if (tex->dims() == SH_TEXTURE_3D || tex->dims() == SH_TEXTURE_CUBE) continue;
+
+        std::string label = tex->name();
+
+        switch (tex->dims()) {
+        case SH_TEXTURE_1D:
+          label += " (1D)";
+          break;
+        case SH_TEXTURE_2D:
+          label += " (2D)";
+          break;
+        case SH_TEXTURE_RECT:
+          label += " (Rect)";
+          break;
+        case SH_TEXTURE_3D:
+          label += " (3D)";
+          break;
+        case SH_TEXTURE_CUBE:
+          label += " (Cube)";
+          break;
+        }
+        
+        wxStaticText* t = new wxStaticText(this, -1, label.c_str());
+        sizer->Add(t, 0, wxALIGN_CENTER);
+
+        wxButton* button = new TextureButton(this, tex, prg);
+        
+        sizer->Add(button);
       }
     }
   }

@@ -17,11 +17,14 @@ enum {
   SHRIKE_MENU_SHADER_REINIT,
 
   SHRIKE_MENU_VIEW_RESET,
+  SHRIKE_MENU_VIEW_BACKGROUND,
+  SHRIKE_MENU_VIEW_FULLSCREEN,
 
   SHRIKE_LISTBOX_SHADERS
 };
 
 class ShrikeCanvas;
+class wxSplitterWindow;
 
 class ShrikeFrame : public wxFrame {
 public:
@@ -41,6 +44,13 @@ public:
   void reinit(wxCommandEvent& event);
 
   void resetView(wxCommandEvent& event);
+  void setBackground(wxCommandEvent& event);
+  void fullscreen(wxCommandEvent& event);
+  void setFullscreen(bool);
+
+  void keyDown(wxKeyEvent& event);
+
+  static ShrikeFrame* instance();
   
 private:
   void showProgram(const SH::ShProgram& program,
@@ -50,9 +60,15 @@ private:
 
   ShrikeCanvas* m_canvas;
   UniformPanel* m_panel;
+  wxSplitterWindow* m_hsplitter;
+  wxSplitterWindow* m_right_window;
 
+  wxListBox* m_shaderList;
   Shader* m_shader;
-  
+
+  bool m_fullscreen;
+
+  static ShrikeFrame* m_instance;
   DECLARE_EVENT_TABLE()
 };
 

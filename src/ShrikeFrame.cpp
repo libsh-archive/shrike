@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <wx/splitter.h>
+#include <wx/colordlg.h>
 #include <sh/ShObjMesh.hpp>
 #include "GrView.hpp"
 #include "ShrikeFrame.hpp"
@@ -21,13 +22,17 @@ BEGIN_EVENT_TABLE(ShrikeFrame, wxFrame)
   EVT_MENU(SHRIKE_MENU_SHADER_SHOW_FSH, ShrikeFrame::showFsh)
   EVT_MENU(SHRIKE_MENU_SHADER_REINIT, ShrikeFrame::reinit)
   EVT_MENU(SHRIKE_MENU_VIEW_RESET, ShrikeFrame::resetView)
+  EVT_MENU(SHRIKE_MENU_VIEW_BACKGROUND, ShrikeFrame::setBackground)
+  EVT_MENU(SHRIKE_MENU_VIEW_FULLSCREEN, ShrikeFrame::fullscreen)
+  EVT_KEY_DOWN(ShrikeFrame::keyDown)
   EVT_LISTBOX(SHRIKE_LISTBOX_SHADERS, ShrikeFrame::onShaderSelect)
 END_EVENT_TABLE()
 
 ShrikeFrame::ShrikeFrame()
   : wxFrame(0, -1, "Shrike", wxDefaultPosition, wxSize(400, 600)),
-    m_shader(0)
+    m_shader(0), m_fullscreen(false)
 {
+  m_instance = this;
   CreateStatusBar();
 
   GetStatusBar()->SetStatusText("Hold down shift to rotate the light instead of the camera.");
@@ -49,7 +54,9 @@ ShrikeFrame::ShrikeFrame()
 
   wxMenu* viewMenu = new wxMenu();
   viewMenu->Append(SHRIKE_MENU_VIEW_RESET, "&Reset");
-  
+  viewMenu->Append(SHRIKE_MENU_VIEW_BACKGROUND, "Set &background colour...");
+  viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FULLSCREEN, "Fullscreen");
+
   wxMenuBar* menuBar = new wxMenuBar();
   menuBar->Append(fileMenu, "&File");
   menuBar->Append(shaderMenu, "&Shader");
@@ -57,9 +64,9 @@ ShrikeFrame::ShrikeFrame()
   
   SetMenuBar(menuBar);
 
-  wxSplitterWindow* hsplitter = new wxSplitterWindow(this, -1);
+  m_hsplitter = new wxSplitterWindow(this, -1);
 
-  wxListBox* shaderList = initShaderList(hsplitter);
+  m_shaderList = initShaderList(m_hsplitter);
   
   // Probably should do this somewhere else...
   ShObjMesh* model = 0;
@@ -70,14 +77,14 @@ ShrikeFrame::ShrikeFrame()
     model = new ShObjMesh(infile);
   }
 
-  wxSplitterWindow* right_window = new wxSplitterWindow(hsplitter, -1);
-  m_canvas = new ShrikeCanvas(right_window, model);
-  m_panel = 0; //new UniformPanel(0);
-  GrView* grview = new GrView(right_window);
+  m_right_window = new wxSplitterWindow(m_hsplitter, -1);
+  m_canvas = new ShrikeCanvas(m_right_window, model);
+  //m_panel = new UniformPanel(m_right_window);
+  GrView* grview = new GrView(m_right_window);
 
-  hsplitter->SplitVertically(shaderList, right_window, 150);
-  right_window->SplitHorizontally(m_canvas, grview, -100);
-  right_window->SetMinimumPaneSize(40);
+  m_hsplitter->SplitVertically(m_shaderList, m_right_window, 150);
+  m_right_window->SplitHorizontally(m_canvas, grview, -100);
+  m_right_window->SetMinimumPaneSize(40);
 }
 
 ShrikeFrame::~ShrikeFrame()
@@ -157,6 +164,16 @@ void ShrikeFrame::resetView(wxCommandEvent& event)
   m_canvas->resetView();
 }
 
+void ShrikeFrame::setBackground(wxCommandEvent& event)
+{
+  wxColourDialog dialog(this);
+
+  if (dialog.ShowModal() != wxID_OK) return;
+
+  wxColour c = dialog.GetColourData().GetColour();
+  m_canvas->setBackground(c.Red(), c.Green(), c.Blue());
+}
+
 void ShrikeFrame::showProgram(const ShProgram& program,
                               std::string name)
 {
@@ -177,6 +194,41 @@ void ShrikeFrame::showProgram(const ShProgram& program,
   frame->Show();
 }
 
+void ShrikeFrame::fullscreen(wxCommandEvent& event)
+{
+  setFullscreen(event.IsChecked());
+}
+
+void ShrikeFrame::setFullscreen(bool fs)
+{
+  ShowFullScreen(fs);
+  if (fs) {
+    m_hsplitter->Unsplit(m_shaderList);
+  } else {
+    if (!m_hsplitter->IsSplit()) {
+      m_hsplitter->SplitVertically(m_shaderList, m_right_window,
+                                   150);
+      m_shaderList->Show();
+    }
+  }
+  m_fullscreen = fs;
+}
+
+void ShrikeFrame::keyDown(wxKeyEvent& event)
+{
+  if (event.GetKeyCode() == WXK_ESCAPE) {
+    if (m_fullscreen) {
+      setFullscreen(false);
+    }
+  } else {
+    event.Skip();
+  }
+}
+
+ShrikeFrame* ShrikeFrame::instance()
+{
+  return m_instance;
+}
 
 wxListBox* ShrikeFrame::initShaderList(wxWindow* parent)
 {
@@ -190,4 +242,6 @@ wxListBox* ShrikeFrame::initShaderList(wxWindow* parent)
   }
   return box;
 }
+
+ShrikeFrame* ShrikeFrame::m_instance = 0;
 

@@ -49,7 +49,6 @@ bool DiscoShader::init()
 
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
   vsh = vsh << shExtract("lightPos") << Globals::lightPos; 
-  vsh = namedCombine(vsh, keep<ShPoint4f>("posm"));
   vsh = shSwizzle("texcoord", "viewVec", "normal", "halfVec", "lightVec", "posh") << vsh;
 
   // find reflected vector for cube mapping later
@@ -59,7 +58,7 @@ bool DiscoShader::init()
     ShInOutNormal3f SH_DECL(normal);
     reflectVec = Globals::mv_inverse | ShVector3f(2.0f * dot(normal, viewVec) * normal - viewVec); 
   } SH_END;
-  vsh = namedConnect(vsh, reflector); 
+  vsh = namedConnect(vsh, reflector, true); 
 
   ShAttrib1f SH_DECL(time) = 0.0;
   time.range(0.0f, 4.0f); 
@@ -108,7 +107,9 @@ bool DiscoShader::init()
     ks = kd;
   } SH_END;
   
-  fsh = ShKernelLib::shPhong<ShColor3f>() << shExtract("specExp") << exponent; 
+  ShConstant3f lightColor(1.0f, 1.0f, 1.0f);
+  fsh = ShKernelSurface::phong<ShColor3f>() << shExtract("specExp") << exponent; 
+  fsh = fsh << shExtract("irrad") << lightColor;
   fsh = fsh << discoTiler;
   return true;
 }

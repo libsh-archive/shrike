@@ -66,9 +66,15 @@ bool WorleyShader::init() {
   color2.name("color2");
   color2.range(-2.0f, 2.0f);
 
-  vsh = ShKernelLib::shVshTangentSpace(Globals::mv, Globals::mvp, false) << shExtract("lightPos") << Globals::lightPos; 
-  vsh = shSwizzle("texcoord", "normal", "halfVec", "lightVec", "posh") << vsh;
-  fsh = ShKernelLib::shPhong<ShColor3f>() << shExtract("specExp") << exponent;
+  vsh = ShKernelLib::shVsh(Globals::mv, Globals::mvp, 1) << shExtract("lightPos") << Globals::lightPos; 
+  vsh = shSwizzle("texcoord", "normalt", "halfVect", "lightVect", "posh") << vsh;
+  renameOutput(vsh, "normalt", "normal");
+  renameOutput(vsh, "halfVect", "halfVec");
+  renameOutput(vsh, "lightVect", "lightVec");
+
+  ShConstant3f lightColor(1.0f, 1.0f, 1.0f);
+  fsh = ShKernelSurface::phong<ShColor3f>() << shExtract("specExp") << exponent;
+  fsh = fsh << shExtract("irrad") << lightColor;
 
   initfsh();
   return true;
@@ -93,7 +99,7 @@ class OrganicWorley: public WorleyShader {
 
       ShProgram colorAndBump = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
       colorAndBump = (colorAndBump & (keep<ShColor3f>("ks") << fillcast<ShAttrib1f, ShColor3f>())) << shDup(); 
-      colorAndBump = colorAndBump & ShKernelLib::bump(); 
+      colorAndBump = colorAndBump & ShKernelSurfMap::bump(); 
 
       fsh = fsh << colorAndBump << worleysh;
     }

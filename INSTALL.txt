@@ -1,0 +1,5 @@
+The following may be useful:
+
+./bootstrap
+./configure --with-sh=$HOME/install/sh --with-shmedia=$HOME/dev/shmedia
+make

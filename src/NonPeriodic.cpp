@@ -33,12 +33,7 @@ NonPeriodic::~NonPeriodic()
 
 ShAttrib1f do_mod(ShAttrib1f x)
 {
-  ShAttrib1f dd = floor(x);
-  ShAttrib1f diff = x - dd;
-
-  diff = cond(diff > 0.5, diff - 1.0, diff);
-  
-  return diff;
+  return frac(x) - 0.5;
 }
 
 ShAttrib1f aboveLine( ShAttrib1f x0, ShAttrib1f y0, ShAttrib1f m, ShAttrib1f x, ShAttrib1f y )

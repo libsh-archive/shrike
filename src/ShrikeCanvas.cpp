@@ -4,6 +4,7 @@
 #undef GL_GLEXT_LEGACY
 #include <wx/glcanvas.h>
 #include "ShrikeCanvas.hpp"
+#include "ShrikeFrame.hpp"
 #include "Globals.hpp"
 #include "ShTrackball.hpp"
 #include <sh/sh.hpp>
@@ -15,6 +16,7 @@ BEGIN_EVENT_TABLE(ShrikeCanvas, wxGLCanvas)
   EVT_PAINT(ShrikeCanvas::paint)
   EVT_SIZE(ShrikeCanvas::reshape)
   EVT_MOTION(ShrikeCanvas::motion)
+  EVT_KEY_DOWN(ShrikeCanvas::keyDown)
 END_EVENT_TABLE()
 
 ShrikeCanvas* ShrikeCanvas::m_instance = 0;
@@ -24,7 +26,8 @@ ShrikeCanvas::ShrikeCanvas(wxWindow* parent, ShObjMesh* model)
     m_init(false),
     m_model(model),
     m_shader(0),
-    m_showLight(true)
+    m_showLight(true),
+    m_bg_r(0.2), m_bg_g(0.2), m_bg_b(0.2)
 {
   m_instance = this;
   Globals::mv.internal(true);
@@ -52,6 +55,11 @@ void ShrikeCanvas::setModel(ShObjMesh* model)
   m_model = model;
   render();
 }
+
+const ShObjMesh* ShrikeCanvas::getModel() const {
+  return m_model;
+}
+
 
 void ShrikeCanvas::setShader(Shader* shader)
 {
@@ -187,7 +195,7 @@ void ShrikeCanvas::init()
 
   glEnable(GL_DEPTH_TEST);
 
-  glClearColor(0.2, 0.2, 0.2, 1.0);
+  glClearColor(m_bg_r, m_bg_g, m_bg_b, 1.0);
   setupView();
   
   shSetBackend("arb");
@@ -213,4 +221,21 @@ void ShrikeCanvas::resetView()
     setupView();
     render();
   }
+}
+
+void ShrikeCanvas::setBackground(unsigned char r, unsigned char g, unsigned char b)
+{
+  m_bg_r = (float)r/255.0;
+  m_bg_g = (float)g/255.0;
+  m_bg_b = (float)b/255.0;
+
+  glClearColor(m_bg_r, m_bg_g, m_bg_b, 1.0);
+  
+  SetCurrent();
+  render();
+}
+
+void ShrikeCanvas::keyDown(wxKeyEvent& evt)
+{
+  ShrikeFrame::instance()->keyDown(evt);
 }
