@@ -39,6 +39,8 @@ using namespace std;
 
 #include "util.hpp"
 
+#define TEST_BLURR 0
+
 class CannyEdgeDetector : public Shader {
 public:
   CannyEdgeDetector();
@@ -102,10 +104,15 @@ bool CannyEdgeDetector::init()
     
     tc *= GaussImg.size();
     ShAttrib4f lumvect(0.27,0.67,0.06,0.0); // to compute the luminance
+#if (TEST_BLURR)
     ShAttrib1f Gx = lumvect | (GaussImg[tc] - GaussImg[tc+ShAttrib2f(1.0,1.0)]);
     ShAttrib1f Gy = lumvect | (GaussImg[tc+ShAttrib2f(1.0,0.0)] - GaussImg[tc+ShAttrib2f(0.0,1.0)]);
     Gx = cond(blurType > 0.5, Gx, lumvect | (AnisDiffImg[tc] - AnisDiffImg[tc+ShAttrib2f(1.0,1.0)]));
     Gy = cond(blurType > 0.5, Gy, lumvect | (AnisDiffImg[tc+ShAttrib2f(1.0,0.0)] - AnisDiffImg[tc+ShAttrib2f(0.0,1.0)]));
+#else
+    ShAttrib1f Gx = lumvect | (AnisDiffImg[tc] - AnisDiffImg[tc+ShAttrib2f(1.0,1.0)]);
+    ShAttrib1f Gy = lumvect | (AnisDiffImg[tc+ShAttrib2f(1.0,0.0)] - AnisDiffImg[tc+ShAttrib2f(0.0,1.0)]);
+#endif
     ShAttrib1f G = sqrt(Gx*Gx + Gy*Gy);
     G = cond(G > hysteresis1, G, ShAttrib1f(0.0));
     result = G(0,0,0);
