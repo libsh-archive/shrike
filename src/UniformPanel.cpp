@@ -294,21 +294,9 @@ public:
   {
 
     if (!m_node->evaluator()) return;
-    
-    std::string title = m_node->name() + " Code";
-    wxFrame* frame = new wxFrame(0, -1, title.c_str());
-    
-    wxTextCtrl* control = new wxTextCtrl(frame, -1, "",
-                                         wxDefaultPosition,
-                                         wxDefaultSize,
-                                         wxTE_MULTILINE | wxTE_READONLY);
 
-    std::ostringstream os;
-    m_node->evaluator()->ctrlGraph->print(os, 0);
-    
-    control->AppendText(os.str().c_str());
-    
-    frame->Show();
+    ShProgram prg(m_node->evaluator());
+    ShrikeFrame::instance()->showIR(prg, m_node->name());
   }
   
 private:
