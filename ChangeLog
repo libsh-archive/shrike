@@ -1,3 +1,7 @@
+2004-05-27  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/UniformPanel.cpp (setShader): Use has_name() instead of hasName().
+
 2004-05-21  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/shaders/*: Remove redundant bind() implementations, and
