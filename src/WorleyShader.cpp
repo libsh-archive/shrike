@@ -62,7 +62,9 @@ bool WorleyShader::init() {
 
 
   color1.name("color1");
+  color1.range(-2.0f, 2.0f);
   color2.name("color2");
+  color2.range(-2.0f, 2.0f);
 
   vsh = ShKernelLib::shVshTangentSpace(Globals::mv, Globals::mvp, false) << shExtract("lightPos") << Globals::lightPos; 
   vsh = shSwizzle("texcoord", "normal", "halfVec", "lightVec", "posh") << vsh;
@@ -217,14 +219,15 @@ class CrackedWorley: public WorleyShader {
 
     void initfsh() {
       ShAttrib1f SH_DECL(time); 
-      time.range(0.0f, 6.0f);
+      time.range(0.0f, 9.0f);
 
       color1 = ShColor3f(3.0, 0.75, 0.0);
       color2 =  ShColor3f(0.0f, 0.0f, 0.0f);
 
       ShColor3f specularColor(0.5, 0.5, 0.5);
 
-      coeff = ShConstant4f(2.5, -1.25, 0, 0);
+      coeff = ShConstant4f(2.5, -0.5f, -0.1f, 0);
+      freq = ShConstant1f(16.0f);
 
       ShWorleyLerpingPointGen<float> generator(time);
       ShProgram worleysh = worleyProgram<4, float>(L2_SQ, useTexture, generator) << coeff; // pass in coefficient
