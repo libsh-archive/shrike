@@ -47,115 +47,6 @@ public:
 
 private:
 
-/* SegDist
- *
- * Compute distance and gradient from a point to a line segment.
- *
- * This functions returns the unsigned distance, an evaluation of the
- * plane equation (whose sign lets us know which side of the edge
- * we are on), and the gradient of the distance to a line segment.  
- * These are packed into the components of a 4-tuple.   
- *
- * We depend on dead-code elimination (which is supposed to work 
- * on components of tuples) to get rid of computations that are not 
- * needed.   
- */
-ShAttrib4f //< true distance, signed value (dist from line), gradient vector
-segdist (
-    ShAttrib4f L,  //< line segment (0,1 point 0, 2,3 point 1)
-    ShPoint2f  x,  //< test point
-    bool norm_grad = true //< normalize gradient (by default, do)
-) {
-    // return value
-    ShAttrib4f r;
-
-    // compute 2D vectors from first endpoint to x (delta(0,1)) and
-    // from second endpoint to x (delta(2,3)).
-    ShAttrib4f delta = x(0,1,0,1) - L;
-
-    // compute tangent d and normal d 
-    ShAttrib4f dn = L(2,3,1,2) - L(0,1,3,0);
-    // make normal unit length, store as result gradient
-    r(2,3) = normalize(dn(2,3));
-
-    // compute distance to line by projecting delta(0,1) onto normal
-    r(1) = (r(2,3)|delta(0,1));  // signed distance from line
-    // fix signs to get unsigned distance and its gradient
-    r(0,2,3) = cond(r(1) > 0.0,r(1,2,3),-r(1,2,3)); 
-
-    // compute dot products of d with delta vectors
-    ShAttrib4f c = dn(0,1,0,1) * delta;
-    c(0,1) = c(0,2) + c(1,3);  // c(0) = d|delta(0,1), c(1) = d|delta(2,3)
-
-    // compute lengths of delta vectors
-    ShAttrib4f s = delta * delta;  // square all components
-    s(1,2) = s(0,2) + s(1,3);      // squared lengths
-
-    // pick smaller lengths and vectors
-    s(0) = sqrt(min(s(1),s(2))); // smaller length
-    s(1,2) = cond(s(1) < s(2),delta(0,1),delta(2,3)); // appropriate gradient
-    if (norm_grad) {
-       s(1,2) = s(1,2) * (ShAttrib1f(1.0)/s(0)); // normalize 
-    }
-
-    // replace distances if beyond ends of line
-    r(0,2,3) = cond(c(0) > 0.0,r(0,2,3),s(0,1,2));
-    r(0,2,3) = cond(c(1) < 0.0,r(0,2,3),s(0,1,2));
-
-    return r;
-}
-ShAttrib4f //< square distance, sign (plane equation), unnorm gradient vector
-segdist_t (
-    ShAttrib4f L,  //< line segment (0,1 point 0, 2,3 point 1)
-    ShPoint2f  x   //< test point
-) {
-    // compute 2D vector from first endpoint to x 
-    ShAttrib2f v = x - L(0,1);
-    // compute tangent  
-    ShAttrib2f d = L(2,3) - L(0,1);
-    // compute squared length of tangent
-    ShAttrib1f d2 = (d|d);
-    // compute t value of closest point on line
-    ShAttrib1f t = (v|d)/d2;
-    // clamp to range [0,1]
-    t = pos(t);
-    t = sat(t);
-    // compute point on line 
-    ShAttrib2f p = L(0,1) + t*d;
-
-    // configure return value
-    ShAttrib4f r;
-    // compute vector from p to x (is gradient)
-    r(2,3) = x - p;
-    // compute squared distance
-    r(0) = (r(2,3)|r(2,3));
-    // compute sign using plane equation; normal is (-d(1),d(0))
-    // r(1) = v(1)*d(0) - v(0)*d(1); (works fine for sign, bad pseudodistance)
-    r(1) = (v(1)*d(0) - v(0)*d(1))*rsqrt(d2);
-
-    return r;
-}
-ShAttrib4f //< signed distance, signed value (dist from line), gradient vector
-segdists (
-    ShAttrib4f L[],  //< line segments (0,1 point 0, 2,3 point 1)
-    int N,           // number of line segments
-    ShPoint2f  x    //< test point
-) {
-    ShAttrib4f r = segdist_t(L[0],x);
-    ShAttrib4f nr;
-    for (int i=1; i<N; i++) {
-       nr = segdist_t(L[i],x);
-       r = cond(nr(0) < r(0),nr,r);
-    }
-    // compute true distance from squared distance
-    r(0) = sqrt(r(0));  // is also length of gradient
-    // transfer sign 
-    r(0) = cond(r(1) < 0.0, -r(0), r(0));
-    // normalize gradient
-    r(2,3) = r(2,3)/r(0);
-    return r;
-}
-
   ShProgram vsh, fsh;
   
   int m_mode;
@@ -232,7 +123,7 @@ bool ConicTest::init()
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
   // data structure for precomputed conic info (use accessors so data can be packed)
-  struct Conic {
+  class Conic {
 	private:
       ShAttrib4f a[3];  // data.   should probably use a 12-tuple and let system do packing.
 	public:
@@ -246,12 +137,12 @@ bool ConicTest::init()
 		const ShPoint2f& p, 
 		const ShVector2f& d, 
 		const ShVector2f& v, 
-		const ShAttrib1f& k,
+		const ShAttrib1f& s,
 		const ShAttrib1f& c  
       ) {
 	    // store data
 		a[0] = ShAttrib4f(alpha,beta,w(0),w(1));
-		a[1] = ShAttrib4f(p(0),p(1),k,c);
+		a[1] = ShAttrib4f(p(0),p(1),s,c);
 		a[2] = ShAttrib4f(d(0),d(1),v(0),v(1));
 	  }
 	  // set up with raw coefficients 
@@ -261,7 +152,7 @@ bool ConicTest::init()
 		double px, double py,      // constant coefficient 
 		double dx, double dy,      // linear coefficient
 		double vx, double vy,      // quadratic coefficient
-		double k,                  // scale of parabola
+		double s,                  // scale of parameter t wrt x in canonical coords
 		double c                   // translation of t to center parabola about 0
       ) {
 	    init (
@@ -271,7 +162,7 @@ bool ConicTest::init()
 		  ShPoint2f(px,py), 
 		  ShVector2f(dx,dy), 
 		  ShVector2f(vx,vy), 
-		  ShAttrib1f(k),
+		  ShAttrib1f(s),
 		  ShAttrib1f(c)  
         );
 	  }
@@ -281,13 +172,16 @@ bool ConicTest::init()
 	    const ShPoint2f& P1,
 	    const ShPoint2f& P2
       ) {
-	    ShVector2f d = P1 - P0;
-	    ShVector2f v = -d - (P1 - P2);
-	    ShVector2f w = ShVector2f(-1.0,0.0);  // FIXME
-	    ShAttrib1f k = 0.5; // FIXME
-	    ShAttrib1f c = 0; // FIXME
-		ShVector2f vn = normalize(v);
-		init(vn(1),-vn(0),w,P0,d,v,k,c);
+	    ShVector2f d = 2.0*(P1 - P0);
+	    ShVector2f v = (P0 - P1) - (P1 - P2);
+		ShAttrib1f k = 1.0/(v|v);
+	    ShVector2f u = ShVector2f(v(1),-v(0));
+	    ShVector2f w;  
+		w(0) = - (k*(u|P0) - 0.5*k*k*(v|d)*(u|d));
+		w(1) = - (k*(v|P0) - 0.25*k*k*(v|d)*(v|d));
+	    ShAttrib1f s = k*(u|d); 
+	    ShAttrib1f c = 0.5*k*(v|d); 
+		init(k*u(0),k*u(1),w,P0,d,v,s,c);
 	  }
 	  // set up with Bezier control points
 	  void bezier (
@@ -327,30 +221,35 @@ bool ConicTest::init()
 	  }
 	  // approximate, using reguli-falsi, parameter value of closest point
 	  ShAttrib1f solve(ShAttrib2f x) {
+	    // get curve parameter
+		ShAttrib1f s = a[1](2);
+
 	    // generate interval guaranteed to have solution
 		ShAttrib3f G;
-		G(0,1) = ShAttrib2f(sign(x(0))*sqrt(pos(x(1))),x(0));
+		G(0,1) = ShAttrib2f(sign(x(0))*sqrt(pos(x(1)))*s,s*x(0));
 		G(0,1) = cond(G(0)<G(1),G(0,1),G(1,0));  // sort
 
-		// set up coefficients for distance cubic (note: k may be zero if degenerate!)
-		ShAttrib1f k = a[1](2);
-		ShAttrib3f cc = ShAttrib3f(x(0),2.0*k*x(1)-1.0,-2.0*k*k);  
+		// set up coefficients for distance cubic 
+		ShAttrib3f cc;
+		cc[0] = s*x(0);
+		cc[1] = 2.0*x(1) - s*s;
+		cc[2] = -2.0;  
 
 		// evaluate distance cubic at endpoints of interval
         ShAttrib3f A;
 		A(0,1) = cc(0,0) + (cc(1,1) + cc(2,2)*G(0,1)*G(0,1))*G(0,1);
 
 	    // refine estimate using reguli-falsi
-		for (int i=0; i<0; i++) {
-		  G(2) = (A(0,1)|G(0,1))/(A(0) + A(1));
+		for (int i=0; i<5; i++) {
+		  G(2) = (A(0)*G(1) - A(1)*G(0))/(A(0) - A(1));
 		  A(2) = cc(0) + (cc(1) + cc(2)*G(2)*G(2))*G(2);
-		  ShAttrib1f c = A(2)*A(1) > 0.0;
+		  ShAttrib1f c = A(2)*A(0) > 0.0;
 		  G(0,1) = cond(c,G(2,1),G(0,2));
 		  A(0,1) = cond(c,A(2,1),A(0,2));
 	    }
-		G(2) = (A(0,1)|G(0,1))/(A(0) + A(1));
+		G(2) = (A(0)*G(1) - A(1)*G(0))/(A(0) - A(1));
 
-		// return best estimate, translated to canonical space 
+		// transform estimate back from canonical space
 		return G(2) + a[1](3);
 	  }
 	  // solve for clamped t value of closest point on curve segment
@@ -360,19 +259,23 @@ bool ConicTest::init()
         ShAttrib2f xc = canonical(x);
 		// find t value of closest point on canonical quadratic
 		ShAttrib1f t = solve(xc);
+		// clamp to bounds
+		// ShAttrib1f ct = pos(sat(t));
+		ShAttrib1f ct = t;
 		// find point on curve, tangent, and normal 
-		ShAttrib2f P = position(t);
+		ShAttrib2f cP = position(ct);
+		ShAttrib2f uP = position(t);
 		ShAttrib2f N = normal(t);
 		// compute distance, gradient, signed distance, etc.
         ShAttrib4f r; // square distance, sign (plane equation), unnorm gradient vector
-		r(2,3) = P - x;
+		r(2,3) = cP - x;
 		r(0) = r(2,3) | r(2,3);
-		r(1) = r(2,3) | N;
+		r(1) = (uP - x) | N;  // useful for pseudodistance
 
 		// DEBUG
 		// just evaluate sign of xc relative to parabola
-		ShAttrib1f k = a[1](2);
-		r(0) = xc(1) - k*xc(0)*xc(0); 
+		ShAttrib1f s = a[1](2);
+		r(0) = xc(1) - (1.0/(s*s))*xc(0)*xc(0); 
 		r(1) = r(0);
 		r(0) *= r(0);
 		return r;
@@ -530,10 +433,10 @@ bool ConicTest::init()
 
 bool ConicTest::m_done_init = false;
 ShAttrib1f ConicTest::m_scale = ShAttrib1f(6.0);
-ShVector2f ConicTest::m_offset = ShVector2f(0.13,0.13);
+ShVector2f ConicTest::m_offset = ShVector2f(0.0,0.0);
 ShAttrib2f ConicTest::m_celloffset = ShAttrib2f(0.2,0.2);
 ShAttrib2f ConicTest::m_cellperiod = ShAttrib2f(2.0,2.0);
-ShAttrib1f ConicTest::m_size = ShAttrib1f(2.0);
+ShAttrib1f ConicTest::m_size = ShAttrib1f(1.0);
 ShAttrib1f ConicTest::m_fw = ShAttrib1f(1.0);
 ShAttrib2f ConicTest::m_thres = ShAttrib2f(0.0,0.05);
 ShColor3f ConicTest::m_color1 = ShColor3f(0.0, 0.0, 0.0);
