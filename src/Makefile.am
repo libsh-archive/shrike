@@ -80,8 +80,10 @@ shrike_SOURCES += shaders/AnisotropicDiffusion.cpp
 shrike_SOURCES += shaders/LargeTexture.cpp
 shrike_SOURCES += shaders/ClipMap.cpp
 
-# this is a hack and should be removed eventually
-# shrike_SOURCES += DummyShader.cpp
+# HDR headers
+shrike_SOURCES += HDRImages/HDRImage.hpp HDRImages/Filters.hpp HDRImages/HDRInterp.hpp
+shrike_SOURCES += HDRImages/HDRMipmap.hpp HDRImages/HDRProbe.hpp HDRImages/HDRTonemap.hpp
+shrike_SOURCES += HDRImages/LargeTexture.hpp HDRImages/HDRCubeMap.hpp
 
 AM_CXXFLAGS = `${WX_CONFIG} --cxxflags` -Wall
 AM_CPPFLAGS = `${WX_CONFIG} --cppflags`
@@ -93,12 +95,12 @@ shgenmap_SOURCES = ShGenMap.cpp
 shgenmap_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
 shgenmap_LDADD = -lsh -lshutil
 
-shHDRfunc_SOURCES = ShHDRFunc.cpp HDRImages/HDRImage.cpp
+shHDRfunc_SOURCES = ShHDRFunc.cpp HDRImages/HDRImage.cpp HDRImages/HDRImage.hpp
 shHDRfunc_CPPFLAGS = -IHDRImages
 shHDRfunc_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
 shHDRfunc_LDADD = -lsh -lshutil
 
-shsparse_SOURCES = ShSparse.cpp HDRImages/HDRImage.cpp
+shsparse_SOURCES = ShSparse.cpp HDRImages/HDRImage.cpp HDRImages/HDRImage.hpp
 shsparse_CPPFLAGS = -IHDRImages
 shsparse_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
 shsparse_LDADD = -lsh -lshutil
