@@ -198,8 +198,8 @@ bool VectorText::init()
   const float eps = 0.0001;
   // const float xoff = 1.8;
   // const int ioff = 11;
-  const float xoff = 0.0;
-  const int ioff = 0;
+  // const float xoff = 0.0;
+  // const int ioff = 0;
   // L[ioff+0] = ShAttrib4f(xoff+0.3,0.0-eps,xoff+0.0,0.0-eps);
   // L[ioff+1] = ShAttrib4f(xoff+0.0-eps,0.0+eps,xoff+0.5,1.5);
   // L[ioff+2] = ShAttrib4f(xoff+0.5,1.5,xoff+0.9,1.5);
