@@ -1,5 +1,9 @@
 2004-07-13  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
+	* src/shaders/TangentArrows.cpp (render): Fix a bug, now the z
+	component of the tangents actually gets sent. Add a NormalArrows
+	shader while we're at it.
+
 	* src/ShrikeFrame.cpp (wireframe): Implemented wireframe support.
 
 	* src/ShrikeFrame.hpp: Added support for wireframe.
