@@ -1,5 +1,7 @@
 2004-07-05  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
+	* src/utilimpl.hpp: Remove clamp functions.
+
 	* ChangeLog: Clean up the spaces in this file a bit.
 
 	* src/ShrikeFrame.cpp: Implement fragment/vertex program interface

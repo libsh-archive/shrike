@@ -184,7 +184,7 @@ ShProgram worleySurface() {
     worleysh = worleysh << scaler; 
 
     ShProgram clamper = SH_BEGIN_PROGRAM() {
-      ShInOutAttrib1f SH_DECL(scalar) = clamp(0.0f, 1.0f, scalar);
+      ShInOutAttrib1f SH_DECL(scalar) = clamp(scalar, 0.0f, 1.0f);
     } SH_END;
 
     worleysh = clamper << worleysh;

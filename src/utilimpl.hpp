@@ -1,38 +1,4 @@
 
-// Clamp to a given range 
-template <int N, typename T>
-ShGeneric<N,T>
-clamp (
-   const ShGeneric<N,T>& s, 
-   const ShGeneric<N,T>& lower, 
-   const ShGeneric<N,T>& upper
-) {
-   return min(max(s,lower),upper);
-}
-
-// Clamp to a given range 
-template <int N, typename T>
-ShGeneric<N,T>
-clamp (
-   const ShGeneric<N,T>& s, 
-   const ShGeneric<1,T>& lower, 
-   const ShGeneric<1,T>& upper
-) {
-   return min(max(s,fillcast<N>(lower)),fillcast<N>(upper));
-}
-
-// Clamp to a given range 
-template <int N, typename T>
-ShGeneric<N,T>
-clamp (
-   const ShGeneric<N,T>& s, 
-   float lower, 
-   float upper
-) {
-   return min(max(s,fillcast<N>(ShAttrib<1,SH_TEMP,T>(lower))),
-		    fillcast<N>(ShAttrib<1,SH_TEMP,T>(upper)));
-}
-
 // Evaluate cubic Bernstein (Bezier) basis functions.
 template <int N, typename T>
 ShAttrib4f

@@ -144,7 +144,7 @@ class OrganicWorley: public WorleyShader {
         grad(0) = dot(coeff, result[1]);
         grad(1) = dot(coeff, result[2]);
 
-        kd = ks = lerp(clamp(ZERO, ONE, dist), color1, color2);
+        kd = ks = lerp(clamp(dist, ZERO, ONE), color1, color2);
         normal += bumpScale * (grad(0) * tangent + grad(1) * tangent2);
         normal = normalize(normal);
         halfVec = 0.5f * (normal + lightVec); 
@@ -248,7 +248,7 @@ class PolkaDotWorley: public WorleyShader {
 
       // make polkadots by clamping the scalar result from worley
       ShProgram polkash = SH_BEGIN_PROGRAM() {
-        ShInOutAttrib1f SH_DECL(scalar) = clamp(0.0f, 1.0f, (scalar + param - 0.75f) * 30.0f); 
+        ShInOutAttrib1f SH_DECL(scalar) = clamp((scalar + param - 0.75f) * 30.0f, 0.0f, 1.0f); 
       } SH_END;
       worleysh = polkash << worleysh;
 
@@ -325,7 +325,7 @@ class GiraffeWorley: public WorleyShader {
         ShOutputAttrib1f SH_DECL(result);
         worleyScalar1 = (1.0f - worleyScalar1 - param) * 30.0f;
         worleyScalar2 = (1.0f - worleyScalar2 - param) * 10.0f;
-        result = clamp(0.0f, 1.0f, worleyScalar1 + worleyScalar2);
+        result = clamp(worleyScalar1 + worleyScalar2, 0.0f, 1.0f);
       } SH_END;
 
       worleysh = patcher << namedCombine(worleysh, worleysh2);
@@ -370,8 +370,8 @@ class CircuitWorley: public WorleyShader {
         ShOutputColor3f SH_DECL(kd);
         ShOutputColor3f SH_DECL(ks);
 
-        worleyScalar1 = clamp(0.0f, 1.0f, (1.0f - worleyScalar1 + param) * 30.0f);
-        worleyScalar2 = 1.0f - clamp(0.0f, 1.0f, (1.0f - worleyScalar2 + param) * 30.0f);
+        worleyScalar1 = clamp((1.0f - worleyScalar1 + param) * 30.0f, 0.0f, 1.0f);
+        worleyScalar2 = 1.0f - clamp((1.0f - worleyScalar2 + param) * 30.0f, 0.0f, 1.0f);
         kd = worleyScalar1 * color1 + worleyScalar2 * color2; 
         ks = kd; 
       } SH_END;
@@ -426,7 +426,7 @@ class CrackedWorley: public WorleyShader {
       worleysh = (dot<ShAttrib4f>() << coeff) << worleysh;
 
       ShProgram clamper = SH_BEGIN_PROGRAM() {
-        ShInOutAttrib1f SH_DECL(scalar) = clamp(0.0f, 1.0f, scalar);
+        ShInOutAttrib1f SH_DECL(scalar) = clamp(scalar, 0.0f, 1.0f);
 
         // TODO get rid of this hack... This makes m_speed and m_enable visible in the uniform panel
         scalar += 0.0f * (m_speed + m_enable);
