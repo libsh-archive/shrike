@@ -49,11 +49,14 @@ bool CelShader::init()
   ShColor3f SH_DECL(color3) = ShColor3f(0.9, 0.88, 0.82);
   ShColor1f SH_DECL(cutoff1) = 0.15f;
   ShColor1f SH_DECL(cutoff2) = 0.35f;
-  ShColor1f SH_DECL(spec) = ShColor1f(1.0);
+  ShColor3f SH_DECL(spec) = ShColor3f(-1.0, -1.0, -1.0);
+  spec.range(-1.0, 0.0);
   ShColor1f SH_DECL(diffuse) = ShColor1f(1.0);
   ShAttrib1f SH_DECL(exp) = ShAttrib1f(30.0);
   exp.range(5.0, 500.0);
   ShColor1f SH_DECL(hatch) = ShColor1f(0.0);
+  ShColor1f SH_DECL(hatchcut) = ShColor1f(0.1);
+  ShColor1f SH_DECL(hatchblend) = ShColor1f(0.4);
   ShAttrib1f SH_DECL(hatchscale) = ShAttrib1f(1.0);
   hatchscale.range(0.0f, 10.0f);
 
@@ -70,28 +73,29 @@ bool CelShader::init()
     ShOutputTexCoord2f opos = ipos(0, 1) * ShAttrib2f(1.0f/400.0f, -1.0f/400.f);
   } SH_END_PROGRAM;
 
+  ShProgram hatcher = SH_BEGIN_PROGRAM() {
+    ShInputColor1f diffuse;
+    ShInputTexCoord2f tc;
+    ShOutputColor3f color;
+
+    ShColor1f blend = cond(diffuse <= hatchcut,
+                           ShColor1f(1.0f),
+                           cond(diffuse <= hatchblend,
+                                1.0f - (diffuse - hatchcut)/(hatchblend - hatchcut),
+                                ShColor1f(0.0f)));
+    color = lerp(blend, hatching(tc * hatchscale), ShColor3f(1.0, 1.0, 1.0));
+  } SH_END_PROGRAM;
   
-  fsh = mul<ShColor3f>() << mul<ShColor3f>()
-                         << (lookup &
-                             (lerp<ShColor3f, ShColor1f>() <<
-                              (
-                               (access(hatching)
-                                << mul<ShAttrib1f, ShTexCoord2f>() << hatchscale)
-                               & (keep<ShColor3f>() << ShColor3f(1.0, 1.0, 1.0))
-                               & (min<ShColor1f>() << hatch <<
-                                  add<ShColor1f, ShColor1f>() << 
-                                  ((sub<ShColor1f>() << ShColor1f(1.0)
-                                    << (ShKernelLib::shSpecular<ShColor1f>() << spec << exp))
-                                   &
-                                   (sub<ShColor1f>() << ShColor1f(1.0)
-                                    << (ShKernelLib::shDiffuse<ShColor1f>() << diffuse))))
-                               ))
+  fsh = mul<ShColor3f>() << add<ShColor3f>() << mul<ShColor3f>()
+                         << (lookup
+                             & hatcher << ShKernelLib::shDiffuse<ShColor1f>() << diffuse
+                             & ShKernelLib::shSpecular<ShColor3f>() << spec << exp
                              & access(paper) << postex)
                          << (shRange
                              ("normal")("viewVec")("posh")
+                             ("normal")("lightVec")("posh")
                              ("texcoord")
                              ("normal")("halfVec")("lightVec")("posh")
-                             ("normal")("lightVec")("posh")
                              ("posh")
                              << ShKernelLib::outputPass(vsh));
   return true;

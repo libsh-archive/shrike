@@ -1,6 +1,7 @@
 2004-02-20  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/CelShader.cpp (init): Crazy CelShader craziness.
+	(init): CelShader improvements.
 
 	* src/DiscoShader.cpp (init): Use mv_inverse to transform the
 	reflection vector. Also make the texcoords move with time.
