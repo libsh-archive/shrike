@@ -34,6 +34,7 @@ shrike_SOURCES += EnvMapShader.cpp
 shrike_SOURCES += ShinyBumpMapShader.cpp
 shrike_SOURCES += HomomorphicShader.cpp
 shrike_SOURCES += SatinShader.cpp
+shrike_SOURCES += JeweledShader.cpp
 shrike_SOURCES += AlgebraShader.cpp
 
 # this is a hack and should be removed eventually
