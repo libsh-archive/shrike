@@ -2,13 +2,22 @@
 #include "ShrikeCanvas.hpp"
 
 Shader::Shader(const std::string& name)
-  : m_name(name)
+  : m_name(name),
+    m_has_been_init(false)
 {
   append(this);
 }
 
 Shader::~Shader()
 {
+}
+
+bool Shader::firstTimeInit()
+{
+  if (m_has_been_init) return true;
+  bool success = init();
+  m_has_been_init = true;
+  return success;
 }
 
 void Shader::bind() {

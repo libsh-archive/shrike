@@ -122,6 +122,7 @@ void ShrikeFrame::onShaderSelect(wxCommandEvent& event)
 void ShrikeFrame::setShader(Shader* shader)
 {
   m_canvas->SetCurrent();
+  if (shader) shader->firstTimeInit();
   if (shader) shader->bind();
   m_canvas->setShader(shader);
   m_canvas->render();
@@ -183,9 +184,7 @@ wxListBox* ShrikeFrame::initShaderList(wxWindow* parent)
 
   for (Shader::iterator I = Shader::begin(); I != Shader::end(); ++I) {
     Shader* shader = *I;
-    if (shader->init()) {
-      box->Append(shader->name().c_str(), shader);
-    }
+    box->Append(shader->name().c_str(), shader);
   }
   return box;
 }
