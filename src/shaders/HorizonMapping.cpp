@@ -132,8 +132,8 @@ bool HorizonMapping::init()
 		shadow = ((pow(M_E, 2*x) - 1) / (pow(M_E, 2*x) + 1))*shadow; // use homemade tanh to create soft shadows
 		
 		result = cond( cosAngle>cosHorizon, result-shadow, result); // draw shadows in function of the angle
-
-  } SH_END;
+  
+	} SH_END;
   return true;
 }
 

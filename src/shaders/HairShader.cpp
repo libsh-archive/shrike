@@ -36,15 +36,15 @@ HairFiber::~HairFiber()
 
 ShAttrib1f N2(ShAttrib1f eta, ShAttrib1f cosGammai, ShAttrib1f sigmaa)
 {
-		ShAttrib1f cosGammat = sqrt(1-1/(eta*eta)+cosGammai*cosGammai/(eta*eta));
+		ShAttrib1f cosGammat = sqrt(1+(cosGammai*cosGammai-1)/(eta*eta));
 		ShAttrib1f cos2Gammat = 2*cosGammat*cosGammat - 1.0;
 		ShAttrib1f Ntrt = (eta-1.0)/(eta+1.0);
 		Ntrt *= Ntrt;
 		Ntrt = Ntrt + (1.0-Ntrt)*pow(1.0-cosGammai,5.0) / pow(M_E,2.0*sigmaa(0)*(1.0+cos2Gammat));
 		Ntrt *= Ntrt;
-		ShAttrib1f tmp = (1.0/eta-1.0)/(1.0/eta+1.0);
-		tmp *= tmp;
-		Ntrt *= tmp + (1.0-tmp)*pow(1.0-cosGammat,5.0);
+		ShAttrib1f F = (1.0/eta-1.0)/(1.0/eta+1.0);
+		F *= F;
+		Ntrt *= F + (1.0-F)*pow(1.0-cosGammat,5.0);
 		return Ntrt;
 }
 				
@@ -83,7 +83,7 @@ bool HairFiber::init()
 
 	ShAttrib1f SH_DECL(a) = ShAttrib1f(0.8);
 	a.name("exentricity");
-	a.range(0.0,1.0);
+	a.range(0.5,1.0);
 
 	ShAttrib3f SH_DECL(sigmaa) = ShAttrib3f(0.44,0.64,0.9);
 	sigmaa.range(0.0,1.0);
@@ -105,6 +105,7 @@ bool HairFiber::init()
 		half = normalize(half);
 		normal = normalize(normal);
 		ShVector3f surface = cross(normal, tangent);
+		surface = normalize(surface);
 
 		//ShVector3f azimut = (0.7*cellnoise<1>(100*tc(0), true)+0.3) * normal;
 		//azimut = normalize(azimut);
@@ -118,11 +119,11 @@ bool HairFiber::init()
 		ShAttrib1f sinThetar = eye | -surface;
 		ShAttrib1f cosThetar = sqrt(1.0 - sinThetar*sinThetar);
 		
-		ShAttrib1f cosThetad = cosThetar*cosThetai + sinThetar*sinThetai; // cos(thetar-thetai)
+		ShAttrib1f cosThetad = cosThetar*cosThetai - sinThetar*sinThetai; // cos(thetar-thetai)
 		cosThetad = sqrt((cosThetad + 1.0) / 2.0); // divide the angle by 2
 		ShAttrib1f cosThetad2 = cosThetad*cosThetad;
 		
-		ShAttrib1f cosThetah = cosThetar*cosThetai - sinThetar*sinThetai; // cos(thetar+thetai)
+		ShAttrib1f cosThetah = cosThetar*cosThetai + sinThetar*sinThetai; // cos(thetar+thetai)
 		cosThetah = sqrt((cosThetah + 1.0) / 2.0); // divide by 2
 		ShAttrib1f sinThetah = cosThetar*sinThetai + sinThetar*cosThetai;
 		sinThetah = 0.5*sinThetah/cosThetah;
@@ -132,12 +133,12 @@ bool HairFiber::init()
 		ShAttrib1f cosPhii = lightproj(1);
 		ShAttrib1f sinPhii = lightproj(0);
 
-		ShVector2f eyeproj = ShVector2f(eye|tangent, light|normal);
+		ShVector2f eyeproj = ShVector2f(eye|tangent, eye|normal);
 		eyeproj = normalize(eyeproj);
 		ShAttrib1f cosPhir = eyeproj(1);
 		ShAttrib1f sinPhir = eyeproj(0);
 		
-		ShAttrib1f cosPhi = cosPhir*cosPhii - sinPhir*sinPhii;
+		ShAttrib1f cosPhi = cosPhir*cosPhii + sinPhir*sinPhii;
 
 		// Compute Mr
 		ShAttrib1f Mr = cosThetah*0.998629535 + sinThetah*0.052335956; // remove 3 degrees
@@ -176,23 +177,30 @@ bool HairFiber::init()
 		gammai = cond(-D, 2.0*sqrt(-Q)*cos(angle/3.0), gammai); // test if 3 solutions
 		cosGammai = cos(gammai);
 		ShAttrib1f dPhidh = abs(cosGammai / ((24.0*c/M_PI-4.0) - 96.0*c*gammai*gammai/(M_PI3)));
-		ShAttrib1f Ntrt = N2(eta1, cosGammai, sigmaa(0));
+		ShAttrib3f Ntrt;
+		Ntrt(0) = N2(eta1, cosGammai, sigmaa(0));
+		Ntrt(1) = N2(eta1, cosGammai, sigmaa(1));
+		Ntrt(2) = N2(eta1, cosGammai, sigmaa(2));
 
 		gammai = 2.0*sqrt(-Q)*cos((angle+2.0*M_PI)/3.0);
 		cosGammai = cos(gammai);
 		dPhidh = abs(cosGammai / ((24.0*c/M_PI-4.0) - 96.0*c*gammai*gammai/(M_PI3)));
-		ShAttrib1f Ntrt2 = N2(eta1, cosGammai, sigmaa(0));
+		ShAttrib3f Ntrt2;
+		Ntrt2(0) = N2(eta1, cosGammai, sigmaa(0));
+		Ntrt2(1) = N2(eta1, cosGammai, sigmaa(1));
+		Ntrt2(2) = N2(eta1, cosGammai, sigmaa(2));
 		gammai = 2.0*sqrt(-Q)*cos((angle+4.0*M_PI)/3.0);
 		cosGammai = cos(gammai);
 		dPhidh = abs(cosGammai / ((24.0*c/M_PI-4.0) - 96.0*c*gammai*gammai/(M_PI3)));
-		Ntrt2 += N2(eta1, cosGammai, sigmaa(0));
+		Ntrt2(0) += N2(eta1, cosGammai, sigmaa(0));
+		Ntrt2(1) += N2(eta1, cosGammai, sigmaa(1));
+		Ntrt2(2) += N2(eta1, cosGammai, sigmaa(2));
 		Ntrt = cond(-D, Ntrt+Ntrt2, Ntrt); // test if 3 solutions
 		
 		ShColor3f white = ShColor3f(1.0,1.0,1.0);
 		result = white * 10 * Mr*Nr / cosThetad2;
-		result = color * Mtrt*Ntrt / cosThetad2;
-		//result += color * 0.2 * pos(light|normal); // add a diffuse term
-
+		result += Mtrt*Ntrt / cosThetad2;
+		result += color * 0.2 * pos(light|normal); // add a diffuse term
 	} SH_END;
   return true;
 }
