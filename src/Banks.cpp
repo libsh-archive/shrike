@@ -73,7 +73,7 @@ bool Banks::init()
   ShAttrib1f SH_DECL(compensation) = ShAttrib1f(1.2);
   compensation.range(1.0f, 10.0f); // to combat the "excess brightness"
   ShAttrib1f tangent_modif = ShAttrib1f(0.0);
-  tangent_modif.name("tangent");
+  tangent_modif.name("tangent rotation");
   tangent_modif.range(0.0f, 1.0f); // to change the tangent   
    
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
@@ -88,7 +88,8 @@ bool Banks::init()
     ShOutputColor3f result;
     
     normal = normalize(normal);
-    tangent = (1-tangent_modif) * tangent + tangent_modif * cross(tangent, normal); // add a part of orthogonal vector to rotate the tangent
+    // to rotate the tangent, a orthogonal vector is computed, then added to the tangent
+    tangent = (1-tangent_modif) * tangent + tangent_modif * cross(tangent, normal);
     tangent = normalize(tangent);
     light = normalize(light);
     eye = normalize(eye);

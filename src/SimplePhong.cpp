@@ -23,7 +23,7 @@ public:
 };
 
 SimplePhong::SimplePhong()
-  : Shader("Basic Lighting Models: Phong: Simple")
+  : Shader("Basic Lighting Models: Phong: Classic Phong")
 {
 }
 
@@ -111,7 +111,7 @@ public:
 };
 
 ModifiedPhong::ModifiedPhong()
-  : Shader("Basic Lighting Models: Phong: Modified")
+  : Shader("Basic Lighting Models: Phong: Modified Phong")
 {
 }
 
@@ -143,6 +143,8 @@ bool ModifiedPhong::init()
     halfv = normalize(viewv + lightv); // Compute half vector
   } SH_END;
   
+  ShAttrib1f SH_DECL(kd) = 1.0f;
+  kd.range(0.0f, 10.0f);
   ShColor3f SH_DECL(specular) = ShColor3f(0.5, 1.0, 1.0);
   ShColor3f SH_DECL(diffuse) = ShColor3f(1.0, 0.0, 0.0);
   ShAttrib1f SH_DECL(exponent) = ShAttrib1f(35.0);
@@ -175,7 +177,7 @@ bool ModifiedPhong::init()
     viewtranspose[0][0] = view[0];
     viewtranspose[0][1] = view[1];
     viewtranspose[0][2] = view[2];
-    result = diffuse * irrad / M_PI  +
+    result = kd * diffuse * irrad / M_PI  +
 	    specular * (exponent+2)/(2*M_PI) * pow(pos(viewtranspose | Householder | light), exponent);
   } SH_END;
   return true;

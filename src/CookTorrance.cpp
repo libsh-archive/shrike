@@ -171,9 +171,9 @@ bool CookTorranceBlinn::init()
   roughness.range(0.1f, 1.0f);
   ShAttrib1f SH_DECL(eta) = ShAttrib1f(1.2);
   eta.range(1.0f, 5.0f); // the relative index of refraction
-  ShAttrib1f constant = ShAttrib1f(3.0); // the arbitrary constant c
-  constant.name("Arbitrary constant");
-  constant.range(0.0f, 30.0f);
+  ShAttrib1f constant = ShAttrib1f(10.0); // the arbitrary constant c
+  constant.name("normalization constant");
+  constant.range(0.0f, 50.0f);
    
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputNormal3f normal;
@@ -190,7 +190,7 @@ bool CookTorranceBlinn::init()
     eye = normalize(eye);
     half = normalize(half);
 
-    // Beckman's distribution function
+    // Blinn distribution
     ShAttrib1f normalDotHalf = (normal | half);
     ShAttrib1f normalDotHalf2 = normalDotHalf * normalDotHalf;
     ShAttrib1f roughness2 = roughness * roughness; // roughness fixed at 0.15
