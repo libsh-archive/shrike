@@ -96,8 +96,8 @@ bool GlassShader::init()
     ShVector3f SH_DECL(viewv) = -normalize(posv); // Compute view vector
 
     reflv = reflect(viewv,onorm); // Compute reflection vector
-    refrv = refract(viewv,onorm,eta); // Compute refraction vector
-    fres = fresnel(viewv,onorm,eta); // Compute fresnel term
+    refrv = refract(-viewv,onorm,ShAttrib1f(1.0/eta)); // Compute refraction vector
+    fres = fresnel(viewv,onorm,ShAttrib1f(eta)); // Compute fresnel term
 
     // actually do reflection and refraction lookup in model space
     reflv = Globals::mv_inverse | reflv;

@@ -105,7 +105,7 @@ bool LuciteShader::init()
     reflv = Globals::mv_inverse | reflv;
 
     for (int i=0; i<3; i++) {
-    	refrv[i] = refract(viewv,onorm,eta[i]); // Compute refraction vectors
+    	refrv[i] = refract(-viewv,onorm,1.0/eta[i]); // Compute refraction vectors
 
         // actually do refraction lookup in model space
         refrv[i] = Globals::mv_inverse | refrv[i];
