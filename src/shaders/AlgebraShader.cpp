@@ -201,15 +201,18 @@ ShProgram satinSurface() {
   // settings for extra specularities, etc. etc.
   image.loadPng(SHMEDIA_DIR "/brdfs/satin/satinp.png");
   ShTexture2D<ShColor3f> ptex(image.width(), image.height());
+  ptex.internal(true);
   ptex.memory(image.memory());
 
   image.loadPng(SHMEDIA_DIR "/brdfs/satin/satinq.png");
   ShTexture2D<ShColor3f> qtex(image.width(), image.height());
+  qtex.internal(true);
   qtex.memory(image.memory());
 
   // HACK, satin doesn't have specular part, turned off by default
   image.loadPng(SHMEDIA_DIR "/textures/ks.png");
   ShTexture2D<ShColor3f> stex(image.width(), image.height());
+  stex.name("Satin Texture");
   stex.memory(image.memory());
 
   // these scale factors are specific to satin
@@ -398,6 +401,7 @@ bool AlgebraShaders::init_all()
 
   image.loadPng(SHMEDIA_DIR "/bumpmaps/bumps_normals.png");
   ShTexture2D<ShColor3f> normaltex(image.width(), image.height());
+  normaltex.name("Bumpmap Normals");
   normaltex.memory(image.memory());
 
   ShAttrib1f SH_NAMEDECL(bumpScale, "Bump Scaling Factor") = ShConstAttrib1f(1.0f);
@@ -422,10 +426,12 @@ bool AlgebraShaders::init_all()
 
   image.loadPng(SHMEDIA_DIR "/textures/rustkd.png");
   ShTexture2D<ShColor3f> difftex(image.width(), image.height());
+  difftex.name("Diffuse texture");
   difftex.memory(image.memory());
 
   image.loadPng(SHMEDIA_DIR "/textures/rustks.png");
   ShTexture2D<ShColor3f> spectex(image.width(), image.height());
+  spectex.name("Specular texture");
   spectex.memory(image.memory());
 
   surfsh[i] = ShKernelSurface::phong<ShColor3f>() << ( access(difftex) & access(spectex) );
@@ -445,6 +451,7 @@ bool AlgebraShaders::init_all()
   i = 0;
   image.loadPng(SHMEDIA_DIR "/textures/halftone.png");
   ShTexture2D<ShColor3f> halftoneTex(image.width(), image.height());
+  halftoneTex.name("Halftoning texture");
   halftoneTex.memory(image.memory());
 
 

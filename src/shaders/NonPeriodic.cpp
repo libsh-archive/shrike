@@ -69,7 +69,7 @@ ShAttrib1f isRed(ShAttrib1f x)
 
   ShAttrib1f qq = tb*3.0 + lr;
 
-  return max(abs(qq) < 0.1, abs(qq - 7) < 0.1);
+  return abs(qq) < 0.1 || abs(qq - 7) < 0.1;
 }
 
 bool NonPeriodic::init()
@@ -101,7 +101,7 @@ bool NonPeriodic::init()
 
     tc *= scale;
     
-    result = cond(max(isRed(tc(0)), second * isRed(tc(1))),
+    result = cond(isRed(tc(0)) || (second && isRed(tc(1))),
                   color1, color2);
   } SH_END;
   return true;
