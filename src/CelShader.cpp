@@ -33,16 +33,29 @@ bool CelShader::init()
 {
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
   vsh = vsh << shExtract("lightPos") << Globals::lightPos; 
-  vsh = shSwizzle("normal", "halfVec", "lightVec", "posh") << vsh;
+
+  ShWrapRepeat< ShTexture2D<ShColor3f> > paper(256, 256);
+  ShImage paperImg;
+  paperImg.loadPng(SHMEDIA_DIR "/textures/paper.png");
+  paper.memory(paperImg.memory());
+
+  ShWrapRepeat< ShTexture2D<ShColor3f> > hatching(256, 256);
+  ShImage hatchingImg;
+  hatchingImg.loadPng(SHMEDIA_DIR "/textures/hatching.png");
+  hatching.memory(hatchingImg.memory());
   
   ShColor3f SH_DECL(color1) = ShColor3f(0.0, 0.0, 0.0);
-  ShColor3f SH_DECL(color2) = ShColor3f(0.5, 0.5, 0.5);
-  ShColor3f SH_DECL(color3) = ShColor3f(.7, 0.0, 0.0);
-  ShColor1f SH_DECL(cutoff1) = 0.01f;
-  ShColor1f SH_DECL(cutoff2) = 0.15f;
-  ShColor3f SH_DECL(spec) = ShColor3f(1.0, 1.0, 1.0);
-  ShAttrib1f SH_DECL(exp) = ShAttrib1f(35.0);
+  ShColor3f SH_DECL(color2) = ShColor3f(0.4, 0.45, 0.5);
+  ShColor3f SH_DECL(color3) = ShColor3f(0.9, 0.88, 0.82);
+  ShColor1f SH_DECL(cutoff1) = 0.15f;
+  ShColor1f SH_DECL(cutoff2) = 0.35f;
+  ShColor1f SH_DECL(spec) = ShColor1f(1.0);
+  ShColor1f SH_DECL(diffuse) = ShColor1f(1.0);
+  ShAttrib1f SH_DECL(exp) = ShAttrib1f(30.0);
   exp.range(5.0, 500.0);
+  ShColor1f SH_DECL(hatch) = ShColor1f(0.0);
+  ShAttrib1f SH_DECL(hatchscale) = ShAttrib1f(1.0);
+  hatchscale.range(0.0f, 10.0f);
 
   ShProgram lookup = SH_BEGIN_PROGRAM() {
     ShInputColor1f intensity;
@@ -52,9 +65,34 @@ bool CelShader::init()
 
   lookup = lookup << ShKernelLib::shDiffuse<ShColor1f>() << ShConstant1f(1.0);
 
-  fsh = add<ShColor3f>() << (lookup & (ShKernelLib::shSpecular<ShColor3f>() << spec << exp))
-                         << (shSwizzle("normal", "lightVec", "posh",
-                                       "normal", "halfVec", "lightVec", "posh")
+  ShProgram postex = SH_BEGIN_PROGRAM() {
+    ShInputPosition4f ipos;
+    ShOutputTexCoord2f opos = ipos(0, 1) * ShAttrib2f(1.0f/400.0f, -1.0f/400.f);
+  } SH_END_PROGRAM;
+
+  
+  fsh = mul<ShColor3f>() << mul<ShColor3f>()
+                         << (lookup &
+                             (lerp<ShColor3f, ShColor1f>() <<
+                              (
+                               (access(hatching)
+                                << mul<ShAttrib1f, ShTexCoord2f>() << hatchscale)
+                               & (keep<ShColor3f>() << ShColor3f(1.0, 1.0, 1.0))
+                               & (min<ShColor1f>() << hatch <<
+                                  add<ShColor1f, ShColor1f>() << 
+                                  ((sub<ShColor1f>() << ShColor1f(1.0)
+                                    << (ShKernelLib::shSpecular<ShColor1f>() << spec << exp))
+                                   &
+                                   (sub<ShColor1f>() << ShColor1f(1.0)
+                                    << (ShKernelLib::shDiffuse<ShColor1f>() << diffuse))))
+                               ))
+                             & access(paper) << postex)
+                         << (shRange
+                             ("normal")("viewVec")("posh")
+                             ("texcoord")
+                             ("normal")("halfVec")("lightVec")("posh")
+                             ("normal")("lightVec")("posh")
+                             ("posh")
                              << ShKernelLib::outputPass(vsh));
   return true;
 }

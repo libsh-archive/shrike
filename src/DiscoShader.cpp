@@ -57,7 +57,7 @@ bool DiscoShader::init()
     ShInputVector3f SH_DECL(viewVec);
     ShOutputVector3f SH_DECL(reflectVec);
     ShInOutNormal3f SH_DECL(normal);
-    reflectVec = 2.0f * dot(normal, viewVec) * normal - viewVec; 
+    reflectVec = Globals::mv_inverse | ShVector3f(2.0f * dot(normal, viewVec) * normal - viewVec); 
   } SH_END;
   vsh = namedConnect(vsh, reflector); 
 
@@ -80,6 +80,9 @@ bool DiscoShader::init()
     ShOutputColor3f SH_DECL(kd);
     ShOutputColor3f SH_DECL(ks);
 
+    // Translate those texcoords a bit
+    texcoord(0) = texcoord(0) + time;
+    
     ShAttrib3f p;
     p(0,1) = texcoord * tileFrequency; 
     p(2) = 0.0f; // use z for the time parameter

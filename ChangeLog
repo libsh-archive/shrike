@@ -1,11 +1,21 @@
-2004-02-19  Bryan Chan <b8chan@uwaterloo.ca
-	* src/WorleyShader.cpp:
-	Cleaned up worley shader
+2004-02-20  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
-	* src/DiscoShader.cpp:
-	Added a funky cell noise demo
-	(currently with a time slider in anticipation of 
-	animation working :)
+	* src/CelShader.cpp (init): Crazy CelShader craziness.
+
+	* src/DiscoShader.cpp (init): Use mv_inverse to transform the
+	reflection vector. Also make the texcoords move with time.
+
+	* src/Globals.hpp: Added mv_inverse.
+
+	* src/UniformPanel.cpp: Added some cheap animation. Push the
+	checkbox and bask in the glory of animated variables.
+
+2004-02-19  Bryan Chan <b8chan@uwaterloo.ca
+	* src/WorleyShader.cpp: Cleaned up worley shader
+
+	* src/DiscoShader.cpp: Added a funky cell noise demo
+	(currently with a time slider in anticipation of animation working
+	:)
 	
 2004-02-19  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 

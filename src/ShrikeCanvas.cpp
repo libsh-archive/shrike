@@ -130,6 +130,7 @@ void ShrikeCanvas::setupView()
   m_camera.glModelView();
 
   Globals::mv = m_camera.shModelView();
+  Globals::mv_inverse = inv(Globals::mv);
   Globals::mvp = m_camera.shModelViewProjection(ShMatrix4x4f());
   Globals::lightPos = Globals::mv | Globals::lightPosW;
 }

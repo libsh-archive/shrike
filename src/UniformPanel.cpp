@@ -1,6 +1,7 @@
 #include "UniformPanel.hpp"
 #include <sh/sh.hpp>
 #include <iostream>
+#include <cmath>
 #include "ShrikeCanvas.hpp"
 using namespace SH;
 
@@ -10,6 +11,66 @@ UniformPanel::UniformPanel(wxWindow* parent)
 {
   Show();
 }
+
+class AnimTimer : public wxTimer {
+public:
+  AnimTimer(const ShVariableNodePtr& var, int ms, float step)
+    : m_var(var), m_ms(ms), m_step(step)
+  {
+    Start(ms);
+  }
+  
+  void Notify()
+  {
+    for (int i = 0; i < m_var->size(); i++) {
+      float val = m_var->getValue(i);
+      val = std::fmod((val + m_step), m_var->highBound());
+      m_var->setValue(i, val);
+      ShrikeCanvas::instance()->render();
+    }
+  }
+  
+private:
+  ShVariableNodePtr m_var;
+  int m_ms;
+  float m_step;
+};
+
+class AnimCheckBox : public wxCheckBox {
+public:
+  AnimCheckBox(wxWindow* parent,
+               const ShVariableNodePtr& node)
+    : wxCheckBox(parent, -1, ""),
+      m_node(node), m_timer(0)
+  {
+  }
+
+  ~AnimCheckBox()
+  {
+    delete m_timer;
+  }
+  
+  void check(wxCommandEvent& event)
+  {
+    delete m_timer;
+    if (event.IsChecked()) {
+      m_timer = new AnimTimer(m_node, 50, (m_node->highBound() - m_node->lowBound())/80.0f);
+    } else {
+      m_timer = 0;
+    }
+  }
+
+private:
+
+  DECLARE_EVENT_TABLE()
+    
+  ShVariableNodePtr m_node;
+  AnimTimer* m_timer;
+};
+
+BEGIN_EVENT_TABLE(AnimCheckBox, wxCheckBox)
+  EVT_CHECKBOX(-1, AnimCheckBox::check)
+END_EVENT_TABLE()
 
 class AttribSlider : public wxSlider {
 public:
@@ -25,7 +86,7 @@ public:
     m_var->setValue(m_index, (float)event.GetPosition()/100.0f);
     ShrikeCanvas::instance()->render();
   }
-
+  
 private:
   ShVariableNodePtr m_var;
   int m_index;
@@ -57,6 +118,8 @@ void UniformPanel::setShader(Shader* shader)
         wxSizer* lps = new wxBoxSizer(wxVERTICAL);
         wxPanel* lp = new wxPanel(this, -1, wxDefaultPosition, wxDefaultSize, 
                                   wxSUNKEN_BORDER);
+        AnimCheckBox* cb = new AnimCheckBox(lp, var);
+        lps->Add(cb, 0);
         wxStaticText* label = new wxStaticText(lp, -1, var->name().c_str());
         lps->Add(label, 0, wxALIGN_CENTER);
         lp->SetSizerAndFit(lps);
