@@ -4,6 +4,7 @@
 #include <sh/shutil.hpp>
 #define GL_GLEXT_LOEGACY
 #include <GL/gl.h>
+#include <GL/glext.h>
 #undef GL_GLEXT_LEGACY
 #include "Shader.hpp"
 #include "Globals.hpp"
@@ -185,14 +186,14 @@ void EdgeGooch::facemodeVert(const ShObjEdge *e0, const ShObjEdge* e1,
   float vs[4];
   vs[3] = 0;
   e0->normal.getValues(vs); glNormal3fv(vs);
-  e0->texcoord.getValues(vs); glMultiTexCoord2fv(GL_TEXTURE0, vs);
-  e1->texcoord.getValues(vs); glMultiTexCoord2fv(GL_TEXTURE0 + 1, vs);
-  e2->texcoord.getValues(vs); glMultiTexCoord2fv(GL_TEXTURE0 + 2, vs);
-  glMultiTexCoord1f(GL_TEXTURE0 + 3, move);
-  e1->start->pos.getValues(vs); glMultiTexCoord3fv(GL_TEXTURE0 + 4, vs);
-  e1->normal.getValues(vs); glMultiTexCoord3fv(GL_TEXTURE0 + 5, vs);
-  e2->start->pos.getValues(vs); glMultiTexCoord3fv(GL_TEXTURE0 + 6, vs);
-  e2->normal.getValues(vs); glMultiTexCoord3fv(GL_TEXTURE0 + 7, vs);
+  e0->texcoord.getValues(vs); glMultiTexCoord2fvARB(GL_TEXTURE0, vs);
+  e1->texcoord.getValues(vs); glMultiTexCoord2fvARB(GL_TEXTURE0 + 1, vs);
+  e2->texcoord.getValues(vs); glMultiTexCoord2fvARB(GL_TEXTURE0 + 2, vs);
+  glMultiTexCoord1fARB(GL_TEXTURE0 + 3, move);
+  e1->start->pos.getValues(vs); glMultiTexCoord3fvARB(GL_TEXTURE0 + 4, vs);
+  e1->normal.getValues(vs); glMultiTexCoord3fvARB(GL_TEXTURE0 + 5, vs);
+  e2->start->pos.getValues(vs); glMultiTexCoord3fvARB(GL_TEXTURE0 + 6, vs);
+  e2->normal.getValues(vs); glMultiTexCoord3fvARB(GL_TEXTURE0 + 7, vs);
   e0->start->pos.getValues(vs); glVertex3fv(vs);
 }
 

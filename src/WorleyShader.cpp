@@ -66,9 +66,12 @@ bool WorleyShader::init() {
   color2.name("color2");
   color2.range(-2.0f, 2.0f);
 
-  vsh = ShKernelLib::shVshTangentSpace(Globals::mv, Globals::mvp, false) << shExtract("lightPos") << Globals::lightPos; 
+  vsh = ShKernelLib::shVsh(Globals::mv, Globals::mvp, 1) << shExtract("lightPos") << Globals::lightPos; 
   vsh = shSwizzle("texcoord", "normal", "halfVec", "lightVec", "posh") << vsh;
-  fsh = ShKernelLib::shPhong<ShColor3f>() << shExtract("specExp") << exponent;
+
+  ShConstant3f lightColor(1.0f, 1.0f, 1.0f);
+  fsh = ShKernelSurface::phong<ShColor3f>() << shExtract("specExp") << exponent;
+  fsh = fsh << shExtract("irrad") << lightColor;
 
   initfsh();
   return true;

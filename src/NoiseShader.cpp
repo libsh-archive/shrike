@@ -61,7 +61,8 @@ bool NoiseShader::init() {
   vsh = shSwizzle("normal", "halfVec", "lightVec", "posh") << vsh;
   vsh = namedCombine(transform<ShPoint3f>(bandTrans, "posm") << cast<ShPosition4f, ShPoint3f>("posm"), vsh);
 
-  fsh = ShKernelLib::shPhong<ShColor3f>(); 
+  fsh = ShKernelSurface::phong<ShColor3f>(); 
+  fsh = fsh << shExtract("irrad") << ShConstant3f(1.0f, 1.0f, 1.0f);
 
   initfsh();
   return true;

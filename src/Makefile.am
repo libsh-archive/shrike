@@ -18,7 +18,7 @@ shrike_SOURCES += SimplePhong.cpp
 shrike_SOURCES += SimpleDiffuse.cpp
 shrike_SOURCES += WorleyShader.cpp
 shrike_SOURCES += TexShader.cpp
-shrike_SOURCES += CelShader.cpp
+#shrike_SOURCES += CelShader.cpp
 shrike_SOURCES += Ashikhmin.cpp
 shrike_SOURCES += Texter.cpp
 shrike_SOURCES += Text.cpp Text.hpp
@@ -34,6 +34,7 @@ shrike_SOURCES += EnvMapShader.cpp
 shrike_SOURCES += ShinyBumpMapShader.cpp
 shrike_SOURCES += HomomorphicShader.cpp
 shrike_SOURCES += SatinShader.cpp
+shrike_SOURCES += AlgebraShader.cpp
 
 # this is a hack and should be removed eventually
 shrike_SOURCES += DummyShader.cpp

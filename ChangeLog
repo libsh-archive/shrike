@@ -1,3 +1,8 @@
+2004-03-25  Bryan Chan <b8chan@uwaterloo.ca>
+	* src/AlgebraShader.cpp:
+	  Added demo of algebra (note: this generates *lots* of subshaders,
+    so it might be a good idea to disable it by default in Makefile.am)
+	 
 2004-03-18  Bryan Chan <b8chan@uwaterloo.ca>
 	* src/EdgeGooch.cpp: Added Gooch w sillhouette shader.
 	

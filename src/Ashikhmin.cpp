@@ -97,7 +97,7 @@ bool Ashikhmin::init()
     ShInputVector3f itan;
     ShOutputVector3f otan = Globals::mv | itan;
   } SH_END_PROGRAM;
-  vsh = (shRange("normal", "posh") << vsh) & keeper;
+  vsh = (shSwizzle("normal", "viewVec", "halfVec", "lightVec", "posh") << vsh) & keeper;
 
   ShColor3f SH_DECL(diffuse) = ShColor3f(0.0, 1.0, 0.5);
   ShColor3f SH_DECL(specular) = ShColor3f(1.0, .5, 0.8)/20.0f;

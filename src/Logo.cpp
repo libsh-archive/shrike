@@ -2,7 +2,10 @@
 #include <fstream>
 #include <sh/sh.hpp>
 #include <sh/shutil.hpp>
+#define GL_GLEXT_LEGACY
 #include <GL/gl.h>
+#include <GL/glext.h>
+#undef GL_GLEXT_LEGACY
 #include "Shader.hpp"
 #include "Globals.hpp"
 #include "Text.hpp"
@@ -86,10 +89,10 @@ void Logo::render()
       glNormal3fv(values);
 
       e->texcoord.getValues(values);
-      glMultiTexCoord2fv(GL_TEXTURE0, values);
+      glMultiTexCoord2fvARB(GL_TEXTURE0, values);
 
       e->tangent.getValues(values);
-      glMultiTexCoord2fv(GL_TEXTURE0 + 1, values);
+      glMultiTexCoord2fvARB(GL_TEXTURE0 + 1, values);
 
       e->start->pos.getValues(values);
       glVertex3fv(values);
@@ -162,8 +165,9 @@ bool Logo::init()
   } SH_END;
 
   ShColor3f SH_DECL(color) = ShColor3f(0.5, 0.5, 0.5);
+  ShConstant3f lightColor(1.0f, 1.0f, 1.0f);
   
-  ShProgram s_renderer = lose<ShTexCoord2f>() & ShKernelLib::shDiffuse<ShColor3f>() << color;
+  ShProgram s_renderer = lose<ShTexCoord2f>() & ShKernelSurface::diffuse<ShColor3f>() << color << lightColor;
 
   fsh_s = s_renderer;
   fsh_h = h_renderer << doText("h") << scaler_h << warper;
