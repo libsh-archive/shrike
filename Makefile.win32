@@ -1,0 +1,8 @@
+all: recurse-all
+clean: recurse-clean
+
+recurse-all:
+	cd src & $(MAKE) -f Makefile.win32 all & cd ..
+
+recurse-clean:
+	cd src & $(MAKE) -f Makefile.win32 clean & cd ..
