@@ -29,13 +29,24 @@
 
 Shader::Shader(const std::string& name)
   : m_name(name),
-    m_has_been_init(false)
+    m_has_been_init(false),
+    m_failed(false)
 {
   append(this);
 }
 
 Shader::~Shader()
 {
+}
+
+void Shader::set_failed(bool failed)
+{
+  m_failed = failed;
+}
+
+bool Shader::failed() const
+{
+  return m_failed;
 }
 
 bool Shader::firstTimeInit()

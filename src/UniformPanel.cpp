@@ -417,6 +417,9 @@ void UniformPanel::setShader(Shader* shader)
       for (ShProgramNode::VarList::iterator I = prg.node()->uniforms.begin(); I != prg.node()->uniforms.end(); ++I) {
         addVar(*I, sizer);
       }
+      for (ShProgramNode::PaletteList::iterator I = prg.node()->palettes.begin(); I != prg.node()->palettes.end(); ++I) {
+        for (int i = 0; i < (*I)->palette_length(); i++) addVar((*I)->get_node(i), sizer);
+      }
       for (ShProgramNode::TexList::iterator I = prg.node()->textures.begin(); I != prg.node()->textures.end(); ++I) {
         ShTextureNodePtr tex = *I;
         if (tex->dims() == SH_TEXTURE_3D || tex->dims() == SH_TEXTURE_CUBE) continue;

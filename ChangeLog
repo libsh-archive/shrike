@@ -1,3 +1,28 @@
+2004-10-22  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/UniformPanel.cpp (setShader): Handle palettes.
+
+	* src/Shader.cpp (Shader::Shader): Initialize m_failed.
+	(set_failed): Implement this.
+	(failed): Implement this.
+
+	* src/Shader.hpp: Add failed(), set_failed() and m_failed.
+
+	* src/Makefile.am (shrike_SOURCES): Add PaletteExample.cpp.
+
+	* src/shaders/PaletteExample.cpp: Add simple example of using palettes.
+
+	* src/ShrikeFrame.cpp (setShader): Return booleans, handle
+	exceptions properly.
+	(showError): Implement this function.
+	(onShaderSelect): Set shaders to red if they fail to load.
+
+	* src/ShrikeFrame.hpp: Make setShader return a boolean.
+	(showError): Add this function.
+	
+	* src/ShrikeCanvas.cpp: Lots of GL error checking (and ignoring
+	for spurious ATI errors for now).
+
 2004-10-08  Kevin Moule  <krmoule@cgl.uwaterloo.ca>
 
 	* Makefile.win32, src/Makefile.win32, win32.mk: Updated makefiles

@@ -97,6 +97,7 @@ shrike_SOURCES += shaders\NoiseShader.cpp
 shrike_SOURCES += shaders\NonPeriodic.cpp
 shrike_SOURCES += shaders\NonPeriodic3D.cpp
 shrike_SOURCES += shaders\Pants.cpp
+shrike_SOURCES += shaders\PaletteExample.cpp
 shrike_SOURCES += shaders\PhongShader.cpp
 shrike_SOURCES += shaders\SatinShader.cpp
 shrike_SOURCES += shaders\ShinyBumpMapShader.cpp

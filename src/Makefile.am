@@ -64,6 +64,7 @@ shrike_SOURCES += shaders/BumpMapShader.cpp
 shrike_SOURCES += shaders/FragmentBranching.cpp
 shrike_SOURCES += shaders/SparseTexture.cpp
 shrike_SOURCES += shaders/FragmentLooping.cpp
+shrike_SOURCES += shaders/PaletteExample.cpp
 shrike_SOURCES += HDRImages/HDRImage.cpp
 shrike_SOURCES += shaders/SpatialBRDF.cpp
 shrike_SOURCES += shaders/HDRViewer.cpp

@@ -38,6 +38,52 @@
 #include "shaders/LCDSmall.hpp"
 
 
+void shrikeGlCheckError(const char* desc, const char* file, int line) {
+  GLenum errnum = glGetError();
+  char* error = 0;
+  switch (errnum) {
+  case GL_NO_ERROR:
+    return;
+  case GL_INVALID_ENUM:
+    error = "GL_INVALID_ENUM";
+    break;
+  case GL_INVALID_VALUE:
+    error = "GL_INVALID_VALUE";
+    break;
+  case GL_INVALID_OPERATION:
+    error = "GL_INVALID_OPERATION";
+    break;
+  case GL_STACK_OVERFLOW:
+    error = "GL_STACK_OVERFLOW";
+    break;
+  case GL_STACK_UNDERFLOW:
+    error = "GL_STACK_UNDERFLOW";
+    break;
+  case GL_OUT_OF_MEMORY:
+    error = "GL_OUT_OF_MEMORY";
+    break;
+  case GL_TABLE_TOO_LARGE:
+    error = "GL_TABLE_TOO_LARGE";
+    break;
+  default:
+    error = "Unknown error!";
+    break;
+  }
+  std::cerr << "Shrike GL ERROR on " << file << ": " <<line<<": "<< error << std::endl;
+  std::cerr << "Shrike GL ERROR call: " << desc << std::endl;
+}
+
+
+#define SHRIKE_GL_CHECK_ERROR(op) \
+  op;shrikeGlCheckError( # op, (char*) __FILE__, (int) __LINE__)
+
+#define SHRIKE_GL_IGNORE_ERROR(op) \
+  op;glGetError()
+
+#define SHRIKE_GL_CHECK_CURRENT_ERROR \
+  shrikeGlCheckError( "<state>", (char*) __FILE__, (int) __LINE__)
+
+
 using namespace SH;
 using namespace ShUtil;
 
@@ -84,6 +130,7 @@ ShrikeCanvas* ShrikeCanvas::instance()
 void ShrikeCanvas::paint()
 {
   wxPaintDC dc(this);
+  SHRIKE_GL_CHECK_CURRENT_ERROR;
   render();
 }
 
@@ -93,6 +140,7 @@ void ShrikeCanvas::setModel(ShObjMesh* model)
   delete m_model;
   m_model = model;
   m_model_dirty = true;
+  SHRIKE_GL_CHECK_CURRENT_ERROR;
   render();
 }
 
@@ -104,13 +152,15 @@ const ShObjMesh* ShrikeCanvas::getModel() const {
 void ShrikeCanvas::setShader(Shader* shader)
 {
   SetCurrent();
+  SHRIKE_GL_CHECK_CURRENT_ERROR;
   if (shader) {
-    glEnable(GL_VERTEX_PROGRAM_ARB);
-    glEnable(GL_FRAGMENT_PROGRAM_ARB);
+    SHRIKE_GL_CHECK_ERROR(glEnable(GL_VERTEX_PROGRAM_ARB));
+    SHRIKE_GL_CHECK_ERROR(glEnable(GL_FRAGMENT_PROGRAM_ARB));
   } else {
-    glDisable(GL_VERTEX_PROGRAM_ARB);
-    glDisable(GL_FRAGMENT_PROGRAM_ARB);
+    SHRIKE_GL_CHECK_ERROR(glDisable(GL_VERTEX_PROGRAM_ARB));
+    SHRIKE_GL_CHECK_ERROR(glDisable(GL_FRAGMENT_PROGRAM_ARB));
   }
+  SHRIKE_GL_CHECK_CURRENT_ERROR;
   m_shader = shader;
 }
 
@@ -159,51 +209,56 @@ void ShrikeCanvas::motion(wxMouseEvent& event)
 
 void ShrikeCanvas::render()
 {
+  if (!GetContext()) return;
+  
   ShTimer start;
   if(m_showFps) {
     start = ShTimer::now();
   }
 
   SetCurrent();
+  SHRIKE_GL_CHECK_CURRENT_ERROR;
   init();
+
+  SHRIKE_GL_CHECK_CURRENT_ERROR;
   
-  glClear(GL_COLOR_BUFFER_BIT + GL_DEPTH_BUFFER_BIT);
+  SHRIKE_GL_CHECK_ERROR(glClear(GL_COLOR_BUFFER_BIT + GL_DEPTH_BUFFER_BIT));
 
   if (m_shader) m_shader->render();
 
-  glDisable(GL_FRAGMENT_PROGRAM_ARB);
-  glDisable(GL_VERTEX_PROGRAM_ARB);
+  SHRIKE_GL_CHECK_ERROR(glDisable(GL_FRAGMENT_PROGRAM_ARB));
+  SHRIKE_GL_CHECK_ERROR(glDisable(GL_VERTEX_PROGRAM_ARB));
 
   ShPoint3f lp = Globals::lightDirW * Globals::lightLenW;
   float pos[3];
   lp.getValues(pos);
 
-  glPointSize(3.0);
+  SHRIKE_GL_CHECK_ERROR(glPointSize(3.0));
   
-  glBegin(GL_POINTS); {
-    glColor3f(1.0, 0.0, 1.0);
-    glVertex3fv(pos);
-  } glEnd();
+  SHRIKE_GL_CHECK_ERROR(glBegin(GL_POINTS)); {
+    SHRIKE_GL_CHECK_ERROR(glColor3f(1.0, 0.0, 1.0));
+    SHRIKE_GL_CHECK_ERROR(glVertex3fv(pos));
+  } SHRIKE_GL_IGNORE_ERROR(glEnd()); // On ATI we get spurious errors here
 
   if (m_shader) {
-    glEnable(GL_FRAGMENT_PROGRAM_ARB);
-    glEnable(GL_VERTEX_PROGRAM_ARB);
+    SHRIKE_GL_CHECK_ERROR(glEnable(GL_FRAGMENT_PROGRAM_ARB));
+    SHRIKE_GL_CHECK_ERROR(glEnable(GL_VERTEX_PROGRAM_ARB));
+    //glFlush();
+    SHRIKE_GL_CHECK_ERROR(glFinish());
   }
   
-  //glFlush();
-  glFinish();
   
   if (m_showFps && m_shader) {
     ShTimer end = ShTimer::now();
     double elapsed = (end - start).value() / 1000.0; 
 
     m_fps = 1.0 / elapsed;
-    glDisable(GL_DEPTH_TEST);
+    SHRIKE_GL_CHECK_ERROR(glDisable(GL_DEPTH_TEST));
     shBind(m_fpsVsh);
     shBind(m_fpsFsh);
     double width = 160.0/GetClientSize().GetWidth();
     double height = 80.0/GetClientSize().GetHeight(); 
-    glBegin(GL_QUADS); {
+    SHRIKE_GL_CHECK_ERROR(glBegin(GL_QUADS)); {
       glTexCoord2f(0.0, 0.0);
       glVertex2f(-1.0, -1.0);
       glTexCoord2f(0.0, 1.0);
@@ -212,54 +267,61 @@ void ShrikeCanvas::render()
       glVertex2f(-1.0 + width, -1.0 + height);
       glTexCoord2f(1.0, 0.0);
       glVertex2f(-1.0 + width, -1.0);
-    } glEnd();
-    glEnable(GL_DEPTH_TEST);
+    } SHRIKE_GL_CHECK_ERROR(glEnd());
+    SHRIKE_GL_CHECK_ERROR(glEnable(GL_DEPTH_TEST));
 
     m_shader->bind(); // rebind shader
+    SHRIKE_GL_CHECK_CURRENT_ERROR;
   }
+  SHRIKE_GL_CHECK_CURRENT_ERROR;
   SwapBuffers();
+  SHRIKE_GL_CHECK_CURRENT_ERROR;
 }
 
 void ShrikeCanvas::renderObject()
 {
+  SHRIKE_GL_CHECK_CURRENT_ERROR;
   if (m_model_list == 0) {
-    m_model_list = glGenLists(1);
+    m_model_list = SHRIKE_GL_CHECK_ERROR(glGenLists(1));
   }
 
   if (m_model_dirty) {
-    glNewList(m_model_list, GL_COMPILE_AND_EXECUTE);
+    SHRIKE_GL_CHECK_ERROR(glNewList(m_model_list, GL_COMPILE_AND_EXECUTE));
     float values[4];
-    glBegin(GL_TRIANGLES);
+    SHRIKE_GL_CHECK_ERROR(glBegin(GL_TRIANGLES));
     for(ShObjMesh::FaceSet::iterator I = m_model->faces.begin();
         I != m_model->faces.end(); ++I) {
       ShObjEdge *e = (*I)->edge;
       do {
         e->normal.getValues(values); 
-        glNormal3fv(values);
+        SHRIKE_GL_CHECK_ERROR(glNormal3fv(values));
 
         e->texcoord.getValues(values);
-        glMultiTexCoord2fvARB(GL_TEXTURE0, values);
+        SHRIKE_GL_CHECK_ERROR(glMultiTexCoord2fvARB(GL_TEXTURE0, values));
 
         e->tangent.getValues(values);
-        glMultiTexCoord3fvARB(GL_TEXTURE0 + 1, values);
+        SHRIKE_GL_CHECK_ERROR(glMultiTexCoord3fvARB(GL_TEXTURE0 + 1, values));
 
         e->start->pos.getValues(values);
-        glVertex3fv(values);
+        SHRIKE_GL_CHECK_ERROR(glVertex3fv(values));
         e = e->next;
       } while(e != (*I)->edge);
     }
-    glEnd();
-    glEndList();
+    SHRIKE_GL_IGNORE_ERROR(glEnd()); // Ignore spurious ATI errors
+    SHRIKE_GL_CHECK_ERROR(glEndList());
     m_model_dirty = false;
   } else {
-    glCallList(m_model_list);
+    SHRIKE_GL_CHECK_CURRENT_ERROR;
+    SHRIKE_GL_IGNORE_ERROR(glCallList(m_model_list)); // On ATI...
+
   }
+  SHRIKE_GL_CHECK_CURRENT_ERROR;
 }
 
 void ShrikeCanvas::setupView(int nsplit, int x, int y)
 {
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
+  SHRIKE_GL_CHECK_ERROR(glMatrixMode(GL_PROJECTION));
+  SHRIKE_GL_CHECK_ERROR(glLoadIdentity());
 
   ShMatrix4x4f split;
   
@@ -272,15 +334,17 @@ void ShrikeCanvas::setupView(int nsplit, int x, int y)
     split[1][3] = (float)(nsplit - 1 - y*2);
     float values[16];
     for (int i = 0; i < 16; i++) split[i%4](i/4).getValues(&values[i]);
-    glMultMatrixf(values);
+    SHRIKE_GL_CHECK_ERROR(glMultMatrixf(values));
   }
   
   m_camera.glProjection((float)GetClientSize().GetWidth()/GetClientSize().GetHeight());
+  SHRIKE_GL_CHECK_CURRENT_ERROR;
 
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
+  SHRIKE_GL_CHECK_ERROR(glMatrixMode(GL_MODELVIEW));
+  SHRIKE_GL_CHECK_ERROR(glLoadIdentity());
   m_camera.glModelView();
-
+  SHRIKE_GL_CHECK_CURRENT_ERROR;
+  
   Globals::mv = m_camera.shModelView();
   Globals::mv_inverse = inverse(Globals::mv);
   Globals::mvp = m_camera.shModelViewProjection(split);
@@ -327,9 +391,9 @@ void ShrikeCanvas::init()
 
   shrikeGlInit();
 
-  glEnable(GL_DEPTH_TEST);
+  SHRIKE_GL_CHECK_ERROR(glEnable(GL_DEPTH_TEST));
 
-  glClearColor(m_bg_r, m_bg_g, m_bg_b, 1.0);
+  SHRIKE_GL_CHECK_ERROR(glClearColor(m_bg_r, m_bg_g, m_bg_b, 1.0));
   setupView();
   
   shSetBackend("arb");
@@ -350,13 +414,15 @@ void ShrikeCanvas::init()
   } SH_END;
   
   m_init = true;
+  SHRIKE_GL_CHECK_CURRENT_ERROR;
 }
 
 void ShrikeCanvas::reshape()
 {
-  if (GetContext()) {
+  if (m_init && GetContext()) {
     SetCurrent();
-    glViewport(0, 0, GetClientSize().GetWidth(), GetClientSize().GetHeight());
+    SHRIKE_GL_CHECK_CURRENT_ERROR;
+    SHRIKE_GL_CHECK_ERROR(glViewport(0, 0, GetClientSize().GetWidth(), GetClientSize().GetHeight()));
     setupView();
   }
 }
@@ -367,6 +433,7 @@ void ShrikeCanvas::resetView()
   m_camera.move(0, 0.0, -7.0);
   if (GetContext()) {
     SetCurrent();
+    SHRIKE_GL_CHECK_CURRENT_ERROR;
     setupView();
     render();
   }
@@ -381,7 +448,7 @@ void ShrikeCanvas::setBackground(unsigned char r, unsigned char g, unsigned char
   m_bg(1) = m_bg_g; 
   m_bg(2) = m_bg_b; 
 
-  glClearColor(m_bg_r, m_bg_g, m_bg_b, 1.0);
+  SHRIKE_GL_CHECK_ERROR(glClearColor(m_bg_r, m_bg_g, m_bg_b, 1.0));
   
   SetCurrent();
   render();

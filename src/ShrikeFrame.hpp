@@ -85,7 +85,7 @@ public:
 
   void onShaderSelect(wxTreeEvent& event);
   
-  void setShader(Shader* shader);
+  bool setShader(Shader* shader);
 
   void shaderProps(wxCommandEvent& event);
   void showVsh(wxCommandEvent& event);
@@ -113,6 +113,10 @@ public:
   
   void showIR(SH::ShProgram program,
               const std::string& name);
+
+  void showError(const std::string& message,
+                 const std::string& details = "");
+  
 private:
   void showProgram(SH::ShProgram program,
                    const std::string& name);

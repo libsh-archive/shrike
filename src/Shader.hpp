@@ -35,6 +35,12 @@ class Shader {
 public:
   Shader(const std::string& name);
   virtual ~Shader();
+
+  /// Set this to true if the shader has failed to be initialized, so
+  /// it won't be initialized/bound again
+  void set_failed(bool failed);
+  /// Return whether this shader has failed to initialize.
+  bool failed() const;
   
   virtual bool init() = 0;
   virtual void bind(); // binds vertex() and fragment()
@@ -83,7 +89,8 @@ private:
   std::string m_name;
 
   bool m_has_been_init;
-  
+
+  bool m_failed;
 
   StringParamList m_stringParams;
 

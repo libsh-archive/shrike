@@ -223,6 +223,9 @@ void ShrikeFrame::shaderProps(wxCommandEvent& event)
   } catch (const ShException& e) {
     std::cerr << e.message() << std::endl;
     return;
+  } catch (...) {
+    std::cerr << "Unknown exception caught!" << std::endl;
+    return;
   }
   setShader(m_shader);
 }
@@ -244,25 +247,63 @@ void ShrikeFrame::onShaderSelect(wxTreeEvent& event)
     dynamic_cast<ShaderTreeData*>(m_shaderList->GetItemData(item));
   if (!data) return;
   Shader* shader = data->shader;
-  setShader(shader);
+  if (!setShader(shader)) {
+    m_shaderList->SetItemTextColour(item, *wxRED);
+  }
 }
 
-void ShrikeFrame::setShader(Shader* shader)
+bool ShrikeFrame::setShader(Shader* shader)
 {
+  if (shader->failed()) {
+    // TODO Perhaps set some status bar thing here.
+    // Can we change the colour of the list item belonging to the
+    // shader? that would be cool.
+    return false;
+  }
   m_canvas->SetCurrent();
   try {
     if (shader) shader->firstTimeInit();
+    if (shader) shader->bind();
+  } catch (const ShImageException& e) {
+    shader->set_failed(true);
+    showError("An Image error occured trying to initialize or bind this program.\n"
+              "This probably indicates a missing or corrupt texture image.",
+              e.message());
+    return false;
+  } catch (const ShBackendException& e) {
+    shader->set_failed(true);
+    showError("A Backend error occured trying to initialize or bind this program.\n"
+              "This probably indicates that your graphics card does not have the resources required to run this program.",
+              e.message());
+    return false;
   } catch (const ShException& e) {
-    std::cerr << e.message() << std::endl;
-    return;
+    shader->set_failed(true);
+    showError("An Sh error occured trying to initialize or bind this program.\n"
+              "This probably indicates an error in the shader program.",
+              e.message());
+    return false;
+  } catch (...) {
+    shader->set_failed(true);
+    showError("An Unknown error occured trying to initialize or bind this program.\n"
+              "This probably indicates an error in the shader program.");
+    return false;
   }
-  if (shader) shader->bind();
   m_canvas->setShader(shader);
   m_canvas->render();
   m_panel->setShader(shader);
   m_shader = shader;
+  return true;
 }
 
+void ShrikeFrame::showError(const std::string& message,
+                            const std::string& details)
+{
+  if (!details.empty()) {
+    wxLogWarning(details.c_str());
+  }
+  wxLogError(message.c_str());
+  wxLog::FlushActive();
+}
 
 void ShrikeFrame::showVsh(wxCommandEvent& event)
 {
