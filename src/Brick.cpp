@@ -1,6 +1,8 @@
 #include <sh/sh.hpp>
 #include <sh/shutil.hpp>
 #include <iostream>
+#include <stdlib.h>
+#include <time.h>
 #include "Shader.hpp"
 #include "Globals.hpp"
 
@@ -57,23 +59,24 @@ bool Brick::init()
   ShAttrib1f SH_DECL(offset) = ShAttrib1f(0.5);
   offset.range(0.0, 1.0);
  
+  ShAttrib3f SH_DECL(colorVariations) = ShAttrib3f(0.2, 0.1, 0.1);
+  colorVariations.range(0.0, 1.0);
+  
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputTexCoord2f tc; // ignore texcoords
-    
+   
     ShOutputColor3f result;
-
     tc *= scale;
     
-    //tc[0] = cond( fmod(tc(1),2.0) < 1.0, tc(0)+offset, tc(0));
     tc[0] = tc(0) - floor(tc(1))*offset; // change the horizontal position of a line
     tc[1] = tc(1) - floor(tc(1)+0.5);
     tc[0] = tc(0) - floor(tc(0)+0.5);
     ShAttrib1f inside;
-
     inside = min(abs(tc(0))<0.5-mortarsize(0), abs(tc(1))>mortarsize(1));
     result = cond(inside, brick, mortar);
-	    
+
   } SH_END;
+
   return true;
 }
 

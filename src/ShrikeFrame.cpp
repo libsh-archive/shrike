@@ -122,7 +122,12 @@ void ShrikeFrame::shaderProps(wxCommandEvent& event)
   
   if (dialog.ShowModal() != wxID_OK) return;
 
-  m_shader->init();
+  try {
+    m_shader->init();
+  } catch (const ShException& e) {
+    std::cerr << e.message() << std::endl;
+    return;
+  }
   setShader(m_shader);
 }
 
@@ -144,7 +149,12 @@ void ShrikeFrame::onShaderSelect(wxTreeEvent& event)
 void ShrikeFrame::setShader(Shader* shader)
 {
   m_canvas->SetCurrent();
-  if (shader) shader->firstTimeInit();
+  try {
+    if (shader) shader->firstTimeInit();
+  } catch (const ShException& e) {
+    std::cerr << e.message() << std::endl;
+    return;
+  }
   if (shader) shader->bind();
   m_canvas->setShader(shader);
   m_canvas->render();
@@ -168,7 +178,12 @@ void ShrikeFrame::showFsh(wxCommandEvent& event)
 void ShrikeFrame::reinit(wxCommandEvent& event)
 {
   if (!m_shader) return;
-  m_shader->init();
+  try {
+    m_shader->init();
+  } catch (const ShException& e) {
+    std::cerr << e.message() << std::endl;
+    return;
+  }
   setShader(m_shader);
 }
 

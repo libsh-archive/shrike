@@ -2,6 +2,8 @@
 # if we want to keep it in this directory
 bin_PROGRAMS = shrike shgenmap
 
+AUTOMAKE_OPTIONS = subdir-objects
+
 shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 ShrikeFrame.hpp ShrikeFrame.cpp \
 		 ShrikeCanvas.hpp ShrikeCanvas.cpp \
@@ -13,37 +15,38 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 ShTrackball.hpp ShTrackball.cpp \
 		 util.cpp
 
-shrike_SOURCES += DiffuseShader.cpp
-shrike_SOURCES += DiscoShader.cpp
-shrike_SOURCES += PhongShader.cpp
-shrike_SOURCES += SimplePhong.cpp
-shrike_SOURCES += SimpleDiffuse.cpp
-shrike_SOURCES += WorleyShader.cpp
-shrike_SOURCES += TexShader.cpp
-#shrike_SOURCES += CelShader.cpp
-shrike_SOURCES += Ashikhmin.cpp
-shrike_SOURCES += Texter.cpp
-shrike_SOURCES += Text.cpp Text.hpp
-shrike_SOURCES += WobbleShader.cpp
-shrike_SOURCES += FrameMapping.cpp
-shrike_SOURCES += Logo.cpp
-shrike_SOURCES += NonPeriodic.cpp
-shrike_SOURCES += NonPeriodic3D.cpp
-shrike_SOURCES += NoiseShader.cpp
-shrike_SOURCES += EdgeGooch.cpp
-shrike_SOURCES += Textures.cpp
-shrike_SOURCES += Pants.cpp
-shrike_SOURCES += EnvMapShader.cpp
-shrike_SOURCES += ShinyBumpMapShader.cpp
-shrike_SOURCES += HomomorphicShader.cpp
-shrike_SOURCES += SatinShader.cpp
-shrike_SOURCES += JeweledShader.cpp
-shrike_SOURCES += AlgebraShader.cpp
-shrike_SOURCES += GlassShader.cpp
-shrike_SOURCES += LuciteShader.cpp
-shrike_SOURCES += CookTorrance.cpp
-shrike_SOURCES += Banks.cpp
+shrike_SOURCES += shaders/DiffuseShader.cpp
+shrike_SOURCES += shaders/DiscoShader.cpp
+shrike_SOURCES += shaders/PhongShader.cpp
+shrike_SOURCES += shaders/SimplePhong.cpp
+shrike_SOURCES += shaders/SimpleDiffuse.cpp
+shrike_SOURCES += shaders/WorleyShader.cpp
+shrike_SOURCES += shaders/TexShader.cpp
+#shrike_SOURCES += shaders/CelShader.cpp
+shrike_SOURCES += shaders/Ashikhmin.cpp
+shrike_SOURCES += shaders/Texter.cpp
+shrike_SOURCES += shaders/Text.cpp shaders/Text.hpp
+shrike_SOURCES += shaders/WobbleShader.cpp
+shrike_SOURCES += shaders/FrameMapping.cpp
+shrike_SOURCES += shaders/Logo.cpp
+shrike_SOURCES += shaders/NonPeriodic.cpp
+shrike_SOURCES += shaders/NonPeriodic3D.cpp
+shrike_SOURCES += shaders/NoiseShader.cpp
+shrike_SOURCES += shaders/EdgeGooch.cpp
+shrike_SOURCES += shaders/Textures.cpp
+shrike_SOURCES += shaders/Pants.cpp
+shrike_SOURCES += shaders/EnvMapShader.cpp
+shrike_SOURCES += shaders/ShinyBumpMapShader.cpp
+shrike_SOURCES += shaders/HomomorphicShader.cpp
+shrike_SOURCES += shaders/SatinShader.cpp
+shrike_SOURCES += shaders/JeweledShader.cpp
+shrike_SOURCES += shaders/AlgebraShader.cpp
+shrike_SOURCES += shaders/GlassShader.cpp
+shrike_SOURCES += shaders/LuciteShader.cpp
+shrike_SOURCES += shaders/CookTorrance.cpp
+shrike_SOURCES += shaders/Banks.cpp
 shrike_SOURCES += Brick.cpp
+shrike_SOURCES += BrickWall.cpp
 
 # this is a hack and should be removed eventually
 # shrike_SOURCES += DummyShader.cpp
