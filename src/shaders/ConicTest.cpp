@@ -283,10 +283,11 @@ bool ConicTest::init()
       ) {
 	    ShVector2f d = P1 - P0;
 	    ShVector2f v = -d - (P1 - P2);
-	    ShVector2f w = ShVector2f(0.0,0.0);  // FIXME
-	    ShAttrib1f k = 1;
-	    ShAttrib1f c = 0;
-		init(v(1),-v(0),w,P0,d,v,k,c);
+	    ShVector2f w = ShVector2f(-1.0,0.0);  // FIXME
+	    ShAttrib1f k = 0.5; // FIXME
+	    ShAttrib1f c = 0; // FIXME
+		ShVector2f vn = normalize(v);
+		init(vn(1),-vn(0),w,P0,d,v,k,c);
 	  }
 	  // set up with Bezier control points
 	  void bezier (
@@ -340,7 +341,7 @@ bool ConicTest::init()
 		A(0,1) = cc(0,0) + (cc(1,1) + cc(2,2)*G(0,1)*G(0,1))*G(0,1);
 
 	    // refine estimate using reguli-falsi
-		for (int i=0; i<5; i++) {
+		for (int i=0; i<0; i++) {
 		  G(2) = (A(0,1)|G(0,1))/(A(0) + A(1));
 		  A(2) = cc(0) + (cc(1) + cc(2)*G(2)*G(2))*G(2);
 		  ShAttrib1f c = A(2)*A(1) > 0.0;
@@ -367,18 +368,31 @@ bool ConicTest::init()
 		r(2,3) = P - x;
 		r(0) = r(2,3) | r(2,3);
 		r(1) = r(2,3) | N;
+
+		// DEBUG
+		// just evaluate sign of xc relative to parabola
+		ShAttrib1f k = a[1](2);
+		r(0) = xc(1) - k*xc(0)*xc(0); 
+		r(1) = r(0);
+		r(0) *= r(0);
 		return r;
 	  }
   };
 
-  // Data for a test character
-  const int N = 4;
+  // Data for a test character (a D)
+  // const int N = 6;
+  // Conic C[N];
+  // C[0].bezier(0.1,0.1, 0.2,0.5, 0.1,0.9);  
+  // C[1].bezier(0.1,0.9, 0.9,0.9, 0.9,0.5);  
+  // C[2].bezier(0.9,0.5, 0.9,0.1, 0.1,0.1);  
+  // C[3].bezier(0.3,0.2, 0.7,0.2, 0.7,0.5);  
+  // C[4].bezier(0.7,0.5, 0.7,0.8, 0.3,0.8);  
+  // C[5].bezier(0.3,0.8, 0.4,0.5, 0.3,0.2);  
+
+  // Simple test data
+  const int N = 1;
   Conic C[N];
-  C[0].bezier(0.2,0.8, 0.2,0.2, 0.8,0.2);  
-  // just to test speed, add some more
-  C[1] = C[0];
-  C[2] = C[0];
-  C[3] = C[0];
+  C[0].bezier(0.1,0.5, 0.5,0.1, 0.9,0.5);  
 
   // Evil hack: contract endpoints
   /*
@@ -398,7 +412,7 @@ bool ConicTest::init()
     ShAttrib2f x = tc * m_size - m_offset;
 
 	// find closest conic
-    ShAttrib4f r;
+    ShAttrib4f r = C[0].dist(x);
     for (int i=1; i<N; i++) {
        ShAttrib4f nr = C[i].dist(x);
        r = cond(nr(0) < r(0),nr,r);
