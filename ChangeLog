@@ -1,3 +1,7 @@
+2004-10-24  Kevin Moule  <krmoule@cgl.uwaterloo.ca>
+
+	* win32/*: Added Visual Studio .NET solution/project files.
+
 2004-10-22  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/ShrikeFrame.cpp (setShader): Improve error message a little.
