@@ -7,15 +7,28 @@
 using namespace SH;
 using namespace ShUtil;
 
-//#define IMG_TEXTURE 1
+#define IMG_TEXTURE 1
+#define TANGENT_MAP 1 
+#define NORMAL_MAP 0
+#define USE_QUAT 0 
 
 namespace {
 struct FrameMap {
-  FrameMap(int width, int height) : 
-    normalMap(width, height, 3), tangentMap(width, height, 3) {}
-    
-  ShImage normalMap;
+  FrameMap(int width, int height) :
+#if (USE_QUAT)
+  quaternionMap(width, height, 4)
+#else
+  tangentMap(width, height, 3), 
+    normalMap(width, height, 3) 
+#endif
+  {}
+
+#if (USE_QUAT)
+  ShImage quaternionMap;
+#else
   ShImage tangentMap;
+  ShImage normalMap;
+#endif
 };
 
 class FrameMapping : public Shader {
@@ -30,7 +43,7 @@ public:
   ShProgram fragment() { return fsh;}
 
   FrameMap genFrameMap(const ShImage& img, int& width, int& height);
-
+  
   ShProgram vsh, fsh;
 };
 
@@ -115,15 +128,16 @@ int truncPow2(int a)
 
 FrameMap FrameMapping::genFrameMap(const ShImage& img, int& width, int& height)
 {
-  int w =  truncPow2(img.width());
-  int h = truncPow2(img.height());
-  int side = ( w > h ) ? h : w;
-  FrameMap result(side, side);
+  //int w =  truncPow2(img.width());
+  //int h = truncPow2(img.height());
+  //int side = ( w > h ) ? h : w;
+  int w = img.width();
+  int h = img.height();
+  FrameMap result(w, h);
   float dx, dy;
-  float factor = 1.0/360.6;
-  for (int i = 0; i < side; i++)
+  for (int i = 0; i < h; i++)
   {
-    for (int j = 0; j < side; j++)
+    for (int j = 0; j < w; j++)
     {
       if (j == 0) 
       {
@@ -155,23 +169,71 @@ FrameMap FrameMapping::genFrameMap(const ShImage& img, int& width, int& height)
         dy = ((img(j, i-1, 0) + img(j, i-1, 1) + img(j, i-1, 2))/3.0 - 
             (img(j, i+1, 0) + img(j, i+1, 1) + img(j, i+1, 2))/3.0);
       }
-      ShVector3f gradient = factor*ShVector3f(dx, 0, -dy);
-      ShVector3f normal = ShVector3f(0, 1, 0) + gradient;
-      normal = normalize(normal);
-      ShVector3f tangent = normalize(cross(cross(gradient, normal), normal));
-      float values[3];
-      normal.getValues(values);
-      result.normalMap(j, i, 0) = values[0];
-      result.normalMap(j, i, 1) = values[1];
-      result.normalMap(j, i, 2) = values[2];
-      tangent.getValues(values);
-      result.tangentMap(j, i, 0) = values[0];
-      result.tangentMap(j, i, 1) = values[1];
-      result.tangentMap(j, i, 2) = values[2];
+      ShVector3f gradient = ShVector3f(dx, 0, dy);
+      ShAttrib1f norm = dot(gradient, gradient);
+      float val;
+      norm.getValues(&val);
+      if (val < 0.00001) {
+#if (USE_QUAT)
+        result.quaternionMap(j, i, 0) = 1;
+        result.quaternionMap(j, i, 1) = 0;
+        result.quaternionMap(j, i, 2) = 0;
+        result.quaternionMap(j, i, 3) = 0;
+#else
+        result.normalMap(j, i, 0) = 0;
+        result.normalMap(j, i, 1) = 1;
+        result.normalMap(j, i, 2) = 0;
+        result.tangentMap(j, i, 0) = 0;
+        result.tangentMap(j, i, 1) = 0;
+        result.tangentMap(j, i, 2) = 1;
+#endif
+      }
+      else 
+      {
+        if (val > 1.0)
+          gradient = normalize(gradient);
+        
+        ShVector3f normal = ShVector3f(0, 1, 0) + gradient;
+        normal = normalize(normal);
+        
+        ShVector3f tangent = normalize(cross(cross(gradient, normal), normal));
+#if (USE_QUAT)
+        
+        ShVector3f tan2 = cross(normal, tangent);
+        ShMatrix4x4f rot;
+        rot[0](0) = tan2(0);
+        rot[1](0) = tan2(1);
+        rot[2](0) = tan2(2);
+        rot[0](1) = normal(0);
+        rot[1](1) = normal(1);
+        rot[2](1) = normal(2);
+        rot[0](2) = tangent(0);
+        rot[1](2) = tangent(1);
+        rot[2](2) = tangent(2);
+        ShQuaternionf frame(rot);
+        float vals[4];
+        frame.getVector().getValues(vals);
+        result.quaternionMap(j, i, 0) = vals[0];
+        result.quaternionMap(j, i, 1) = vals[1];
+        result.quaternionMap(j, i, 2) = vals[2];
+        result.quaternionMap(j, i, 3) = vals[3];
+#else
+        float values[3];
+        normal.getValues(values);
+        result.normalMap(j, i, 0) = 0;
+        result.normalMap(j, i, 1) = 1;
+        result.normalMap(j, i, 2) = 0;
+        tangent.getValues(values);
+        result.tangentMap(j, i, 0) = values[0];
+        result.tangentMap(j, i, 1) = values[1];
+        result.tangentMap(j, i, 2) = values[2];
+#endif
+        
+      }
     }
   }
-  width = side;
-  height = side;
+  width = w;
+  height = h;
   return result;
 }
 
@@ -179,13 +241,23 @@ bool FrameMapping::init()
 {
 #if (IMG_TEXTURE)
   ShImage texImg;
-  texImg.loadPng(SHMEDIA_DIR "/textures/rustkd.png");
+  texImg.loadPng(SHMEDIA_DIR "/textures/foil.png");
   int w, h;
   FrameMap fmap = genFrameMap(texImg, w, h);
-  ShTexture2D<ShVector3f> normalMap(w, h);
-  ShTexture2D<ShVector3f> tangentMap(w, h);
+  ShAttrib2f texDim = ShAttrib2f(w, h);
+  ShAttrib1f SH_DECL(mapNormal) = 1.0f;
+  mapNormal.range(0.0f, 1.0f);
+  ShAttrib1f SH_DECL(mapTangent) = 1.0f;
+  mapTangent.range(0.0f, 1.0f);
+#if (USE_QUAT)
+  ShUnclamped< ShArrayRect<ShVector4f> > quaternionMap(w, h);
+  quaternionMap.memory(fmap.quaternionMap.memory());
+#else
+  ShUnclamped< ShArrayRect<ShVector3f> > normalMap(w, h);
+  ShUnclamped< ShArrayRect<ShVector3f> > tangentMap(w, h);
   normalMap.memory(fmap.normalMap.memory());
   tangentMap.memory(fmap.tangentMap.memory());
+#endif
 #endif
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
   vsh = vsh << shExtract("lightPos") << Globals::lightPos;
@@ -195,7 +267,7 @@ bool FrameMapping::init()
   } SH_END_PROGRAM;
   vsh = (shRange("texcoord")("normal", "posh") << vsh) & keeper;
 
-  ShColor3f SH_DECL(diffuse1) = ShColor3f(1.0, 0.0, 0.0);
+  ShColor3f SH_DECL(diffuse1) = ShColor3f(0.5, 0.5, 0.5);
   ShColor3f SH_DECL(diffuse2) = ShColor3f(1.0, 1.0, 0.0);
   ShColor3f SH_DECL(specular) = ShColor3f(1.0, 1.0, 1.0)/20.0f;
   ShColor3f SH_DECL(ambient) = ShColor3f(0.1, 0.1, 0.1);
@@ -221,7 +293,7 @@ bool FrameMapping::init()
     ShInputPosition3f pos;
 
     ShOutputColor3f color;
-#ifndef IMG_TEXTURE
+#if (!IMG_TEXTURE)
     ShQuaternionf rot(angle, ShVector3f(normal));
     ShAttrib1f frac0 = frac(fu*texcoord(0));
     ShAttrib1f frac1 = frac(fv*texcoord(1));
@@ -243,8 +315,28 @@ bool FrameMapping::init()
     ShColor3f diffuse = cond12*diffuse1 + (cond12 == 0.0)*diffuse2;
 #else
     ShColor3f diffuse = diffuse1;
-    ShVector3f ymap = normalMap(texcoord);
-    ShVector3f zmap = tangentMap(texcoord);
+    ShAttrib2f tc = texcoord;
+    tc = tc*texDim;
+#if (USE_QUAT)
+    ShQuaternionf frame(quaternionMap(tc));
+    frame.setUnit(true);
+    normal.setUnit(true);
+    tan1.setUnit(true);
+    normal = (frame.inverse()*normal*frame).getVector()(1,2,3);
+    tan1 = (frame.inverse()*tan1*frame).getVector()(1,2,3);
+#else
+    /*
+    ShAttrib2f weight = frac(tc);
+    ShVector3f ymapLeft = normalMap(tc+ShAttrib2f(-1.0, 0.0));
+    ShVector3f ymapRight = normalMap(tc+ShAttrib2f(1.0, 0.0));
+    ShVector3f ymapUp = normalMap(tc+ShAttrib2f(0.0, -1.0));
+    ShVector3f ymapDown = normalMap(tc+ShAttrib2f(0.0, 1.0));
+    ShVector3f ymap = 
+      0.5*(weight(0)*ymapLeft + (1.0 - weight(0))*ymapRight) + 
+      0.5*(weight(1)*ymapUp + (1.0 - weight(1))*ymapDown);
+    */
+    ShVector3f ymap = normalMap(tc);
+    ShVector3f zmap = tangentMap(tc);
     ShVector3f xmap = cross(ymap, zmap);
     ShMatrix4x4f rot;
     rot[0](0) = xmap(0);
@@ -257,16 +349,17 @@ bool FrameMapping::init()
     rot[1](2) = zmap(1);
     rot[2](2) = zmap(2);
 
-    normal = rot | normal;
-    tan1 = rot | tan1;
+    normal = (mapNormal > 0.5)*(rot | normal) + (mapNormal <= 0.5)*normal;
+    tan1 = (mapTangent > 0.5)*(rot | tan1) + (mapTangent <= 0.5)*tan1;
+#endif
 #endif
     ShVector3f tan2 = cross(normal, tan1);
-    
+   
     color = ashikhmin(nu, nv, normalize(normal), normalize(halfvec), normalize(lightvec),
                       normalize(viewvec),
                       tan1, tan2,
                       specular, diffuse)
-            + ambient;
+    + ambient;
 
   } SH_END_PROGRAM;
     
