@@ -2,6 +2,8 @@
 #define SHRIKEFRAME_HPP
 
 #include <wx/wx.h>
+#include <wx/treectrl.h>
+
 #include "UniformPanel.hpp"
 #include "Shader.hpp"
 #include "ShrikePropsDialog.hpp"
@@ -20,7 +22,7 @@ enum {
   SHRIKE_MENU_VIEW_BACKGROUND,
   SHRIKE_MENU_VIEW_FULLSCREEN,
 
-  SHRIKE_LISTBOX_SHADERS
+  SHRIKE_TREECTRL_SHADERS
 };
 
 class ShrikeCanvas;
@@ -34,7 +36,7 @@ public:
   void quit(wxCommandEvent& event);
   void openModel(wxCommandEvent& event);
 
-  void onShaderSelect(wxCommandEvent& event);
+  void onShaderSelect(wxTreeEvent& event);
   
   void setShader(Shader* shader);
 
@@ -56,14 +58,14 @@ private:
   void showProgram(const SH::ShProgram& program,
                    std::string name);
 
-  wxListBox* initShaderList(wxWindow* parent);
+  wxTreeCtrl* initShaderList(wxWindow* parent);
 
   ShrikeCanvas* m_canvas;
   UniformPanel* m_panel;
   wxSplitterWindow* m_hsplitter;
   wxSplitterWindow* m_right_window;
 
-  wxListBox* m_shaderList;
+  wxTreeCtrl* m_shaderList;
   Shader* m_shader;
 
   bool m_fullscreen;

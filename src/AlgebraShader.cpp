@@ -34,17 +34,10 @@ class AlgebraWrapper: public Shader {
     ShProgram vsh, fsh;
 };
 
-class AlgebraShader : public Shader {
+class AlgebraShaders {
 public:
-  AlgebraShader();
-  ~AlgebraShader();
-
-  bool init();
-
-  ShProgram vertex() { return vsh;}
-  ShProgram fragment() { return fsh;}
-  
-  ShProgram vsh, fsh;
+  AlgebraShaders();
+  ~AlgebraShaders();
 
   static bool init_all();
 
@@ -73,26 +66,26 @@ private:
   static bool doneInit;
 };
 
-AlgebraShader::ShaderList AlgebraShader::shaders;
-ShProgram AlgebraShader::lightsh[AlgebraShader::LIGHT];
-ShProgram AlgebraShader::surfmapsh[AlgebraShader::SURFMAP];
-ShProgram AlgebraShader::surfsh[AlgebraShader::SURFACE];
-ShProgram AlgebraShader::postsh[AlgebraShader::POST];
-bool AlgebraShader::doneInit = false;
+AlgebraShaders::ShaderList AlgebraShaders::shaders;
+ShProgram AlgebraShaders::lightsh[AlgebraShaders::LIGHT];
+ShProgram AlgebraShaders::surfmapsh[AlgebraShaders::SURFMAP];
+ShProgram AlgebraShaders::surfsh[AlgebraShaders::SURFACE];
+ShProgram AlgebraShaders::postsh[AlgebraShaders::POST];
+bool AlgebraShaders::doneInit = false;
 
-const char* AlgebraShader::lightName[] = {
+const char* AlgebraShaders::lightName[] = {
   "Point Light",
   "Spot Light",
   "Textured Light"
 };
 
-const char*  AlgebraShader::surfmapName[] = {
-  "Identity",
+const char*  AlgebraShaders::surfmapName[] = {
+  0,
   "Bump Map"
 };
 
-const char* AlgebraShader::surfName[] = {
-  "Null Surface",
+const char* AlgebraShaders::surfName[] = {
+  0,
   "Diffuse",
 //  "Specular Surface",
 //  "Phong Surface",
@@ -103,17 +96,17 @@ const char* AlgebraShader::surfName[] = {
   "Ashikhmin"
 };
 
-const char* AlgebraShader::postName[] = {
-  "Null PostOp",
+const char* AlgebraShaders::postName[] = {
+  0,
   "Halftone PostOp",
 };
 
 bool AlgebraWrapper::init() {
-  AlgebraShader::init_all();
-  ShProgram lightsh = AlgebraShader::lightsh[lightidx];
-  ShProgram surfmapsh = AlgebraShader::surfmapsh[surfmapidx];
-  ShProgram surfsh = AlgebraShader::surfsh[surfidx];
-  ShProgram postsh = AlgebraShader::postsh[postidx];
+  AlgebraShaders::init_all();
+  ShProgram lightsh = AlgebraShaders::lightsh[lightidx];
+  ShProgram surfmapsh = AlgebraShaders::surfmapsh[surfmapidx];
+  ShProgram surfsh = AlgebraShaders::surfsh[surfidx];
+  ShProgram postsh = AlgebraShaders::postsh[postidx];
 
   fsh = namedCombine(lightsh, surfmapsh);
   fsh = namedConnect(fsh, surfsh);
@@ -141,17 +134,20 @@ void AlgebraWrapper::render() {
 }
 
 
-AlgebraShader::AlgebraShader()
-  : Shader("Algebra: Algebra Parent")
+AlgebraShaders::AlgebraShaders()
 {
 
   for(int i = 0; i < LIGHT; ++i) {
     for(int j = 0; j < SURFMAP; ++j) {
       for(int k = 0; k < SURFACE; ++k) {
         for(int l = 0; l < POST; ++l) {
-          std::string name = std::string("Algebra: ") + 
-            lightName[i] + ": " + surfmapName[j] + ": " +
-            surfName[k] + ": " + postName[l];
+          
+          std::string name = std::string("Algebra");
+          if (lightName[i]) {name += ": "; name += lightName[i];}
+          if (surfmapName[j]) {name += ": "; name += surfmapName[j];}
+          if (surfName[k]) {name += ": "; name += surfName[k];}
+          if (postName[l]) {name += ": "; name += postName[l];}
+          
           shaders.push_back(new AlgebraWrapper(name, i, j, k, l)); 
         }
       }
@@ -159,23 +155,11 @@ AlgebraShader::AlgebraShader()
   }
 }
 
-AlgebraShader::~AlgebraShader()
+AlgebraShaders::~AlgebraShaders()
 {
   for(ShaderList::iterator I = shaders.begin(); I != shaders.end(); ++I) {
     delete *I;
   }
-}
-
-bool AlgebraShader::init() {
-  // put together all the different combinations!
-  vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
-  vsh = vsh << shExtract("lightPos") << Globals::lightPos; 
-
-  std::cout << "AlgebraShader::init()" << std::endl;
-  fsh = surfsh[0]; 
-  vsh = namedAlign(vsh, fsh);
-  std::cout << "AlgebraShader::init() done" << std::endl;
-  return true;
 }
 
 // returns a KernelSurface::phong shader with kd filled in by a worley shader
@@ -368,7 +352,7 @@ ShProgram ashikhminSurface() {
   return fsh;
 }
 
-bool AlgebraShader::init_all()
+bool AlgebraShaders::init_all()
 {
 
   if( doneInit ) return true; 
@@ -479,5 +463,5 @@ bool AlgebraShader::init_all()
   return true;
 }
 
-AlgebraShader the_algebra_shader;
+AlgebraShaders the_algebra_shader;
 
