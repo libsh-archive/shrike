@@ -296,7 +296,7 @@ int GrView::pick(int ev_x, int ev_y)
 
 class VarMenu : public wxMenu {
 public:
-  VarMenu(GrNode* node, ShVariableSpecialType type,
+  VarMenu(GrNode* node, ShSemanticType type,
           const std::string& title = "", int style = 0)
     : wxMenu(title.c_str(), style),
       m_node(node),
@@ -304,7 +304,7 @@ public:
   {
     for (int i = 1; i <= 4; i++) {
       std::ostringstream os;
-      os << "Sh" << ShVariableSpecialTypeName[m_type] << i << "f";
+      os << "Sh" << ShSemanticTypeName[m_type] << i << "f";
       std::string s = os.str();
       Append(i, s.c_str());
     }
@@ -324,7 +324,7 @@ public:
 private:
 
   GrNode* m_node;
-  ShVariableSpecialType m_type;
+  ShSemanticType m_type;
   
   DECLARE_EVENT_TABLE()
 };
@@ -371,31 +371,31 @@ void GrView::mdown(wxMouseEvent& event)
 
         {
           VarMenu* var_menu = new VarMenu(node, SH_ATTRIB);
-          menu->Append(0, ShVariableSpecialTypeName[SH_ATTRIB], var_menu);
+          menu->Append(0, ShSemanticTypeName[SH_ATTRIB], var_menu);
         }
         {
           VarMenu* var_menu = new VarMenu(node, SH_POINT);
-          menu->Append(0, ShVariableSpecialTypeName[SH_POINT], var_menu);
+          menu->Append(0, ShSemanticTypeName[SH_POINT], var_menu);
         }
         {
           VarMenu* var_menu = new VarMenu(node, SH_VECTOR);
-          menu->Append(0, ShVariableSpecialTypeName[SH_VECTOR], var_menu);
+          menu->Append(0, ShSemanticTypeName[SH_VECTOR], var_menu);
         }
         {
           VarMenu* var_menu = new VarMenu(node, SH_NORMAL);
-          menu->Append(0, ShVariableSpecialTypeName[SH_NORMAL], var_menu);
+          menu->Append(0, ShSemanticTypeName[SH_NORMAL], var_menu);
         }
         {
           VarMenu* var_menu = new VarMenu(node, SH_TEXCOORD);
-          menu->Append(0, ShVariableSpecialTypeName[SH_TEXCOORD], var_menu);
+          menu->Append(0, ShSemanticTypeName[SH_TEXCOORD], var_menu);
         }
         {
           VarMenu* var_menu = new VarMenu(node, SH_COLOR);
-          menu->Append(0, ShVariableSpecialTypeName[SH_COLOR], var_menu);
+          menu->Append(0, ShSemanticTypeName[SH_COLOR], var_menu);
         }
         {
           VarMenu* var_menu = new VarMenu(node, SH_POSITION);
-          menu->Append(0, ShVariableSpecialTypeName[SH_POSITION], var_menu);
+          menu->Append(0, ShSemanticTypeName[SH_POSITION], var_menu);
         }
         PopupMenu(menu, event.GetX(), event.GetY());
       }

@@ -127,7 +127,7 @@ bool AlgebraWrapper::init() {
 
 void AlgebraWrapper::render() {
   lightDir = -normalize(Globals::mv | Globals::lightDirW); 
-  ShVector3f horiz = cross(lightDir, ShConstant3f(0.0f, 1.0f, 0.0f));
+  ShVector3f horiz = cross(lightDir, ShConstVector3f(0.0f, 1.0f, 0.0f));
   lightUp = cross(horiz, lightDir);
 
   const ShrikeCanvas *canvas = ShrikeCanvas::instance();
@@ -184,9 +184,9 @@ ShProgram worleySurface() {
     color1.range(-3.0f, 3.0f);
     ShAttrib3f SH_NAMEDECL(color2, "Worley Color2") =  ShColor3f(0.0f, 0.0f, 0.0f);
     color2.range(-3.0f, 3.0f);
-    ShAttrib4f SH_NAMEDECL(coeff, "Worley Coefficients") = ShConstant4f(2.5, -0.5f, -0.1f, 0);
+    ShAttrib4f SH_NAMEDECL(coeff, "Worley Coefficients") = ShConstAttrib4f(2.5, -0.5f, -0.1f, 0);
     coeff.range(-3.0f, 3.0f);
-    ShAttrib1f SH_NAMEDECL(freq, "Worley Frequency") = ShConstant1f(16.0f);
+    ShAttrib1f SH_NAMEDECL(freq, "Worley Frequency") = ShConstAttrib1f(16.0f);
     freq.range(0.1f, 64.0f);
 
     ShProgram worleysh = worleyProgram<4, float>(L2_SQ, false) << coeff; // pass in coefficient
@@ -278,7 +278,7 @@ namespace {
   /* Ashikhmin Surface Atom from Stefanus' demo...
    * Move some of this into the utils library later */
   template<int N>
-  ShVariableN<N, float> pow5(const ShVariableN<N, float>& f)
+  ShGeneric<N, float> pow5(const ShGeneric<N, float>& f)
   {
     ShAttrib<N, SH_TEMP, float> t =  f * f;
     return t * t * f;
@@ -378,18 +378,18 @@ bool AlgebraShader::init_all()
   ShImage image;
 
   // useful globals
-  ShColor3f SH_NAMEDECL(lightColor, "Light Colour") = ShConstant3f(1.0f, 1.0f, 1.0f);
-  ShAttrib1f SH_NAMEDECL(falloff, "Light falloff angle") = ShConstant1f(0.35f); 
+  ShColor3f SH_NAMEDECL(lightColor, "Light Colour") = ShConstColor3f(1.0f, 1.0f, 1.0f);
+  ShAttrib1f SH_NAMEDECL(falloff, "Light falloff angle") = ShConstAttrib1f(0.35f); 
   falloff.range(0.0f, M_PI);
-  ShAttrib1f SH_NAMEDECL(lightAngle, "Light cutoff angle") = ShConstant1f(0.5f);
+  ShAttrib1f SH_NAMEDECL(lightAngle, "Light cutoff angle") = ShConstAttrib1f(0.5f);
   lightAngle.range(0.0f, M_PI);
 
   // TODO handle lightDirection and light up properly
-  ShColor3f SH_NAMEDECL(kd, "Diffuse Color") = ShConstant3f(1.0f, 0.5f, 0.7f);
-  ShColor3f SH_NAMEDECL(ks, "Specular Color") = ShConstant3f(0.7f, 0.7f, 0.7f);
-  ShColor3f SH_NAMEDECL(cool, "Cool Color") = ShConstant3f(0.4f, 0.4f, 1.0f);
-  ShColor3f SH_NAMEDECL(warm, "Warm Color") = ShConstant3f(1.0f, 0.4f, 0.4f);
-  ShAttrib1f SH_NAMEDECL(specExp, "Specular Exponent") = ShConstant1f(48.13f);
+  ShColor3f SH_NAMEDECL(kd, "Diffuse Color") = ShConstColor3f(1.0f, 0.5f, 0.7f);
+  ShColor3f SH_NAMEDECL(ks, "Specular Color") = ShConstColor3f(0.7f, 0.7f, 0.7f);
+  ShColor3f SH_NAMEDECL(cool, "Cool Color") = ShConstColor3f(0.4f, 0.4f, 1.0f);
+  ShColor3f SH_NAMEDECL(warm, "Warm Color") = ShConstColor3f(1.0f, 0.4f, 0.4f);
+  ShAttrib1f SH_NAMEDECL(specExp, "Specular Exponent") = ShConstAttrib1f(48.13f);
   specExp.range(0.0f, 256.0f);
 
 // ****************** Make light shaders
@@ -398,7 +398,7 @@ bool AlgebraShader::init_all()
   lightsh[i++] = ShKernelLight::spotLight<ShColor3f>() << lightColor << falloff << lightAngle << lightDir;
 
 
-  ShAttrib1f SH_NAMEDECL(texLightScale, "Mask Scaling Factor") = ShConstant1f(5.0f);
+  ShAttrib1f SH_NAMEDECL(texLightScale, "Mask Scaling Factor") = ShConstAttrib1f(5.0f);
   texLightScale.range(1.0f, 10.0f);
   image.loadPng(SHMEDIA_DIR "/mats/inv_oriental038.png");
   ShTexture2D<ShColor3f> lighttex(image.width(), image.height());
@@ -416,14 +416,14 @@ bool AlgebraShader::init_all()
   ShTexture2D<ShColor3f> normaltex(image.width(), image.height());
   normaltex.memory(image.memory());
 
-  ShAttrib1f SH_NAMEDECL(bumpScale, "Bump Scaling Factor") = ShConstant1f(1.0f);
+  ShAttrib1f SH_NAMEDECL(bumpScale, "Bump Scaling Factor") = ShConstAttrib1f(1.0f);
   bumpScale.range(0.0f, 10.0f);
 
   // make a VCS bump mapper by reading in normal map and extracting gradients
   surfmapsh[i] = SH_BEGIN_PROGRAM() {
     ShInputTexCoord2f SH_DECL(texcoord);
     ShOutputAttrib2f SH_DECL(gradient);
-    ShColor3f norm = normaltex(texcoord) - ShConstant3f(0.5, 0.5, 0.0);
+    ShColor3f norm = normaltex(texcoord) - ShConstAttrib3f(0.5, 0.5, 0.0);
     gradient = norm(0,1) * bumpScale;
   } SH_END;
   surfmapsh[i] = ShKernelSurfMap::vcsBump() << surfmapsh[i];
@@ -466,12 +466,12 @@ bool AlgebraShader::init_all()
 
   postsh[i++] = keep<ShColor3f>("result"); 
 
-  ShAttrib1f SH_NAMEDECL(htscale, "Scaling Factor") = ShConstant1f(50.0f);
+  ShAttrib1f SH_NAMEDECL(htscale, "Scaling Factor") = ShConstAttrib1f(50.0f);
   htscale.range(1.0f, 400.0f);
   postsh[i++] = ShKernelPost::halftone<ShColor3f>(halftoneTex) << (mul<ShAttrib1f>() << htscale << invheight);
 
   /*
-  ShAttrib1f SH_NAMEDECL(noiseScale, "Noise Amount") = ShConstant1f(0.2f);
+  ShAttrib1f SH_NAMEDECL(noiseScale, "Noise Amount") = ShConstAttrib1f(0.2f);
   noiseScale.range(0.0f, 1.0f);
   postsh[i++] = ShKernelPost::noisify<ShColor3f>() << (mul<ShAttrib1f>() << htscale << invheight)<< noiseScale; 
   */

@@ -61,11 +61,11 @@ ShAttrib1f isRed(ShAttrib1f x)
   ShAttrib1f lr = 0;
   ShAttrib1f tb = 0;
 
-  lr = cond(aboveLine(-0.5, 1.5, pm, mx, my ), ShConstant1f(2.0),
-            cond(aboveLine( -0.5, 0.5, pm, mx, my ), ShConstant1f(1.0), ShConstant1f(0.0)));
+  lr = cond(aboveLine(-0.5, 1.5, pm, mx, my ), ShConstAttrib1f(2.0),
+            cond(aboveLine( -0.5, 0.5, pm, mx, my ), ShConstAttrib1f(1.0), ShConstAttrib1f(0.0)));
 
-  tb = cond(aboveLine( 0.5, 0.5, m, mx, my ), ShConstant1f(2.0),
-            cond(aboveLine( -0.5, -0.5, m, mx, my ), ShConstant1f(1.0), ShConstant1f(0.0)));
+  tb = cond(aboveLine( 0.5, 0.5, m, mx, my ), ShConstAttrib1f(2.0),
+            cond(aboveLine( -0.5, -0.5, m, mx, my ), ShConstAttrib1f(1.0), ShConstAttrib1f(0.0)));
 
   ShAttrib1f qq = tb*3.0 + lr;
 

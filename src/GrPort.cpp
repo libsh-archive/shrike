@@ -7,7 +7,7 @@
 using namespace SH;
 
 struct TypeColor {
-  ShVariableSpecialType type;
+  ShSemanticType type;
   float color[3];
 };
   
@@ -64,32 +64,32 @@ public:
       m_port(port)
   {
     {
-      ShVariableSpecialType s = SH_ATTRIB;
-      Append((int)s, ShVariableSpecialTypeName[s]);
+      ShSemanticType s = SH_ATTRIB;
+      Append((int)s, ShSemanticTypeName[s]);
     }
     {
-      ShVariableSpecialType s = SH_POINT;
-      Append((int)s, ShVariableSpecialTypeName[s]);
+      ShSemanticType s = SH_POINT;
+      Append((int)s, ShSemanticTypeName[s]);
     }
     {
-      ShVariableSpecialType s = SH_VECTOR;
-      Append((int)s, ShVariableSpecialTypeName[s]);
+      ShSemanticType s = SH_VECTOR;
+      Append((int)s, ShSemanticTypeName[s]);
     }
     {
-      ShVariableSpecialType s = SH_NORMAL;
-      Append((int)s, ShVariableSpecialTypeName[s]);
+      ShSemanticType s = SH_NORMAL;
+      Append((int)s, ShSemanticTypeName[s]);
     }
     {
-      ShVariableSpecialType s = SH_COLOR;
-      Append((int)s, ShVariableSpecialTypeName[s]);
+      ShSemanticType s = SH_COLOR;
+      Append((int)s, ShSemanticTypeName[s]);
     }
     {
-      ShVariableSpecialType s = SH_TEXCOORD;
-      Append((int)s, ShVariableSpecialTypeName[s]);
+      ShSemanticType s = SH_TEXCOORD;
+      Append((int)s, ShSemanticTypeName[s]);
     }
     {
-      ShVariableSpecialType s = SH_POSITION;
-      Append((int)s, ShVariableSpecialTypeName[s]);
+      ShSemanticType s = SH_POSITION;
+      Append((int)s, ShSemanticTypeName[s]);
     }
   }
 
@@ -97,7 +97,7 @@ public:
   {
     int i = event.GetId();
     
-    m_port->var()->specialType((ShVariableSpecialType)i);
+    m_port->var()->specialType((ShSemanticType)i);
   }
   
 private:

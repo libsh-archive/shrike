@@ -165,7 +165,7 @@ bool Logo::init()
   } SH_END;
 
   ShColor3f SH_DECL(color) = ShColor3f(0.5, 0.5, 0.5);
-  ShConstant3f lightColor(1.0f, 1.0f, 1.0f);
+  ShConstColor3f lightColor(1.0f, 1.0f, 1.0f);
   
   ShProgram s_renderer = lose<ShTexCoord2f>() & ShKernelSurface::diffuse<ShColor3f>() << color << lightColor;
 

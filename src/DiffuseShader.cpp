@@ -37,7 +37,7 @@ bool DiffuseShader::init()
   vsh = shSwizzle("normal", "lightVec", "posh") << vsh;
 
   ShColor3f SH_DECL(color) = ShColor3f(.5, 0.9, 0.2);
-  ShConstant3f lightColor(1.0f, 1.0f, 1.0f);
+  ShConstColor3f lightColor(1.0f, 1.0f, 1.0f);
   fsh = ShKernelSurface::diffuse<ShColor3f>() << color << lightColor;
   return true;
 }

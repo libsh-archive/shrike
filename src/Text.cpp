@@ -16,14 +16,14 @@ ShProgram i(const ShProgram& a, const ShProgram& b)
 
 ShProgram s(const ShProgram& a, const ShProgram& b)
 {
-  return i(a, sub<ShAttrib1f>() << ShConstant1f(1.0) << b);
+  return i(a, sub<ShAttrib1f>() << ShConstAttrib1f(1.0) << b);
 }
 
 ShProgram rect(float x, float y,
                float w, float h)
 {
   ShProgram res = SH_BEGIN_PROGRAM() {
-    ShVector2f o = posn - ShConstant2f(x, y);
+    ShVector2f o = posn - ShConstAttrib2f(x, y);
     ShOutputAttrib1f result = min((o(0) > 0.0)*(o(1) > 0.0), (o(0) < w)*(o(1) < h));
   } SH_END;
   return res;
@@ -34,7 +34,7 @@ ShProgram srect(float x, float y,
                 float skew)
 {
   ShProgram res = SH_BEGIN_PROGRAM() {
-    ShVector2f o = posn - ShConstant2f(x, y);
+    ShVector2f o = posn - ShConstAttrib2f(x, y);
     o(0) -= o(1) * (skew/h);
     ShOutputAttrib1f result = min((o(0) > 0.0)*(o(1) > 0.0), (o(0) < w)*(o(1) < h));
   } SH_END;
@@ -44,7 +44,7 @@ ShProgram srect(float x, float y,
 ShProgram circ(float x, float y, float r)
 {
   ShProgram res = SH_BEGIN_PROGRAM() {
-    ShVector2f o = posn - ShConstant2f(x, y);
+    ShVector2f o = posn - ShConstAttrib2f(x, y);
     ShOutputAttrib1f result = ((o | o) < (r*r));
   } SH_END;
   return res;

@@ -71,7 +71,7 @@ bool DiscoShader::init()
 
   ShAttrib1f SH_DECL(envAmount) = ShAttrib1f(0.5);
 
-  ShColor3f SH_DECL(defaultColor) = ShConstant3f(0.25f, 0.25f, 0.25f);
+  ShColor3f SH_DECL(defaultColor) = ShConstAttrib3f(0.25f, 0.25f, 0.25f);
   ShAttrib1f SH_DECL(texscale) = 1.0;
 
   ShProgram discoTiler = SH_BEGIN_PROGRAM() {
@@ -95,19 +95,19 @@ bool DiscoShader::init()
     // use cellnoise to find colour of a cell and use power to make 
     // colours funkier (and maybe add environment mapping sweetness?)
     kd = 3.0f * cellnoise<3>(p);
-    kd(0) = pow(kd(0), ShConstant1f(2.0f));
-    kd(1) = pow(kd(1), ShConstant1f(2.0f));
-    kd(2) = pow(kd(2), ShConstant1f(2.0f));
+    kd(0) = pow(kd(0), ShConstAttrib1f(2.0f));
+    kd(1) = pow(kd(1), ShConstAttrib1f(2.0f));
+    kd(2) = pow(kd(2), ShConstAttrib1f(2.0f));
 
     // make little circles...
-    p = frac(p) - ShConstant3f(0.5f, 0.5f, 0.0f); 
+    p = frac(p) - ShConstAttrib3f(0.5f, 0.5f, 0.0f); 
     kd = lerp( (dot(p(0,1), p(0,1)) < 0.25), kd, defaultColor);
 
     kd = cubemap(reflectVec)(0,1,2) * kd; 
     ks = kd;
   } SH_END;
   
-  ShConstant3f lightColor(1.0f, 1.0f, 1.0f);
+  ShConstColor3f lightColor(1.0f, 1.0f, 1.0f);
   fsh = ShKernelSurface::phong<ShColor3f>() << shExtract("specExp") << exponent; 
   fsh = fsh << shExtract("irrad") << lightColor;
   fsh = fsh << discoTiler;

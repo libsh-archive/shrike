@@ -53,7 +53,7 @@ bool WorleyShader::init() {
   freq.range(0.1f, 128.0f);
 
   coeff.name("Worley coefficient");
-  coeff = ShConstant4f(1.0, 0.0, 0.0, 0.0);
+  coeff = ShConstAttrib4f(1.0, 0.0, 0.0, 0.0);
   coeff.range(-3.0f, 3.0f);
 
   exponent.name("specular exponent");
@@ -72,7 +72,7 @@ bool WorleyShader::init() {
   renameOutput(vsh, "halfVect", "halfVec");
   renameOutput(vsh, "lightVect", "lightVec");
 
-  ShConstant3f lightColor(1.0f, 1.0f, 1.0f);
+  ShConstColor3f lightColor(1.0f, 1.0f, 1.0f);
   fsh = ShKernelSurface::phong<ShColor3f>() << shExtract("specExp") << exponent;
   fsh = fsh << shExtract("irrad") << lightColor;
 
@@ -134,8 +134,8 @@ class LavaWorley: public WorleyShader {
     LavaWorley(bool useTexture): WorleyShader("Worley: Lava", useTexture) {}
 
     void initfsh() {
-      coeff = ShConstant4f(-1, 1.2, 0, 0);
-      ShAttrib4f SH_NAMEDECL(coeff2, "Worley coefficient 2") = ShConstant4f(0, 1, 1, 0);
+      coeff = ShConstAttrib4f(-1, 1.2, 0, 0);
+      ShAttrib4f SH_NAMEDECL(coeff2, "Worley coefficient 2") = ShConstAttrib4f(0, 1, 1, 0);
       ShAttrib1f SH_NAMEDECL(freq2, "Worley frequency 2") = freq * 2.131313f;
       ShProgram worleysh = makeWorleySh(L1, coeff, freq, false); 
       ShProgram worleysh2 = makeWorleySh(L2_SQ, coeff2, freq2, false); 
@@ -158,9 +158,9 @@ class GiraffeWorley: public WorleyShader {
     GiraffeWorley(bool useTexture): WorleyShader("Worley: Giraffe", useTexture) {}
 
     void initfsh() {
-      param = ShConstant1f(0.75);
-      coeff = ShConstant4f(-1, 1, 0, 0);
-      ShAttrib4f SH_NAMEDECL(coeff2, "Worley coefficient 2") = ShConstant4f(0, -1, 1, 0);
+      param = ShConstAttrib1f(0.75);
+      coeff = ShConstAttrib4f(-1, 1, 0, 0);
+      ShAttrib4f SH_NAMEDECL(coeff2, "Worley coefficient 2") = ShConstAttrib4f(0, -1, 1, 0);
       ShProgram worleysh = makeWorleySh(L1, coeff, freq, false); 
       ShProgram worleysh2 = makeWorleySh(L1, coeff2, freq, false); 
 
@@ -192,7 +192,7 @@ class CircuitWorley: public WorleyShader {
     CircuitWorley(bool useTexture): WorleyShader("Worley: Circuit", useTexture) {}
 
     void initfsh() {
-      coeff = ShConstant4f(0, 0, 0, 1);
+      coeff = ShConstAttrib4f(0, 0, 0, 1);
       ShProgram worleysh = makeWorleySh(L1, coeff, freq, false); 
       ShAttrib1f SH_NAMEDECL(freq2, "Worley frequency 2") = freq * 2.131313f;
       ShProgram worleysh2 = makeWorleySh(L1, coeff, freq2, false); 
@@ -232,8 +232,8 @@ class CrackedWorley: public WorleyShader {
 
       ShColor3f specularColor(0.5, 0.5, 0.5);
 
-      coeff = ShConstant4f(2.5, -0.5f, -0.1f, 0);
-      freq = ShConstant1f(16.0f);
+      coeff = ShConstAttrib4f(2.5, -0.5f, -0.1f, 0);
+      freq = ShConstAttrib1f(16.0f);
 
       ShWorleyLerpingPointGen<float> generator(time);
       ShProgram worleysh = worleyProgram<4, float>(L2_SQ, useTexture, generator) << coeff; // pass in coefficient

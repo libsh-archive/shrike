@@ -84,12 +84,12 @@ bool EdgeGooch::init()
   vsh = vsh << shExtract("lightPos") << Globals::lightPos;
   vsh = shSwizzle("normal", "lightVec", "posh") << vsh;
 
-  ShColor3f SH_NAMEDECL(diffuseColor, "Diffuse Color") = ShConstant3f(0.9f, 0.9f, 0.6f);
-  ShColor3f SH_NAMEDECL(cool, "Cool Color") = ShConstant3f(0.2f, 0.2f, 1.0f);
-  ShColor3f SH_NAMEDECL(warm, "Warm Color") = ShConstant3f(1.0f, 0.3f, 0.3f);
-  ShAttrib1f SH_NAMEDECL(width, "Edge Width") = ShConstant1f(0.02f);
+  ShColor3f SH_NAMEDECL(diffuseColor, "Diffuse Color") = ShConstAttrib3f(0.9f, 0.9f, 0.6f);
+  ShColor3f SH_NAMEDECL(cool, "Cool Color") = ShConstAttrib3f(0.2f, 0.2f, 1.0f);
+  ShColor3f SH_NAMEDECL(warm, "Warm Color") = ShConstAttrib3f(1.0f, 0.3f, 0.3f);
+  ShAttrib1f SH_NAMEDECL(width, "Edge Width") = ShConstAttrib1f(0.02f);
   width.range(0.001f, 0.5f);
-  ShAttrib1f SH_NAMEDECL(poffset, "Polygon Offset") = ShConstant1f(0.0f);
+  ShAttrib1f SH_NAMEDECL(poffset, "Polygon Offset") = ShConstAttrib1f(0.0f);
   poffset.range(-1.0f, 1.0f);
 
 
@@ -99,7 +99,7 @@ bool EdgeGooch::init()
 
     normal = normalize(normal);
     lightVec= normalize(lightVec);
-    ShConstant1f half(0.5f);
+    ShConstAttrib1f half(0.5f);
     ShAttrib1f blend = mad(dot(normal, lightVec), half, half);
     ShOutputColor3f SH_DECL(result) = diffuseColor * lerp(blend, warm, cool);
   } SH_END;
@@ -129,7 +129,7 @@ bool EdgeGooch::init()
 
     // find interpolated points between p0,p1 and p0,p2
     ShAttrib2f k = -nvv(1,2) / (nvv(0,0) - nvv(1,2));
-    ShAttrib2f nk = ShConstant2f(1.0f, 1.0f) - k;
+    ShAttrib2f nk = ShConstAttrib2f(1.0f, 1.0f) - k;
     p1 = lerp(k(0), p0(0,1,2), p1);
     n1 = lerp(k(0), n0, n1);
     tc1 = lerp(k(0), tc0, tc1);
@@ -174,7 +174,7 @@ bool EdgeGooch::init()
   edgevsh = namedConnect( edgevsh, translator );
 
   edgefsh = SH_BEGIN_PROGRAM("gpu:fragment") {
-    ShOutputColor4f SH_DECL(kd) = ShConstant4f(0.0f, 0.0f, 0.0f, 1.0f);
+    ShOutputColor4f SH_DECL(kd) = ShConstAttrib4f(0.0f, 0.0f, 0.0f, 1.0f);
   } SH_END;
 
   return true;
