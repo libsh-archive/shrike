@@ -1,6 +1,7 @@
 2004-02-19  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/UniformPanel.cpp (setShader): Don't display widgets for constants.
+	(setShader): Don't display widgets for unnamed uniforms.
 
 	* src/CelShader.cpp: Added the super awesome CelShader using
 	Shader Algebra.

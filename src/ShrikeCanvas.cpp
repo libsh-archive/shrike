@@ -3,6 +3,8 @@
 #include <wx/glcanvas.h>
 #include "ShrikeCanvas.hpp"
 #include "Globals.hpp"
+#include "ShTrackball.hpp"
+#include <sh/sh.hpp>
 
 using namespace SH;
 
@@ -59,7 +61,13 @@ void ShrikeCanvas::motion(wxMouseEvent& event)
   long dy = cur_y - m_last_y;
 
   if (event.LeftIsDown()) {
-    m_camera.orbit(m_last_x, m_last_y, cur_x, cur_y, m_width, m_height);
+    if (event.ShiftDown()) {
+      ShTrackball t;
+      t.resize(m_width, m_height);
+      Globals::lightPosW = t.rotate(m_last_x, m_last_y, cur_x, cur_y) | Globals::lightPosW;
+    } else {
+      m_camera.orbit(m_last_x, m_last_y, cur_x, cur_y, m_width, m_height);
+    }
   }
   if (event.MiddleIsDown()) {
     m_camera.move(0.0, 0.0, dy/3.0);

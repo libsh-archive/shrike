@@ -53,6 +53,7 @@ void UniformPanel::setShader(Shader* shader)
         ShVariableNodePtr var = *I;
         if (var->kind() != SH_TEMP) continue;
         if (var->internal()) continue;
+        if (!var->hasName()) continue;
         wxSizer* lps = new wxBoxSizer(wxVERTICAL);
         wxPanel* lp = new wxPanel(this, -1, wxDefaultPosition, wxDefaultSize, 
                                   wxSUNKEN_BORDER);

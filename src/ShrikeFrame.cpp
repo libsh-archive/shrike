@@ -21,6 +21,8 @@ ShrikeFrame::ShrikeFrame()
 {
   CreateStatusBar();
 
+  GetStatusBar()->SetStatusText("Hold down shift to rotate the light instead of the camera.");
+  
   // Setup menus
 
   wxMenu* fileMenu = new wxMenu();
@@ -38,11 +40,14 @@ ShrikeFrame::ShrikeFrame()
   wxListBox* shaderList = initShaderList(hsplitter);
 
   // Probably should do this somewhere else...
-  ShObjFile* model = new ShObjFile();
+  ShObjFile* model = 0;
 
   // TODO: FIXME
   std::ifstream infile(SHMEDIA_DIR "/objs/sphere50.obj");
-  infile >> *model;
+  if (infile) {
+    model = new ShObjFile();
+    infile >> *model;
+  }
 
   wxSplitterWindow* right_window = new wxSplitterWindow(hsplitter, -1);
   m_canvas = new ShrikeCanvas(right_window, model);
