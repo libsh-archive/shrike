@@ -22,7 +22,10 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 Text.cpp Text.hpp \
 		 WobbleShader.cpp \
 		 FrameMapping.cpp \
-		 Logo.cpp
+		 Logo.cpp \
+		 NonPeriodic.cpp \
+		 Textures.cpp \
+		 Pants.cpp
 
 AM_CXXFLAGS = `${WX_CONFIG} --cxxflags` -Wall
 AM_CPPFLAGS = `${WX_CONFIG} --cppflags`

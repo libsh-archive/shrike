@@ -60,7 +60,7 @@ bool SimplePhong::init()
   
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputNormal3f normal;
-    ShInputTexCoord3f tc; // ignore texcoords
+    ShInputTexCoord2f tc; // ignore texcoords
     ShInputVector3f half;
     ShInputVector3f light;
     ShInputPosition4f posh;

@@ -1,3 +1,12 @@
+2004-03-11  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/Textures.cpp: Added a simple example of using textures.
+
+	* src/Pants.cpp: Added this really cool new shader. Thanks to
+	Craig Kaplan.
+
+	* src/NonPeriodic.cpp: Added this new shader. Thanks to Craig Kaplan.
+
 2004-03-09  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/ShrikeFrame.cpp: Added a "Reset View" menu item.
