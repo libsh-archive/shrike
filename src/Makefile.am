@@ -55,7 +55,6 @@ shrike_SOURCES += shaders/HairShader.cpp
 shrike_SOURCES += shaders/LCD.hpp shaders/LCD.cpp
 shrike_SOURCES += shaders/LCDSmall.hpp shaders/LCDSmall.cpp
 shrike_SOURCES += shaders/LafortuneShader.cpp
-shrike_SOURCES += shaders/HairPhysics.cpp
 shrike_SOURCES += shaders/Derivatives.cpp
 shrike_SOURCES += shaders/Checkerboard.cpp
 shrike_SOURCES += shaders/VertexBranching.cpp
@@ -105,4 +104,5 @@ shgenSBRDF_SOURCES = ShGenSBRDF.cpp HDRImages/HDRImage.cpp
 shgenSBRDF_CPPFLAGS = -IHDRImages
 shgenSBRDF_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
 shgenSBRDF_LDADD = -lsh -lshutil
+
 
