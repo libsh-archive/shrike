@@ -45,7 +45,7 @@ ShProgram circ(float x, float y, float r)
 {
   ShProgram res = SH_BEGIN_PROGRAM() {
     ShVector2f o = posn - ShConstAttrib2f(x, y);
-    ShOutputAttrib1f result = ((o | o) < (r*r));
+    ShOutputAttrib1f result = ((o | o) < ShConstAttrib1f(r*r));
   } SH_END;
   return res;
 }

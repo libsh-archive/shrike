@@ -42,8 +42,8 @@ bernstein_basis_4 (
    ShAttrib4f r;
    ShAttrib<N,SH_TEMP,T> it = fillcast<N>(ShAttrib<1,SH_TEMP,T>(1.0f)) - t;
    r(0) = it*it*it;
-   r(1) = it*it*t;
-   r(2) = it*t*t;
+   r(1) = 3.0*it*it*t;
+   r(2) = 3.0*it*t*t;
    r(3) = t*t*t;
    return r;
 }
