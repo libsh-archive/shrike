@@ -131,6 +131,7 @@ private:
   Shader* m_shader;
 
   wxMenu* m_shaderMenu;
+  wxMenu* m_viewMenu;
   
   bool m_fullscreen;
   bool m_fps;

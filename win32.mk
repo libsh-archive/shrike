@@ -1,33 +1,40 @@
-SH_INSTALLDIR = \Dev\install-sh
-OPENGL_DIR = \dev\opengl
-MSSDK_DIR = \dev\mssdk
-LIBPNG_DIR = \dev\libpng
-ZLIB_DIR = \dev\zlib
+# build options
+GEN_DEPENDENCIES=1
+BUILD_RELEASE=1
+BUILD_DEBUG=1
 
-# libpng/zlib
-INCLUDES = -I$(LIBPNG_DIR)\include -I$(ZLIB_DIR)\include
-# MS platform SDK
-INCLUDES += -I$(MSSDK_DIR)\include
+# install locations
+SH_INSTALLDIR = \dev\install
+SHMEDIA_DIR = \"\\\\dev\\\\shmedia\"
+
 # OpenGL
+OPENGL_DIR = \dev\opengl
 INCLUDES += -I$(OPENGL_DIR)\include
 
-CPPFLAGS = -DWIN32 $(INCLUDES)
+# wxWindows
+WXWIN_DIR = \dev\wxWindows-2.4.2
+INCLUDES += -I$(WXWIN_DIR)\include -I$(WXWIN_DIR)\lib\mswd
+WXWIN_RELEASE_LDADD = $(WXWIN_DIR)\lib\wxmsw.lib
+WXWIN_DEBUG_LDADD = $(WXWIN_DIR)\lib\wxmswd.lib
+
+CXX = cl /nologo
+AR = link /lib /nologo
+LD = link /nologo
+
+CPPFLAGS = -DWIN32 -DNOMINMAX -D_USE_MATH_DEFINES
+CPPFLAGS += -DSHMEDIA_DIR=$(SHMEDIA_DIR)
+CPPFLAGS += $(INCLUDES)
+CXXFLAGS = /GR /EHsc /wd4003
 
 RELEASE_CPPFLAGS = $(CPPFLAGS)
-DEBUG_CPPFLAGS   = $(CPPFLAGS) /D SH_DEBUG /D _DEBUG
+RELEASE_CXXFLAGS = $(CXXFLAGS) $(RELEASE_CPPFLAGS) /MD /O2
 
-CXXFLAGS = /GR /GX /wd4003
-RELEASE_CXXFLAGS = $(CXXFLAGS) $(RELEASE_CPPFLAGS)  /MD
-DEBUG_CXXFLAGS = $(CXXFLAGS) $(DEBUG_CPPFLAGS) /MDd /ZI /Od /RTC1
+DEBUG_CPPFLAGS = $(CPPFLAGS) -D_DEBUG -DSH_DEBUG
+DEBUG_CXXFLAGS = $(CXXFLAGS) $(DEBUG_CPPFLAGS) /MDd /Zi /Od
 
 LDFLAGS = 
-DEBUG_LDFLAGS = $(LDFLAGS) /Zi
 RELEASE_LDFLAGS = $(LDFLAGS)
-
-CXX = cl
-
-clean:
-	del *.lib *.obj *.d $(CLEANFILES)
+DEBUG_LDFLAGS = $(LDFLAGS) /DEBUG
 
 %.r.obj: %.cpp
 	$(CXX) /Fo$@ /c $< $(RELEASE_CXXFLAGS)
@@ -36,9 +43,9 @@ clean:
 	$(CXX) /Fo$@ /c $< $(DEBUG_CXXFLAGS)
 
 %.r.d: %.cpp
-	makedepend -f- -o.r.obj $< -- $(RELEASE_CPPFLAGS) > $@ 2>devnull
+	@makedepend -f- -o.r.obj $< -- $(RELEASE_CPPFLAGS) > $@ 2>devnull
 	-@del devnull
 
 %.d.d: %.cpp
-	makedepend -f- -o.d.obj $< -- $(RELEASE_CPPFLAGS) > $@ 2>devnull
+	@makedepend -f- -o.d.obj $< -- $(DEBUG_CPPFLAGS) > $@ 2>devnull
 	-@del devnull

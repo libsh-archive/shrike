@@ -35,13 +35,6 @@
 #include "ShrikeCanvas.hpp"
 #include "ShrikeFrame.hpp"
 
-#ifdef min
-#undef min
-#endif
-#ifdef max
-#undef max
-#endif
-
 using namespace SH;
 
 UniformPanel::UniformPanel(wxWindow* parent)

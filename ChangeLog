@@ -1,3 +1,46 @@
+2004-10-08  Kevin Moule  <krmoule@cgl.uwaterloo.ca>
+
+	* Makefile.win32, src/Makefile.win32, win32.mk: Updated makefiles
+	to support release/debug only builds, turning off dependency
+	generetion and explicit targets for release and debug builds.
+
+2004-10-07  Kevin Moule  <krmoule@cgl.uwaterloo.ca>
+
+	* win32.mk, src/Makefile.win32: Shrike needs glext.h, added
+	appropriate makefile goo. makedepend doesn't recognize /I and
+	/D, change all references to -I and -D
+
+	* src/ShrikeFrame.cpp, src/ShrikeFrame.hpp: Cosmetic changes in
+	menu, Fullscreen check updated when exiting fullscreen, Wireframe
+	forces refresh, removed extraneous separator, added "..." to couple
+	of entries.
+
+2004-10-05  Kevin Moule  <krmoule@cgl.uwaterloo.ca>
+
+	* win32.mk: Updated for building with Visual C++ 2005
+	Express Beta 1.
+
+	* src/shaders/Texter.cpp: Workaround for internal compiler
+	error on Visual C++ 2005 Express Beta 1.
+
+	* src/ShrikeGl.hpp: Fixed inconsistent function pointer
+	definitions.
+
+2004-10-04  Kevin Moule  <krmoule@cgl.uwaterloo.ca>
+
+	* src/shaders/EdgeDetection.cpp: WIN32 changes broke linux, fixed.
+
+2004-10-04  Kevin Moule  <krmoule@cgl.uwaterloo.ca>
+
+	* src/Camera.cpp, src/ShrikeGl.hpp, src/UniformPanel.cpp,
+	src/shaders/AlgebraShader.cpp, src/shaders/Ashikhmin.cpp,
+	src/shaders/EdgeDetection.cpp, src/shaders/HairShader.cpp:
+	Removed use of _USE_MATH_DEFINES and undefines of min and
+	max, now controlled via win32.mk.
+
+	* win32.mk, Makefile.win32, src/Makefile.win32: General
+	WIN32 makefile cleanup/overhaul.
+
 2004-09-08  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* ...: Merged in changes from newopt branch to deal with dependent uniforms.

@@ -24,16 +24,21 @@
 // 3. This notice may not be removed or altered from any source
 // distribution.
 //////////////////////////////////////////////////////////////////////////////
+
+#ifdef WIN32
+#include <windows.h>
+#endif /* WIN32 */
+
 #include <sh/sh.hpp>
 #include <sh/shutil.hpp>
 #include <iostream>
 #include <fstream>
 #include "Shader.hpp"
 #include "Globals.hpp"
-#define GL_GLEXT_LEGACY
+#define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <GL/glext.h>
-#undef GL_GLEXT_LEGACY
+#undef GL_GLEXT_PROTOTYPES
 #include <sh/ShObjMesh.hpp>
 
 using namespace SH;

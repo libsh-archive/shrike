@@ -97,5 +97,7 @@ bool Texter::init()
   return true;
 }
 
-Texter* Texter::instance = new Texter("Hello World");
-
+// Due to an ICE in Visual C++ 2005 we need to construct
+// the initializer separately. 
+std::string initializer("Hello World");
+Texter* Texter::instance = new Texter(initializer);
