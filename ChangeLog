@@ -1,3 +1,13 @@
+2004-04-14  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/AlgebraShader.cpp (AlgebraShaders): Don't include "nulls" in
+	names.
+	Rename AlgebraShader to AlgebraShaders and don't make it an
+	ShShader. Cut away some unnecessary code while we're at it.
+
+	* src/ShrikeFrame.cpp: Use a treeview instead of a list control
+	for the list of shaders.
+
 2004-04-07  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* Ever so many fixes for the new Sh.

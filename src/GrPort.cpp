@@ -252,6 +252,15 @@ void join(GrPort* a, GrPort* b)
 
   a->m_edges.push_back(edge);
   b->m_edges.push_back(edge);
+
+  if (!a->var()->hasName() && b->var()->hasName()) {
+    a->var()->name(b->var()->name());
+    a->parent()->calcSizes();
+  }
+  if (!b->var()->hasName() && a->var()->hasName()) {
+    b->var()->name(a->var()->name());
+    b->parent()->calcSizes();
+  }
 }
 
 void unjoin(GrPort* a, GrPort* b)

@@ -47,9 +47,9 @@ public:
 
   SH::ShProgram program() { return m_program; }
   
-private:
-
   void calcSizes();
+
+private:
   
   SH::ShProgram m_program;
   double m_x, m_y;

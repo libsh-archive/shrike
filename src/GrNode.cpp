@@ -16,7 +16,13 @@ const float shadow = 2.0;
 const float conn_radius = 3.0;
 const float conn_sep = conn_radius/2.0;
 const float io_sep = 10.0;
+
+std::string label(const SH::ShVariableNodePtr& node) {
+  return node->hasName() ? node->name() : "noname";
 }
+
+}
+
 
 GrNode::GrNode(const SH::ShProgram& program,
                double x, double y,
@@ -103,14 +109,14 @@ void GrNode::calcSizes()
   m_in_width = 0;
   ShProgramNode::VarList::const_iterator I;
   for (I = m_program->inputs.begin(); I != m_program->inputs.end(); ++I) {
-    OGLFT::BBox bbox = m_face->measure((*I)->name().c_str());
+    OGLFT::BBox bbox = m_face->measure(label(*I).c_str());
     double width = bbox.x_max_ - bbox.x_min_;
     if (width > m_in_width) m_in_width = width;
   }
   
   m_out_width = 0;
   for (I = m_program->outputs.begin(); I != m_program->outputs.end(); ++I) {
-    OGLFT::BBox bbox = m_face->measure((*I)->name().c_str());
+    OGLFT::BBox bbox = m_face->measure(label(*I).c_str());
     double width = bbox.x_max_ - bbox.x_min_;
     if (width > m_out_width) m_out_width = width;
   }
@@ -129,6 +135,20 @@ void GrNode::calcSizes()
   m_height += border * 2.0;
   m_width += io_sep;
 
+  { // Set up ports
+    double y;
+    y = m_height - m_font_height - (m_height - m_font_height * m_program->inputs.size())/2.0;
+    for (PortList::iterator I = m_input_ports.begin(); I != m_input_ports.end(); ++I) {
+      (*I)->move(border, y);
+      y -= m_font_height;
+    }
+    
+    y = m_height - m_font_height - (m_height - m_font_height * m_program->outputs.size())/2.0;
+    for (PortList::iterator I = m_output_ports.begin(); I != m_output_ports.end(); ++I) {
+      (*I)->move(- border + m_width - port_width, y);
+      y -= m_font_height;
+    }
+  }
 }
 
 void GrNode::combine(const ShProgram& program)
@@ -257,7 +277,7 @@ void GrNode::draw_labels()
   
   m_face->setHorizontalJustification( OGLFT::Face::LEFT );
   for (I = m_program->inputs.begin(); I != m_program->inputs.end(); ++I) {
-    m_face->draw(m_x + border * 2.0 + port_width, y, (*I)->name().c_str());
+    m_face->draw(m_x + border * 2.0 + port_width, y, label(*I).c_str());
     y -= m_font_height;
   }
 
@@ -265,7 +285,7 @@ void GrNode::draw_labels()
   
   y = m_y + m_height - m_font_height - (m_height - m_font_height * m_program->outputs.size())/2.0;
   for (I = m_program->outputs.begin(); I != m_program->outputs.end(); ++I) {
-    m_face->draw(m_x - border * 2.0 + m_width - port_width, y, (*I)->name().c_str());
+    m_face->draw(m_x - border * 2.0 + m_width - port_width, y, label(*I).c_str());
     y -= m_font_height;
   }
 
