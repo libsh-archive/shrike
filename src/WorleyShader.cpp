@@ -7,202 +7,210 @@
 using namespace SH;
 using namespace ShUtil;
 
+enum WorleyType {
+
+};
+
 class WorleyShader : public Shader {
 public:
-  WorleyShader(bool tex, int which);
-  ~WorleyShader();
-
-  bool init();
-  void bind();
+  WorleyShader(std::string name, bool tex)
+    : Shader(name + (tex ? "(Texture Hash)" : "(Procedural Hash)")), useTexture(tex) {}
+  virtual ~WorleyShader() {}
 
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
 
-  ShProgram vsh, fsh;
+  // sets default vertex shader, phong fsh 
+  bool init(); 
 
-  ShAttrib4f getWorley(int i, ShTexCoord2f t, ShAttrib1f p);
+  // returns a worley program that uses the given uniforms for coefficients 
+  // and frequency, and the specified metric
+  ShProgram makeWorleySh(ShWorleyMetric m, const ShAttrib4f &coeff, const ShAttrib1f &freq, bool keepGradients) const;
 
-  ShUtil::ShWorley worleyizer;
+  // sets colours, specular, worley function specific to each subclass and uses algebra to 
+  // add on to the default phong shader
+  virtual void initfsh() = 0;
+
+  ShProgram vsh, fsh; 
+
+  // uniforms used by subclasses
+  ShAttrib1f param, freq, exponent;
+  ShAttrib4f coeff;
+  ShColor3f color1, color2;
+
   ShUtil::ShWorleyMetric metric;
-  int whichW;
   bool useTexture;
 };
 
-#define WORLEY_FREQ 8
-
-WorleyShader::WorleyShader(bool tex, int which)
-  : Shader("Worley textures"),
-    worleyizer(WORLEY_FREQ, tex), whichW(which), useTexture(tex)
-{
-}
-
-WorleyShader::~WorleyShader()
-{
-}
-
-ShAttrib4f WorleyShader::getWorley(int i, ShTexCoord2f t, ShAttrib1f p)
-{
-  ShAttrib4f w, z;
-  ShAttrib4f wC;
-  switch (i) {
-  case 1:
-    wC = ShAttrib4f(1,0,0,0);
-    w(2) = worleyizer.worleyNoGradient(t, wC, L2_SQ);
-    w(2) = (ShAttrib1f(1)-w(2) - p)*ShAttrib1f(30);
-    w(2) = clamp(0.0f, 1.0f, w(2));
-    w(0,1) = w(2,2);
-    break;
-  case 2:
-    wC = ShAttrib4f (-1,1.2,0,0);
-    w(0,1,2) = worleyizer.worleyNoGradient(t, wC, L1)(0,0,0);
-    wC = ShAttrib4f (0,1,1,0);
-    z(0,1,2) = worleyizer.worleyNoGradient(t*ShAttrib1f(2), wC, L2_SQ)(0,0,0);
-    w = w-z;
-    break;
-  case 3:
-    wC = ShAttrib4f (-1,1,0,0);
-    w(2) = worleyizer.worleyNoGradient(t, wC, L1);
-    w(2) = (ShAttrib1f(1)-w(2) - p)*ShAttrib1f(30);
-    //w(2) = clamp(0.0f, 1.0f, w(2));
-      
-    wC = ShAttrib4f (0,-1,1,0);
-    w(1) = worleyizer.worleyNoGradient(t, wC, L1);
-    w(1) = (ShAttrib1f(1)-w(1) - p)*ShAttrib1f(10);
-    //w(1) = clamp(0.0f, 1.0f, w(1));
-
-    w(2) = clamp(0.0f, 1.0f, w(1)+w(2));
-    w(0,1) = w(2,2);
-    break;
-  case 4:
-    wC = ShAttrib4f (0,0,0,1);
-    w(2) = worleyizer.worleyNoGradient(t, wC, L1) * ShAttrib1f(0.5);
-    w(2) = (ShAttrib1f(1)-w(2) - p)*ShAttrib1f(30);
-    w(2) = clamp(0.0f, 1.0f, w(2));
-      
-    w(0) = worleyizer.worleyNoGradient(t*ShAttrib1f(2), wC, L1) * ShAttrib1f(0.5);
-    w(0) = (ShAttrib1f(1)-w(0) - p)*ShAttrib1f(30);
-    w(0) = clamp(0.0f, 1.0f, w(0));
-    w(1) = ShAttrib1f(1) - w(0);
-    break;
-  case 0:
-  default:
-    wC = ShAttrib4f(1,0,0,0);
-    w(0,1,2) = worleyizer.worley(t*ShAttrib1f(2), wC, L2_SQ);
-    break;
-  }
-  w(3) = ShAttrib1f(1) - w(2);
-  return w;
-}
-
-bool WorleyShader::init()
-{
-  vsh = SH_BEGIN_VERTEX_PROGRAM {
-    ShInputNormal3f normal;
-    ShInputTexCoord2f texture;
-    ShInputPosition4f p;
-
-    ShOutputVector3f ohv;
-    ShOutputNormal3f on;
-    ShOutputTexCoord2f ot;
-    ShOutputAttrib1f ec;	//irradiance
-    ShOutputPosition4f opd;
-
-    //Used for lighting
-    ShNormal3f nvt = normalize(Globals::mv | normal);
-    ShPoint3f pvt = (Globals::mv | p)(0,1,2);
-    ShVector3f vvv = -normalize(pvt);
-    ShVector3f lvv = normalize(Globals::lightPos - pvt);
-    ShAttrib1f ect = (nvt | lvv);
-    
-    opd = Globals::mvp | p;
-    on = nvt;
-    ohv = normalize(lvv + vvv);
-    ot = texture;
-    ec = ect * (ect>0.0);
-    
-  } SH_END_PROGRAM;
-
-  ShAttrib1f SH_DECL(param) = .5;
+bool WorleyShader::init() {
+  std::cerr << "Initializing " << name() << std::endl;
+  param.name("param"); 
+  param = .5;         
   param.range(0.0f, 1.0f);
-  ShAttrib1f SH_DECL(exponent) = 35.0;
+
+  freq.name("Worley frequency");
+  freq = 8.0;
+  freq.range(0.1f, 128.0f);
+
+  coeff.name("Worley coefficient");
+  coeff = ShConstant4f(1.0, 0.0, 0.0, 0.0);
+  coeff.range(-10.0f, 10.0f);
+
+  exponent.name("specular exponent");
+  exponent = 35.0;    
   exponent.range(10.0f, 500.0f);
-  ShAttrib1f SH_DECL(toggle) = 0.0;
-  toggle.range(0.0f, 1.0f);
-  
-  fsh = SH_BEGIN_FRAGMENT_PROGRAM {
-    ShInputVector3f hv;
-    ShInputNormal3f n;
-    ShInputTexCoord2f t;
-    ShInputAttrib1f ec;
-    ShInputPosition4f p;
-    
-    ShOutputColor3f out;
 
-    ShAttrib4f w = getWorley(whichW, t, param);
 
-    ShNormal3f newn = n;
-    if (whichW==0)
-    {
-      ShNormal2f offset = normalize(w(1,2)*ShAttrib1f(0.25)) * param;
-      newn(0)+= offset(0);
-      newn(1)+= offset(1);
-      newn = normalize(newn);
-      w(2) = w(0);
-      w(3) = ShAttrib1f(1) - w(2);
-    }
-    else
-    newn = n;
+  color1.name("color1");
+  color2.name("color2");
 
-    ShAttrib1f spec;
-    spec = dot(normalize(hv), normalize(newn)) ^ exponent;
+  vsh = ShKernelLib::shVshTangentSpace(Globals::mv, Globals::mvp, false) << shExtract("lightPos") << Globals::lightPos; 
+  vsh = shSwizzle("texcoord", "normal", "halfVec", "lightVec", "posh") << vsh;
+  fsh = ShKernelLib::shPhong<ShColor3f>() << shExtract("specExp") << exponent;
 
-    ShColor3f col1;
-    ShColor3f col2;
-    
-    switch (whichW)
-    {
-    case 0:
-      col1 = ShColor3f(0.7,0.2,0.3)*w(3) + ShColor3f(0.4,0,0)*w(2);
-      //col1 = w(2,3,2);
-      spec*= w(3);
-      break;
-    case 1:
-      col1 = ShColor3f(0.27,0.35,0.45)*w(3) + ShColor3f(1,0.7,0)*w(2);
-      break;
-    case 2:
-      col1 = ShColor3f(0.5,0,0)*w(3) + ShColor3f(0,0,1)*w(2);
-      break;
-    case 3:
-      col1 = ShColor3f(0.45,0.3,0)*w(3) + ShColor3f(1,0.95,0.8)*w(2);
-      spec*= 0.2;
-      break;
-    case 4:
-      //col1 = ShColor3f(0,0.45,0)*w(0) + ShColor3f(0,0.3,0.8)*w(2);
-      col1 = ShColor3f(0,0.2,0.8)*w(0) + ShColor3f(0.6,0.6,0.7)*w(2);
-      spec*= col1(1);
-      break;
-    case 5:
-      col2(0) = (w(0)>ShAttrib1f(0));
-      col1 = (ShColor3f(0,0.6,0)*w(3) + ShColor3f(0.5,0.5,0.5)*w(2))*(ShAttrib1f(1)-col2(0)) + col2(0)*(ShColor3f(0.2,0.2,0.9)*w(0));
-      break;
-    }
-    col1 = (col1 + ShColor3f(1,1,1)*spec) * ec;
-    col2 = w(1,0,1);
-
-    out = toggle*col2 + (1.0-toggle)*col1;
-  } SH_END_PROGRAM;
+  initfsh();
   return true;
 }
 
-void WorleyShader::bind()
-{
-  shBindShader(vsh);
-  shBindShader(fsh);
+ShProgram WorleyShader::makeWorleySh(ShWorleyMetric m, const ShAttrib4f &c, const ShAttrib1f &f, bool keepGradients) const {
+    ShProgram result = worleyProgram<4, float>(m, useTexture) << c; // pass in coefficient
+    result = result << ( mul<ShTexCoord2f>("texcoord") << fillcast<2>(f)); // multiply by worley frequency
+    if( !keepGradients ) result = shDrop("gradient") << result; 
+    return result;
 }
 
-WorleyShader worleyShader0( false, 0 );
-WorleyShader worleyShader1( false, 1 );
-WorleyShader worleyShader2( false, 2 );
-WorleyShader worleyShader3( false, 3 );
-WorleyShader worleyShader4( false, 4 );
+class OrganicWorley: public WorleyShader {
+  public:
+    OrganicWorley(bool useTexture): WorleyShader("Organic Worley", useTexture) {}
 
+    void initfsh() {
+      ShProgram worleysh = makeWorleySh(L2_SQ, coeff, freq, true); 
+
+      color1 = ShColor3f(0.7, 0.2, 0.3);
+      color2 =  ShColor3f(0.4, 0.0, 0.0);
+
+      ShProgram colorAndBump = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
+      colorAndBump = (colorAndBump & (keep<ShColor3f>("ks") << fillcast<ShAttrib1f, ShColor3f>())) << shDup(); 
+      colorAndBump = colorAndBump & ShKernelLib::bump(); 
+
+      fsh = fsh << colorAndBump << worleysh;
+    }
+};
+
+class PolkaDotWorley: public WorleyShader {
+  public:
+    PolkaDotWorley(bool useTexture): WorleyShader("Polka Dot Worley", useTexture) {}
+
+    void initfsh() {
+      ShProgram worleysh = makeWorleySh(L2_SQ, coeff, freq, false); 
+
+      // make polkadots by clamping the scalar result from worley
+      ShProgram polkash = SH_BEGIN_PROGRAM() {
+        ShInOutAttrib1f SH_DECL(scalar) = clamp(0.0f, 1.0f, (scalar + param - 0.75f) * 30.0f); 
+      } SH_END;
+      worleysh = polkash << worleysh;
+
+      color1 = ShColor3f(0.27, 0.35, 0.45);
+      color2 =  ShColor3f(1.0, 0.7, 0.0);
+      ShColor3f specularColor(0.5, 0.5, 0.5);
+
+      ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
+      colorsh = colorsh & ( keep<ShColor3f>("ks") << specularColor); 
+
+      fsh = fsh << colorsh << worleysh;
+    }
+};
+
+class LavaWorley: public WorleyShader {
+  public:
+    LavaWorley(bool useTexture): WorleyShader("Lava Worley", useTexture) {}
+
+    void initfsh() {
+      coeff = ShConstant4f(-1, 1.2, 0, 0);
+      ShAttrib4f SH_NAMEDECL(coeff2, "Worley coefficient 2") = ShConstant4f(0, 1, 1, 0);
+      ShProgram worleysh = makeWorleySh(L1, coeff, freq, false); 
+      ShProgram worleysh2 = makeWorleySh(L2_SQ, coeff2, freq * 2.131313f, false); 
+
+      worleysh = sub<ShAttrib1f>() << namedCombine(worleysh, worleysh2);
+
+      color1 = ShColor3f(0.0, 0.0, 1.0);
+      color2 =  ShColor3f(0.5, 0.0, 0.0);
+      ShColor3f specularColor(0.5, 0.5, 0.5);
+
+      ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
+      colorsh = colorsh & ( keep<ShColor3f>("ks") << specularColor); 
+
+      fsh = fsh << colorsh << worleysh;
+    }
+};
+
+class GiraffeWorley: public WorleyShader {
+  public:
+    GiraffeWorley(bool useTexture): WorleyShader("Giraffe Worley", useTexture) {}
+
+    void initfsh() {
+      param = ShConstant1f(0.75);
+      coeff = ShConstant4f(-1, 1, 0, 0);
+      ShAttrib4f SH_NAMEDECL(coeff2, "Worley coefficient 2") = ShConstant4f(0, -1, 1, 0);
+      ShProgram worleysh = makeWorleySh(L1, coeff, freq, false); 
+      ShProgram worleysh2 = makeWorleySh(L1, coeff2, freq, false); 
+
+      // make patches out of the two
+      ShProgram patcher = SH_BEGIN_PROGRAM() {
+        ShInputAttrib1f SH_DECL(worleyScalar1);
+        ShInputAttrib1f SH_DECL(worleyScalar2);
+        ShOutputAttrib1f SH_DECL(result);
+        worleyScalar1 = (1.0f - worleyScalar1 - param) * 30.0f;
+        worleyScalar2 = (1.0f - worleyScalar2 - param) * 10.0f;
+        result = clamp(0.0f, 1.0f, worleyScalar1 + worleyScalar2);
+      } SH_END;
+
+      worleysh = patcher << namedCombine(worleysh, worleysh2);
+
+      color1 =  ShColor3f(1.0, 0.95, 0.8);
+      color2 = ShColor3f(0.45, 0.3, 0.0);
+      ShColor3f specularColor(0.2, 0.2, 0.2);
+
+      ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
+      colorsh = colorsh & ( keep<ShColor3f>("ks") << specularColor); 
+
+      fsh = fsh << colorsh << worleysh;
+    }
+};
+
+class CircuitWorley: public WorleyShader {
+  public:
+    CircuitWorley(bool useTexture): WorleyShader("Circuit Worley", useTexture) {}
+
+    void initfsh() {
+      coeff = ShConstant4f(0, 0, 0, 1);
+      ShProgram worleysh = makeWorleySh(L1, coeff, freq, false); 
+      ShProgram worleysh2 = makeWorleySh(L1, coeff, freq * 2.131313f, false); 
+
+      color1 = ShColor3f(0.0, 0.2, 0.8);
+      color2 =  ShColor3f(0.6, 0.6, 0.7);
+
+      // make patches out of the two
+      ShProgram colorizer = SH_BEGIN_PROGRAM() {
+        ShInputAttrib1f SH_DECL(worleyScalar1);
+        ShInputAttrib1f SH_DECL(worleyScalar2);
+        ShOutputColor3f SH_DECL(kd);
+        ShOutputColor3f SH_DECL(ks);
+
+        worleyScalar1 = clamp(0.0f, 1.0f, (1.0f - worleyScalar1 + param) * 30.0f);
+        worleyScalar2 = 1.0f - clamp(0.0f, 1.0f, (1.0f - worleyScalar2 + param) * 30.0f);
+        kd = worleyScalar1 * color1 + worleyScalar2 * color2; 
+        ks = kd; 
+      } SH_END;
+
+      worleysh = namedCombine(worleysh, worleysh2);
+      worleysh = namedConnect(worleysh, colorizer);
+      fsh = fsh << worleysh; 
+    }
+};
+
+OrganicWorley organic(false);
+PolkaDotWorley polka(false);
+LavaWorley lava(false);
+GiraffeWorley giraffe(false);
+CircuitWorley circuit(false);

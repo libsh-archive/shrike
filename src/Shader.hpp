@@ -11,7 +11,7 @@ public:
   virtual ~Shader();
   
   virtual bool init() = 0;
-  virtual void bind() = 0;
+  virtual void bind(); // binds vertex() and fragment()
 
   virtual SH::ShProgram fragment() = 0;
   virtual SH::ShProgram vertex() = 0;

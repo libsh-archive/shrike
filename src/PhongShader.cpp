@@ -13,7 +13,6 @@ public:
   ~PhongShader();
 
   bool init();
-  void bind();
 
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
@@ -43,12 +42,6 @@ bool PhongShader::init()
   
   fsh = ShKernelLib::shPhong<ShColor3f>() << diffuse << specular << exponent; 
   return true;
-}
-
-void PhongShader::bind()
-{
-  shBindShader(vsh);
-  shBindShader(fsh);
 }
 
 PhongShader the_phong_shader;

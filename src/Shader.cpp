@@ -10,6 +10,13 @@ Shader::~Shader()
 {
 }
 
+void Shader::bind() {
+  SH::ShProgram vsh = vertex();
+  SH::ShProgram fsh = fragment();
+  SH::shBindShader(vsh);
+  SH::shBindShader(fsh);
+}
+
 const std::string& Shader::name() const
 {
   return m_name;
