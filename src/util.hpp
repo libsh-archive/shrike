@@ -62,6 +62,16 @@ fresnel (
    ShAttrib1f eta
 );
 
+
+/** Compute the Beckmann's distribution function
+ */
+ShAttrib1f
+beckmann (
+  ShVector3f n,
+  ShVector3f h,
+  ShAttrib1f roughness
+);
+
 // TODO: reflect of point about plane should also be supported
 // but need ShPlane to be implemented first!
 

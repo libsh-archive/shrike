@@ -84,28 +84,29 @@ bool CookTorranceBeckmann::init()
     half = normalize(half);
 
     // Beckman's distribution function
-    ShAttrib1f normalDotHalf = (normal | half);
+    /*ShAttrib1f normalDotHalf = (normal | half);
     ShAttrib1f normalDotHalf2 = normalDotHalf * normalDotHalf;
-    ShAttrib1f roughness2 = roughness * roughness; // roughness fixed at 0.15
+    ShAttrib1f roughness2 = roughness * roughness;
     ShAttrib1f exponent = -(1 - normalDotHalf2) /
 	    (normalDotHalf2 * roughness2); // Compute the exponent value
     ShAttrib1f D = pow(M_E, exponent) /
 	    (roughness2 * normalDotHalf2*normalDotHalf2); // Compute the distribution function
+	    */
+    ShAttrib1f D = beckmann(normal, half, roughness);
 
     // Fresnel term
     ShAttrib1f F = fresnel(eye,normal,eta);
-    ShAttrib1f normalDotEye = (normal | eye);
-   // ShAttrib1f F = reflection + (1 - reflection) * pow(1 - normalDotEye , 5); 
 
     // self shadowing term
+    ShAttrib1f normalDotEye = (normal | eye);
     ShAttrib1f normalDotLight = (normal | light);
-    ShAttrib1f X = 2.0 * normalDotHalf / (eye | half);
+    ShAttrib1f X = 2.0 * (normal | half) / (eye | half);
     ShAttrib1f G = min(1.0, min(X * normalDotLight, X * normalDotEye));
 
-    ShAttrib1f CT = (D*F*G) / (normalDotEye * M_PI); // Compute Cook-Torrance lighting
+    ShAttrib1f CT = (D*F*G) / (normalDotLight * normalDotEye * M_PI); // Compute Cook-Torrance lighting
     
     ShAttrib3f specular = color * max(0.0, CT);
-    ShAttrib3f diffuse = color * max(0.0, normalDotLight);
+    ShAttrib3f diffuse = color * max(0.0, normalDotLight/M_PI);
     result = diffuse + specular;
     
   } SH_END;
@@ -199,18 +200,17 @@ bool CookTorranceBlinn::init()
 
     // Fresnel term
     ShAttrib1f F = fresnel(eye,normal,eta);
-    ShAttrib1f normalDotEye = (normal | eye);
-   // ShAttrib1f F = reflection + (1 - reflection) * pow(1 - normalDotEye , 5); 
 
     // self shadowing term
+    ShAttrib1f normalDotEye = (normal | eye);
     ShAttrib1f normalDotLight = (normal | light);
     ShAttrib1f X = 2.0 * normalDotHalf / (eye | half);
     ShAttrib1f G = min(1.0, min(X * normalDotLight, X * normalDotEye));
 
-    ShAttrib1f CT = (D*F*G) / (normalDotEye * M_PI); // Compute Cook-Torrance lighting
+    ShAttrib1f CT = (D*F*G) / (normalDotLight * normalDotEye * M_PI); // Compute Cook-Torrance lighting
     
     ShAttrib3f specular = color * max(0.0, CT);
-    ShAttrib3f diffuse = color * max(0.0, normalDotLight);
+    ShAttrib3f diffuse = color * max(0.0, normalDotLight/M_PI);
     result = diffuse + specular;
     
   } SH_END;

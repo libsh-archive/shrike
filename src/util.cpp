@@ -66,6 +66,25 @@ fresnel (
    return s + (1.0f - s)*pow((1.0f - c),5);
 }
 
+// Compute the Beckmann's distribution factor
+ShAttrib1f
+beckmann (
+   ShVector3f n,
+   ShVector3f h,
+   ShAttrib1f roughness
+) {
+   ShAttrib1f normalDotHalf = (n | h);
+   ShAttrib1f normalDotHalf2 = normalDotHalf * normalDotHalf;
+   ShAttrib1f roughness2 = roughness * roughness;
+   ShAttrib1f exponent = -(1 - normalDotHalf2) / 
+	   (normalDotHalf2 * roughness2); // Compute the exponent value
+   return pow(M_E, exponent) /
+	   (roughness2 * normalDotHalf2*normalDotHalf2); // Compute the distribution function
+}
+
+	
+
+   
 // TODO: reflect of point about plane should also be supported
 // but need ShPlane to be implemented first!
 
