@@ -9,6 +9,8 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 Globals.hpp Globals.cpp \
 		 Camera.hpp Camera.cpp \
 		 ShTrackball.hpp ShTrackball.cpp \
+		 GrView.hpp GrView.cpp \
+		 GrNode.hpp GrNode.cpp \
 		 DiffuseShader.cpp \
 		 DiscoShader.cpp \
 		 PhongShader.cpp \
@@ -24,7 +26,7 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 FrameMapping.cpp \
 		 Logo.cpp
 
-AM_CXXFLAGS = `${WX_CONFIG} --cxxflags` -Wall
-AM_CPPFLAGS = `${WX_CONFIG} --cppflags`
-shrike_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
-shrike_LDADD = -lsh -lshutil
+AM_CXXFLAGS = `${WX_CONFIG} --cxxflags` -Wall `freetype-config --cflags`
+AM_CPPFLAGS = `${WX_CONFIG} --cppflags` `freetype-config --cflags`
+shrike_LDFLAGS = `${WX_CONFIG} --libs --gl-libs` `freetype-config --libs`
+shrike_LDADD = -lsh -lshutil -lOGLFT -lfontconfig

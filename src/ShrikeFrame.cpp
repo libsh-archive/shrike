@@ -2,6 +2,7 @@
 #include <fstream>
 #include <wx/splitter.h>
 #include <sh/ShObjMesh.hpp>
+#include "GrView.hpp"
 #include "ShrikeFrame.hpp"
 #include "ShrikeCanvas.hpp"
 #include "Shader.hpp"
@@ -71,10 +72,11 @@ ShrikeFrame::ShrikeFrame()
 
   wxSplitterWindow* right_window = new wxSplitterWindow(hsplitter, -1);
   m_canvas = new ShrikeCanvas(right_window, model);
-  m_panel = new UniformPanel(right_window);
-  
+  m_panel = 0; //new UniformPanel(0);
+  GrView* grview = new GrView(right_window);
+
   hsplitter->SplitVertically(shaderList, right_window, 150);
-  right_window->SplitHorizontally(m_canvas, m_panel, -100);
+  right_window->SplitHorizontally(m_canvas, grview, -100);
   right_window->SetMinimumPaneSize(40);
 }
 
@@ -125,7 +127,7 @@ void ShrikeFrame::setShader(Shader* shader)
   if (shader) shader->bind();
   m_canvas->setShader(shader);
   m_canvas->render();
-  m_panel->setShader(shader);
+  if (m_panel) m_panel->setShader(shader);
   m_shader = shader;
 }
 
