@@ -60,11 +60,11 @@ bool Lafortune::init()
   ShColor3f SH_DECL(specular) = ShColor3f(0.5, 1.0, 1.0);
   ShColor3f SH_DECL(diffuse) = ShColor3f(1.0, 0.0, 0.0);
 	
-	ShAttrib3f SH_DECL(D) = ShAttrib3f(-1.0,1.0,1.0);
-	D.range(-10.0,10.0);
+	ShAttrib3f SH_DECL(D) = ShAttrib3f(0.0,0.0,1.0);
+	D.range(-5.0,5.0);
 	
   ShAttrib1f SH_DECL(exponent) = ShAttrib1f(35.0);
-  exponent.range(5.0f, 500.0f);
+  exponent.range(1.0f, 500.0f);
 
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputPosition4f posh;
@@ -82,12 +82,13 @@ bool Lafortune::init()
 		surface = normalize(surface);
     light = normalize(light);
 
-		ShVector3f lS = ShVector3f(D(0)*light|tangent, D(1)*light|surface, D(2)*light|normal);
+		ShVector3f lS = ShVector3f(light|tangent, light|surface, light|normal);
+		lS *= D;
 		ShVector3f vS = ShVector3f(view|tangent, view|surface, view|normal);
 				
     // Compute phong lighting.
     ShAttrib1f irrad = pos(normal | light);
-		result = diffuse*irrad + specular*pow((lS|vS), exponent);
+		result = diffuse*irrad + specular*pow(pos(lS|vS), exponent);
 		
   } SH_END;
   return true;
