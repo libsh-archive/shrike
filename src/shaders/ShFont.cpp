@@ -45,13 +45,18 @@
 #define BUFFERSIZE 256
 
 ShFont::ShFont()
-  : m_width(0), m_height(0), m_elements(0), m_edges(0), m_memory(0), m_edgenum(0)
+  : m_width(0), 
+    m_height(0), 
+    m_elements(0), 
+    m_edges(0), 
+    m_memory(0), 
+    m_edgenum(0)
 {
 }
 
 ShFont::~ShFont()
 {
-	// delete the memory allocated
+	// delete any memory allocated
 }
 
 int ShFont::width() const
@@ -122,17 +127,17 @@ void ShFont::loadFont(const std::string& filename)
 			for(int n=0; n<len; n++) {
 				read(ifile, &tindex, sizeof(int));
 				read(ifile, &tnum, sizeof(int));
-				//std::cout << "index : " << tindex << " num : " << tnum << std::endl;
+				std::cout << "index : " << tindex << " num : " << tnum << std::endl;
 				edgenum()[tindex] = (float)tnum;
 			
 				for(int l=0; l<m_edges; l++) {
 					for(int k=0; k<m_elements; k++){
 						read(ifile, &coord, sizeof(float));
-						//std::cout << coord << " " ;
+						std::cout << coord << " " ;
 						int index = n * m_elements + k;
 						coords(l)[index] = coord;
 					}
-					//std::cout << std::endl;
+					std::cout << std::endl;
 				}
 		
 			}
