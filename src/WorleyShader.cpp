@@ -208,7 +208,7 @@ class CircuitWorley: public WorleyShader {
       } SH_END;
 
       worleysh = namedCombine(worleysh, worleysh2);
-      worleysh = namedConnect(worleysh, colorizer);
+      worleysh = colorizer << worleysh;
       fsh = fsh << worleysh; 
     }
 };
