@@ -92,6 +92,8 @@ bool testHDR::init()
 
 	ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
 	scale.range(0.1,10.0);
+
+	ShAttrib2f SH_DECL(translation) = ShAttrib2f(0.0,0.0);
 	
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputPosition4f posh;
@@ -100,7 +102,7 @@ bool testHDR::init()
  
 		ShOutputColor3f result;
 		
-		ShVector4f interp = Img(scale*tc);
+		ShVector4f interp = Img(scale*tc + translation);
 
 		// display the image
 		level = pow (2, level + 2.47393);

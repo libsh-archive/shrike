@@ -53,26 +53,35 @@ public:
 	ToneMap(int width, int height, int depth) : parent_type(width, height, depth)
 	{}
 
+	
 	// compute a tone mapping factor
 	// see Ashikhmin's paper "A Tone Mapping Algorithm for High Contrast Images" for details
 	// a texture is used to save all the different values computed for each pixel
 	void updateToneMap() {
-		ShHostStoragePtr cursto =	shref_dynamic_cast<ShHostStorage>(memory()->findStorage("host"));
 		int width = m_node->width();
 		int height = m_node->height();
 		int stride = return_type::typesize;
-		ShHostMemoryPtr luminance = new ShHostMemory(width * height * stride * sizeof(float));
-		
+		ShHostStoragePtr cursto =	shref_dynamic_cast<ShHostStorage>(memory()->findStorage("host"));
 		float* data = (float*)cursto->data();
+		ShHostMemoryPtr luminance = new ShHostMemory(width * height * stride * sizeof(float));
+		/*
+		ShHostMemoryPtr luminance = Reduction(data, width, height);
+		width /=2;
+		height /=2;
 		float* lum = (float*)luminance->hostStorage()->data();
-		
+		luminance = Reduction(lum, width, height);
+		width /=2;
+		height /=2;
+		*/
+		float *lum = (float*)luminance->hostStorage()->data();
 		// compute the luminance of the image
+		int scalingFactor = m_node->width()/width;
 		for(int x=0 ; x<width ; x++) {
 			for(int y=0 ; y<height ; y++) {
+				//lum[(y*width + x)*stride] = 0.2126*lum[(y*width + x)*stride] + 0.7152*lum[(y*width + x)*stride + 1] + 0.0722*lum[(y*width +x )*stride +2];
 				lum[(y*width + x)*stride] = 0.2126*data[(y*width + x)*stride] + 0.7152*data[(y*width + x)*stride + 1] + 0.0722*data[(y*width +x )*stride +2];
 			}
 		}
-		
 		float maxlum=-10.0, minlum=10.0;
 		for(int x=0 ; x<width ; x++) {
 			for(int y=0 ; y<height ; y++) {
@@ -129,13 +138,16 @@ public:
 			maxlum = 16.5630 + (maxlum-1.0)/0.4027;
 		else
 			maxlum = 32.0693 + log(maxlum/7.2444)/0.0556;
-
 		for(int x=0 ; x<width ; x++) {
 			for(int y=0 ; y<height ; y++) {
 				float C = (lum[(y*width+x)*stride+2] - minlum) / (maxlum - minlum);
 				C /= lum[(y*width+x)*stride+1];
 				for(int e=0 ; e<stride ; e++) {
-					data[(y*width+x)*stride+e] = data[(y*width+x)*stride+e]*C;
+					for(int i=scalingFactor*x; i<scalingFactor*(x+1) ; i++) {
+						for(int j=scalingFactor*y; j<scalingFactor*(y+1) ; j++) {
+							data[(j*m_node->width()+i)*stride+e] *= C;
+						}
+					}
 				}
 			}
 		}
@@ -149,6 +161,65 @@ public:
 	return_type operator()(const ShTexCoord2f tc) const {
 		const T *bt = this;
 		return (*bt)(tc);
+	}
+
+private:
+	// use nearest neighbour the reduce the size of an image by 2
+	ShHostMemoryPtr Reduction(float *data, int width, int height) {
+		int doublewidth = width;
+		int stride = return_type::typesize;
+		
+		width /= 2;
+		height /= 2;
+		ShHostMemoryPtr reduc = new ShHostMemory(width * height * stride * sizeof(float));
+		float* reducdata = (float*)reduc->hostStorage()->data();
+	
+		for(int i=0 ; i<width ; i++) {
+			for(int j=0 ; j<height ; j++) {
+				for(int k=0 ; k<stride ; k++) {
+					reducdata[(j*width+i)*stride+k] = 0.25*(data[(2*j*doublewidth+2*i)*stride+k] + data[((2*j+1)*doublewidth+2*i)*stride+k] +
+																								  data[(2*j*doublewidth+2*i+1)*stride+k] + data[((2*j+1)*doublewidth+2*i+1)*stride+k]);
+				}
+			}
+		}
+		GaussianFilter(reducdata, width, height); // filter the reduced image
+		return reduc;
+	}
+
+	// apply a Gaussian filer on an image
+	void GaussianFilter(float* data, int width, int height) {
+		int stride = return_type::typesize;
+		float gauss[4] = {0.053991, 0.241971, 0.398942, 0.241971};
+		for(int i=0 ; i<width ; i++) {
+			for(int j=0 ; j<height ; j++) {
+				for(int k=0 ; k<stride ; k++) {
+					int min1 = i-1 < 0 ? 0 : i-1;
+					int min2 = i-2 < 0 ? 0 : i-2;
+					int max1 = i+1 > width-1 ? width-1 : i+1;
+					int max2 = i+2 > width-1 ? width-1 : i+2;
+					data[(j*width+i)*stride + k ] = gauss[0]*data[(j*width+min2)*stride+k]+
+		  																		gauss[1]*data[(j*width+min1)*stride+k]+
+																					gauss[2]*data[(j*width+i)*stride+k]+
+																					gauss[1]*data[(j*width+max1)*stride+k]+
+																					gauss[0]*data[(j*width+max2)*stride+k];
+				}
+			}
+		}
+		for(int i=0 ; i<width ; i++) {
+			for(int j=0 ; j<height ; j++) {
+				for(int k=0 ; k<stride ; k++) {
+					int min1 = j-1 < 0 ? 0 : j-1;
+					int min2 = j-2 < 0 ? 0 : j-2;
+					int max1 = j+1 > height-1 ? height-1 : j+1;
+					int max2 = j+2 > height-1 ? height-1 : j+2;
+					data[(j*width+i)*stride + k ] = gauss[0]*data[(min2*width+i)*stride+k]+
+																					gauss[1]*data[(min1*width+i)*stride+k]+
+																					gauss[2]*data[(j*width+i)*stride+k]+
+																					gauss[1]*data[(max1*width+i)*stride+k]+
+																					gauss[0]*data[(max2*width+i)*stride+k];
+				}
+			}
+		}
 	}
 };
 

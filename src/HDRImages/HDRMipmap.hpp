@@ -80,38 +80,37 @@ public:
 	}
 	
 	return_type operator[](const ShTexCoord2f tc) const {
-		ShAttrib2f u = tc;
+		ShAttrib2f u = fwidth(tc);
+		ShAttrib1f level = max(log2(SH::max(u(0),u(1))), 0.0);
+		u = tc;
 		if (m_node->traits().wrapping() == ShTextureTraits::SH_WRAP_REPEAT) {
 			u = size()*frac(u/size());
 		}
-		ShAttrib1f scale = pow(0.5,floor(m_level)); // cooompte the reduction factor
-		ShAttrib1f transition = frac(m_level);
+		ShAttrib1f scale = pow(0.5,floor(level)); // cooompte the reduction factor
+		ShAttrib1f transition = frac(level);
 		u *= scale; // reduce the size
 		ShAttrib2f u2 = 0.5*u + size()*ShAttrib2f(ShAttrib1f(1.0),0.5*scale); // coordinates for the next level
-		u = cond(m_level>=1.0, u+size()*ShAttrib2f(ShAttrib1f(1.0),scale), u);
+		u = cond(level>=1.0, u+size()*ShAttrib2f(ShAttrib1f(1.0),scale), u);
 		return (1.0-transition)*m_realtex[u] + transition*m_realtex[u2]; // do linear interpolation between the levels
 	}
 			
 	return_type operator()(const ShTexCoord2f tc) const {
-		ShAttrib2f u = tc;
+		ShAttrib2f u = fwidth(tc)*size();
+		ShAttrib1f level = max(log2(SH::max(u(0),u(1))), 0.0);
+		u = tc;
 		if (m_node->traits().wrapping() == ShTextureTraits::SH_WRAP_REPEAT) {
 			u = frac(u);
 		}
 		ShAttrib1f twothird(0.666666); // scale to the size of the original texture
 		u(0) *= twothird;
-		ShAttrib1f scale = pow(0.5,floor(m_level)); // compute the reduction factor
-		ShAttrib1f transition = frac(m_level);
+		ShAttrib1f scale = pow(0.5,floor(level)); // compute the reduction factor
+		ShAttrib1f transition = frac(level);
 		u *= scale; // reduce the size
 		ShAttrib2f u2 = 0.5*u + ShAttrib2f(twothird,0.5*scale); // coordinates for the next level
-		u = cond(m_level>=1.0, u+ShAttrib2f(twothird,scale), u); // translate to the right position
+		u = cond(level>=1.0, u+ShAttrib2f(twothird,scale), u); // translate to the right position
 		return (1.0-transition)*m_realtex(u) + transition*m_realtex(u2); // linear interpolation between the levels
 	}
 
-	// set the current layer to be rendered
-	void setLevel(ShAttrib1f level) {
-		m_level = level;
-	}
-	
 private:
 	void generateMipMap(float* texdata, int wstart, int hstart, int wend, int hend, int wnew, int hnew) {
 		int stride = return_type::typesize;
@@ -121,10 +120,12 @@ private:
 		for(int x=0 ; x<width ; x++) {
 			for(int y=0 ; y<height ; y++) {
 				for(int e=0 ; e<stride ; e++) {
+					int maxx = 2*x+1 < 2*width ? 2*x+1 : 2*width-1;
+					int maxy = 2*y+1 < 2*height ? 2*y+1 : 2*height-1;
 					texdata[((y+hnew)*m_realwidth + x+wnew)*stride + e] =	texdata[((2*y+hstart)*m_realwidth + 2*x+wstart)*stride + e] +
-																																texdata[((2*y+hstart)*m_realwidth + 2*x+1+wstart)*stride +e] +
-																																texdata[((2*y+1+hstart)*m_realwidth + 2*x+wstart)*stride +e] +
-																																texdata[((2*y+1+hstart)*m_realwidth + 2*x+1+wstart)*stride +e];
+																																texdata[((2*y+hstart)*m_realwidth + maxx+wstart)*stride +e] +
+																																texdata[((maxy+hstart)*m_realwidth + 2*x+wstart)*stride +e] +
+																																texdata[((maxy+hstart)*m_realwidth + maxx+wstart)*stride +e];
 					texdata[((y+hnew)*m_realwidth + x+wnew)*stride + e] /= 4;	
 				}
 			}
@@ -132,10 +133,10 @@ private:
 		if(width > 1 && height > 1) // generate smaller image with the data just computed
 			generateMipMap(texdata, wnew, hnew, wnew+width, hnew+height, wnew, height/2);
 	}
-
+	
   typename T::rectangular_type m_realtex; // the texture with the mipmap layers
 	int m_realwidth;
-	ShAttrib1f m_level; // current mipmap level
+
 };
 
 

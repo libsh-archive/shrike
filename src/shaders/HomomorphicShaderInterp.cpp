@@ -37,10 +37,10 @@ using namespace ShUtil;
 
 #include "util.hpp"
 
-class HomomorphicShader : public Shader {
+class HomomorphicShaderInterp : public Shader {
 public:
-  HomomorphicShader();
-  ~HomomorphicShader();
+  HomomorphicShaderInterp();
+  ~HomomorphicShaderInterp();
 
   bool init();
 
@@ -49,19 +49,19 @@ public:
 
   ShProgram vsh, fsh;
 
-  static HomomorphicShader instance;
+  static HomomorphicShaderInterp instance;
 };
 
-HomomorphicShader::HomomorphicShader()
-  : Shader("Homomorphic Factorization: Garnet Red: Simple")
+HomomorphicShaderInterp::HomomorphicShaderInterp()
+  : Shader("Homomorphic Factorization: Garnet Red: Interpolated")
 {
 }
 
-HomomorphicShader::~HomomorphicShader()
+HomomorphicShaderInterp::~HomomorphicShaderInterp()
 {
 }
 
-bool HomomorphicShader::init()
+bool HomomorphicShaderInterp::init()
 {
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
@@ -114,7 +114,7 @@ bool HomomorphicShader::init()
   qtex.memory(image.memory());
 
   image.loadPng(SHMEDIA_DIR "/brdfs/specular.png");
-  ShTexture2D<ShColor3f> stex(image.width(), image.height());
+  CubicBSplineInterp<ShTexture2D<ShColor3f> > stex(image.width(), image.height());
   stex.memory(image.memory());
 
   // these scale factors are specific to garnet red
@@ -177,6 +177,6 @@ bool HomomorphicShader::init()
 // are normalized more than once in the code, the final assembly should
 // only do it once.
 
-HomomorphicShader HomomorphicShader::instance = HomomorphicShader();
+HomomorphicShaderInterp HomomorphicShaderInterp::instance = HomomorphicShaderInterp();
 
 

@@ -133,17 +133,12 @@ public:
 
 		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
 		scale.range(0.1,10.0);
-
-		ShAttrib1f SH_DECL(mipmaplevel) = ShAttrib1f(0.0);
-		mipmaplevel.range(0.0,8.0);
-		mipmaplevel.name("mipmap level");
 	
 	  fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
 	    ShInputPosition4f posh;
 	    ShInputTexCoord2f tc;
 	    ShInputNormal3f normal;
 	 		tc *= scale;
-			MipMapImg.setLevel(mipmaplevel);
 			ShOutputAttrib4f result = MipMapImg(tc);
 		} SH_END;
 	
@@ -173,16 +168,11 @@ public:
 		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
 		scale.range(0.1,10.0);
 
-		ShAttrib1f SH_DECL(mipmaplevel) = ShAttrib1f(0.0);
-		mipmaplevel.range(0.0,8.0);
-		mipmaplevel.name("mipmap level");
-	
 	  fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
 	    ShInputPosition4f posh;
 	    ShInputTexCoord2f tc;
 	    ShInputNormal3f normal;
 	 		tc *= scale;
-			MipMapImg.setLevel(mipmaplevel);
 			ShOutputAttrib4f result = MipMapImg(tc);
 		} SH_END;
 	
@@ -212,16 +202,11 @@ public:
 		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
 		scale.range(0.1,10.0);
 
-		ShAttrib1f SH_DECL(mipmaplevel) = ShAttrib1f(0.0);
-		mipmaplevel.range(0.0,8.0);
-		mipmaplevel.name("mipmap level");
-	
 	  fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
 	    ShInputPosition4f posh;
 	    ShInputTexCoord2f tc;
 	    ShInputNormal3f normal;
 	 		tc *= scale;
-			MipMapImg.setLevel(mipmaplevel);
 			ShOutputAttrib4f result = MipMapImg(tc);
 		} SH_END;
 	
@@ -251,16 +236,11 @@ public:
 		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
 		scale.range(0.1,10.0);
 
-		ShAttrib1f SH_DECL(mipmaplevel) = ShAttrib1f(0.0);
-		mipmaplevel.range(0.0,8.0);
-		mipmaplevel.name("mipmap level");
-	
 	  fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
 	    ShInputPosition4f posh;
 	    ShInputTexCoord2f tc;
 	    ShInputNormal3f normal;
 	 		tc *= scale;
-			MipMapImg.setLevel(mipmaplevel);
 			ShOutputAttrib4f result = MipMapImg(tc);
 		} SH_END;
 	
@@ -290,17 +270,12 @@ public:
 
 		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
 		scale.range(0.1,10.0);
-
-		ShAttrib1f SH_DECL(mipmaplevel) = ShAttrib1f(0.0);
-		mipmaplevel.range(0.0,8.0);
-		mipmaplevel.name("mipmap level");
 	
 	  fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
 	    ShInputPosition4f posh;
 	    ShInputTexCoord2f tc;
 	    ShInputNormal3f normal;
 	 		tc *= scale;
-			MipMapImg.setLevel(mipmaplevel);
 			ShOutputAttrib4f result = MipMapImg(tc);
 		} SH_END;
 	

@@ -105,48 +105,54 @@ bool BrickHorizon::init()
 	intensity.name("shadow intensity");
 	intensity.range(0.1,10.0);
 
+	ShAttrib1f SH_DECL(noiseScale) = ShConstAttrib1f(0.15f);
+	noiseScale.range(0.0f, 1.0f);
+
+	ShAttrib1f SH_DECL(noiseFreq) = ShConstAttrib1f(20.0f);
+	noiseFreq.range(0.0f, 100.0f);
+
+	ShAttrib1f SH_DECL(noiseAmps) = ShConstAttrib1f(1.0f);	
+	noiseAmps.range(0.0f, 1.0f);
+
   // Create the bricks and the mortar between them
   ShProgram brickID = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputPosition4f pos;
 		ShInOutTexCoord2f tc;
-		ShOutputAttrib1f changeNorm;
 		ShInOutNormal3f normal;
 		ShOutputAttrib1f id; // define if the current point belongs to a brick or to the mortar
-    ShOutputAttrib1f changeColor; // used to generate different colors
 
     tc *= scale;
 		tc += 2*mortarsize;
-    changeNorm = 0.1*pos(0)*pos(1)*tc(0)*tc(1);
     tc(0) -= floor(tc(1))*offset; // change the horizontal position of a line
-    changeColor = abs(floor(tc(1))) * abs(floor(tc(0))); // change the color of each brick
     tc(1) -= floor(tc(1));
     tc(0) -= floor(tc(0));
+		
     id = min(abs(tc(0)) > 2*mortarsize(0), abs(tc(1)) > 2*mortarsize(1)); // limits of a brick
+		
   } SH_END;
 
 	/* Add bump-mapping to the wall
    * bricks and mortar are bumpmapped with some noise
    */
   ShProgram bumpmap = SH_BEGIN_PROGRAM("gpu:fragment") {
-		ShInputAttrib1f changeNorm;
+    ShInOutTexCoord2f tc;
     ShInOutNormal3f normal;
     
-    for(int i=0 ; i<2 ; i++) {
-      normal[i] += 0.05*cellnoise<1>(changeNorm, false); // add noise to make a rough surface
-    }
-	  //normal = normalize(normal); // normalize the new normal
+ 		ShVector3f TilePerturb = noiseScale * sperlin<3>(tc * noiseFreq, noiseAmps, true);
+		normal += lerp(ShAttrib1f(0.65), ShVector3f(0.0,0.0,0.0), TilePerturb);
+
+		normal = normalize(normal);
+		
   } SH_END;
 
 	/* Change the color of a brick
    * a noise function is used to add variations to the initial color
    */
   ShProgram brickModifier = SH_BEGIN_PROGRAM("gpu:fragment") {
-    ShInputAttrib1f changeColor;
+    ShInOutTexCoord2f tc;
     ShOutputColor3f brickVariations;  
-    for(int i=0 ; i<3 ; i++) {
-      brickVariations[i] = colorVariations(i) * cellnoise<1>(changeColor, false);
-    }
-    brickVariations += brick;
+		brickVariations = noiseScale * sperlin<3>(tc * noiseFreq, noiseAmps, true);
+		brickVariations = brick + lerp(ShAttrib1f(0.65), ShVector3f(0.0,0.0,0.0), brickVariations);
   } SH_END;
 
   /* Select the color to render in function of the id
@@ -155,9 +161,9 @@ bool BrickHorizon::init()
    */
   ShProgram select = SH_BEGIN_PROGRAM("gpu:fragment") {
 		ShInOutTexCoord2f tc;
+    ShInputColor3f brickVariations;
     ShInOutNormal3f normal;
     ShInputAttrib1f id;
-    ShInputColor3f brickVariations;
 		ShInOutVector3f tangent;
 		ShInOutVector3f surface;
     ShInOutVector3f light;
@@ -170,7 +176,6 @@ bool BrickHorizon::init()
     result = result * pos(normal | light);
          
   } SH_END;
-
 	
 	/* Add horizon mapping to the bricks
 	 */
@@ -204,7 +209,7 @@ bool BrickHorizon::init()
 		ShAttrib1f horizonLoc; // position of the horizon
 	
 		// create a horizon value for a brick, to make some "holes" in the surface
-		ShAttrib1f hole = 1.0-0.4*cellnoise<1>(10000*tc(0)*tc(1), false); 
+		ShAttrib1f hole = 1.0 - noiseScale * sperlin<1>(tc *2.0 * noiseFreq, noiseAmps, true);
 		
 		ShAttrib1f horizon1 = hole, horizon2 = hole, horizon3 = hole, horizon4 = hole,
 							 horizon5 = hole, horizon6 = hole, horizon7 = hole, horizon8 = hole;
@@ -304,15 +309,13 @@ bool BrickHorizon::init()
 		ShAttrib1f cosHorizon = b1*horizon1 + b2*horizon2 + b3*horizon3 + b4*horizon4 +
 														b5*horizon5 + b6*horizon6 +	b7*horizon7 + b8*horizon8;
 	
-
-		
 		ShAttrib1f x = abs(cosAngle-cosHorizon)*intensity;
 		shadow = ((pow(M_E, 2*x) - 1) / (pow(M_E, 2*x) + 1))*shadow; // use tanh to create soft shadows
 		result = cond( cosAngle>cosHorizon, result-shadow, result); // draw shadows in function of the angle
 
   } SH_END;
  
- fsh = horizonmapping << (select << (((keep<ShTexCoord2f>() & keep<ShNormal3f>() & keep<ShAttrib1f>() & brickModifier) << (keep<ShTexCoord2f>() & bumpmap & keep<ShAttrib1f>() & keep<ShAttrib1f>()) << brickID) & keep<ShVector3f>() & keep<ShVector3f>() & keep<ShVector3f>()));
+ fsh = horizonmapping << (select << (((brickModifier & keep<ShNormal3f>() & keep<ShAttrib1f>()) << (bumpmap & keep<ShAttrib1f>()) << brickID) & keep<ShVector3f>() & keep<ShVector3f>() & keep<ShVector3f>()));
   return true;
 }
 

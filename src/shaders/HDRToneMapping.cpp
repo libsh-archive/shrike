@@ -76,16 +76,10 @@ bool testToneMap::init()
 	Img.internal(true);
 	Img.memory(image.memory());
 	
-	ToneMap<MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > > ToneMapImg(image.width(), image.height());
+	ToneMap<ShUnclamped<ShTextureRect<ShVector4f> > > ToneMapImg(image.width(), image.height());
 	ToneMapImg.internal(true);
 	ToneMapImg.memory(image.memory());
 	ToneMapImg.updateToneMap();
-	ToneMapImg.updateMipMap();
-	
-	MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > MipMapImg(image.width(), image.height());
-	MipMapImg.internal(true);
-	MipMapImg.memory(image.memory());
-	MipMapImg.updateMipMap();
 	
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
@@ -117,7 +111,7 @@ bool testToneMap::init()
 		ShOutputColor3f result;
 		
 	 	tc *= scale;
-		ShVector4f interp = cond(tonemapping>0.5,ToneMapImg(tc),MipMapImg(tc));
+		ShVector4f interp = cond(tonemapping>0.5,ToneMapImg(tc),Img(tc));
 		
 		// display the image
 		level = pow (2, level + 2.47393);

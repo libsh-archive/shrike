@@ -442,4 +442,167 @@ public:
 
 };
 
+template<typename T>
+class SmoothSplineInterp : public T {
+public:
+  typedef T parent_type;
+	typedef typename T::return_type return_type;	
+  typedef typename T::base_type base_type;
+	typedef SmoothSplineInterp<typename T::rectangular_type> rectangular_type;
+	
+	SmoothSplineInterp() : parent_type()
+	{}
+
+	SmoothSplineInterp(int width) : parent_type(width)
+	{}
+
+	SmoothSplineInterp(int width, int height) : parent_type(width, height)
+	{}
+
+	SmoothSplineInterp(int width, int height, int depth) : parent_type(width, height, depth)
+	{}
+
+	void updateSmoothSpline(float lambda) {
+		int width = m_node->width();
+		int height = m_node->height();
+		int stride = return_type::typesize;
+    ShHostStoragePtr cursto =	shref_dynamic_cast<ShHostStorage>(memory()->findStorage("host"));
+    ShHostMemoryPtr newmem = new ShHostMemory(width * height * stride * sizeof(float));
+		T tmptex;
+    tmptex.memory(newmem);
+    tmptex.size(width, height);
+		float* olddata = (float*)cursto->data();
+		float* newdata = (float*)newmem->hostStorage()->data();
+		lambda /= -100.0;
+		float zp = 1.0 + 0.5/lambda - 0.5*sqrt(1.0+4*lambda)/lambda;
+		int k0 = 10;
+		float c0 = -1.0/lambda;
+		for (int e = 0; e < stride; e++) {
+		// clear the data
+	  	for (int y = 0; y < height; y++) {
+   	 		for (int x = 0; x < width; x++) {
+					newdata[(y*width)*stride+e] = 0.0;
+				}
+			}
+		// 1st step: boundary condition
+	  	for (int y = 0; y < height; y++) {
+   	 		for (int x = 0; x < k0; x++) {
+  				newdata[(y*width)*stride + e] +=	pow(zp,x) * olddata[(y*width + x)*stride + e];
+        }
+			}
+		// 2nd step: forward recursion
+  		for (int y = 0; y < height; y++) {
+   		 	for (int x = 1; x < width; x++) {
+  				newdata[(y*width + x)*stride + e] =	olddata[(y*width + x)*stride + e] + zp*newdata[(y*width + x-1)*stride + e];
+				}
+			}
+		// 3rd step: boundary condition
+  		for (int y = 0; y < height; y++) {
+ 				newdata[(y*width + width-1)*stride + e] =	-zp/(1.0-zp*zp)*(2.0*newdata[(y*width + width-1)*stride + e] - olddata[(y*width + width-1)*stride + e]);
+			}
+		// 4th step: backward recursion
+  		for (int y = 0; y < height; y++) {
+   		 	for (int x = width-2; x >= 0; x--) {
+  				newdata[(y*width + x)*stride + e] =	zp*(newdata[(y*width + x+1)*stride + e] - newdata[(y*width + x)*stride + e]);
+				}
+			}
+		// 5th step: scale by a constant
+  		for (int y = 0; y < height; y++) {
+   	 		for (int x = 0; x < width; x++) {
+					newdata[(y*width + x)*stride +e] *= c0;
+				}
+			}
+		
+		// the other direction
+		// clear the data
+	  	for (int y = 0; y < height; y++) {
+   	 		for (int x = 0; x < width; x++) {
+					olddata[(y*width)*stride+e] = 0.0;
+				}
+			}
+		// 1st step: boundary condition
+   	 	for (int x = 0; x < width; x++) {
+	  		for (int y = 0; y < k0; y++) {
+  				olddata[x*stride + e] +=	pow(zp,x) * newdata[(y*width + x)*stride + e];
+        }
+			}
+		// 2nd step: forward recursion
+   		for (int x = 0; x < width; x++) {
+  			for (int y = 1; y < height; y++) {
+  				olddata[(y*width + x)*stride + e] =	newdata[(y*width + x)*stride + e] + zp*olddata[((y-1)*width + x)*stride + e];
+				}
+			}
+		// 3rd step: boundary condition
+  		for (int x = 0; x < width; x++) {
+ 				olddata[((height-1)*width + x)*stride + e] =	-zp/(1.0-zp*zp)*(2.0*olddata[((height-1)*width + x)*stride + e] - newdata[((height-1)*width + x)*stride + e]);
+			}
+		// 4th step: backward recursion
+   		for (int x = 0; x < width; x++) {
+  			for (int y = height-2; y >= 0; y--) {
+  				olddata[(y*width + x)*stride + e] =	zp*(olddata[((y+1)*width + x)*stride + e] - olddata[(y*width + x)*stride + e]);
+				}
+			}
+		// 5th step: scale by a constant
+  		for (int y = 0; y < height; y++) {
+   	 		for (int x = 0; x < width; x++) {
+					olddata[(y*width + x)*stride +e] *= c0;
+				}
+			}
+		}
+		// no step 6: update because the data used for the second pass are the data to output
+	}
+	
+	return_type operator[](const ShTexCoord2f tc) const {
+		const T *bt = this;
+		ShAttrib2f fractc = frac(tc);
+		ShAttrib2f u = floor(tc);
+		ShAttrib2f oneone(1.0,1.0);
+		
+		ShAttrib4f dtc1 = ShConstAttrib4f(1.0, 1.0, 0.0, 0.0) + fractc(0, 1, 0, 1);
+		ShAttrib4f dtc2 = ShConstAttrib4f(1.0, 1.0, 2.0, 2.0) - fractc(0, 1, 0, 1);
+		ShAttrib4f dtc12 = dtc1 * dtc1;
+		ShAttrib4f dtc13 = dtc12 * dtc1;
+		ShAttrib4f dtc22 = dtc2 * dtc2;
+		ShAttrib4f dtc23 = dtc22 * dtc2;
+
+		// compute the coefficients of the 16 pixels used
+		ShAttrib2f h_1 = -dtc13(0,1);
+		h_1 = mad(8.0,oneone,h_1);
+		h_1 = mad(-12.0,dtc1(0,1),h_1);
+		h_1 = mad(6.0,dtc12(0,1),h_1);
+		ShAttrib2f h0 = 4.0*oneone;
+		h0 = mad(-6.0,dtc12(2,3),h0);
+		h0 = mad(3.0,dtc13(2,3),h0);
+		ShAttrib2f h1 = 4.0*oneone;
+		h1 = mad(-6.0,dtc22(0,1),h1);
+		h1 = mad(3.0,dtc23(0,1),h1);
+		ShAttrib2f h2 = -dtc23(2,3);
+		h2 = mad(8.0,oneone,h2);
+		h2 = mad(-12.0,dtc2(2,3),h2);
+		h2 = mad(6.0,dtc22(2,3),h2);
+
+		// clamp coordinates to the texture size to avoid artifacts with mip-mapping
+		ShAttrib2f limit = size() - oneone;
+		ShAttrib2f u_1 = u - oneone;
+		ShAttrib4f u12 = u(0,1,0,1) + ShConstAttrib4f(1.0,1.0,2.0,2.0);
+		u_1 = SH::max(ShAttrib2f(0.0,0.0),u_1);
+		u12 = SH::min(limit(0,1,0,1),u12);
+
+		return_type result = h_1(0) * (h_1(1) * (*bt)[u_1] + h0(1) * (*bt)[ShAttrib2f(u_1(0),u(1))] +
+												 					 h1(1) * (*bt)[ShAttrib2f(u_1(0),u12(1))] + h2(1) * (*bt)[ShAttrib2f(u_1(0),u12(3))]) +
+												 h0(0) * (h_1(1) * (*bt)[ShAttrib2f(u(0),u_1(1))] + h0(1) * (*bt)[u] +
+																	 h1(1) * (*bt)[ShAttrib2f(u(0),u12(1))] + h2(1) * (*bt)[ShAttrib2f(u(0),u12(3))]) +
+												 h1(0) * (h_1(1) * (*bt)[ShAttrib2f(u12(0),u_1(1))] + h0(1) * (*bt)[ShAttrib2f(u12(0),u(1))] +
+															  	 h1(1) * (*bt)[u12(0,1)] + h2(1) * (*bt)[ShAttrib2f(u12(0),u12(3))]) +
+												 h2(0) * (h_1(1) * (*bt)[ShAttrib2f(u12(2),u_1(1))] + h0(1) * (*bt)[ShAttrib2f(u12(2),u(1))] +
+					 												 h1(1) * (*bt)[ShAttrib2f(u12(2),u12(1))] + h2(1) * (*bt)[u12(2,3)]);
+		return 0.027777778*result; // 0.027777778 = 1/36
+	}
+			
+	return_type operator()(const ShTexCoord2f tc) const {
+		return operator[](tc*size());
+	}
+
+};
+
 #endif

@@ -73,10 +73,9 @@ bool testCubeMap::init()
 	HDRImage image;
 	std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
 	image.loadHDR(filename.c_str());
-	CubeMap<MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > > Img(image.width(), image.height());
+	CubeMap<ShUnclamped<ShTextureRect<ShVector4f> > > Img(image.width(), image.height());
 	Img.internal(true);
 	Img.memory(image.memory());
-	Img.updateMipMap();
 
 
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
@@ -107,10 +106,6 @@ bool testCubeMap::init()
 	ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
 	scale.range(0.1,10.0);
 
-	ShAttrib1f SH_DECL(mipmaplevel) = ShAttrib1f(0.0);
-	mipmaplevel.range(0.0,8.0);
-	mipmaplevel.name("mipmap level");
-	
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputPosition4f posh;
     ShInputTexCoord2f tc;
@@ -119,8 +114,7 @@ bool testCubeMap::init()
 		ShInputVector3f refl;
  
 		ShOutputColor3f result;
-
-		Img.setLevel(mipmaplevel);
+	
 		ShVector4f interp = Img(refl);
 
 		// display the image

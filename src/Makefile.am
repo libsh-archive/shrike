@@ -40,6 +40,7 @@ shrike_SOURCES += shaders/Pants.cpp
 shrike_SOURCES += shaders/EnvMapShader.cpp
 shrike_SOURCES += shaders/ShinyBumpMapShader.cpp
 shrike_SOURCES += shaders/HomomorphicShader.cpp
+shrike_SOURCES += shaders/HomomorphicShaderInterp.cpp
 shrike_SOURCES += shaders/SatinShader.cpp
 shrike_SOURCES += shaders/JeweledShader.cpp
 shrike_SOURCES += shaders/AlgebraShader.cpp
@@ -72,6 +73,7 @@ shrike_SOURCES += shaders/HDRToneMapping.cpp HDRImages/HDRTonemap.cpp
 shrike_SOURCES += shaders/HDRWrap.cpp
 shrike_SOURCES += shaders/CubeMap.cpp HDRImages/HDRCubeMap.hpp
 shrike_SOURCES += shaders/HDRLucite.cpp shaders/HDRGlass.cpp shaders/HDRShinyBumpMap.cpp
+shrike_SOURCES += shaders/EdgeDetection.cpp
 
 # this is a hack and should be removed eventually
 # shrike_SOURCES += DummyShader.cpp
@@ -100,4 +102,3 @@ shgenSBRDF_SOURCES = ShGenSBRDF.cpp HDRImages/HDRImage.cpp
 shgenSBRDF_CPPFLAGS = -IHDRImages
 shgenSBRDF_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
 shgenSBRDF_LDADD = -lsh -lshutil
-
