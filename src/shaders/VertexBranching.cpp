@@ -1,5 +1,4 @@
 #include <sh/sh.hpp>
-#include <sh/shutil.hpp>
 #include <iostream>
 #define GL_GLEXT_LEGACY
 #include <GL/gl.h>
@@ -9,7 +8,6 @@
 #include "Globals.hpp"
 
 using namespace SH;
-using namespace ShUtil;
 
 class VertexBranching : public Shader {
 public:
@@ -25,11 +23,14 @@ public:
 
   ShProgram vsh, fsh;
 
+  GLuint displayList;
+
   static VertexBranching instance;
 };
 
 VertexBranching::VertexBranching()
-  : Shader("Branching: Vertex Unit")
+  : Shader("Branching: Vertex Unit"),
+    displayList(0)
 {
 }
 
@@ -39,20 +40,35 @@ VertexBranching::~VertexBranching()
 
 void VertexBranching::render()
 {
-  int divs = 1000;
+  int divs = 500;
 
-  glBegin(GL_POINTS); {
-    for (int y = 0; y < divs; y++) for (int x = 0; x < divs; x++) {
-      float xpos = (float)x/(float)divs * 2.0 - 1.0;
-      float ypos = (float)y/(float)divs * 2.0 - 1.0;
-      float xtc = (float)x/(float)divs - 0.5;
-      float ytc = (float)y/(float)divs - 0.5;
+  if (!displayList) {
+    displayList = glGenLists(1);
 
-      glTexCoord2f(xtc, ytc);
-      glNormal3f(0.0, 0.0, 1.0);
-      glVertex3f(xpos, ypos, 0.0f);
+    glNewList(displayList, GL_COMPILE);
+    glNormal3f(0.0, 0.0, 1.0);
+    
+    for (int y = 0; y < divs; y++) {
+      glBegin(GL_QUAD_STRIP); {
+        for (int x = 0; x < divs; x++) {
+          float xpos = (float)x/(float)divs * 2.0 - 1.0;
+          float ypos = (float)y/(float)divs * 2.0 - 1.0;
+          float ypos2 = (float)(y+1)/(float)divs * 2.0 - 1.0;
+          float xtc = (float)x/(float)divs - 0.5;
+          float ytc = (float)y/(float)divs - 0.5;
+          float ytc2 = (float)(y+1)/(float)divs - 0.5;
+          
+          glTexCoord2f(xtc, ytc);
+          glVertex3f(xpos, ypos, 0.0f);
+          glTexCoord2f(xtc, ytc2);
+          glVertex3f(xpos, ypos2, 0.0f);
+        }
+      } glEnd();
     }
-  } glEnd();
+    glEndList();
+  }
+
+  glCallList(displayList);
 }
 
 bool VertexBranching::init()
@@ -105,10 +121,7 @@ bool VertexBranching::init()
   } SH_END;
   
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
-    ShInputColor3f color;
-    ShInputPosition4f posh;
-
-    ShOutputColor3f result = color;
+    ShInOutColor3f color; // pass through the color.
   } SH_END;
   return true;
 }

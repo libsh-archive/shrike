@@ -26,6 +26,7 @@ private:
   bool m_aa;
   static bool m_done_init;
   static ShAttrib1f m_frequency;
+  static ShColor3f m_color1, m_color2;
 };
 
 Checkerboard::Checkerboard(bool aa)
@@ -36,6 +37,9 @@ Checkerboard::Checkerboard(bool aa)
     // Initialize static variables
     m_frequency.name("Frequency");
     m_frequency.range(0.0, 10.0);
+
+    SH_NAME(m_color1);
+    SH_NAME(m_color2);
 
     m_done_init = true;
   }
@@ -62,9 +66,6 @@ bool Checkerboard::init()
   ShAttrib1f SH_DECL(scale) = 1.0;
   scale.range(1.0, 10.0);
   
-  ShColor3f SH_DECL(color1) = ShColor3f(0.0, 0.0, 0.0);
-  ShColor3f SH_DECL(color2) = ShColor3f(1.0, 1.0, 1.0);
-  ShColor3f SH_DECL(avgcolor) = ShColor3f(0.5, 0.5, 0.5);
   
   fsh = SH_BEGIN_FRAGMENT_PROGRAM {
     ShInputTexCoord2f tc;
@@ -77,6 +78,7 @@ bool Checkerboard::init()
     // pp. 350--351, Addison-Wesley.
     // The original is of course written in GLSL.
     if (m_aa) {
+      ShColor3f avgcolor = lerp(ShConstAttrib1f(0.5f), m_color1, m_color2);
       ShAttrib2f fw = fwidth(tc);
       ShAttrib2f fuzz = fw * m_frequency * 2.0;
       
@@ -85,11 +87,11 @@ bool Checkerboard::init()
       ShAttrib2f p = sstep(checkpos, 0.5f + fuzz * 0.5f, fuzz) +
         (1.0  - sstep(checkpos, 0.5f * fuzz, fuzz));
       
-      o = lerp(p(0)*p(1) + (1.0 - p(0)) * (1.0 - p(1)), color2, color1);
+      o = lerp(p(0)*p(1) + (1.0 - p(0)) * (1.0 - p(1)), m_color2, m_color1);
       o = lerp(sstep(fuzzMax, ShConstAttrib1f(0.3125), ShConstAttrib1f(0.375)), avgcolor, o);
     } else {
       o = lerp(checkpos(0)*checkpos(1) + (1.0 - checkpos(0))*(1.0 - checkpos(1)) >= 0.5,
-               color2, color1);
+               m_color2, m_color1);
     }
   } SH_END_PROGRAM;
   return true;
@@ -97,6 +99,8 @@ bool Checkerboard::init()
 
 bool Checkerboard::m_done_init = false;
 ShAttrib1f Checkerboard::m_frequency = ShAttrib1f(1.0);
+ShColor3f Checkerboard::m_color1 = ShColor3f(0.0, 0.0, 0.0);
+ShColor3f Checkerboard::m_color2 = ShColor3f(1.0, 1.0, 1.0);
 
 Checkerboard cb_with_aa = Checkerboard(true);
 Checkerboard cb_without_aa = Checkerboard(false);

@@ -258,12 +258,20 @@ public:
 
   void clicked(wxCommandEvent& event)
   {
-    wxColourDialog dialog(this);
 
+    wxColourData data;
+
+    
+    wxColour old(static_cast<unsigned char>(m_node->getValue(0) * 255.0),
+                 static_cast<unsigned char>(m_node->getValue(1) * 255.0),
+                 static_cast<unsigned char>(m_node->getValue(2) * 255.0));
+    
+    data.SetColour(old);
+    
+    wxColourDialog dialog(this, &data);
     if (dialog.ShowModal() == wxID_OK) {
       wxColourData& cd = dialog.GetColourData();
       wxColour& c = cd.GetColour();
-
       m_node->setValue(0, (float)c.Red()/255.0);
       m_node->setValue(1, (float)c.Green()/255.0);
       m_node->setValue(2, (float)c.Blue()/255.0);

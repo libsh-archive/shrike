@@ -1,3 +1,14 @@
+2004-07-13  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/shaders/Checkerboard.cpp: Compute average colour in the
+	shader, made colours static members.
+
+	* src/UniformPanel.cpp: Use previous colour in the colour dialogues.
+
+2004-07-12  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/shaders/VertexBranching.cpp: Added better geometry.
+
 2004-07-09  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/shaders/VertexBranching.cpp: Added shader to illustrate
