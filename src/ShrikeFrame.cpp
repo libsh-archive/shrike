@@ -22,7 +22,7 @@ BEGIN_EVENT_TABLE(ShrikeFrame, wxFrame)
 END_EVENT_TABLE()
 
 ShrikeFrame::ShrikeFrame()
-  : wxFrame(0, -1, "Shrike"),
+  : wxFrame(0, -1, "Shrike", wxDefaultPosition, wxSize(400, 600)),
     m_shader(0)
 {
   CreateStatusBar();
@@ -65,7 +65,8 @@ ShrikeFrame::ShrikeFrame()
   m_panel = new UniformPanel(right_window);
   
   hsplitter->SplitVertically(shaderList, right_window, 150);
-  right_window->SplitHorizontally(m_canvas, m_panel, 600);
+  right_window->SplitHorizontally(m_canvas, m_panel, -100);
+  right_window->SetMinimumPaneSize(40);
 }
 
 ShrikeFrame::~ShrikeFrame()
