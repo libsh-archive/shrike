@@ -34,6 +34,12 @@
 
 using namespace SH;
 
+/** The Gaussian Filter
+ *
+ * This class overloads a texture/table/array type
+ * and returns the gaussian filter of the data
+ *
+ */
 template<typename T>
 class GaussFilter : public T {
 public:
@@ -49,17 +55,16 @@ public:
 	
 	return_type operator[](const ShTexCoord2f tc) const {
 		const T *bt = this;
-    return_type result = fillcast<return_type::typesize>(ShAttrib1f(0.0)); // clear
-    for(int i=-m_filterWidth+1 ; i<m_filterWidth ; i++) {
+    return_type result = fillcast<return_type::typesize>(ShAttrib1f(0.0)); // clear 
+    for(int i=-m_filterWidth+1 ; i<m_filterWidth ; i++) { // for all the value in the filter width
       for(int j=-m_filterWidth+1 ; j<m_filterWidth ; j++) {
-        result = mad(m_filterCoeff[abs(i)][abs(j)], (*bt)[tc+ShAttrib2f((float)i,(float)j)], result);
+        result = mad(m_filterCoeff[abs(i)][abs(j)], (*bt)[tc+ShAttrib2f((float)i,(float)j)], result); // add the value with the corresponding coefficient
       }
     }
     return result;
 	}
 			
 	return_type operator()(const ShTexCoord2f tc) const {
-		const T *bt = this;
 		return operator[](tc*size());
 	}
 
@@ -77,22 +82,29 @@ private:
       for(int i=0 ; i<m_filterWidth ; i++) {
         m_filterCoeff[i] = new float[m_filterWidth];
         for(int j=0 ; j<m_filterWidth ; j++) {
-          m_filterCoeff[i][j] = linearCoeff[i]*linearCoeff[j]; // use the coeff in 1 direction to compute them for 2 directions
+          m_filterCoeff[i][j] = linearCoeff[i]*linearCoeff[j]; // use the coeff in one direction to compute them for 2 directions
         }
       }
     }
-    else
+    else // sigma = 0 means only 1 value is used
     {
        m_filterCoeff = new float*;
        m_filterCoeff[0] = new float;
        m_filterCoeff[0][0] = 1.0;
     }
   }
-  
-  float** m_filterCoeff;
-  int m_filterWidth;
+  float** m_filterCoeff; // the table with the coefficient
+  int m_filterWidth; // the size of the filter
 };
 
+
+
+/** The Anisotropic Diffusion filter
+ *
+ * This class overloads a texture/table/array type
+ * and returns the anisotropic diffusion of the data
+ *
+ */
 
 template<typename T>
 class AnisDiff : public T {
@@ -111,7 +123,7 @@ public:
 		const T *bt = this;
     ShVector4f distance(0.27,0.67,0.06,0.0); // the distance function is a comparison between the luminances
     return_type tex = (*bt)[tc];
-    return_type dist1 = (*bt)[tc+ShAttrib2f(0.0,1.0)] - tex;
+    return_type dist1 = (*bt)[tc+ShAttrib2f(0.0,1.0)] - tex; // distance between the point and the neighbours
     return_type dist2 = (*bt)[tc+ShAttrib2f(1.0,0.0)] - tex;
     return_type dist3 = (*bt)[tc-ShAttrib2f(0.0,1.0)] - tex;
     return_type dist4 = (*bt)[tc-ShAttrib2f(1.0,0.0)] - tex;

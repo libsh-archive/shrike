@@ -193,7 +193,7 @@ public:
 		std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
 		image.loadHDR(filename.c_str());
 
-		BicubicInterp<MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > > MipMapImg(image.width(), image.height());
+		CatmullRomInterp<MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > > MipMapImg(image.width(), image.height());
 		MipMapImg.internal(true);
 		MipMapImg.memory(image.memory());
 		MipMapImg.updateMipMap();

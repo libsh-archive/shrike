@@ -38,7 +38,9 @@ using namespace ShUtil;
 
 #include "util.hpp"
 
-
+/** the main class for the interpolatio examples
+  * all examples are derivated from this class
+  */
 class Interpolation : public Shader {
 public:
   Interpolation(std::string type);
@@ -49,7 +51,7 @@ public:
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
 
-	virtual void initInterp() = 0;
+	virtual void initInterp() = 0; // the fragment shader of the specific interpolations
 	
   ShProgram vsh, fsh;
 	ShProgram tonemapping;
@@ -80,8 +82,6 @@ bool Interpolation::init()
 		
     opos = Globals::mvp | ipos; // Compute NDC position
     onorm = Globals::mv | inorm; // Compute view-space normal
-
-		ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
   } SH_END;
 
 	ShAttrib1f SH_DECL(level) = ShAttrib1f(0.0);
@@ -93,7 +93,6 @@ bool Interpolation::init()
 		
 		// display the image
 		ShAttrib3f RGB = pow(2, level + 2.47393) * interp(0,1,2);
-		
 		ShAttrib1f f = 0.184874;
 		ShAttrib1f e = 2.718281828;
 		ShAttrib1f R = cond(RGB(0)>1.0, 1.0 + log2((RGB(0)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(0));
@@ -103,7 +102,6 @@ bool Interpolation::init()
 		R = pow(R,gammainv);
 		G = pow(G,gammainv);
 		B = pow(B,gammainv);
-		
 		result	= ShColor3f(R,G,B) * 0.285714286; // scale to get the correct range	(0.285714286=1/3.5)
 	} SH_END;
 
@@ -112,6 +110,8 @@ bool Interpolation::init()
   return true;
 }
 
+/** an example of the bilinear interpolation
+  */
 class LinearInterpolation: public Interpolation {
 public:
 	LinearInterpolation(): Interpolation("Linear") {};
@@ -151,11 +151,13 @@ public:
 
 LinearInterpolation LinearInterpolation::instance = LinearInterpolation();
 
-class CubicInterpolation: public Interpolation {
+/** an example of the Catmull-Rom interpolation
+  */
+class CatmullRomInterpolation: public Interpolation {
 public:
-	CubicInterpolation(): Interpolation("Catmull-Rom spline") {};
+	CatmullRomInterpolation(): Interpolation("Catmull-Rom spline") {};
 	
-	static CubicInterpolation instance;
+	static CatmullRomInterpolation instance;
 	
 	void initInterp() {
 		HDRImage image;
@@ -167,9 +169,9 @@ public:
 		Img.internal(true);
 		Img.memory(image.memory());
 	
-		BicubicInterp<ShUnclamped<ShTextureRect<ShVector4f> > > BicubImg(image.width(), image.height());
-		BicubImg.internal(true);
-		BicubImg.memory(image.memory());
+		CatmullRomInterp<ShUnclamped<ShTextureRect<ShVector4f> > > CatmullRomImg(image.width(), image.height());
+		CatmullRomImg.internal(true);
+		CatmullRomImg.memory(image.memory());
 
 		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
 		scale.range(0.1,10.0);
@@ -181,15 +183,18 @@ public:
 	    ShInputTexCoord2f tc;
 	    ShInputNormal3f normal;
 	 		tc *= scale;
-			ShOutputAttrib4f interp = cond(interpolation > 0.5, Img(tc), BicubImg(tc));
+			ShOutputAttrib4f interp = cond(interpolation > 0.5, Img(tc), CatmullRomImg(tc));
 		} SH_END;
 	
 		fsh = tonemapping << fsh;
 	}
 };
 
-CubicInterpolation CubicInterpolation::instance = CubicInterpolation();
+CatmullRomInterpolation CatmullRomInterpolation::instance = CatmullRomInterpolation();
 
+
+/**  an example of the B-Spline interpolation
+  */
 class BSplineInterpolation: public Interpolation {
 public:
 	BSplineInterpolation(): Interpolation("cubic B-spline") {};
@@ -229,6 +234,8 @@ public:
 
 BSplineInterpolation BSplineInterpolation::instance = BSplineInterpolation();
 
+/** an example of interpolation with cardinal splines
+  */
 class CardSplineInterpolation: public Interpolation {
 public:
 	CardSplineInterpolation(): Interpolation("cardinal Spline") {};
@@ -270,6 +277,9 @@ public:
 CardSplineInterpolation CardSplineInterpolation::instance = CardSplineInterpolation();
 
 
+/** an example of interpolation using smooth splines
+  * not derivated like the other classes because of the use of an update() function
+  */
 class SmoothSplineInterpolation : public Shader {
 public:
   SmoothSplineInterpolation();

@@ -31,18 +31,25 @@
 #include <string>
 #include <sh/sh.hpp>
 
+#define USE_GAUSSIAN 0
+
 using namespace SH;
 
-
+/** filters the data with a Gaussian filter
+  * by doing 2 passes, one vertical and one horizontal
+  */
 ShHostMemoryPtr GaussianFilter(float* data, int width, int height, int stride, int sigma) {
-  int filterWidth = 2*sigma+1;
+  int filterWidth = 2*sigma+1; // the size of the filter depends on sigma
 	float* horizontaldata = new float[width * height * stride];
-	ShHostMemoryPtr filter = new ShHostMemory(width * height * stride * sizeof(float));
+	ShHostMemoryPtr filter = new ShHostMemory(width * height * stride * sizeof(float)); // create the result space
 	float* verticaldata = (float*)filter->hostStorage()->data();
+  
+  // compute the coefficients
   float* gauss = new float[filterWidth];
 	for(int i=0 ; i<filterWidth ; i++) {
     gauss[i] = exp(-(float)i*i/(2.0*sigma*sigma)) / (sqrt(2.0*M_PI)*sigma);
   }
+  // horizontal
 	for(int i=0 ; i<width ; i++) {
 		for(int j=0 ; j<height ; j++) {
 			for(int k=0 ; k<stride ; k++) {
@@ -55,6 +62,7 @@ ShHostMemoryPtr GaussianFilter(float* data, int width, int height, int stride, i
   		}
   	}
 	}
+  // vertical
 	for(int i=0 ; i<width ; i++) {
 		for(int j=0 ; j<height ; j++) {
 			for(int k=0 ; k<stride ; k++) {
@@ -70,12 +78,16 @@ ShHostMemoryPtr GaussianFilter(float* data, int width, int height, int stride, i
   return filter;
 }
 
+
+/** returns the anisotropic diffusion filter of the data
+  */
 ShHostMemoryPtr AnisotropicDiffFilter(float* data, int width, int height, int stride, int t) {
 	ShHostMemoryPtr dist = new ShHostMemory(width * height * 2 * stride * sizeof(float));
 	float* distdata = (float*)dist->hostStorage()->data();
 	ShHostMemoryPtr filter = new ShHostMemory(width * height * stride * sizeof(float));
 	float* filterdata = (float*)filter->hostStorage()->data();
   while(t>0) {
+    // compute the distance between a point and its neighbour
     for(int i=0 ; i<width ; i++) {
       for(int j=0 ; j<height ; j++) {
         int iplus = i>width-2 ? width-1 : i+1;
@@ -86,6 +98,7 @@ ShHostMemoryPtr AnisotropicDiffFilter(float* data, int width, int height, int st
         }
       }
     }
+    // compute the luminance and the filter
     for(int i=0 ; i<width ; i++) {
       for(int j=0 ; j<height ; j++) {
         int iminus = i>1 ? i-1 : 0;
@@ -121,7 +134,9 @@ ShHostMemoryPtr AnisotropicDiffFilter(float* data, int width, int height, int st
   return filter;
 }
 
-
+/** shrink an image by a factor 2
+  * and then filter the result
+  */
 ShHostMemoryPtr Reduction(float *data, int width, int height, int stride, int sigma) {
 	int doublewidth = width;
 	width /= 2;
@@ -137,11 +152,18 @@ ShHostMemoryPtr Reduction(float *data, int width, int height, int stride, int si
 			}
 		}
 	}
-	//return GaussianFilter(reducdata, width, height, stride, sigma); // filter the reduced image
+#if (USE_GAUSSIAN)
+	return GaussianFilter(reducdata, width, height, stride, sigma); // filter the reduced image
+#else
 	return AnisotropicDiffFilter(reducdata, width, height, stride, sigma); // filter the reduced image
+#endif
 }
 
-
+/** define the tone-mapping operator presented by M. Ashikhmin
+  * the max and min of the luminance of a zone are computed
+  * then used to compute a logarithm scaling factor
+  * used on the data inside the zone used
+  */
 template<typename T>
 class AshikhminToneMap : public T {
 public:
@@ -150,33 +172,25 @@ public:
 	typedef typename T::base_type base_type;
 	typedef AshikhminToneMap<typename T::rectangular_type> rectangular_type;
 
-	AshikhminToneMap(): parent_type()
-  {}
+	AshikhminToneMap(): parent_type() {}
 
-	AshikhminToneMap(int width) : parent_type(width)
-	{}
+	AshikhminToneMap(int width) : parent_type(width) {}
 
-	AshikhminToneMap(int width, int height) : parent_type(width, height)
-	{}
+	AshikhminToneMap(int width, int height) : parent_type(width, height) {}
 
-	AshikhminToneMap(int width, int height, int depth) : parent_type(width, height, depth)
-	{}
+	AshikhminToneMap(int width, int height, int depth) : parent_type(width, height, depth) {}
 	
-	// compute a tone mapping factor
-	// see Ashikhmin's paper "A Tone Mapping Algorithm for High Contrast Images" for details
-	// a texture is used to save all the different values computed for each pixel
 	void updateToneMap() {
 		int width = m_node->width();
 		int height = m_node->height();
 		int stride = return_type::typesize;
 		ShHostStoragePtr cursto =	shref_dynamic_cast<ShHostStorage>(memory()->findStorage("host"));
 		float* data = (float*)cursto->data();
+    // reduce the image by a factor 2
 		ShHostMemoryPtr luminance = Reduction(data, width, height, stride, 1);
 		width /=2;
 		height /=2;
 		float* lum = (float*)luminance->hostStorage()->data();
-		//ShHostMemoryPtr luminance = new ShHostMemory(width * height * stride * sizeof(float));
-		//float *lum = (float*)luminance->hostStorage()->data();
 		
 		// compute the luminance of the image
 		int scalingFactor = m_node->width()/width;
@@ -200,12 +214,12 @@ public:
 					for(int i=-filter ; i<filter ; i++) {
 						for(int j=-filter ; j<filter ; j++) {
 							if(x+i>0 && x+i<width && y+j>0 && y+j<height) {
-								newlum += lum[((y+j)*width + x+i)*stride];
+								newlum += lum[((y+j)*width + x+i)*stride]; // add the new points
 								cmpt++;
 							}
 						}
 					}
-					newlum /= cmpt;
+					newlum /= cmpt; // to get the average
 					filter *= 2; // add more pixels too get the maximum size
 				}
 				// compute the capacity function for the min and the max value of the luminance
@@ -241,6 +255,8 @@ public:
 			maxlum = 16.5630 + (maxlum-1.0)/0.4027;
 		else
 			maxlum = 32.0693 + log(maxlum/7.2444)/0.0556;
+
+    // use the factor computed to scale the value
 		for(int x=0 ; x<width ; x++) {
 			for(int y=0 ; y<height ; y++) {
 				float C = (lum[(y*width+x)*stride+2] - minlum) / (maxlum - minlum);
@@ -258,16 +274,20 @@ public:
 	
 	return_type operator[](const ShTexCoord2f tc) const {
 		const T *bt = this;
-		return (*bt)[tc];
+		return (*bt)[tc]; // nothing special here
 	}
 			
 	return_type operator()(const ShTexCoord2f tc) const {
 		const T *bt = this;
-		return (*bt)(tc);
+		return (*bt)(tc); // nothing special here
 	}
 };
 
 
+/** define the tone-mapping operator introduced by Reinhard
+  * the data are scaled by a simple coefficient
+  * depending on the average luminosity of a disk
+  */
 template<typename T>
 class ReinhardToneMap : public T {
 public:
@@ -276,17 +296,13 @@ public:
 	typedef typename T::base_type base_type;
 	typedef ReinhardToneMap<typename T::rectangular_type> rectangular_type;
 
-	ReinhardToneMap() : parent_type()
-	{}
+	ReinhardToneMap() : parent_type()	{}
 
-	ReinhardToneMap(int width) : parent_type(width)
-	{}
+	ReinhardToneMap(int width) : parent_type(width)	{}
 
-	ReinhardToneMap(int width, int height) : parent_type(width, height)
-	{}
+	ReinhardToneMap(int width, int height) : parent_type(width, height)	{}
 
-	ReinhardToneMap(int width, int height, int depth) : parent_type(width, height, depth)
-	{}
+	ReinhardToneMap(int width, int height, int depth) : parent_type(width, height, depth)	{}
 
 	void updateToneMap() {
 		int width = m_node->width();
@@ -294,6 +310,7 @@ public:
 		int stride = return_type::typesize;
 		ShHostStoragePtr cursto =	shref_dynamic_cast<ShHostStorage>(memory()->findStorage("host"));
 		float* data = (float*)cursto->data();
+    // reduce the image by a factor 2
     ShHostMemoryPtr reduction =  Reduction(data, width, height, stride, 1);
     float *data2 = (float*)reduction->hostStorage()->data();
     width /= 2;
@@ -310,6 +327,7 @@ public:
 																		0.06*data2[(y*width + x)*stride + 2];
 			}
 		}
+    // for each point, compute the coeff and scale with it
 		for(int x=0 ; x<width ; x++) {
 			for(int y=0 ; y<height ; y++) {
 				float V1 = 100.0;
@@ -320,6 +338,7 @@ public:
 					V1=0.0;
 					V2=0.0;
 					float s2 = s*s;
+          // compute the luminance of the zones
 					for(int i=-(int)s ; i<=(int)s ; i++) {
 						for(int j=-(int)s ; j<=(int)s ; j++) {
 							if(x+i>=0 && x+i<width && y+j>=0 && y+j<height) {
@@ -331,6 +350,7 @@ public:
 					}
 					s *= 1.6;
 				}
+        // use the coeff found to scale the data
 				float Ld = 1.0 / (1.0 + V1) * 1.0 / a;
 				for(int i=scalingFactor*x; i<scalingFactor*(x+1) ; i++) {
 					for(int j=scalingFactor*y; j<scalingFactor*(y+1) ; j++) {

@@ -126,7 +126,8 @@ void HDRImage::saveEXR(const char filename[]) {
 }
 #endif
 
-// load a HDR file
+/** load a HDR file into an ShImage
+  */
 void HDRImage::loadHDR(const char filename[]) {
   FILE *f = fopen(filename, "rb");
   char line[2048], *g;
@@ -194,6 +195,8 @@ void HDRImage::loadHDR(const char filename[]) {
 	m_image = img;
 }
 
+/** write the data of an ShImage to a HDR file
+  */
 void HDRImage::saveHDR(const char filename[]) {
   FILE *f = fopen(filename, "wb");
   
@@ -276,6 +279,8 @@ void HDRImage::saveHDR(const char filename[]) {
 	fclose(f);
 }
 
+/** Compute the HDR cube map of a scene from a HDR probe file
+ */
 void HDRImage::CreateHDRCubeMap(const char filename[]) {
 	ShImage tmp = m_image;
 	ComputeCubeMap();
@@ -288,7 +293,8 @@ void HDRImage::CreateHDRCubeMap(const char filename[]) {
 	m_height = m_image.height();
 }
 
-// create a cubemap texture
+/** Create a ShImage with the data of the cube-map
+ */
 void HDRImage::ComputeCubeMap() {
 	ShImage img(m_width+4,3*m_height/2+6,4);
 	ShImage cur1(m_width,m_height,4); // used for the reduction of images
