@@ -493,7 +493,7 @@ void GrView::init()
   } SH_END;
   prg_inbetween->name("Interpolants");
   ShProgram prg_out_frg = SH_BEGIN_PROGRAM("gpu:fragment") {
-    ShInOutColor4f SH_DECL(color);
+    ShInOutColor3f SH_DECL(color);
   } SH_END;
   prg_out_frg->name("Outputs");
 
