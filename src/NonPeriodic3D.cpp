@@ -2,6 +2,7 @@
 #include <sh/shutil.hpp>
 #include <iostream>
 #include <sstream>
+#include <cmath>
 #include "Shader.hpp"
 #include "Globals.hpp"
 
@@ -34,66 +35,52 @@ NonPeriodic3D::~NonPeriodic3D()
 {
 }
 
-ShColor3f defcolor = ShColor3f(1.0f, 0.0f, 1.0f);
-ShColor3f color[3] = {ShColor3f(1.0f, 0.0f, 0.0f), ShColor3f(0.0f, 1.0f, 0.0f), ShColor3f(0.0f, 0.0f, 1.0f)};
+ShColor3f color[3] = {ShColor3f(1.0f, 0.2f, 0.2f), ShColor3f(0.2f, 1.0f, 0.2f), ShColor3f(0.2f, 0.2f, 1.0f)};
+ShAttrib1f edgewidth(0.05);
  
-ShPoint3f modPoint(ShPoint3f p)
+ShPoint3f modPoint(const ShPoint3f& p)
 {
-  return p - floor( p + ShAttrib3f(0.5,0.5,0.5) );
+  return frac(p + ShConstAttrib3f(0.5, 0.5, 0.5)) - ShConstAttrib3f(0.5,0.5,0.5);  
 }
 
-void testPlane(
-   ShVector3f body,
-   ShAttrib4f planecoord,
-   ShVector3f pt0,
-   ShPoint3f pt1,
-   ShColor3f col,
-   ShColor3f& C,
-   ShAttrib1f& best
-)
+void testPlane(const ShVector3f& body, const ShAttrib4f& plane, const ShPoint3f& pt, ShColor3f col,
+               ShColor3f& C, ShAttrib1f& best)
 {
-  ShVector3f plane = ShVector3f(planecoord(0), planecoord(1), planecoord(2));
-  ShPoint4f pt1p;
-  pt1p(0,1,2) = pt1;
-  pt1p(3) = 1.0;
-  ShAttrib1f t = -((planecoord | pt1p)) / (body | plane);
-  ShColor3f previous = C;
+  ShPoint4f pth;
+  pth(0,1,2) = pt;
+  pth(3) = 1.0;
+  ShAttrib1f t = -(plane | pth) / (body | plane(0,1,2));
   
-  ShPoint3f p = pt0 + t*body;
+  ShPoint3f p = pt + t*body;
 
   ShAttrib1f xmin = floor(p(1)+0.5)-0.5;
   ShAttrib1f ymin = floor(p(2)+0.5)-0.5;
   
-  ShAttrib1f dmax = body | ShVector3f(planecoord(3), -xmin, -ymin);
-  ShAttrib1f dmin = body | ShVector3f(planecoord(3), -xmin-1.0, -ymin-1.0);
-  ShAttrib1f my_d = -(body | pt0);
+  ShAttrib1f dmax = body | ShVector3f(plane(3), -xmin, -ymin);
+  ShAttrib1f dmin = body | ShVector3f(plane(3), -xmin-1.0, -ymin-1.0);
+  ShAttrib1f my_d = -(body | pt);
 
-  ShAttrib1f diff = min( fmod(p(1)+0.5, 1.0), fmod(p(2)+0.5, 1.0));
-  C = cond( diff<0.05, diff/0.05*col, col);
  
   ShAttrib1f ignore = max(max(p(1)<-0.5, p(1)>1.5), max(p(2)<-0.5, p(2)>1.5));
-  ignore = max(ignore,min(my_d>(dmin-1e-7), my_d<(dmax+1e-7)));
+  ignore = max(ignore, min(my_d>(dmin-1e-7), my_d<(dmax+1e-7)));
   ignore = max(ignore, t > best);
+
+  // Darken edges
+  ShAttrib1f diff = min(frac(p(1)+0.5), frac(p(2)+0.5));
+  col = min(diff/edgewidth, 1.0) * col;
   
-  C = cond( ignore, previous, C);
+  C = cond(ignore, C, col);
   best = cond(ignore, best, t);
 }
 
-ShColor3f testCube(
-  ShVector3f body,
-  ShPoint3f p
-)
+ShColor3f testCube(ShVector3f body, ShPoint3f p)
 {
   ShColor3f result;
   ShAttrib1f best = 100000.0;
 
-  result = ShColor3f(1.0, 1.0, 0.0);
- 
   for (int i = 0; i < 3; i++) {
-    ShAttrib4f plane = ShAttrib4f(1.0, 0.0, 0.0, -0.5);
-    testPlane( body, plane, (ShVector3f)p, p, color[i], result, best );
-    plane = ShAttrib4f(1.0, 0.0, 0.0, -1.5);
-    testPlane( body, plane, (ShVector3f)p, p, color[i], result, best );
+    testPlane(body, ShConstAttrib4f(1.0, 0.0, 0.0, -0.5), p, color[i], result, best);
+    testPlane(body, ShConstAttrib4f(1.0, 0.0, 0.0, -1.5), p, color[i], result, best);
     body = body(1,2,0);
     p = p(1,2,0);
   }
@@ -115,9 +102,11 @@ bool NonPeriodic3D::init()
   ShAttrib2f SH_DECL(scale) = ShAttrib2f(10.0, 10.0);
   scale.range(1.0, 100.0);
 
-  ShVector3f SH_DECL(body) = ShVector3f(1.0, 1.0, 1.0);
+  ShVector3f SH_DECL(body) = ShVector3f(M_PI/2.0, M_E/2.0, 1.0);
   body.name("plane orientation");
   body.range(0.0, 20.0);
+  edgewidth.name("Edge width");
+  edgewidth.range(0.0, 0.5);
 
   for (int i = 0; i < 3; i++) {
     std::ostringstream os;
@@ -131,11 +120,10 @@ bool NonPeriodic3D::init()
     ShInputTexCoord2f tc; // ignore texcoords
     
     ShOutputColor3f result;
-    
-    body = normalize(body);
 
     tc = scale*tc;
   
+    body = normalize(body);
     ShVector3f v1;
     v1[0] = 1.0/body(0);
     v1[1] = -1.0/body(1);
