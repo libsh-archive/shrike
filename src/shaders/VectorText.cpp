@@ -28,6 +28,7 @@
 #include <sh/shutil.hpp>
 #include <iostream>
 #include "Shader.hpp"
+#include "ShFont.hpp"
 #include "Globals.hpp"
 
 using namespace SH;
@@ -102,6 +103,59 @@ segdist (
     return r;
 }
 
+ShAttrib4f //< square distance, sign (plane equation), unnorm gradient vector
+segdist_t (
+    ShAttrib4f L,  //< line segment (0,1 point 0, 2,3 point 1)
+    ShPoint2f  x   //< test point
+) {
+    // compute 2D vector from first endpoint to x 
+    ShAttrib2f v = x - L(0,1);
+    // compute tangent  
+    ShAttrib2f d = L(2,3) - L(0,1);
+    // compute squared length of tangent
+    ShAttrib1f d2 = (d|d);
+    // compute t value of closest point on line
+    ShAttrib1f t = (v|d)/d2;
+    // clamp to range [0,1]
+    t = pos(t);
+    t = sat(t);
+    // compute point on line 
+    ShAttrib2f p = L(0,1) + t*d;
+
+    // configure return value
+    ShAttrib4f r;
+    // compute vector from p to x (is gradient)
+    r(2,3) = x - p;
+    // compute squared distance
+    r(0) = (r(2,3)|r(2,3));
+    // compute sign using plane equation; normal is (-d(1),d(0))
+    // r(1) = v(1)*d(0) - v(0)*d(1); (works fine for sign, bad pseudodistance)
+    r(1) = (v(1)*d(0) - v(0)*d(1))*rsqrt(d2);
+
+    return r;
+}
+
+ShAttrib4f //< signed distance, signed value (dist from line), gradient vector
+segdists (
+    ShAttrib4f L[],  //< line segments (0,1 point 0, 2,3 point 1)
+    int N,           // number of line segments
+    ShPoint2f  x    //< test point
+) {
+    ShAttrib4f r = segdist_t(L[0],x);
+    ShAttrib4f nr;
+    for (int i=1; i<N; i++) {
+       nr = segdist_t(L[i],x);
+       r = cond(nr(0) < r(0),nr,r);
+    }
+    // compute true distance from squared distance
+    r(0) = sqrt(r(0));  // is also length of gradient
+    // transfer sign 
+    r(0) = cond(r(1) < 0.0, -r(0), r(0));
+    // normalize gradient
+    r(2,3) = r(2,3)/r(0);
+    return r;
+}
+
   ShProgram vsh, fsh;
   
   int m_mode;
@@ -110,6 +164,7 @@ segdist (
   static ShAttrib1f m_scale;
   static ShVector2f m_offset;
   static ShAttrib1f m_fw;
+
   static ShAttrib2f m_thres;
   static ShColor3f m_color1, m_color2;
   static ShColor3f m_vcolor1, m_vcolor2;
@@ -148,6 +203,7 @@ VectorText::VectorText(int mode)
     m_size.name("size");
     m_size.range(0.0, 100.0);
 
+
     m_thres.name("threshold");
     m_thres.range(-1.0, 1.0);
 
@@ -170,13 +226,69 @@ bool VectorText::init()
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
+  ShFont font;
+  font.loadFont("/home/zqin/vector_graphics/tools/freetype/d.txt");
+
+  int width = font.width();
+  int height = font.height();
+  int edges = font.edges();
+  int elements = 4;
+
+  // textures for line segment endpoints
+  ShArray2D<ShAttrib4f> ftexture[edges];
+  for(int i=0; i<edges; i++) {
+	  ftexture[i].size(width, height);
+  	  ftexture[i].memory(font.memory(i));
+  }
+
+  // texture for number of edges
+  // not used for now, just for debugging
+  ShArray2D<ShAttrib1f> findex(width, height);
+  findex.memory(font.edge());
+
+  /*
+  //debug info
+  for(int i=0; i<height; i++) {
+	  for(int j=0; j<width; j++) {
+		  int num = (int)font.edgenum()[i*width+j];
+		  std::cerr << (i * width + j) << " " << num << " " << std::endl;
+
+		  for(int l=0; l<edges; l++) {
+			  for(int m=0; m<elements; m++) {
+				  int index = (i * width + j) * elements + m;
+				  std::cout << font.coords(l)[index] << " ";
+			  }
+			  std::cout << std::endl;
+		  }
+	  }
+  }
+
+
+  //debug info
+  for(int i=0; i<height; i++) {
+	  for(int j=0; j<width; j++) {
+		  int num = (int)font.edgenum()[i*width+j];
+		  if(!num) 
+		  	std::cerr << " " << " " << " ";
+		  else
+		  	std::cerr << " " << "*" << " ";
+	  }
+	  std::cout << std::endl;
+  }
+  */
+
+  std::cerr << " the image width is " << font.width() << std::endl;
+  std::cerr << " the image height is " << font.height() << std::endl;
+  std::cerr << " the image maxedge is " << font.edges() << std::endl;
+
+
+  /*
   // a test consisting of two contours (a letter A, actually)
-  const int N = 11;
-  // const int N = 22;
+  // const int N = 11;
   ShAttrib4f L[N];
 
-  /* DOESN'T WORK! Ambiguity in sign at acute vertices 
-   */
+  // DOESN'T WORK! Ambiguity in sign at acute vertices 
+   
   L[0] = ShAttrib4f(0.3,0.0,0.0,0.0);
   L[1] = ShAttrib4f(0.0,0.0,0.5,1.5);
   L[2] = ShAttrib4f(0.5,1.5,0.9,1.5);
@@ -184,10 +296,12 @@ bool VectorText::init()
   L[4] = ShAttrib4f(1.4,0.0,1.1,0.0);
   L[5] = ShAttrib4f(1.1,0.0,1.0,0.3);
   L[6] = ShAttrib4f(1.0,0.3,0.4,0.3);
+
   L[7] = ShAttrib4f(0.4,0.3,0.3,0);
   L[8] = ShAttrib4f(0.5,0.6,0.9,0.6);
   L[9] = ShAttrib4f(0.9,0.6,0.7,1.2);
   L[10] = ShAttrib4f(0.7,1.2,0.5,0.6);
+  */
   /* */
 
   // THE FIX:
@@ -195,8 +309,9 @@ bool VectorText::init()
   // Yes, this IS a really evil hack, but it's cheap computationally.
   // Still get good distance field, only slight rounding of corners,
   // since epsilon can be in last bit of precision...
-  const float eps = 0.0001;
+   const float eps = 0.0001;
   // const float xoff = 1.8;
+
   // const int ioff = 11;
   // const float xoff = 0.0;
   // const int ioff = 0;
@@ -212,31 +327,42 @@ bool VectorText::init()
   // L[ioff+9] = ShAttrib4f(xoff+0.9+eps,0.6,xoff+0.7+eps,1.2);
   // L[ioff+10] = ShAttrib4f(xoff+0.7-eps,1.2,xoff+0.5-eps,0.6);
 
+
   // a better fix: contract each line segment by epsilon.
   // this gives better angles for the pseudodistance (useful for
   // "sharp" miter rules).
-  for (int i=0; i<N; i++) {
-    ShVector2f d = normalize(L[i](2,3) - L[i](0,1));
-    L[i](0,1) += d * eps;
-    L[i](2,3) -= d * eps;
-  }
 
   fsh = SH_BEGIN_FRAGMENT_PROGRAM {
     ShInputTexCoord2f tc;
     ShOutputColor3f o;
 
     // transform texture coords (should be in vertex shader really, but)
-    ShAttrib2f x = (tc - m_offset) * m_size;
 
+    ShAttrib2f x = (tc - m_offset) * m_size;
+    ShAttrib4f L[edges];
+    for(int i=0; i<edges; i++) {
+    	L[i] = ftexture[i](x);
+    }
+
+    for (int i=0; i<edges; i++) {
+        ShVector2f d = normalize(L[i](2,3) - L[i](0,1));
+        L[i](0,1) += d * eps;
+        L[i](2,3) -= d * eps;
+    }
+  
+    /*
     // compute signed distance map
     ShAttrib4f r = segdist(L[0],x);
     ShAttrib4f nr;
-    for (int i=1; i<N; i++) {
+    for (int i=1; i<edges; i++) {
        nr = segdist(L[i],x);
        r = cond(nr(0) < r(0),nr,r);
     }
     // transfer sign
     r(0) = cond(r(1) < 0.0, -r(0), r(0));
+    */
+  
+    ShAttrib4f r = segdists(L,edges,x);
 
     switch (m_mode) {
       case 0: {
@@ -256,24 +382,29 @@ bool VectorText::init()
         o = lerp(p,m_color2,m_color1);
       } break;
       case 2: {
-        // aliased rendering
+        // aliased rendering;
+
         o = cond(r(0)+m_thres(0) > 0.0,m_color2,m_color1);
       } break;
       case 3: {
         // isotropically antialiased outline rendering
         ShAttrib2f fw = fwidth(x);
-        ShAttrib1f w = max(fw(0),fw(1))*m_fw;
+        ShAttrib1f w = max(fw(0),fw(1))*m_fw;;
+
         ShAttrib2f p;
 	p(0) = smoothstep(-w,w,r(0)+m_thres(0));
         p(1) = smoothstep(-w,w,-r(0)-m_thres(1));
         o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
       } break;
       case 4: {
-        // anisotropically antialiased outline rendering
-	ShAttrib2f fw;
+        // anisotropically antialiased outline rendering;
+
+	ShAttrib2f fw;;
+
 	fw(0) = dx(x) | r(2,3);
 	fw(1) = dy(x) | r(2,3);
 	ShAttrib1f w = length(fw)*m_fw;
+
         ShAttrib2f p;
 	p(0) = smoothstep(-w,w,r(0)+m_thres(0));
         p(1) = smoothstep(-w,w,-r(0)-m_thres(1));
@@ -282,7 +413,9 @@ bool VectorText::init()
       case 5: {
         // gradient visualization
         o = 0.5 * (r(2) + 1.0) * m_vcolor1 
-	  + 0.5 * (r(3) + 1.0) * m_vcolor2;
+	  + 0.5 * (r(3) + 1.0) * m_vcolor2;;
+
+
       } break;
       case 6: {
         // filter width visualization
@@ -291,11 +424,13 @@ bool VectorText::init()
       } break;
       case 7: {
         // isotropically antialiased pseudodistance outline rendering
-        ShAttrib2f fw = fwidth(x);
+        ShAttrib2f fw = fwidth(x);;
+
         ShAttrib1f w = max(fw(0),fw(1))*m_fw;
         ShAttrib2f p;
 	p(0) = smoothstep(-w,w,r(1)+m_thres(0));
-        p(1) = smoothstep(-w,w,-r(1)-m_thres(1));
+        p(1) = smoothstep(-w,w,-r(1)-m_thres(1));;
+
         o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
       } break;
       case 8: {
@@ -308,7 +443,8 @@ bool VectorText::init()
 	p(0) = smoothstep(-w,w,r(1)+m_thres(0));
         p(1) = smoothstep(-w,w,-r(1)-m_thres(1));
         o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
-      } break;
+      } break;;
+
       case 9: {
         // biased signed distance map visualization 
         o = (0.5 + r(0) * m_scale)(0,0,0) 
@@ -338,14 +474,15 @@ bool VectorText::init()
           * cond(r(1) >= 0.0,m_vcolor2,m_vcolor1);
       } break;
     }
+
   } SH_END_PROGRAM;
   return true;
 }
 
 bool VectorText::m_done_init = false;
 ShAttrib1f VectorText::m_scale = ShAttrib1f(6.0);
-ShVector2f VectorText::m_offset = ShVector2f(0.13,0.13);
-ShAttrib1f VectorText::m_size = ShAttrib1f(2.0);
+ShVector2f VectorText::m_offset = ShVector2f(0,0);
+ShAttrib1f VectorText::m_size = ShAttrib1f(1);
 ShAttrib1f VectorText::m_fw = ShAttrib1f(1.0);
 ShAttrib2f VectorText::m_thres = ShAttrib2f(0.0,0.05);
 ShColor3f VectorText::m_color1 = ShColor3f(0.0, 0.0, 0.0);

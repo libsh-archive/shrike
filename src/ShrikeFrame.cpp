@@ -166,7 +166,7 @@ ShrikeFrame::ShrikeFrame()
   ShObjMesh* model = 0;
 
   // TODO: FIXME
-  std::ifstream infile(SHMEDIA_DIR "/objs/sphere50.obj");
+  std::ifstream infile(SHMEDIA_DIR "/objs/plane5.obj");
   if (infile) {
     model = new ShObjMesh(infile);
   }
