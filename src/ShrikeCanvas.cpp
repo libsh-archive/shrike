@@ -109,16 +109,21 @@ ShrikeCanvas::ShrikeCanvas(wxWindow* parent, ShObjMesh* model)
     m_bg(0.2, 0.2, 0.2)
 {
   m_instance = this;
+
   Globals::mv.internal(true);
   Globals::mvp.internal(true);
+  Globals::mv_inverse.internal(true);
   Globals::lightPos.internal(true);
   Globals::lightDirW.internal(true);
   Globals::lightLenW.internal(true);
+
   Globals::mv.name("mv");
   Globals::mvp.name("mvp");
+  Globals::mv_inverse.name("mv_inverse");
   Globals::lightPos.name("lightPos");
   Globals::lightDirW.name("lightDirW");
   Globals::lightLenW.name("lightLenW");
+
   resetView();
 }
 

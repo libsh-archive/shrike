@@ -66,6 +66,7 @@ bool GlassShader::init()
   test_image.loadPng(std::string(SHMEDIA_DIR "/envmaps/aniroom/") + imageNames[0] + ".png");
 
   ShTextureCube<ShColor4f> cubemap(test_image.width(), test_image.height());
+  cubemap.name("cubemap");
   {
     for (int i = 0; i < 6; i++) {
       ShImage image;
@@ -74,46 +75,48 @@ bool GlassShader::init()
     }
   }
 
-  ShAttrib1f theta = ShAttrib1f(1.3f);
-  theta.name("relative indices of refraction");
-  theta.range(0.0f,2.0f);
+  ShAttrib1f SH_DECL(eta) = ShAttrib1f(1.3f);
+  eta.title("relative index of refraction");
+  eta.range(0.0f,2.0f);
 
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
-    ShInputPosition4f ipos;
-    ShInputNormal3f inorm;
+    ShInputPosition4f SH_DECL(ipos);
+    ShInputNormal3f SH_DECL(inorm);
     
-    ShOutputPosition4f opos; // Position in NDC
-    ShOutputNormal3f onorm;  // view-space normal
-    ShOutputVector3f reflv; // Compute reflection vector
-    ShOutputVector3f refrv; // Compute refraction vector
-    ShOutputAttrib1f fres; // Compute fresnel term
+    ShOutputPosition4f SH_DECL(opos); // Position in NDC
+    ShOutputNormal3f SH_DECL(onorm);  // view-space normal
+    ShOutputVector3f SH_DECL(reflv); // Compute reflection vector
+    ShOutputVector3f SH_DECL(refrv); // Compute refraction vector
+    ShOutputAttrib1f SH_DECL(fres); // Compute fresnel term
 
     opos = Globals::mvp | ipos; // Compute NDC position
     onorm = Globals::mv | inorm; // Compute view-space normal
     onorm = normalize(onorm);
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
-    ShVector3f viewv = -normalize(posv); // Compute view vector
+    ShPoint3f SH_DECL(posv) = (Globals::mv | ipos)(0,1,2); // Compute view-space position
+    ShVector3f SH_DECL(viewv) = -normalize(posv); // Compute view vector
 
     reflv = reflect(viewv,onorm); // Compute reflection vector
-    refrv = refract(viewv,onorm,theta); // Compute refraction vector
-    fres = fresnel(viewv,onorm,theta); // Compute fresnel term
+    refrv = refract(viewv,onorm,eta); // Compute refraction vector
+    fres = fresnel(viewv,onorm,eta); // Compute fresnel term
 
     // actually do reflection and refraction lookup in model space
     reflv = Globals::mv_inverse | reflv;
     refrv = Globals::mv_inverse | refrv;
   } SH_END;
+  vsh.name("GlassShader::vsh");
   
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
-    ShInputPosition4f posh;
-    ShInputNormal3f n;  // normal
-    ShInputVector3f reflv; // Compute reflection vector
-    ShInputVector3f refrv; // Compute refraction vector
-    ShInputAttrib1f fres; // Compute fresnel term
+    ShInputPosition4f SH_DECL(posh);
+    ShInputNormal3f SH_DECL(n);  // normal
+    ShInputVector3f SH_DECL(reflv); // Compute reflection vector
+    ShInputVector3f SH_DECL(refrv); // Compute refraction vector
+    ShInputAttrib1f SH_DECL(fres); // Compute fresnel term
 
-    ShOutputColor3f result;
+    ShOutputColor3f SH_DECL(result);
     
     result = fres*cubemap(reflv)(0,1,2) + (1.0f-fres)*cubemap(refrv)(0,1,2); 
   } SH_END;
+  fsh.name("GlassShader::fsh");
 
   return true;
 }
