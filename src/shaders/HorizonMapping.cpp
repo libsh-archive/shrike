@@ -36,9 +36,9 @@ HorizonMapping::~HorizonMapping()
 bool HorizonMapping::init()
 {
   ShImage image, horizmap1, horizmap2, dirmap1, dirmap2;
-  image.loadPng(SHMEDIA_DIR "/horizonmaps/singlebump.png");
-  horizmap1.loadPng(SHMEDIA_DIR "/horizonmaps/singlebump_horizon1.png");
-  horizmap2.loadPng(SHMEDIA_DIR "/horizonmaps/singlebump_horizon2.png");
+  image.loadPng(SHMEDIA_DIR "/horizonmaps/cross.png");
+  horizmap1.loadPng(SHMEDIA_DIR "/horizonmaps/cross_horizon1.png");
+  horizmap2.loadPng(SHMEDIA_DIR "/horizonmaps/cross_horizon2.png");
   
   ShTexture2D<ShVector3f> bump(image.width(),image.height());
   bump.memory(image.memory());
@@ -69,6 +69,7 @@ bool HorizonMapping::init()
 	ShColor3f SH_DECL(diffuse) = ShColor3f(1.0,0.0,0.0);
   ShAttrib3f SH_DECL(scale) = ShAttrib3f(2.0,2.0,1.0);
   scale.range(0.0f,20.0f);
+	
 	ShAttrib1f SH_DECL(intensity) = ShAttrib1f(10.0);
 	intensity.name("shadow intensity");
 	intensity.range(1.0,30.0);
@@ -112,7 +113,7 @@ bool HorizonMapping::init()
     lt = lightS(0); // cos(phi)
 		ls = lightS(1); // sin(phi)
 
-		ShAttrib1f b = (2*lt*lt-1); // 2*cos(phi)*cos(phi)-1
+		ShAttrib1f b = 2*lt*lt-1; // 2*cos(phi)*cos(phi)-1
     ShAttrib1f bb = b*b;
 		
 		ShAttrib2f b1,b2,b3,b4,b5,b6,b7,b8; // the basis functions used to blend
@@ -177,8 +178,8 @@ ViewHorizonMaps::~ViewHorizonMaps()
 bool ViewHorizonMaps::init()
 {
   ShImage horizmap1, horizmap2;
-  horizmap1.loadPng(SHMEDIA_DIR "/horizonmaps/singlebump_horizon1.png");
-  horizmap2.loadPng(SHMEDIA_DIR "/horizonmaps/singlebump_horizon2.png");
+  horizmap1.loadPng(SHMEDIA_DIR "/horizonmaps/bricks_horizon1.png");
+  horizmap2.loadPng(SHMEDIA_DIR "/horizonmaps/bricks_horizon2.png");
   
 	ShTexture2D<ShColor4f> horizon1(horizmap1.width(), horizmap1.height());
   horizon1.memory(horizmap1.memory());

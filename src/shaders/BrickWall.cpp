@@ -17,10 +17,10 @@ ShAttrib1f tanh( ShAttrib1f x) {
 	
 
 
-class BrickID : public Shader {
+class BrickWall : public Shader {
 public:
-  BrickID();
-  ~BrickID();
+  BrickWall();
+  ~BrickWall();
 
   bool init();
 
@@ -29,19 +29,19 @@ public:
 
   ShProgram vsh, fsh;
 
-  static BrickID instance;
+  static BrickWall instance;
 };
 
-BrickID::BrickID()
-  : Shader("Tiling: Brick Wall")
+BrickWall::BrickWall()
+  : Shader("Brick Wall: Brick Wall")
 {
 }
 
-BrickID::~BrickID()
+BrickWall::~BrickWall()
 {
 }
 
-bool BrickID::init()
+bool BrickWall::init()
 {
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
@@ -179,4 +179,4 @@ bool BrickID::init()
   return true;
 }
 
-BrickID BrickID::instance = BrickID();
+BrickWall BrickWall::instance = BrickWall();

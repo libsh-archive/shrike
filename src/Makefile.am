@@ -46,6 +46,7 @@ shrike_SOURCES += shaders/LuciteShader.cpp
 shrike_SOURCES += shaders/CookTorrance.cpp
 shrike_SOURCES += shaders/Banks.cpp
 shrike_SOURCES += shaders/BrickWall.cpp
+shrike_SOURCES += shaders/BrickHorizon.cpp
 shrike_SOURCES += shaders/HorizonMapping.cpp
 shrike_SOURCES += shaders/HairFibers.cpp
 
