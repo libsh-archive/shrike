@@ -241,7 +241,7 @@ bool FrameMapping::init()
 {
 #if (IMG_TEXTURE)
   ShImage texImg;
-  texImg.loadPng(SHMEDIA_DIR "/textures/foil.png");
+  texImg.loadPng(SHMEDIA_DIR "/textures/abcd.png");
   int w, h;
   FrameMap fmap = genFrameMap(texImg, w, h);
   ShAttrib2f texDim = ShAttrib2f(w, h);
