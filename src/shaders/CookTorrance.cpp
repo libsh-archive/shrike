@@ -90,16 +90,16 @@ bool CookTorranceBeckmann::init()
     ShAttrib1f F = fresnel(eye,normal,eta);
 
     // self shadowing term
-    ShAttrib1f normalDotEye = (normal | eye);
-    ShAttrib1f normalDotLight = (normal | light);
-    ShAttrib1f X = 2.0 * (normal | half) / (eye | half);
+    ShAttrib1f normalDotEye = pos(normal | eye);
+    ShAttrib1f normalDotLight = pos(normal | light);
+    ShAttrib1f X = 2.0 * pos(normal | half) / pos(eye | half);
     ShAttrib1f G = min(1.0, min(X * normalDotLight, X * normalDotEye));
 
     ShAttrib1f CT = (D*F*G) / (normalDotLight * normalDotEye * M_PI); // Compute Cook-Torrance lighting
     
     ShAttrib3f specular = color * max(0.0, CT);
     ShAttrib3f diffuse = color * max(0.0, normalDotLight/M_PI);
-    result = diffuse + specular;
+		result = diffuse + specular;
     
   } SH_END;
   return true;
@@ -191,9 +191,9 @@ bool CookTorranceBlinn::init()
     ShAttrib1f F = fresnel(eye,normal,eta);
 
     // self shadowing term
-    ShAttrib1f normalDotEye = (normal | eye);
-    ShAttrib1f normalDotLight = (normal | light);
-    ShAttrib1f X = 2.0 * normalDotHalf / (eye | half);
+    ShAttrib1f normalDotEye = pos(normal | eye);
+    ShAttrib1f normalDotLight = pos(normal | light);
+    ShAttrib1f X = 2.0 * normalDotHalf / pos(eye | half);
     ShAttrib1f G = min(1.0, min(X * normalDotLight, X * normalDotEye));
 
     ShAttrib1f CT = (D*F*G) / (normalDotLight * normalDotEye * M_PI); // Compute Cook-Torrance lighting
