@@ -120,15 +120,22 @@ public:
     : wxMenu(title.c_str(), style),
       m_port(port)
   {
-    Append(1, "Monitor");
+    if (!m_port->in()) {
+      if (m_port->monitor()) {
+        Append(1, "Unmonitor");
+      } else {
+        Append(1, "Monitor");
+      }
+    }
   }
   
   void select(wxCommandEvent& event)
   {
     if (event.GetId() == 1) {
       if (m_port->monitor()) {
+        destroy(m_port->monitor());
       } else {
-        GrMonitor* monitor = new GrMonitor(m_port->global_x(), m_port->global_y());
+        GrMonitor* monitor = new GrMonitor(m_port);
         m_port->monitor(monitor);
         m_port->parent()->view()->addMonitor(monitor);
       }
@@ -313,4 +320,10 @@ void unjoin(GrPort* a, GrPort* b)
       break;
     }
   }
+}
+
+void GrPort::move(double x, double y)
+{
+  if (m_monitor) m_monitor->moveBy(x - m_x, y - m_y);
+  m_x = x; m_y = y;
 }

@@ -91,7 +91,7 @@ void GrView::layout()
 
     GrNode* node = *(m_nodes.begin() + index);
     node->moveTo(x - node->width()/2.0,
-                 y - node->height()/2.0);
+                 -y - node->height()/2.0);
   }
 
   

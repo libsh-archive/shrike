@@ -43,7 +43,7 @@ public:
   static void draw_edge(double x_from, double y_from,
                         double x_to, double y_to);
 
-  void move(double x, double y) { m_x = x; m_y = y; }
+  void move(double x, double y);
   
   double global_x() const;
   double global_y() const;

@@ -20,6 +20,7 @@
 #include "GrProgramMenu.hpp"
 
 #include "ShrikeFrame.hpp"
+#include "ShrikeCanvas.hpp"
 
 using namespace SH;
 
@@ -58,8 +59,10 @@ GrView::GrView(wxWindow* parent)
     m_zoom(1.0),
     tx(0.0), ty(0.0),
     m_font(0),
-    m_selected(0),
-    m_connecting(0)
+    m_selected_node(0),
+    m_selected_monitor(0),
+    m_connecting(0),
+    m_drawing_monitors(false)
 {
   FcInit();
 
@@ -127,9 +130,11 @@ void GrView::paint()
     GrPort::draw_edge(m_current_edge.x_from, m_current_edge.y_from, m_current_edge.x_to, m_current_edge.y_to);
   }
 
+  m_drawing_monitors = true;
   for (MonitorList::iterator I = m_monitors.begin(); I != m_monitors.end(); ++I) {
     (*I)->draw();
   }
+  m_drawing_monitors = false;
   
   SwapBuffers();
 }
@@ -155,10 +160,25 @@ void GrView::motion(wxMouseEvent& event)
     changed = true;
   }
 
-  if (event.LeftIsDown() && m_selected) {
+  if (event.LeftIsDown() && m_selected_node) {
     double x, y, z;
     unproject(cur_x, m_height - cur_y, x, y, z);
-    m_selected->moveTo(x + m_sel_dx, y + m_sel_dy);
+    double diffx = x + m_sel_dx - m_selected_node->x();
+    double diffy = y + m_sel_dy - m_selected_node->y();
+    m_selected_node->moveTo(x + m_sel_dx, y + m_sel_dy);
+    for (GrNode::PortList::iterator I = m_selected_node->outputs_begin();
+         I != m_selected_node->outputs_end(); ++I) {
+      GrPort* port = *I;
+      if (port->monitor()) {
+        port->monitor()->moveBy(diffx, diffy);
+      }
+    }
+    changed = true;
+  }
+  if (event.LeftIsDown() && m_selected_monitor) {
+    double x, y, z;
+    unproject(cur_x, m_height - cur_y, x, y, z);
+    m_selected_monitor->moveTo(x + m_sel_dx, y + m_sel_dy);
     changed = true;
   }
   if (event.LeftIsDown() && m_connecting) {
@@ -216,6 +236,11 @@ void GrView::addMonitor(GrMonitor* monitor)
   m_monitors.push_back(monitor);
 }
 
+void GrView::removeMonitor(GrMonitor* monitor)
+{
+  m_monitors.remove(monitor);
+}
+
 int GrView::addPicker(PickType type, void* data)
 {
   int id = m_pickables.size();
@@ -265,12 +290,15 @@ int GrView::pick(int ev_x, int ev_y)
     (*I)->draw_box();
     (*I)->draw_edges();
   }
+  for (MonitorList::iterator I = m_monitors.begin(); I != m_monitors.end(); ++I) {
+    (*I)->pick();
+  }
   int hits = glRenderMode(GL_RENDER);
   // std::cerr << "hits = " << hits << std::endl;
 
   GLuint* p = buffer;
   bool first = true;
-  GLuint min_depth = 0;
+  //GLuint min_depth = 0;
   int min_name = -1;
   for (int i = 0; i < hits; i++) {
     GlHit* hit = (GlHit*)p;
@@ -289,9 +317,8 @@ int GrView::pick(int ev_x, int ev_y)
 //       std::cerr << "edge"; break;
 //       }
 //       std::cerr << std::endl;
-      
-    if (first || hit->min_depth < min_depth) {
-      min_depth = hit->min_depth;
+
+    if (first || hit->names[hit->num_names - 1] > min_name) {
       min_name = hit->names[hit->num_names - 1];
     }
     (char*)p += sizeof(GlHit) + sizeof(GLuint) * hit->num_names;
@@ -354,10 +381,10 @@ void GrView::mdown(wxMouseEvent& event)
       double x, y, z;
       unproject(event.GetX(), m_height - event.GetY(), x, y, z);
       if (m_pickables[id].type == PICK_NODE) {
-        m_selected = reinterpret_cast<GrNode*>(m_pickables[id].data);
+        m_selected_node = reinterpret_cast<GrNode*>(m_pickables[id].data);
         
-        m_sel_dx = m_selected->x() - x;
-        m_sel_dy = m_selected->y() - y;
+        m_sel_dx = m_selected_node->x() - x;
+        m_sel_dy = m_selected_node->y() - y;
       } else if (m_pickables[id].type == PICK_PORT) {
         m_connecting = reinterpret_cast<GrPort*>(m_pickables[id].data);
         m_current_edge.x_from = x;
@@ -365,6 +392,11 @@ void GrView::mdown(wxMouseEvent& event)
         m_current_edge.x_to = x;
         m_current_edge.y_to = y;
         changed = true;
+      } else if (m_pickables[id].type == PICK_MONITOR) {
+        m_selected_monitor = reinterpret_cast<GrMonitor*>(m_pickables[id].data);
+        
+        m_sel_dx = m_selected_monitor->x() - x;
+        m_sel_dy = m_selected_monitor->y() - y;
       }
     }
   }
@@ -418,6 +450,10 @@ void GrView::mdown(wxMouseEvent& event)
       GrEdge* edge = reinterpret_cast<GrEdge*>(m_pickables[id].data);
       unjoin(edge->from, edge->to);
       changed = true;
+    } else if (id >= 0 && m_pickables[id].type == PICK_MONITOR) {
+      GrMonitor* monitor = reinterpret_cast<GrMonitor*>(m_pickables[id].data);
+      destroy(monitor);
+      changed = true;
     }
   }
   
@@ -430,7 +466,8 @@ void GrView::mup(wxMouseEvent& event)
 {
   bool changed = false;
   if (event.LeftUp()) {
-    m_selected = 0;
+    m_selected_node = 0;
+    m_selected_monitor = 0;
 
     if (m_connecting) {
       int id = pick(event.GetX(), event.GetY());
@@ -515,8 +552,10 @@ void GrView::init()
 
 class SimpleShader : public Shader {
 public:
-  SimpleShader(const ShProgram& vsh, const ShProgram& fsh)
-    : Shader("Constructed Shader"), m_vsh(vsh), m_fsh(fsh)
+  SimpleShader(const ShProgram& vsh, const ShProgram& fsh,
+               GrView* view)
+    : Shader("Constructed Shader"), m_vsh(vsh), m_fsh(fsh),
+      m_view(view)
   {
   }
 
@@ -525,10 +564,25 @@ public:
   ShProgram vertex() { return m_vsh; }
   ShProgram fragment() { return m_fsh; }
 
+  virtual void render();
+  
 private:
   ShProgram m_vsh;
   ShProgram m_fsh;
+
+  GrView* m_view;
 };
+
+void SimpleShader::render()
+{
+  Shader::render();
+
+  if (!m_view->drawingMonitors()) {
+    m_view->updateMonitors();
+    
+    ShrikeCanvas::instance()->SetCurrent();
+  }
+}
 
 void GrView::keydown(wxKeyEvent& event)
 {
@@ -549,9 +603,22 @@ void GrView::keydown(wxKeyEvent& event)
     for (MonitorList::iterator I = m_monitors.begin(); I != m_monitors.end(); ++I) {
       (*I)->setVertexProgram(vshcopy);
     }
-    SimpleShader* s = new SimpleShader(vsh, fsh);
+    SimpleShader* s = new SimpleShader(vsh, fsh, this);
     ShrikeFrame::instance()->setShader(s);
   } else if (event.GetKeyCode() == 'L') {
     layout();
+  }
+}
+
+void GrView::updateMonitors()
+{
+  if (!m_monitors.empty()) {
+    if (m_drawing_monitors) {
+      return;
+    }
+    
+    SetCurrent();
+    setupView();
+    paint();
   }
 }

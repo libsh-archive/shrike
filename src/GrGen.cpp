@@ -183,10 +183,12 @@ ShProgram generateShader(GrNode* root_node, GrNode* final_node)
         /* = find(p->outputs.begin(), p->outputs.end(),
            in_info(var)->source_var);*/
         ShProgramNode::VarList::iterator J;
+        bool invalid = false;
         for (J = p->outputs.begin(); J != p->outputs.end(); ++J) {
+          if (in_info(var)->source == 0) { invalid = true; break; }
           if (out_info(*J)->port == in_info(var)->source) break;
         }
-        if (J == p->outputs.end()) {
+        if (J == p->outputs.end() || invalid) {
           // Don't have that output yet. Skip "output" entirely.
           skip = true;
           break;
@@ -277,6 +279,9 @@ ShProgram generateShader(GrNode* root_node, GrNode* final_node)
     }
   }
 
+  // TODO: Set up monitors for discarded outputs.
+  // Requires more traversal. Hrmpf.
+  
   p = shRange(0, (int)final->outputs.size() - 1) << p;
 
   

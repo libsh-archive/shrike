@@ -16,7 +16,8 @@ class GrMonitor;
 enum PickType {
   PICK_NODE,
   PICK_PORT,
-  PICK_EDGE
+  PICK_EDGE,
+  PICK_MONITOR
 };
 
 class GrView : public wxGLCanvas {
@@ -35,11 +36,16 @@ public:
   GrNode* addProgram(const SH::ShProgram& program, int x, int y);
 
   void addMonitor(GrMonitor* monitor);
+  void removeMonitor(GrMonitor* monitor);
   
   int addPicker(PickType type, void* data);
   int pick(int x, int y);
 
   void layout();
+
+  void updateMonitors();
+
+  bool drawingMonitors() const { return m_drawing_monitors; }
   
 private:
   void init();
@@ -68,7 +74,8 @@ private:
   typedef std::list<GrMonitor*> MonitorList;
   MonitorList m_monitors;
 
-  GrNode* m_selected;
+  GrNode* m_selected_node;
+  GrMonitor* m_selected_monitor;
   GrPort* m_connecting;
   double m_sel_dx, m_sel_dy;
 
@@ -79,6 +86,8 @@ private:
   GrNode* m_inputs_vtx;
   GrNode* m_inbetween;
   GrNode* m_outputs_frg;
+
+  bool m_drawing_monitors;
   
   DECLARE_EVENT_TABLE()
 };
