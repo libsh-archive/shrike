@@ -4,6 +4,9 @@
 #include "ShrikeCanvas.hpp"
 #include "Shader.hpp"
 #include "ShObjFile.hpp"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 using namespace SH;
 
@@ -38,7 +41,7 @@ ShrikeFrame::ShrikeFrame()
   ShObjFile* model = new ShObjFile();
 
   // TODO: FIXME
-  std::ifstream infile("../../shmedia/objs/sphere50.obj");
+  std::ifstream infile(SHMEDIA_DIR "/objs/sphere50.obj");
   infile >> *model;
 
   wxSplitterWindow* right_window = new wxSplitterWindow(hsplitter, -1);
@@ -56,7 +59,7 @@ ShrikeFrame::~ShrikeFrame()
 void ShrikeFrame::openModel(wxCommandEvent& event)
 {
   wxFileDialog* dialog = new wxFileDialog(this, "Open Model",
-                                          "../../shmedia/objs", "",
+                                          SHMEDIA_DIR "/objs", "",
                                           "OBJ Files (*.obj)|*.obj", wxOPEN);
   if (dialog->ShowModal() == wxID_OK) {
     std::ifstream infile(dialog->GetPath());

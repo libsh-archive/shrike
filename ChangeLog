@@ -1,0 +1,15 @@
+2004-02-19  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/ShrikeFrame.cpp (openModel): Use SHMEDIA_DIR.
+	(ShrikeFrame): Use SHMEDIA_DIR.
+
+	* configure.ac: Use WX_FIND_WX_CONFIG
+
+	* src/Makefile.am: Use ${WX_CONFIG} instead of wx-config.
+
+	* config/wx.m4: Added this file, to check for wx-config.
+
+	* configure.ac: Use SHMEDIA_WITH_SHMEDIA_DIR.
+
+	* config/shmedia.m4: Added this file.
+

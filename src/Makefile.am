@@ -15,7 +15,7 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 TexShader.cpp \
 		 Ashikhmin.cpp 
 
-AM_CXXFLAGS = `wx-config --cxxflags` -Wall
-AM_CPPFLAGS = `wx-config --cppflags`
-shrike_LDFLAGS = `wx-config --libs --gl-libs`
+AM_CXXFLAGS = `${WX_CONFIG} --cxxflags` -Wall
+AM_CPPFLAGS = `${WX_CONFIG} --cppflags`
+shrike_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
 shrike_LDADD = -lsh -lshutil
