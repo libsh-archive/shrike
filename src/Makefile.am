@@ -51,6 +51,7 @@ shrike_SOURCES += shaders/HorizonMapping.cpp
 shrike_SOURCES += shaders/HairShader.cpp
 shrike_SOURCES += shaders/LafortuneShader.cpp
 shrike_SOURCES += shaders/LCD.cpp
+shrike_SOURCES += shaders/HairPhysics.cpp
 
 # this is a hack and should be removed eventually
 # shrike_SOURCES += DummyShader.cpp

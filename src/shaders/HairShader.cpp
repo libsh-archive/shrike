@@ -26,7 +26,7 @@ public:
 };
 
 HairFiber::HairFiber()
-  : Shader("Marschner Hair Fiber")
+  : Shader("Hair: Marschner Hair Fiber")
 {
 }
 
@@ -62,10 +62,10 @@ bool HairFiber::init()
 		ShOutputVector3f otan;
 		ShOutputVector3f eyev;
 		ShOutputVector3f halfv;
-		
+
     opos = Globals::mvp | ipos; // Compute NDC position
     onorm = Globals::mv | inorm; // Compute view-space normal
-		otan = Globals::mv | itan; // Conpute view-space tangent
+		otan = Globals::mv | itan; // Compute view-space tangent
 		
     ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
     lightv = normalize(Globals::lightPos - posv); // Compute light direction
@@ -85,8 +85,12 @@ bool HairFiber::init()
 	a.name("exentricity");
 	a.range(0.5,1.0);
 
-	ShAttrib3f SH_DECL(sigmaa) = ShAttrib3f(0.44,0.64,0.9);
+	ShAttrib3f SH_DECL(sigmaa) = ShAttrib3f(0.74,0.84,0.9);
 	sigmaa.range(0.0,1.0);
+
+	bool render_first_highlight = true;
+	bool render_sec_highlight = true;
+	bool render_diffuse = true;
 	
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputPosition4f posh;
@@ -107,11 +111,6 @@ bool HairFiber::init()
 		ShVector3f surface = cross(normal, tangent);
 		surface = normalize(surface);
 
-		//ShVector3f azimut = (0.7*cellnoise<1>(100*tc(0), true)+0.3) * normal;
-		//azimut = normalize(azimut);
-		
-		//a += 0.2*cellnoise<1>(scale*tc(0), true); // change the exentricity
-		
 		ShAttrib1f eta = 1.55;
 		
 		ShAttrib1f sinThetai = light | surface;
@@ -197,10 +196,20 @@ bool HairFiber::init()
 		Ntrt2(2) += N2(eta1, cosGammai, sigmaa(2));
 		Ntrt = cond(-D, Ntrt+Ntrt2, Ntrt); // test if 3 solutions
 		
-		ShColor3f white = ShColor3f(1.0,1.0,1.0);
-		result = white * 10 * Mr*Nr / cosThetad2;
-		result += Mtrt*Ntrt / cosThetad2;
-		result += color * 0.2 * pos(light|normal); // add a diffuse term
+		if(render_first_highlight) {
+			ShColor3f white = ShColor3f(1.0,1.0,1.0);
+			result = white * 10 * Mr*Nr / cosThetad2;
+		}
+		else {
+			result = ShColor3f(0.0,0.0,0.0);
+		}
+		if(render_sec_highlight) {
+			result += Mtrt*Ntrt / cosThetad2;
+		}
+		if(render_diffuse) {
+			result = (result + color*0.2) * pos(light|normal);
+		}
+
 	} SH_END;
   return true;
 }
