@@ -179,6 +179,7 @@ void ShrikeCanvas::renderObject()
     }
     glEnd();
     glEndList();
+    m_model_dirty = false;
   } else {
     glCallList(m_model_list);
   }
