@@ -240,7 +240,7 @@ bool FrameMapping::init()
   //ShEnvironment::optimizationLevel = 0;
 #if (IMG_TEXTURE)
   ShImage texImg;
-  texImg.loadPng(SHMEDIA_DIR "/textures/dots.png");
+  texImg.loadPng(SHMEDIA_DIR "/textures/spiral.png");
   int w, h;
   FrameMap fmap = genFrameMap(texImg, w, h);
   ShAttrib1f SH_DECL(mapNormal) = 1.0f;
@@ -263,7 +263,8 @@ bool FrameMapping::init()
     ShInputVector3f itan;
     ShOutputVector3f otan = Globals::mv | itan;
   } SH_END_PROGRAM;
-  vsh = (shRange("texcoord")("normal", "posh") << vsh) & keeper;
+  vsh = (shSwizzle("texcoord", "normal", "viewVec",
+        "halfVec", "lightVec", "posh") << vsh) & keeper;
 
   ShColor3f SH_DECL(diffuse1) = ShColor3f(0.5, 0.5, 0.5);
   ShColor3f SH_DECL(diffuse2) = ShColor3f(1.0, 1.0, 0.0);
