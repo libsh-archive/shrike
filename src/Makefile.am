@@ -49,6 +49,7 @@ shrike_SOURCES += shaders/BrickWall.cpp
 shrike_SOURCES += shaders/BrickHorizon.cpp
 shrike_SOURCES += shaders/HorizonMapping.cpp
 shrike_SOURCES += shaders/HairShader.cpp
+shrike_SOURCES += shaders/LafortuneShader.cpp
 shrike_SOURCES += shaders/LCD.cpp
 
 # this is a hack and should be removed eventually

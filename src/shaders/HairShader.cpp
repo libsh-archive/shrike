@@ -109,7 +109,7 @@ bool HairFiber::init()
 		//ShVector3f azimut = (0.7*cellnoise<1>(100*tc(0), true)+0.3) * normal;
 		//azimut = normalize(azimut);
 		
-		a += 0.2*cellnoise<1>(scale*tc(0), true); // change the exentricity
+		//a += 0.2*cellnoise<1>(scale*tc(0), true); // change the exentricity
 		
 		ShAttrib1f eta = 1.55;
 		
@@ -122,17 +122,27 @@ bool HairFiber::init()
 		cosThetad = sqrt((cosThetad + 1.0) / 2.0); // divide the angle by 2
 		ShAttrib1f cosThetad2 = cosThetad*cosThetad;
 		
-		ShAttrib1f cosThetah = cosThetar*cosThetai - sinThetar*sinThetai;
-		ShAttrib1f sinThetah = sqrt(1-cosThetah*cosThetah);
+		ShAttrib1f cosThetah = cosThetar*cosThetai - sinThetar*sinThetai; // cos(thetar+thetai)
+		cosThetah = sqrt((cosThetah + 1.0) / 2.0); // divide by 2
+		ShAttrib1f sinThetah = cosThetar*sinThetai + sinThetar*cosThetai;
+		sinThetah = 0.5*sinThetah/cosThetah;
+	
+		ShVector2f lightproj = ShVector2f(light|tangent, light|normal);
+		lightproj = normalize(lightproj);
+		ShAttrib1f cosPhii = lightproj(1);
+		ShAttrib1f sinPhii = lightproj(0);
+
+		ShVector2f eyeproj = ShVector2f(eye|tangent, light|normal);
+		eyeproj = normalize(eyeproj);
+		ShAttrib1f cosPhir = eyeproj(1);
+		ShAttrib1f sinPhir = eyeproj(0);
 		
-		ShAttrib1f cosPhii = light | normal;
-		ShAttrib1f cosPhir = eye | normal;
-		ShAttrib1f cosPhi = cosPhii*cosPhir - sqrt(1-cosPhii*cosPhii)*sqrt(1-cosPhir*cosPhir);
+		ShAttrib1f cosPhi = cosPhir*cosPhii - sinPhir*sinPhii;
 
 		// Compute Mr
 		ShAttrib1f Mr = cosThetah*0.998629535 + sinThetah*0.052335956; // remove 3 degrees
 		Mr = pow(Mr,50);
-
+		
 		// Compute Nr
 		ShAttrib1f cosGammai = sqrt((cosPhi + 1) / 2.0); // cos(phi/2)
 		ShAttrib1f eta1 = sqrt(eta*eta - 1.0 + cosThetad2) / cosThetad;
@@ -180,8 +190,8 @@ bool HairFiber::init()
 		
 		ShColor3f white = ShColor3f(1.0,1.0,1.0);
 		result = white * 10 * Mr*Nr / cosThetad2;
-		result = color * 4 * Mtrt*Ntrt / cosThetad2;
-		result += color * 0.2 * pos(light|normal); // add a diffuse term
+		result = color * Mtrt*Ntrt / cosThetad2;
+		//result += color * 0.2 * pos(light|normal); // add a diffuse term
 
 	} SH_END;
   return true;
