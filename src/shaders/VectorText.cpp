@@ -117,13 +117,21 @@ segdist (
 
 VectorText::VectorText(int mode)
   : Shader(std::string("Vector Graphics: Vector Text") + 
-		  ((mode == 0) ? ": Isotropically Antialiased" : 
-		   ((mode == 1) ? ": Anisotropically Antialiased" : 
-		    ((mode == 3) ? ": Isotropically Antialiased Outline" : 
-		    ((mode == 4) ? ": Anisotropically Antialiased Outline" : 
-		     ((mode == 5) ? ": Gradient" : 
-		      ((mode == 6) ? ": Pseudodistance" : 
-		       ((mode == 2) ? ": Aliased" : ": Distance")))))))),
+	  ((mode == 0) ? ": Isotropically Antialiased" : 
+	  ((mode == 1) ? ": Anisotropically Antialiased" : 
+	  ((mode == 2) ? ": Aliased" : 
+	  ((mode == 3) ? ": Isotropically Antialiased Outline" : 
+	  ((mode == 4) ? ": Anisotropically Antialiased Outline" : 
+	  ((mode == 5) ? ": Gradient" : 
+	  ((mode == 6) ? ": Filter Width" : 
+	  ((mode == 7) ? ": Pseudodistance Isotropically Antialiased Outline" : 
+	  ((mode == 8) ? ": Pseudodistance Anisotropically Antialiased Outline" : 
+	  ((mode == 9) ? ": Biased Signed Distance" : 
+	  ((mode == 10) ? ": Greyscale Biased Signed Distance" : 
+	  ((mode == 11) ? ": Signed Distance" : 
+	  ((mode == 12) ? ": Biased Signed Pseudodistance" : 
+	  ((mode == 13) ? ": Greyscale Biased Signed Pseudodistance" : 
+	                  ": Pseudodistance"))))))))))))))),
     m_mode(mode)
 {
   if (!m_done_init) {
@@ -168,6 +176,7 @@ bool VectorText::init()
   ShAttrib4f L[N];
 
   /* DOESN'T WORK! Ambiguity in sign at acute vertices 
+   */
   L[0] = ShAttrib4f(0.3,0.0,0.0,0.0);
   L[1] = ShAttrib4f(0.0,0.0,0.5,1.5);
   L[2] = ShAttrib4f(0.5,1.5,0.9,1.5);
@@ -179,7 +188,7 @@ bool VectorText::init()
   L[8] = ShAttrib4f(0.5,0.6,0.9,0.6);
   L[9] = ShAttrib4f(0.9,0.6,0.7,1.2);
   L[10] = ShAttrib4f(0.7,1.2,0.5,0.6);
-  */
+  /* */
 
   // THE FIX:
   // Can "break apart" acute vertices to resolve ambiguity.
@@ -191,17 +200,26 @@ bool VectorText::init()
   // const int ioff = 11;
   const float xoff = 0.0;
   const int ioff = 0;
-  L[ioff+0] = ShAttrib4f(xoff+0.3,0.0-eps,xoff+0.0,0.0-eps);
-  L[ioff+1] = ShAttrib4f(xoff+0.0-eps,0.0+eps,xoff+0.5,1.5);
-  L[ioff+2] = ShAttrib4f(xoff+0.5,1.5,xoff+0.9,1.5);
-  L[ioff+3] = ShAttrib4f(xoff+0.9,1.5,xoff+1.4+eps,0.0+eps);
-  L[ioff+4] = ShAttrib4f(xoff+1.4,0.0-eps,xoff+1.1,0.0-eps);
-  L[ioff+5] = ShAttrib4f(xoff+1.1,0.0,xoff+1.0,0.3);
-  L[ioff+6] = ShAttrib4f(xoff+1.0,0.3,xoff+0.4,0.3);
-  L[ioff+7] = ShAttrib4f(xoff+0.4,0.3,xoff+0.3,0);
-  L[ioff+8] = ShAttrib4f(xoff+0.5,0.6-eps,xoff+0.9,0.6-eps);
-  L[ioff+9] = ShAttrib4f(xoff+0.9+eps,0.6,xoff+0.7+eps,1.2);
-  L[ioff+10] = ShAttrib4f(xoff+0.7-eps,1.2,xoff+0.5-eps,0.6);
+  // L[ioff+0] = ShAttrib4f(xoff+0.3,0.0-eps,xoff+0.0,0.0-eps);
+  // L[ioff+1] = ShAttrib4f(xoff+0.0-eps,0.0+eps,xoff+0.5,1.5);
+  // L[ioff+2] = ShAttrib4f(xoff+0.5,1.5,xoff+0.9,1.5);
+  // L[ioff+3] = ShAttrib4f(xoff+0.9,1.5,xoff+1.4+eps,0.0+eps);
+  // L[ioff+4] = ShAttrib4f(xoff+1.4,0.0-eps,xoff+1.1,0.0-eps);
+  // L[ioff+5] = ShAttrib4f(xoff+1.1,0.0,xoff+1.0,0.3);
+  // L[ioff+6] = ShAttrib4f(xoff+1.0,0.3,xoff+0.4,0.3);
+  // L[ioff+7] = ShAttrib4f(xoff+0.4,0.3,xoff+0.3,0);
+  // L[ioff+8] = ShAttrib4f(xoff+0.5,0.6-eps,xoff+0.9,0.6-eps);
+  // L[ioff+9] = ShAttrib4f(xoff+0.9+eps,0.6,xoff+0.7+eps,1.2);
+  // L[ioff+10] = ShAttrib4f(xoff+0.7-eps,1.2,xoff+0.5-eps,0.6);
+
+  // a better fix: contract each line segment by epsilon.
+  // this gives better angles for the pseudodistance (useful for
+  // "sharp" miter rules).
+  for (int i=0; i<N; i++) {
+    ShVector2f d = normalize(L[i](2,3) - L[i](0,1));
+    L[i](0,1) += d * eps;
+    L[i](2,3) -= d * eps;
+  }
 
   fsh = SH_BEGIN_FRAGMENT_PROGRAM {
     ShInputTexCoord2f tc;
@@ -233,7 +251,7 @@ bool VectorText::init()
 	ShAttrib2f fw;
 	fw(0) = dx(x) | r(2,3);
 	fw(1) = dy(x) | r(2,3);
-	ShAttrib1f w = length(fw);
+	ShAttrib1f w = length(fw)*m_fw;
         ShAttrib1f p = smoothstep(-w,w,r(0)+m_thres(0));
         o = lerp(p,m_color2,m_color1);
       } break;
@@ -255,7 +273,7 @@ bool VectorText::init()
 	ShAttrib2f fw;
 	fw(0) = dx(x) | r(2,3);
 	fw(1) = dy(x) | r(2,3);
-	ShAttrib1f w = length(fw);
+	ShAttrib1f w = length(fw)*m_fw;
         ShAttrib2f p;
 	p(0) = smoothstep(-w,w,r(0)+m_thres(0));
         p(1) = smoothstep(-w,w,-r(0)-m_thres(1));
@@ -267,14 +285,57 @@ bool VectorText::init()
 	  + 0.5 * (r(3) + 1.0) * m_vcolor2;
       } break;
       case 6: {
+        // filter width visualization
+	ShAttrib2f fw = fwidth(x);	      
+	o = fw(0,1,0);
+      } break;
+      case 7: {
+        // isotropically antialiased pseudodistance outline rendering
+        ShAttrib2f fw = fwidth(x);
+        ShAttrib1f w = max(fw(0),fw(1))*m_fw;
+        ShAttrib2f p;
+	p(0) = smoothstep(-w,w,r(1)+m_thres(0));
+        p(1) = smoothstep(-w,w,-r(1)-m_thres(1));
+        o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
+      } break;
+      case 8: {
+        // anisotropically antialiased pseudodistance outline rendering
+	ShAttrib2f fw;
+	fw(0) = dx(x) | r(2,3);
+	fw(1) = dy(x) | r(2,3);
+	ShAttrib1f w = length(fw)*m_fw;
+        ShAttrib2f p;
+	p(0) = smoothstep(-w,w,r(1)+m_thres(0));
+        p(1) = smoothstep(-w,w,-r(1)-m_thres(1));
+        o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
+      } break;
+      case 9: {
+        // biased signed distance map visualization 
+        o = (0.5 + r(0) * m_scale)(0,0,0) 
+          * cond(r(0) >= 0.0,m_vcolor2,m_vcolor1);
+      } break;
+      case 10: {
+        // biased signed distance map visualization 
+        o = (0.5 + r(0) * m_scale)(0,0,0);
+      } break;
+      case 11: {
+        // signed distance map visualization
+        o = (abs(r(0)) * m_scale)(0,0,0) 
+          * cond(r(0) >= 0.0,m_vcolor2,m_vcolor1);
+      } break;
+      case 12: {
+        // biased signed pseudodistance map visualization 
+        o = (0.5 + r(1) * m_scale)(0,0,0) 
+          * cond(r(1) >= 0.0,m_vcolor2,m_vcolor1);
+      } break;
+      case 13: {
+        // biased signed pseudodistance map visualization 
+        o = (0.5 + r(1) * m_scale)(0,0,0);
+      } break;
+      default: {
         // pseudodistance visualization
         o = (abs(r(1)) * m_scale)(0,0,0) 
           * cond(r(1) >= 0.0,m_vcolor2,m_vcolor1);
-      } break;
-      default: {
-        // distance map visualization
-        o = (abs(r(0)) * m_scale)(0,0,0) 
-          * cond(r(0) >= 0.0,m_vcolor2,m_vcolor1);
       } break;
     }
   } SH_END_PROGRAM;
@@ -298,6 +359,13 @@ VectorText vt_naa = VectorText(2);
 VectorText vt_iaa_outline = VectorText(3);
 VectorText vt_aaa_outline = VectorText(4);
 VectorText vt_grad = VectorText(5);
-// VectorText vt_pdistance = VectorText(6);
-VectorText vt_distance = VectorText(10);
+VectorText vt_fw = VectorText(6);
+VectorText vt_pd_iaa_outline = VectorText(7);
+VectorText vt_pd_aaa_outline = VectorText(8);
+VectorText vt_biased_distance = VectorText(9);
+VectorText vt_grey_biased_distance = VectorText(10);
+VectorText vt_distance = VectorText(11);
+VectorText vt_biased_pdistance = VectorText(12);
+VectorText vt_grey_biased_pdistance = VectorText(13);
+VectorText vt_pdistance = VectorText(14);
 
