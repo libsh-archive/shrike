@@ -30,10 +30,17 @@
 #include <fstream>
 #include "Shader.hpp"
 #include "Globals.hpp"
+#if defined( __APPLE__ )
+#define GL_GLEXT_VERBOSE 1
+#define GL_GLEXT_PROTOTYPES 1
+#include <OpenGL/gl.h>
+#include <OpenGL/glext.h>
+#else
 #define GL_GLEXT_LEGACY
 #include <GL/gl.h>
 #include <GL/glext.h>
 #undef GL_GLEXT_LEGACY
+#endif
 #include <sh/ShObjMesh.hpp>
 
 using namespace SH;

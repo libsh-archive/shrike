@@ -34,7 +34,7 @@ class ShrikeApp : public wxApp {
 public:
   ShrikeApp();
   
-  bool OnInit();
+  virtual bool OnInit();
 };
 
 #endif

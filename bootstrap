@@ -1,13 +1,31 @@
 #!/bin/sh
 
-if test "x${AUTOMAKE}" = "x" ; then
-  AUTOMAKE=automake-1.7
-fi
-export AUTOMAKE
-if test "x${ACLOCAL}" = "x" ; then
-  ACLOCAL=aclocal-1.7
-fi
-export ACLOCAL
+# Machine specific
+case ${MACHTYPE}
+in *apple*darwin*)  # Mac OSX
+
+  if test "x${AUTOMAKE}" = "x" ; then
+    AUTOMAKE=automake
+  fi
+  export AUTOMAKE
+  if test "x${ACLOCAL}" = "x" ; then
+    ACLOCAL=aclocal
+  fi
+  export ACLOCAL
+
+;;
+*) # all others
+
+  if test "x${AUTOMAKE}" = "x" ; then
+    AUTOMAKE=automake-1.7
+  fi
+  export AUTOMAKE
+  if test "x${ACLOCAL}" = "x" ; then
+    ACLOCAL=aclocal-1.7
+  fi
+  export ACLOCAL
+
+esac
 
 cat config/*.m4 > acinclude.m4
 

@@ -33,7 +33,12 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+#if defined( __APPLE__ )
+#include <OpenGL/gl.h>
+#else
 #include <GL/gl.h>
+#endif
+
 #include "ShTrackball.hpp"
 #include "Camera.hpp"
 

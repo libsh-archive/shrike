@@ -42,6 +42,12 @@
 #undef max
 #endif
 
+#ifdef __APPLE__
+// Apple's debugging libraries define a 'check' macro
+// which conflicts with a method name in this file
+#undef check
+#endif
+
 using namespace SH;
 
 UniformPanel::UniformPanel(wxWindow* parent)
