@@ -68,13 +68,13 @@ void EdgeGooch::render() {
   aspect = canvas->m_width / (float)canvas->m_height; 
 
   // render fill 
-  shBindShader(vsh);
-  shBindShader(fsh);
+  shBind(vsh);
+  shBind(fsh);
   glCallList(displayList);
 
   eyePosm = Globals::mv_inverse | ShPoint3f(0, 0, 0);
-  shBindShader(edgevsh);
-  shBindShader(edgefsh);
+  shBind(edgevsh);
+  shBind(edgefsh);
   glCallList(edgeDisplayList);
 }
 

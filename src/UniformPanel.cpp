@@ -228,7 +228,8 @@ public:
       } else {
         m_node->setTexSize(img.width(), img.height());
       }
-      shBindShader(m_program);
+      // TODO: Replace with shUpdate when that's done.
+      shBind(m_program);
       ShrikeCanvas::instance()->render();
     }
   }

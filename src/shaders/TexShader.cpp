@@ -13,7 +13,6 @@ public:
   ~TexShader();
 
   bool init();
-  void bind();
 
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
@@ -42,14 +41,6 @@ bool TexShader::init()
   return true;
 }
 
-void TexShader::bind()
-{
-  vsh->code()->print(std::cerr);
-  fsh->code()->print(std::cerr);
-  std::cerr << "Binding " << name() << std::endl;
-  shBindShader(vsh);
-  shBindShader(fsh);
-}
 
 TexShader the_tex_shader;
 

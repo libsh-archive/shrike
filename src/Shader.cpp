@@ -23,9 +23,8 @@ bool Shader::firstTimeInit()
 void Shader::bind() {
   SH::ShProgram vsh = vertex();
   SH::ShProgram fsh = fragment();
-  std::cerr << "Binding " << name() << std::endl;
-  SH::shBindShader(vsh);
-  SH::shBindShader(fsh);
+  SH::shBind(vsh);
+  SH::shBind(fsh);
 }
 
 const std::string& Shader::name() const

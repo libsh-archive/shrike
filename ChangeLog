@@ -1,6 +1,11 @@
+2004-05-21  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/shaders/*: Remove redundant bind() implementations, and
+	replace shBindShader with shBind (see r973, issue1).
+
 2004-05-20  Bryan Chan <b8chan@uwaterloo.ca>
-  * src/shaders/WorleyShader.cpp:
-  Added a bucket load of Worley shaders. 
+
+	* src/shaders/WorleyShader.cpp: Added a bucket load of Worley shaders. 
   
 2004-04-14  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 

@@ -17,7 +17,6 @@ public:
   ~DummyShader();
 
   bool init();
-  void bind();
 
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
@@ -119,13 +118,5 @@ bool DummyShader::init()
   return true;
 }
 
-void DummyShader::bind()
-{
-  vsh->code()->print(std::cerr);
-  fsh->code()->print(std::cerr);
-  std::cerr << "Binding " << name() << std::endl;
-  shBindShader(vsh);
-  shBindShader(fsh);
-}
 
 DummyShader the_dummy_shader;

@@ -17,7 +17,6 @@ public:
   ~GlassShader();
 
   bool init();
-  void bind();
 
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
@@ -93,13 +92,5 @@ bool GlassShader::init()
   return true;
 }
 
-void GlassShader::bind()
-{
-  vsh->code()->print(std::cerr);
-  fsh->code()->print(std::cerr);
-  std::cerr << "Binding " << name() << std::endl;
-  shBindShader(vsh);
-  shBindShader(fsh);
-}
 
 GlassShader the_glass_shader;

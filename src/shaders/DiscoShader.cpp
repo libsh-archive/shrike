@@ -13,7 +13,6 @@ public:
   ~DiscoShader();
 
   bool init();
-  void bind();
 
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
@@ -114,13 +113,5 @@ bool DiscoShader::init()
   return true;
 }
 
-void DiscoShader::bind()
-{
-  vsh->code()->print(std::cerr);
-  fsh->code()->print(std::cerr);
-  std::cerr << "Binding " << name() << std::endl;
-  shBindShader(vsh);
-  shBindShader(fsh);
-}
 
 DiscoShader the_disco_shader;

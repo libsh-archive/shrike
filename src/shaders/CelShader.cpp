@@ -12,7 +12,6 @@ public:
   ~CelShader();
 
   bool init();
-  void bind();
 
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
@@ -101,13 +100,6 @@ bool CelShader::init()
   return true;
 }
 
-void CelShader::bind()
-{
-  vsh->code()->print(std::cerr);
-  fsh->code()->print(std::cerr);
-  shBindShader(vsh);
-  shBindShader(fsh);
-}
 
 CelShader the_cel_shader;
 

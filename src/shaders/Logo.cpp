@@ -56,12 +56,12 @@ Logo::~Logo()
 
 void Logo::bind()
 {
-  shBindShader(vsh);
+  shBind(vsh);
 }
 
 void Logo::render()
 {
-  shBindShader(fsh_h);
+  shBind(fsh_h);
 
   float r = 10.0;
   
@@ -77,7 +77,7 @@ void Logo::render()
     glVertex3f( r, 0.0, -r);
   } glEnd();
 
-  shBindShader(fsh_s);
+  shBind(fsh_s);
 
   float values[4];
   glBegin(GL_TRIANGLES);

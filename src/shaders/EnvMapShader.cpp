@@ -17,7 +17,6 @@ public:
   ~EnvMapShader();
 
   bool init();
-  void bind();
 
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
@@ -77,15 +76,6 @@ bool EnvMapShader::init()
   } SH_END;
 
   return true;
-}
-
-void EnvMapShader::bind()
-{
-  vsh->code()->print(std::cerr);
-  fsh->code()->print(std::cerr);
-  std::cerr << "Binding " << name() << std::endl;
-  shBindShader(vsh);
-  shBindShader(fsh);
 }
 
 EnvMapShader the_envmap_shader;

@@ -13,7 +13,6 @@ public:
   ~Ashikhmin();
 
   bool init();
-  void bind();
 
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
@@ -128,15 +127,6 @@ bool Ashikhmin::init()
   } SH_END_PROGRAM;
     
   return true;
-}
-
-void Ashikhmin::bind()
-{
-  vsh->code()->print(std::cerr);
-  fsh->code()->print(std::cerr);
-  std::cerr << "Binding " << name() << std::endl;
-  shBindShader(vsh);
-  shBindShader(fsh);
 }
 
 Ashikhmin ash;
