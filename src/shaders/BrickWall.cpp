@@ -8,7 +8,9 @@
 using namespace SH;
 using namespace ShUtil;
 
-/* hyperbolic tangent */
+/* hyperbolic tangent function
+ * created because tanh in not yet implemented in Sh
+ */
 ShAttrib1f tanh( ShAttrib1f x) {
 	return (pow(M_E, 2*x) - 1) / (pow(M_E, 2*x) + 1);
 }
@@ -89,9 +91,9 @@ bool BrickID::init()
     ShOutputAttrib1f changeColor; // used to generate different colors
 
     tc *= scale;
-    changeNorm = tc(0)*tc(1)*pos(0)*pos(1);
+    changeNorm = 0.1*tc(0)*tc(1)*pos(0)*pos(1);
     tc[0] = tc(0) - floor(tc(1))*offset; // change the horizontal position of a line
-    changeColor = abs(floor(tc(1))) * abs(floor(tc(0)+0.5)); // change the color for each brick
+    changeColor = abs(floor(tc(1))) * abs(floor(tc(0)+0.5)); // change the color of each brick
     tc[1] = tc(1) - floor(tc(1)+0.5);
     tc[0] = tc(0) - floor(tc(0)+0.5);
 
@@ -115,7 +117,7 @@ bool BrickID::init()
     ShVector3f normDeformation;
 
     for(int i=0 ; i<2 ; i++) {
-      bumpnorm[i] += 0.03*cellnoise<1>(changeNorm, false, false);
+      bumpnorm[i] += 0.03*cellnoise<1>(changeNorm, false, false); // add noise to make a rough surface
     }
 
     // set the limits of edges
@@ -127,6 +129,7 @@ bool BrickID::init()
     normDeformation = ShVector3f(ShAttrib1f(0.0),tc(1)/abs(tc(1)) * 0.5 * (tanh(10*abs(tc(1)-mortarsize(1)))+1), ShAttrib1f(0.0));
     bumpnorm = cond( min(horizontalLimits, abs(tc(0))<0.5-mortarsize(0)), bumpnorm + normDeformation, bumpnorm);
    
+    
     bumpnorm = normalize(bumpnorm); // normalize the new normals
     
   } SH_END;
@@ -164,7 +167,7 @@ bool BrickID::init()
     half = normalize(half);
     light = normalize(light);
     ShAttrib1f irrad = pos(normal | light);
-    result = result * irrad + result * pow(pos(normal | half), ShAttrib1f(50.0)) / (normal | light);
+    result = result * irrad + result * pow(pos(normal | half), ShAttrib1f(30.0)) / (normal | light);
          
   } SH_END;
  
