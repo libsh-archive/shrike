@@ -8,7 +8,8 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 ShrikePropsDialog.hpp ShrikePropsDialog.cpp \
 		 Globals.hpp Globals.cpp \
 		 Camera.hpp Camera.cpp \
-		 ShTrackball.hpp ShTrackball.cpp
+		 ShTrackball.hpp ShTrackball.cpp \
+		 util.cpp
 
 shrike_SOURCES += DiffuseShader.cpp
 shrike_SOURCES += DiscoShader.cpp
@@ -29,6 +30,9 @@ shrike_SOURCES += NoiseShader.cpp
 shrike_SOURCES += EdgeGooch.cpp
 shrike_SOURCES += Textures.cpp
 shrike_SOURCES += Pants.cpp
+shrike_SOURCES += EnvMapShader.cpp
+shrike_SOURCES += DummyShader.cpp
+shrike_SOURCES += ShinyBumpMapShader.cpp
 
 AM_CXXFLAGS = `${WX_CONFIG} --cxxflags` -Wall
 AM_CPPFLAGS = `${WX_CONFIG} --cppflags`
