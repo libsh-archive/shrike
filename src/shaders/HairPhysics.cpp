@@ -211,9 +211,13 @@ bool Hair::init()
 	scale.range(1.0,500.0);
 	
   ShColor3f SH_DECL(color) = ShColor3f(0.74,0.47,0.47);
+	color.name("diffuse color");
+
   ShColor3f SH_DECL(skinColor) = ShColor3f(0.92,0.76,0.7);
+	skinColor.name("skin color");
 
 	ShAttrib3f SH_DECL(sigmaa) = ShAttrib3f(0.74,0.84,0.9);
+	sigmaa.name("absorption");
 	sigmaa.range(0.0,1.0);
 	
   fsh_hair = SH_BEGIN_PROGRAM("gpu:fragment") {
@@ -242,13 +246,13 @@ bool Hair::init()
 		ShAttrib1f cosThetar = sqrt(1.0 - sinThetar*sinThetar);
 		
 		ShAttrib1f cosThetad = cosThetar*cosThetai - sinThetar*sinThetai; // cos(thetar-thetai)
-		cosThetad = sqrt((cosThetad + 1.0) / 2.0); // divide the angle by 2
+		cosThetad = sqrt((cosThetad + 1.0) * 0.5); // divide the angle by 2
 		ShAttrib1f cosThetad2 = cosThetad*cosThetad;
 		
 		ShAttrib1f cosThetah = cosThetar*cosThetai + sinThetar*sinThetai; // cos(thetar+thetai)
-		cosThetah = sqrt((cosThetah + 1.0) / 2.0); // divide by 2
+		cosThetah = sqrt((cosThetah + 1.0) * 0.5); // divide by 2
 		ShAttrib1f sinThetah = cosThetar*sinThetai + sinThetar*cosThetai;
-		sinThetah = 0.5*sinThetah/cosThetah;
+		sinThetah = 0.5*sinThetah*rcp(cosThetah);
 	
 		ShVector2f lightproj = ShVector2f(light|tangent, light|normal);
 		lightproj = normalize(lightproj);
@@ -267,12 +271,12 @@ bool Hair::init()
 		Mr = pow(Mr,50);
 		
 		// Compute Nr
-		ShAttrib1f cosGammai = sqrt((cosPhi + 1) / 2.0); // cos(phi/2)
-		ShAttrib1f eta1 = sqrt(eta*eta - 1.0 + cosThetad2) / cosThetad;
-		ShAttrib1f Nr = (eta1-1.0)/(eta1+1.0);
+		ShAttrib1f cosGammai = sqrt((cosPhi + 1) * 0.5); // cos(phi/2)
+		ShAttrib1f eta1 = sqrt(eta*eta - 1.0 + cosThetad2) * rcp(cosThetad);
+		ShAttrib1f Nr = (eta1-1.0)*rcp(eta1+1.0);
 		Nr *= Nr;
 		Nr = Nr + (1.0-Nr)*pow(1.0-cosGammai,5.0);
-		Nr *= abs(cosGammai) / 4;
+		Nr *= abs(cosGammai) * 0.25;
 		
 		// Compute Mtrt
 		ShAttrib1f Mtrt = cosThetah*0.996917334 - sinThetah*0.078459096; // add 4.5 degrees
@@ -280,26 +284,26 @@ bool Hair::init()
 
 		// Compute Ntrt
 		ShAttrib1f a = 1.0;
-		ShAttrib1f c = asin(1.0/eta1);
+		ShAttrib1f c = asin(rcp(eta1));
 		ShAttrib1f etastar1 = 2.0*(eta-1.0)*a*a - eta + 2.0;
-		ShAttrib1f etastar2 = 2.0*(eta-1.0)/(a*a) - eta + 2.0;
+		ShAttrib1f etastar2 = 2.0*(eta-1.0)*rcp(a*a) - eta + 2.0;
 		ShAttrib1f etastar = 0.5*(etastar1+etastar2 + cosThetah*(etastar1-etastar2));
-		eta1 = sqrt(etastar*etastar - 1.0 + cosThetad2) / cosThetad;
+		eta1 = sqrt(etastar*etastar - 1.0 + cosThetad2) * rcp(cosThetad);
 
 		// solve a*x^3 + b*x^2 + c*x + d = 0
 		ShAttrib1f M_PI3 = M_PI*M_PI*M_PI;
 		ShAttrib1f phi = acos(cosPhi);
-		ShAttrib1f Q = (M_PI*M_PI * (M_PI/(8.0*c) - 0.75))/3.0;
-		ShAttrib1f R = (M_PI3 * (M_PI/(8.0*c) - phi/(16.0*c))) / 2.0;
+		ShAttrib1f Q = (M_PI*M_PI * (M_PI*rcp(8.0*c) - 0.75)) * 0.3333333;
+		ShAttrib1f R = (M_PI3 * (M_PI*rcp(8.0*c) - phi*rcp(16.0*c))) * 0.5;
 		ShAttrib1f D = Q*Q*Q + R*R;
 		ShAttrib1f S = cond(R+sqrt(D), pow(max(0.0,R+sqrt(D)),1.0/3.0), ShAttrib1f(0.0));
 		ShAttrib1f T = cond(R-sqrt(D), pow(max(0.0,R-sqrt(D)),1.0/3.0), ShAttrib1f(0.0));
 		ShAttrib1f gammai = S+T;
 
-		ShAttrib1f angle = cond(-D, acos(R/sqrt(-Q*Q*Q)), ShAttrib1f(0.0));
+		ShAttrib1f angle = cond(-D, acos(R*rcp(sqrt(-Q*Q*Q))), ShAttrib1f(0.0));
 		gammai = cond(-D, 2.0*sqrt(-Q)*cos(angle/3.0), gammai); // test if 3 solutions
 		cosGammai = cos(gammai);
-		ShAttrib1f dPhidh = abs(cosGammai / ((24.0*c/M_PI-4.0) - 96.0*c*gammai*gammai/(M_PI3)));
+		ShAttrib1f dPhidh = abs(cosGammai * rcp((24.0*c/M_PI-4.0) - 96.0*c*gammai*gammai*rcp(M_PI3)));
 		ShAttrib3f Ntrt;
 		Ntrt(0) = N(eta1, cosGammai, sigmaa(0));
 		Ntrt(1) = N(eta1, cosGammai, sigmaa(1));
@@ -307,20 +311,19 @@ bool Hair::init()
 
 		gammai = 2.0*sqrt(-Q)*cos((angle+2.0*M_PI)/3.0);
 		cosGammai = cos(gammai);
-		dPhidh = abs(cosGammai / ((24.0*c/M_PI-4.0) - 96.0*c*gammai*gammai/(M_PI3)));
+		dPhidh = abs(cosGammai * rcp((24.0*c/M_PI-4.0) - 96.0*c*gammai*gammai*rcp(M_PI3)));
 		ShAttrib3f Ntrt2;
-		Ntrt2(0) = N(eta1, cosGammai, sigmaa(0));;
-
+		Ntrt2(0) = N(eta1, cosGammai, sigmaa(0));
 		Ntrt2(1) = N(eta1, cosGammai, sigmaa(1));
 		Ntrt2(2) = N(eta1, cosGammai, sigmaa(2));
 		gammai = 2.0*sqrt(-Q)*cos((angle+4.0*M_PI)/3.0);
 		cosGammai = cos(gammai);
-		dPhidh = abs(cosGammai / ((24.0*c/M_PI-4.0) - 96.0*c*gammai*gammai/(M_PI3)));
+		dPhidh = abs(cosGammai * rcp((24.0*c/M_PI-4.0) - 96.0*c*gammai*gammai*rcp(M_PI3)));
 		Ntrt2(0) += N(eta1, cosGammai, sigmaa(0));
 		Ntrt2(1) += N(eta1, cosGammai, sigmaa(1));
 		Ntrt2(2) += N(eta1, cosGammai, sigmaa(2));
 		Ntrt = cond(-D, Ntrt+Ntrt2, Ntrt); // test if 3 solutions
-		
+	
 		if(render_first_highlight) {
 			ShColor3f white = ShColor3f(1.0,1.0,1.0);
 			result = white * 10 * Mr*Nr / cosThetad2;
@@ -331,6 +334,8 @@ bool Hair::init()
 		if(render_sec_highlight) {
 			result += Mtrt*Ntrt / cosThetad2;
 		}
+		result *= ((light|eye) > 0.0);
+		
 		if(render_diffuse) {
 			result = (result + color*0.2) * pos(light|normal);
 		}
