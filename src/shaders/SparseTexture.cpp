@@ -40,7 +40,6 @@ public:
   SparseTexture();
   ~SparseTexture();
 
-  void createMaps(const ShImage&, ShImage&, ShImage&);
   bool init();
   
   ShProgram vertex() { return vsh;}
@@ -65,25 +64,13 @@ bool SparseTexture::init()
 	HDRImage data, map;
   data.loadHDR(SHMEDIA_DIR "/sparse/sparse_data.hdr");
   map.loadHDR(SHMEDIA_DIR "/sparse/sparse_map.hdr");
+
+	ShUnclamped<ShTextureRect<ShAttrib4f> > dataTex(data.width(), data.height());
+  dataTex.memory(data.memory());
 	
-	int blocksize = (int)rint(map(0,0,2));
-	HDRImage image(map.width()*blocksize,map.height()*blocksize,map.elements());
-	for(int i=0 ; i<map.width() ; i++) {
-		for(int j=0 ; j<map.height() ; j++) {
-			for(int x=0 ; x<blocksize ; x++) {
-				for(int y=0 ; y<blocksize ; y++) {
-					for(int k=0 ; k<map.elements() ; k++) {
-						image(i*blocksize+x,j*blocksize+y,k) = data((int)rint(map(i,j,0))+x,(int)rint(map(i,j,1))+y,k);
-					}
-				}	
-			}
-		}
-	}
-	
-	
-	ShTextureRect<ShColor4f> sparseTex(image.width(), image.height());
-  sparseTex.memory(image.memory());
-	
+	ShUnclamped<ShTextureRect<ShAttrib4f> > mapTex(map.width(), map.height());
+  mapTex.memory(map.memory());
+
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
     ShInputNormal3f inorm;
@@ -97,18 +84,25 @@ bool SparseTexture::init()
 
   } SH_END;
 
-	ShAttrib1f SH_DECL(softness) = ShAttrib1f(10.0);
-	softness.name("shadow softness");
-	softness.range(1.0,30.0);
-
+	ShAttrib1f SH_DECL(blocksize) = ShAttrib1f(16.0);
+	blocksize.range(0.0,256.0);
+	
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputPosition4f posh;
-    ShInputTexCoord2f u;
+    ShInputTexCoord2f tc;
     ShInputNormal3f normal;
      
     ShOutputColor3f result;
 	
-		result = sparseTex(u)(0,1,2);
+		tc *= mapTex.size(); // scale to get the current position on the map texture
+		ShAttrib2f u = frac(tc) * blocksize; // get the position on a single block
+		tc = floor(tc); // get position on the map texture
+		ShAttrib2f blockcoords = mapTex[tc](0,1); // get the offset to find the right block on the data texture
+		u += blockcoords; // add the offset
+		u = floor(u); // need to get integers values
+		
+		result = dataTex[u](0,1,2);
+		
 	} SH_END;
   return true;
 }

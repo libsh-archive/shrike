@@ -28,7 +28,10 @@
 #include <string>
 #include <sh/sh.hpp>
 #include "HDRImage.hpp"
-/*
+
+#define USE_EXR 0
+
+#if USE_EXR
 #include <ImfRgbaFile.h>
 #include <ImfTiledRgbaFile.h>
 #include <ImfRgba.h>
@@ -38,7 +41,8 @@
 
 using namespace Imath;
 using namespace Imf;
-*/
+#endif
+
 using namespace SH;
 
 HDRImage::HDRImage()
@@ -73,7 +77,7 @@ HDRImage& HDRImage::operator=(const HDRImage& other)
   return *this;
 }
 
-/*
+#if USE_EXR
 // load an OpenEXR file with the library from ILM
 void HDRImage::loadEXR(const char filename[]) {
 	RgbaInputFile file (filename);
@@ -120,7 +124,7 @@ void HDRImage::saveEXR(const char filename[]) {
 	file.setFrameBuffer (&pixels[0][0], 1, m_width);
 	file.writePixels (m_height);
 }
-*/
+#endif
 
 // load a HDR file
 void HDRImage::loadHDR(const char filename[]) {
@@ -180,10 +184,10 @@ void HDRImage::loadHDR(const char filename[]) {
 	// compute the data by using the exponent value stored in the alpha channel
 	for(i=0 ; i<m_width ; i++) {
 		for(j=0 ; j<m_height ; j++)	{
-			double v = ldexp(1.0, (int)(img(i,j,3) - (128+8)));
-			img(i,j,0) = (img(i,j,0)+0.5) * v;
-			img(i,j,1) = (img(i,j,1)+0.5) * v;
-			img(i,j,2) = (img(i,j,2)+0.5) * v;
+			double v = ldexp(1.0, (int)(img(i,j,3) - 136));
+			img(i,j,0) = img(i,j,0) * v;
+			img(i,j,1) = img(i,j,1) * v;
+			img(i,j,2) = img(i,j,2) * v;
 			img(i,j,3) = 1.0;		
 		}
 	}
@@ -209,9 +213,9 @@ void HDRImage::saveHDR(const char filename[]) {
 				m_image(i,j,0)=m_image(i,j,1)=m_image(i,j,2)=m_image(i,j,3)=0.0;
 			else {
 				d = frexp(d, &e) * 256 / d;
-				m_image(i,j,0) = m_image(i,j,0)*d - 0.5;
-				m_image(i,j,1) = m_image(i,j,1)*d - 0.5;
-				m_image(i,j,2) = m_image(i,j,2)*d - 0.5;
+				m_image(i,j,0) = m_image(i,j,0)*d;
+				m_image(i,j,1) = m_image(i,j,1)*d;
+				m_image(i,j,2) = m_image(i,j,2)*d;
 				m_image(i,j,3) = e + 128;
 			}
 		}

@@ -44,7 +44,6 @@ public:
   testWrap(std::string type);
   ~testWrap();
 
-  void createMaps(const ShImage&, ShImage&, ShImage&);
   bool init();
   
   ShProgram vertex() { return vsh;}

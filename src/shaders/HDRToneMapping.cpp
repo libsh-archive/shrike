@@ -44,7 +44,6 @@ public:
   testToneMap();
   ~testToneMap();
 
-  void createMaps(const ShImage&, ShImage&, ShImage&);
   bool init();
   
   ShProgram vertex() { return vsh;}

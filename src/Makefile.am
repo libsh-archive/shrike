@@ -2,8 +2,6 @@
 # if we want to keep it in this directory
 bin_PROGRAMS = shrike shgenmap shgencubemap shsparse shgenSBRDF
 
-EXTRA_DIST = Makefile.win32
-
 AUTOMAKE_OPTIONS = subdir-objects
 
 shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
@@ -16,7 +14,6 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 Camera.hpp Camera.cpp \
 		 ShTrackball.hpp ShTrackball.cpp \
 		 Timer.hpp Timer.cpp \
-		 ShrikeGl.cpp ShrikeGl.hpp \
 		 util.hpp util.cpp utilimpl.hpp
 
 shrike_SOURCES += shaders/DiffuseShader.cpp
@@ -72,10 +69,8 @@ shrike_SOURCES += shaders/HDRMipMap.cpp HDRImages/HDRMipmap.cpp
 shrike_SOURCES += shaders/HDRInterp.cpp HDRImages/HDRInterp.cpp
 shrike_SOURCES += shaders/HDRToneMapping.cpp HDRImages/HDRTonemap.cpp
 shrike_SOURCES += shaders/HDRWrap.cpp
-shrike_SOURCES += shaders/CubeMap.cpp
+shrike_SOURCES += shaders/CubeMap.cpp HDRImages/HDRCubeMap.hpp
 shrike_SOURCES += shaders/HDRLucite.cpp shaders/HDRGlass.cpp shaders/HDRShinyBumpMap.cpp
-shrike_SOURCES += HDRImages/HDRImage.hpp HDRImages/HDRMipmap.hpp HDRImages/HDRInterp.hpp
-shrike_SOURCES += HDRImages/HDRCubeMap.hpp HDRImages/HDRProbe.hpp HDRImages/HDRTonemap.hpp
 
 # this is a hack and should be removed eventually
 # shrike_SOURCES += DummyShader.cpp

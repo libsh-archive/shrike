@@ -39,12 +39,11 @@ using namespace ShUtil;
 #include "util.hpp"
 
 
-class testInterpolation : public Shader {
+class Interpolation : public Shader {
 public:
-  testInterpolation(std::string type);
-  ~testInterpolation();
+  Interpolation(std::string type);
+  ~Interpolation();
 
-  void createMaps(const ShImage&, ShImage&, ShImage&);
   bool init();
   
   ShProgram vertex() { return vsh;}
@@ -59,16 +58,16 @@ public:
 
 };
 
-testInterpolation::testInterpolation(std::string type)
+Interpolation::Interpolation(std::string type)
   : Shader(std::string("HDR: Interpolation: ") + type), fname("memorial.hdr")
 {
 	setStringParam("Image Name", fname);
 }
 
-testInterpolation::~testInterpolation()
+Interpolation::~Interpolation()
 {}
 
-bool testInterpolation::init()
+bool Interpolation::init()
 {
 	
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
@@ -114,11 +113,11 @@ bool testInterpolation::init()
   return true;
 }
 
-class testLinearInterpolation: public testInterpolation {
+class LinearInterpolation: public Interpolation {
 public:
-	testLinearInterpolation(): testInterpolation("Linear") {};
+	LinearInterpolation(): Interpolation("Linear") {};
 	
-	static testLinearInterpolation instance;
+	static LinearInterpolation instance;
 	
 	void initInterp() {
 		HDRImage image;
@@ -151,13 +150,13 @@ public:
 	}
 };
 
-testLinearInterpolation testLinearInterpolation::instance = testLinearInterpolation();
+LinearInterpolation LinearInterpolation::instance = LinearInterpolation();
 
-class testCubicInterpolation: public testInterpolation {
+class CubicInterpolation: public Interpolation {
 public:
-	testCubicInterpolation(): testInterpolation("Catmull-Rom spline") {};
+	CubicInterpolation(): Interpolation("Catmull-Rom spline") {};
 	
-	static testCubicInterpolation instance;
+	static CubicInterpolation instance;
 	
 	void initInterp() {
 		HDRImage image;
@@ -190,13 +189,13 @@ public:
 	}
 };
 
-testCubicInterpolation testCubicInterpolation::instance = testCubicInterpolation();
+CubicInterpolation CubicInterpolation::instance = CubicInterpolation();
 
-class testBSplineInterpolation: public testInterpolation {
+class BSplineInterpolation: public Interpolation {
 public:
-	testBSplineInterpolation(): testInterpolation("cubic B-spline") {};
+	BSplineInterpolation(): Interpolation("cubic B-spline") {};
 	
-	static testBSplineInterpolation instance;
+	static BSplineInterpolation instance;
 	
 	void initInterp() {
 		HDRImage image;
@@ -229,5 +228,45 @@ public:
 	}
 };
 
-testBSplineInterpolation testBSplineInterpolation::instance = testBSplineInterpolation();
+BSplineInterpolation BSplineInterpolation::instance = BSplineInterpolation();
+
+class CardSplineInterpolation: public Interpolation {
+public:
+	CardSplineInterpolation(): Interpolation("cardinal Spline") {};
+	
+	static CardSplineInterpolation instance;
+	
+	void initInterp() {
+		HDRImage image;
+
+		std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
+		image.loadHDR(filename.c_str());
+
+		ShUnclamped<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
+		Img.internal(true);
+		Img.memory(image.memory());
+	
+		CardinalSplineInterp<ShUnclamped<ShTextureRect<ShVector4f> > > CardSplineImg(image.width(), image.height());
+		CardSplineImg.internal(true);
+		CardSplineImg.memory(image.memory());
+		CardSplineImg.updateCardSpline();
+
+		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
+		scale.range(0.1,10.0);
+
+		ShAttrib1f SH_DECL(interpolation) =  ShAttrib1f(0.0);
+	
+	  fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
+	    ShInputPosition4f posh;
+	    ShInputTexCoord2f tc;
+	    ShInputNormal3f normal;
+	 		tc *= scale * CardSplineImg.size();
+			ShOutputAttrib4f interp = cond(interpolation > 0.5, Img[tc], CardSplineImg[tc]);
+		} SH_END;
+	
+		fsh = tonemapping << fsh;
+	}
+};
+
+CardSplineInterpolation CardSplineInterpolation::instance = CardSplineInterpolation();
 

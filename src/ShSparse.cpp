@@ -57,26 +57,20 @@ int main(int argc, char** argv)
   	ShImage inputImage;
 		HDRImage map, data;
   	inputImage.loadPng(inFileName);
-		ShImage testImage(inputImage.width(), inputImage.height(), inputImage.elements());
 		int elements = inputImage.elements();
 
-		for(int i=0 ; i<inputImage.width() ; i++) {
-			for(int j=0 ; j<inputImage.height() ; j++) {
-				for(int k=0 ; k<inputImage.elements() ; k++) {
-					int maxi = i < inputImage.width()-2 ? i : inputImage.width() - 2;
-					int maxj = j < inputImage.height()-2 ? j : inputImage.height() - 2;
-					testImage(i, j, k) = 0.25*(inputImage(maxi,maxj, k) + inputImage(maxi+1,maxj,k) +
-																					 inputImage(maxi,maxj+1,k) + inputImage(maxi+1,maxj+1,k));
-				}
-			}
-		}
-		testImage.savePng("test.png");
-		
 		// compute the number of blocks
 		int block_horiz = inputImage.width()/blocksize;
 		int block_vert = inputImage.height()/blocksize;
 	
 		map = HDRImage(block_horiz, block_vert, elements);
+		for(int i=0 ; i<map.width() ; i++) {
+			for(int j=0 ; j<map.height() ; j++) {
+				for(int k=0 ; k<map.elements() ; k++) {
+					map(i,j,k) = 0.0;
+				}
+			}
+		}
 		map(0,0,2) = (float)blocksize;
 		data = HDRImage(blocksize, blocksize, elements);
 		
@@ -106,7 +100,7 @@ int main(int argc, char** argv)
 								}
 							}
 						}
-						if(difference < 2*blocksize) {
+						if(difference < blocksize) {
 							newblock = false;
 							map(i,j,0) = (float)(xoffset*blocksize);
 							map(i,j,1) = (float)(yoffset*blocksize);
@@ -184,7 +178,7 @@ int main(int argc, char** argv)
   	map.loadHDR(mapFileName.c_str());
   	data.loadHDR(dataFileName.c_str());
 		int blocksize = (int)rint(map(0,0,2));
-		HDRImage image(map.width()*blocksize,map.height()*blocksize,map.elements());
+		HDRImage image(map.width()*blocksize,map.height()*blocksize,4);
 		string imageFileName = mapFileName.substr(0,mapFileName.size() - 8) + "_unsparsed.hdr";
 		for(int i=0 ; i<map.width() ; i++) {
 			for(int j=0 ; j<map.height() ; j++) {

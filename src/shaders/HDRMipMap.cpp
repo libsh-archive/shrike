@@ -39,12 +39,11 @@ using namespace ShUtil;
 
 #include "util.hpp"
 
-class testMipMap : public Shader {
+class Mipmap : public Shader {
 public:
-  testMipMap(std::string type);
-  ~testMipMap();
+  Mipmap(std::string type);
+  ~Mipmap();
 
-  void createMaps(const ShImage&, ShImage&, ShImage&);
   bool init();
   
   ShProgram vertex() { return vsh;}
@@ -57,20 +56,20 @@ public:
 	
 	std::string fname;
 
-  static testMipMap instance;
+  static Mipmap instance;
 };
 
-testMipMap::testMipMap(std::string type)
+Mipmap::Mipmap(std::string type)
   : Shader(std::string("HDR: Mip-Mapping: ") + type), fname("memorial.hdr")
 {
 	setStringParam("Image Name", fname);
 }
 
-testMipMap::~testMipMap()
+Mipmap::~Mipmap()
 {
 }
 
-bool testMipMap::init()
+bool Mipmap::init()
 {
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
@@ -115,11 +114,11 @@ bool testMipMap::init()
 	return true;
 }
 
-class testSimpleMipMap: public testMipMap {
+class SimpleMipMap: public Mipmap {
 public:
-	testSimpleMipMap(): testMipMap("Mip-Mapping") {};
+	SimpleMipMap(): Mipmap("Mip-Mapping") {};
 	
-	static testSimpleMipMap instance;
+	static SimpleMipMap instance;
 	
 	void initMipMap() {
 		HDRImage image;
@@ -152,13 +151,13 @@ public:
 	}
 };
 
-testSimpleMipMap testSimpleMipMap::instance = testSimpleMipMap();
+SimpleMipMap SimpleMipMap::instance = SimpleMipMap();
 
-class testLinMipMap: public testMipMap {
+class LinMipMap: public Mipmap {
 public:
-	testLinMipMap(): testMipMap("Bilinear Interpolation") {};
+	LinMipMap(): Mipmap("Bilinear Interpolation") {};
 	
-	static testLinMipMap instance;
+	static LinMipMap instance;
 	
 	void initMipMap() {
 		HDRImage image;
@@ -191,13 +190,13 @@ public:
 	}
 };
 
-testLinMipMap testLinMipMap::instance = testLinMipMap();
+LinMipMap LinMipMap::instance = LinMipMap();
 
-class testCubicMipMap: public testMipMap {
+class CubicMipMap: public Mipmap {
 public:
-	testCubicMipMap(): testMipMap("Catmull-Rom Interpolation") {};
+	CubicMipMap(): Mipmap("Catmull-Rom Interpolation") {};
 	
-	static testCubicMipMap instance;
+	static CubicMipMap instance;
 	
 	void initMipMap() {
 		HDRImage image;
@@ -230,13 +229,13 @@ public:
 	}
 };
 
-testCubicMipMap testCubicMipMap::instance = testCubicMipMap();
+CubicMipMap CubicMipMap::instance = CubicMipMap();
 
-class testBSplineMipMap: public testMipMap {
+class BSplineMipMap: public Mipmap {
 public:
-	testBSplineMipMap(): testMipMap("B-Spline Interpolation") {};
+	BSplineMipMap(): Mipmap("B-Spline Interpolation") {};
 	
-	static testBSplineMipMap instance;
+	static BSplineMipMap instance;
 	
 	void initMipMap() {
 		HDRImage image;
@@ -269,5 +268,47 @@ public:
 	}
 };
 
-testBSplineMipMap testBSplineMipMap::instance = testBSplineMipMap();
+BSplineMipMap BSplineMipMap::instance = BSplineMipMap();
+
+class CardSplineMipMap: public Mipmap {
+public:
+	CardSplineMipMap(): Mipmap("cardinal Spline Interpolation") {};
+	
+	static CardSplineMipMap instance;
+	
+	void initMipMap() {
+		HDRImage image;
+
+		std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
+		image.loadHDR(filename.c_str());
+
+		CardinalSplineInterp<MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > > MipMapImg(image.width(), image.height());
+		MipMapImg.internal(true);
+		MipMapImg.memory(image.memory());
+		MipMapImg.updateCardSpline();
+		MipMapImg.updateMipMap();
+
+		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
+		scale.range(0.1,10.0);
+
+		ShAttrib1f SH_DECL(mipmaplevel) = ShAttrib1f(0.0);
+		mipmaplevel.range(0.0,8.0);
+		mipmaplevel.name("mipmap level");
+	
+	  fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
+	    ShInputPosition4f posh;
+	    ShInputTexCoord2f tc;
+	    ShInputNormal3f normal;
+	 		tc *= scale;
+			MipMapImg.setLevel(mipmaplevel);
+			ShOutputAttrib4f result = MipMapImg(tc);
+		} SH_END;
+	
+		fsh = tonemapping << fsh;
+	}
+};
+
+CardSplineMipMap CardSplineMipMap::instance = CardSplineMipMap();
+
+
 
