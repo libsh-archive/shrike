@@ -197,6 +197,7 @@ bool VectorText::init()
   std::cerr << " the image width is " << font.width() << std::endl;
   std::cerr << " the image height is " << font.height() << std::endl;
 
+  ShAttrib2f temp = ShAttrib2f(0.03125, 0.03125);
   ShAttrib2f size[9];
   size[0] = ShAttrib2f(-1.0/width, -1.0/height);
   size[1] = ShAttrib2f(0,          -1.0/height);
@@ -215,16 +216,20 @@ bool VectorText::init()
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
   ShFont font;
-  font.loadFont("/home/zqin/dev/freetype/p.txt");
+  font.loadFont("/home/mmccool/Dev/vectortexture/freetype/p.txt");
 
   int width = font.width();
   int height = font.height();
+  int edges = font.edges();
   int elements = 4;
 
   // textures for line segment endpoints
   ShUnclamped< ShArrayRect<ShAttrib4f> > ftexture(width, height);
+  ShUnclamped< ShArrayRect<ShAttrib1f> > flag(width, height);
   ftexture.memory(font.memory(0));
+  flag.memory(font.memory(1));
 
+  /*
   //debug info
   for(int i=0; i<height; i++) {
 	  for(int j=0; j<width; j++) {
@@ -236,9 +241,17 @@ bool VectorText::init()
 		  std::cout << std::endl;
 	  }
   }
+  for(int i=0; i<height; i++) {
+	  for(int j=0; j<width; j++) {
+		  std::cout << font.coords(1)[i*width+j] << " ";
+	  }
+	  std::cout << std::endl;
+  }
+  */
 
   std::cerr << " the image width is " << font.width() << std::endl;
   std::cerr << " the image height is " << font.height() << std::endl;
+  std::cerr << " the image edges is " << font.edges() << std::endl;
 
   ShAttrib2f size[4];
   size[0] = ShAttrib2f(-0.5/width, -0.5/height);

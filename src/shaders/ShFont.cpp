@@ -187,25 +187,35 @@ void ShFont::loadFont(const std::string& filename)
 
 		int ifile;
 		float coord;
+		int flag;
 
 		ifile = open(filename.c_str(), O_RDONLY);
 
 		if(ifile > 0 ) {
 			read(ifile, &m_width, sizeof(int));
 			read(ifile, &m_height, sizeof(int));
-			std::cout << m_width << " " << m_height << std::endl;
+			read(ifile, &m_edges, sizeof(int));
+			std::cout << m_width << " " << m_height << " " << m_edges << std::endl;
 
 			m_elements = 4;
 
 			// buffer for edge coordinates and edge number
-			m_memory = new ShHostMemoryPtr[1];
+			m_memory = new ShHostMemoryPtr[2];
 			m_memory[0] = new ShHostMemory(sizeof(float) * m_width * m_height * m_elements);
+			m_memory[1] = new ShHostMemory(sizeof(int) * m_width * m_height);
 
 			int len = m_width * m_height * m_elements;
 
 			for(int n=0; n<len; n++) {
 				read(ifile, &coord, sizeof(float));
 				coords(0)[n] = coord;
+			}
+
+			len = m_width * m_height;
+
+			for(int n=0; n<len; n++) {
+				read(ifile, &flag, sizeof(int));
+				coords(1)[n] = flag;
 			}
 		}
 		close(ifile);

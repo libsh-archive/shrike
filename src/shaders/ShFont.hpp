@@ -83,7 +83,8 @@ public:
 private:
   int m_width, m_height;
   int m_elements;
-  int m_edges;
+  int m_edges;  // 2 for 4 packing. One for texture coords. One for flags indicating
+                // whether an empty cell is inner or outer
   float m_halfx, m_halfy;
   ShHostMemoryPtr *m_memory;
   ShHostMemoryPtr m_edgenum;
