@@ -10,6 +10,7 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 Camera.hpp Camera.cpp \
 		 ShTrackball.hpp ShTrackball.cpp \
 		 DiffuseShader.cpp \
+		 DiscoShader.cpp \
 		 PhongShader.cpp \
 		 WorleyShader.cpp \
 		 TexShader.cpp \
