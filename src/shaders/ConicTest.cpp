@@ -231,23 +231,25 @@ bool ConicTest::init()
 
 		// set up coefficients for distance cubic 
 		ShAttrib3f cc;
-		cc[0] = s*x(0);
-		cc[1] = 2.0*x(1) - s*s;
-		cc[2] = -2.0;  
+		cc(0) = s*x(0);
+		cc(1) = 2.0*x(1) - s*s;
+		cc(2) = -2.0;  
 
 		// evaluate distance cubic at endpoints of interval
         ShAttrib3f A;
 		A(0,1) = cc(0,0) + (cc(1,1) + cc(2,2)*G(0,1)*G(0,1))*G(0,1);
 
 	    // refine estimate using reguli-falsi
-		for (int i=0; i<5; i++) {
+		for (int i=0; i<0; i++) {
 		  G(2) = (A(0)*G(1) - A(1)*G(0))/(A(0) - A(1));
 		  A(2) = cc(0) + (cc(1) + cc(2)*G(2)*G(2))*G(2);
-		  ShAttrib1f c = A(2)*A(0) > 0.0;
+		  ShAttrib1f c = (A(2)*A(0) > 0.0);
 		  G(0,1) = cond(c,G(2,1),G(0,2));
 		  A(0,1) = cond(c,A(2,1),A(0,2));
 	    }
 		G(2) = (A(0)*G(1) - A(1)*G(0))/(A(0) - A(1));
+
+		G(2) = G(1);
 
 		// transform estimate back from canonical space
 		return G(2) + a[1](3);
@@ -274,10 +276,10 @@ bool ConicTest::init()
 
 		// DEBUG
 		// just evaluate sign of xc relative to parabola
-		ShAttrib1f s = a[1](2);
-		r(0) = xc(1) - (1.0/(s*s))*xc(0)*xc(0); 
-		r(1) = r(0);
-		r(0) *= r(0);
+		// ShAttrib1f s = a[1](2);
+		// r(0) = xc(1) - (1.0/(s*s))*xc(0)*xc(0); 
+		// r(1) = r(0);
+		// r(0) *= r(0);
 		return r;
 	  }
   };
