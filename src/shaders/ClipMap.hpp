@@ -62,16 +62,16 @@ public:
   void setCenter(int center[2]) {
     NewCenter[0] = center[0];
     NewCenter[1] = center[1];
-    m_node->memory()->flush();
+    this->m_node->memory()->flush();
   }    
 
   void memory(ShMemoryPtr mem) {
-    m_node->memory(mem);
-    m_node->memory()->add_dep(this);
+    this->m_node->memory(mem);
+    this->m_node->memory()->add_dep(this);
   }
 
   ShMemoryPtr memory() {
-    return m_node->memory();
+    return this->m_node->memory();
   }
 
   void memory_update() {
@@ -158,10 +158,10 @@ public:
   {
     stride = return_type::typesize; // save the number of elements
     generateMipMap(); // generate the mipmap levels of the original texture
-    int scalemax = m_node->width() > m_node->height() ? m_node->width() : m_node->height();
+    int scalemax = this->m_node->width() > this->m_node->height() ? this->m_node->width() : this->m_node->height();
     stackSize = (int)ceil(log((float)scalemax/ClipSize) / 0.693147181); // get the number of levels that will be clamped
     float scale = 1.5 * pow(0.5,stackSize);
-    width = stackSize*ClipSize + (int)(m_node->width()*scale); // the new width
+    width = stackSize*ClipSize + (int)(this->m_node->width()*scale); // the new width
     height = ClipSize; // the new height
     // allocate the memory space for the texture
     clipmapmem = new ShHostMemory(width * height * stride * sizeof(float));
@@ -180,12 +180,12 @@ public:
     coffset[1] = 0;
     // all the image is copied
     int updateWindow[2];
-    updateWindow[0] = (int)(pow(0.5, stackSize) * m_node->width());
-    updateWindow[1] = (int)(pow(0.5, stackSize) * m_node->height());
+    updateWindow[0] = (int)(pow(0.5, stackSize) * this->m_node->width());
+    updateWindow[1] = (int)(pow(0.5, stackSize) * this->m_node->height());
     // copy data
     int mipmaplevel = stackSize;
     copyClipMapData(updateWindow, coffset, center, mipmaplevel);
-    coffset[0] += (int)(pow(0.5,stackSize) * m_node->width());
+    coffset[0] += (int)(pow(0.5,stackSize) * this->m_node->width());
     coffset[1] = height;
     do { // copy the other levels until the end of the mipmap levels
       coffset[1]/=2;
@@ -215,7 +215,7 @@ public:
     ShAttrib2f u2 = 0.5*u;
     
     ShAttrib2f stackTranslation(ClipSize * level, (ShAttrib1f)0.0);
-    ShAttrib2f pyramidTranslation((ShAttrib1f)ClipSize*stackSize  + pow(0.5,stackSize)*m_node->width(), ClipSize*pow(0.5,pos(level-stackSize)));
+    ShAttrib2f pyramidTranslation((ShAttrib1f)ClipSize*stackSize  + pow(0.5,stackSize)*this->m_node->width(), ClipSize*pow(0.5,pos(level-stackSize)));
     // wrap arround the center point
     u = cond(level<stackSize, frac((u-scale*(center-offset-factor*0.5*ClipSize))/ClipSize)*ClipSize, u);
     ShAttrib2f translation = cond(level>stackSize, pyramidTranslation, stackTranslation);
@@ -230,15 +230,15 @@ public:
   }
 
   return_type operator()(const ShTexCoord2f tc) const {
-    return operator[](tc*size());
+    return operator[](tc*this->size());
   }
   
   
 private:
   // generate a mipmap texture
   void ClipMap::generateMipMap() {
-    width = m_node->width();
-    height = m_node->height();
+    width = this->m_node->width();
+    height = this->m_node->height();
     oldwidth = width;
     oldheight = height;
     mipmapwidth = width + width/2 + width%2;
@@ -283,12 +283,12 @@ private:
     // compute the size of the current mipmap level
     int mipmapsize[2];
     float scalefactor = pow(0.5, (double)mipmaplevel);
-    mipmapsize[0] = (int)(m_node->width() * scalefactor);
-    mipmapsize[1] = (int)(m_node->height() * scalefactor);
+    mipmapsize[0] = (int)(this->m_node->width() * scalefactor);
+    mipmapsize[1] = (int)(this->m_node->height() * scalefactor);
     // compute the center coordinates at the current mipmap level
     int mipmapcenter[2];
     if(mipmaplevel>0) { // need to scale and translate to the right part
-      mipmapcenter[0] = (int)(center[0] * scalefactor) + m_node->width();
+      mipmapcenter[0] = (int)(center[0] * scalefactor) + this->m_node->width();
       mipmapcenter[1] = (int)(center[1] * scalefactor) + mipmapsize[1];
     }
     else { // 1st level, no change
@@ -306,18 +306,18 @@ private:
           int y = mipmapcenter[1]+j;
           if(mipmaplevel == 0) {
             if(x<0)
-              x += m_node->width();
+              x += this->m_node->width();
             if(y<0)
-              y += m_node->height();
-            if(x>m_node->width())
-              x -= m_node->width();
-            if(y>m_node->height())
-              y -= m_node->height();
+              y += this->m_node->height();
+            if(x>this->m_node->width())
+              x -= this->m_node->width();
+            if(y>this->m_node->height())
+              y -= this->m_node->height();
           }
           else {
-            if(x<m_node->width())
+            if(x<this->m_node->width())
               x += mipmapsize[0];
-            if(x>m_node->width()+mipmapsize[0])
+            if(x>this->m_node->width()+mipmapsize[0])
               x -= mipmapsize[0];
             if(y>2*mipmapsize[1])
               y -= mipmapsize[1];

@@ -1,3 +1,15 @@
+2004-11-05  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* configure.ac: Bump version to 0.7.5 in preparation for imminent release.
+
+	* src/HDRImages/*.hpp: More gcc 3.4 fixes.
+
+	* src/shaders/LCDSmall.cpp (lcdSmall): Remove a redundant
+	"template" qualifier for a non-dependent template member function call.
+
+	* src/HDRImages/HDRInterp.hpp: Added many missing "this->" for
+	template-dependent parent members. Fixes compilation on gcc-3.4.
+
 2004-10-24  Kevin Moule  <krmoule@cgl.uwaterloo.ca>
 
 	* win32/*: Added Visual Studio .NET solution/project files.

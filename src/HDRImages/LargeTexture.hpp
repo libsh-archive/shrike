@@ -54,16 +54,16 @@ public:
 	{}
 
   void memory(ShMemoryPtr mem) {
-    m_node->memory(mem);
-    m_node->memory()->add_dep(this);
-    m_node->memory()->flush();
+    this->m_node->memory(mem);
+    this->m_node->memory()->add_dep(this);
+    this->m_node->memory()->flush();
   }
 
-  ShMemoryPtr memory() { return m_node->memory(); }
+  ShMemoryPtr memory() { return this->m_node->memory(); }
 
   void memory_update() {
-    width = m_node->width() / N;
-    height = m_node->height() / M;
+    width = this->m_node->width() / N;
+    height = this->m_node->height() / M;
     int stride = return_type::typesize;
     ShHostStoragePtr cursto =	shref_dynamic_cast<ShHostStorage>(memory()->findStorage("host"));
 		float* olddata = (float*)cursto->data();
@@ -77,7 +77,7 @@ public:
         for(int x=0 ; x<width ; x++) {
           for(int y=0 ; y<height ; y++) {
             for(int z=0 ; z<stride ; z++) {
-              data[(y*width+x)*stride + z] = olddata[((y+j*height)*m_node->width()+x + i*width)*stride + z];
+              data[(y*width+x)*stride + z] = olddata[((y+j*height)*this->m_node->width()+x + i*width)*stride + z];
             }
           }
         }
@@ -98,7 +98,7 @@ public:
 	}
 			
 	return_type operator()(const ShTexCoord2f tc) const {
-    return operator[](tc*size());
+    return operator[](tc*this->size());
   }
 
 private:

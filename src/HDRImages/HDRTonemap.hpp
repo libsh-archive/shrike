@@ -204,27 +204,27 @@ public:
 	AshikhminToneMap(int width, int height, int depth) : ToneMap<TM>(width, height, depth) {}
 	
   void memory(ShMemoryPtr mem) {
-    m_node->memory(mem);
-    m_node->memory()->add_dep(this);
-    m_node->memory()->flush();
+    this->m_node->memory(mem);
+    this->m_node->memory()->add_dep(this);
+    this->m_node->memory()->flush();
   }
 
-  ShMemoryPtr memory() { return m_node->memory(); }
+  ShMemoryPtr memory() { return this->m_node->memory(); }
 
   void memory_update() {
-		int width = m_node->width();
-		int height = m_node->height();
+		int width = this->m_node->width();
+		int height = this->m_node->height();
 		int stride = return_type::typesize;
 		ShHostStoragePtr cursto =	shref_dynamic_cast<ShHostStorage>(memory()->findStorage("host"));
 		float* data = (float*)cursto->data();
     // reduce the image by a factor 2
-		ShHostMemoryPtr luminance = Reduction(data, width, height, stride, 1);
+		ShHostMemoryPtr luminance = this->Reduction(data, width, height, stride, 1);
 		width /=2;
 		height /=2;
 		float* lum = (float*)luminance->hostStorage()->data();
 		
 		// compute the luminance of the image
-		int scalingFactor = m_node->width()/width;
+		int scalingFactor = this->m_node->width()/width;
 		for(int x=0 ; x<width ; x++) {
 			for(int y=0 ; y<height ; y++) {
 				lum[(y*width + x)*stride] = 0.27*lum[(y*width + x)*stride] + 0.67*lum[(y*width + x)*stride + 1] + 0.06*lum[(y*width +x )*stride +2];
@@ -295,7 +295,7 @@ public:
 				for(int i=scalingFactor*x; i<scalingFactor*(x+1) ; i++) {
 				  for(int j=scalingFactor*y; j<scalingFactor*(y+1) ; j++) {
     				for(int e=0 ; e<stride ; e++) {
-							data[(j*m_node->width()+i)*stride+e] *= C;
+							data[(j*this->m_node->width()+i)*stride+e] *= C;
 						}
 					}
 				}
@@ -336,25 +336,25 @@ public:
 	ReinhardToneMap(int width, int height, int depth) : ToneMap<TM>(width, height, depth)	{}
 
   void memory(ShMemoryPtr mem) {
-    m_node->memory(mem);
-    m_node->memory()->add_dep(this);
-    m_node->memory()->flush();
+    this->m_node->memory(mem);
+    this->m_node->memory()->add_dep(this);
+    this->m_node->memory()->flush();
   }
 
-  ShMemoryPtr memory() { return m_node->memory(); }
+  ShMemoryPtr memory() { return this->m_node->memory(); }
 
   void memory_update() {
-		int width = m_node->width();
-		int height = m_node->height();
+		int width = this->m_node->width();
+		int height = this->m_node->height();
 		int stride = return_type::typesize;
 		ShHostStoragePtr cursto =	shref_dynamic_cast<ShHostStorage>(memory()->findStorage("host"));
 		float* data = (float*)cursto->data();
     // reduce the image by a factor 2
-    ShHostMemoryPtr reduction =  Reduction(data, width, height, stride, 1);
+    ShHostMemoryPtr reduction =  this->Reduction(data, width, height, stride, 1);
     float *data2 = (float*)reduction->hostStorage()->data();
     width /= 2;
     height /= 2;
-		int scalingFactor = m_node->width()/width;
+		int scalingFactor = this->m_node->width()/width;
 		ShHostMemoryPtr luminance = new ShHostMemory(width * height * stride * sizeof(float));
 		float *lum = (float*)luminance->hostStorage()->data();
 		   
@@ -393,9 +393,9 @@ public:
 				float Ld = 1.0 / (1.0 + V1) * 1.0 / a;
 				for(int i=scalingFactor*x; i<scalingFactor*(x+1) ; i++) {
 					for(int j=scalingFactor*y; j<scalingFactor*(y+1) ; j++) {
-    				data[(j*m_node->width() + i)*stride] *= Ld;
-	    			data[(j*m_node->width() + i)*stride + 1] *= Ld;
-		    		data[(j*m_node->width() + i)*stride + 2] *= Ld;
+    				data[(j*this->m_node->width() + i)*stride] *= Ld;
+	    			data[(j*this->m_node->width() + i)*stride + 1] *= Ld;
+		    		data[(j*this->m_node->width() + i)*stride + 2] *= Ld;
           }
         }
 			}

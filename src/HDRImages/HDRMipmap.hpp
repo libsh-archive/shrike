@@ -51,26 +51,26 @@ public:
   typedef MipMap<typename T::rectangular_type> rectangular_type;
 
   MipMap() : parent_type() {
-    m_node->traits().filtering(ShTextureTraits::SH_FILTER_MIPMAP);
+    this->m_node->traits().filtering(ShTextureTraits::SH_FILTER_MIPMAP);
   }
   MipMap(int width) : parent_type(width) {
-    m_node->traits().filtering(ShTextureTraits::SH_FILTER_MIPMAP);
+    this->m_node->traits().filtering(ShTextureTraits::SH_FILTER_MIPMAP);
   }
   MipMap(int width, int height) : parent_type(width, height) {
-    m_node->traits().filtering(ShTextureTraits::SH_FILTER_MIPMAP);
+    this->m_node->traits().filtering(ShTextureTraits::SH_FILTER_MIPMAP);
   }
   MipMap(int width, int height, int depth) : parent_type(width, height, depth) {
-    m_node->traits().filtering(ShTextureTraits::SH_FILTER_MIPMAP);
+    this->m_node->traits().filtering(ShTextureTraits::SH_FILTER_MIPMAP);
   }
 
   void memory(ShMemoryPtr mem) {
-    m_node->memory(mem); // set the data
-    m_node->memory()->add_dep(this); // add the dependency to the update function
-    m_node->memory()->flush(); // update the data
+    this->m_node->memory(mem); // set the data
+    this->m_node->memory()->add_dep(this); // add the dependency to the update function
+    this->m_node->memory()->flush(); // update the data
   }
 
   ShMemoryPtr memory() {
-    return m_node->memory();
+    return this->m_node->memory();
   }
 
   /* test if the current texture has to used the new operations defined
@@ -78,7 +78,7 @@ public:
    */
   bool test_type() {
   // TODO: figure if this function should be moved in some backend test...
-    if(m_node->traits().clamping() == ShTextureTraits::SH_UNCLAMPED)
+    if(this->m_node->traits().clamping() == ShTextureTraits::SH_UNCLAMPED)
       return true;
     return false;
   }
@@ -86,8 +86,8 @@ public:
   // create a new texture memory
   // save the original texture and all the mipmap levels on its right
   void memory_update() {
-    int width = m_node->width();
-    int height = m_node->height();
+    int width = this->m_node->width();
+    int height = this->m_node->height();
     int stride = return_type::typesize;
     // access the original data
     ShHostStoragePtr cursto = shref_dynamic_cast<ShHostStorage>(memory()->findStorage("host"));
@@ -98,7 +98,7 @@ public:
     float* newdata = (float*)newmem->hostStorage()->data();
     // update the new texture parameters
     m_mipmaptex.memory(newmem);
-    m_mipmaptex.size(m_mipmapwidth, m_node->height());
+    m_mipmaptex.size(m_mipmapwidth, this->m_node->height());
 
     // copy the original data to the level 0
     for (int y = 0; y < height; y++) {
@@ -132,7 +132,7 @@ public:
         }
       }
       // update the position for the next level
-      center[0] = m_node->width();
+      center[0] = this->m_node->width();
       center[1] = offset[1];
       offset[1] /= 2;
     } while (width > 0 && height > 0);
@@ -143,25 +143,25 @@ public:
     ShAttrib1f level = pos(log2(max(u))); // mip-map level
     ShAttrib1f scale = pow(0.5,floor(level)); // reduction factor
     ShAttrib1f transition = frac(level); // blending factor
-    if(m_node->traits().wrapping() == ShTextureTraits::SH_WRAP_REPEAT)
-      u = scale*frac(tc/size())*size();
+    if(this->m_node->traits().wrapping() == ShTextureTraits::SH_WRAP_REPEAT)
+      u = scale*frac(tc/this->size())*this->size();
     else
       u = scale*tc; // size of the current level
     // compute the coordinates ot the next level
-    ShAttrib2f u2 = 0.5*u + size()*ShAttrib2f(ShAttrib1f(1.0),0.5*scale);
+    ShAttrib2f u2 = 0.5*u + this->size()*ShAttrib2f(ShAttrib1f(1.0),0.5*scale);
     // translate the coordinates when needed
-    u = cond(level<1.0, u, u+size()*ShAttrib2f(ShAttrib1f(1.0),scale));
+    u = cond(level<1.0, u, u+this->size()*ShAttrib2f(ShAttrib1f(1.0),scale));
     // return the linear interpolation of the two levels
     return (1.0-transition)*m_mipmaptex[u] +
             transition*m_mipmaptex[u2];
   }
       
   return_type operator()(const ShTexCoord2f tc) const {
-    ShAttrib2f u = fwidth(tc)*size();// derivatives of the tex coordinates
+    ShAttrib2f u = fwidth(tc)*this->size();// derivatives of the tex coordinates
     ShAttrib1f level = pos(log2(max(u))); // mip-map level
     ShAttrib1f scale = pow(0.5,floor(level)); // reduction factor
     ShAttrib1f transition = frac(level); // blending factor
-    if(m_node->traits().wrapping() == ShTextureTraits::SH_WRAP_REPEAT)
+    if(this->m_node->traits().wrapping() == ShTextureTraits::SH_WRAP_REPEAT)
       u = scale*frac(tc);
     else
       u = scale*tc;

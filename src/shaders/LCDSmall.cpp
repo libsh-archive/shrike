@@ -141,7 +141,7 @@ ShAttrib1f lcdSmall(const ShTexCoord2f& tc, ShAttrib1f number,
   xIn = (xRange[0] < loc(0)) && (loc(0) < xRange[1]);
   //            LT LB RT RB TT CE BB LT+LB
   int xSwiz[] = {0, 0, 2, 2, 1, 1, 1, 0};
-  ShAttrib<8, SH_TEMP> in = xIn.template swiz<8>(xSwiz);
+  ShAttrib<8, SH_TEMP> in = xIn.swiz<8>(xSwiz);
 
 
   // now check y ranges 

@@ -65,7 +65,7 @@ public:
 	}
 			
 	return_type operator()(const ShTexCoord2f tc) const {
-		return operator[](tc*size());
+		return operator[](tc*this->size());
 	}
 
 
@@ -135,7 +135,7 @@ public:
 	}
 			
 	return_type operator()(const ShTexCoord2f tc) const {
-    return operator[](tc*size());
+    return operator[](tc*this->size());
 	}
 
 };

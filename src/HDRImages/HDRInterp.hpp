@@ -56,7 +56,7 @@ public:
     ShAttrib2f ftc2 = ShAttrib2f(1.0,1.0)-ftc1;
     ShAttrib2f u = floor(tc);
     // clamp the texture coordinates
-    ShAttrib2f limit = size() - ShAttrib2f(1.0,1.0);
+    ShAttrib2f limit = this->size() - ShAttrib2f(1.0,1.0);
     ShAttrib2f umin = SH::min(limit, u+ShAttrib2f(1.0,1.0));
     // the first interpolation
     return_type interp1 = ftc2(1) * (*bt)[u];
@@ -69,7 +69,7 @@ public:
   }
       
   return_type operator()(const ShTexCoord2f tc) const {
-    return operator[](tc*size());     
+    return operator[](tc*this->size());     
   }
 };
 
@@ -120,7 +120,7 @@ public:
     h2 = mad(2.5,dtc22(2,3),h2);
 
     // clamp coordinates to the texture size to avoid artifacts with mip-mapping
-    ShAttrib2f limit = size() - ShAttrib2f(1.0,1.0);
+    ShAttrib2f limit = this->size() - ShAttrib2f(1.0,1.0);
     ShAttrib2f u_1 = u - ShAttrib2f(1.0,1.0);
     ShAttrib4f u12 = u(0,1,0,1) + ShConstAttrib4f(1.0,1.0,2.0,2.0);
     u_1 = SH::max(ShAttrib2f(0.0,0.0),u_1);
@@ -138,7 +138,7 @@ public:
   }
       
   return_type operator()(const ShTexCoord2f tc) const {
-    return operator[](tc*size());
+    return operator[](tc*this->size());
   }
 };
 
@@ -189,7 +189,7 @@ public:
     h2 = mad(6.0,dtc22(2,3),h2);
 
     // clamp coordinates to the texture size to avoid artifacts with mip-mapping
-    ShAttrib2f limit = size() - ShAttrib2f(1.0,1.0);
+    ShAttrib2f limit = this->size() - ShAttrib2f(1.0,1.0);
     ShAttrib2f u_1 = u - ShAttrib2f(1.0,1.0);
     ShAttrib4f u12 = u(0,1,0,1) + ShConstAttrib4f(1.0,1.0,2.0,2.0);
     u_1 = SH::max(ShAttrib2f(0.0,0.0),u_1);
@@ -207,7 +207,7 @@ public:
   }
       
   return_type operator()(const ShTexCoord2f tc) const {
-    return operator[](tc*size());
+    return operator[](tc*this->size());
   }
 };
 
@@ -231,16 +231,16 @@ public:
   CardinalSplineInterp(int width, int height, int depth) : parent_type(width, height, depth) {}
 
   void memory(ShMemoryPtr mem) {
-    m_node->memory(mem); // set the data
-    m_node->memory()->add_dep(this); // create a dependency
-    m_node->memory()->flush(); // update the data
+    this->m_node->memory(mem); // set the data
+    this->m_node->memory()->add_dep(this); // create a dependency
+    this->m_node->memory()->flush(); // update the data
   }
 
-  ShMemoryPtr memory() { return m_node->memory(); }
+  ShMemoryPtr memory() { return this->m_node->memory(); }
 
   void memory_update() {
-    int width = m_node->width();
-    int height = m_node->height();
+    int width = this->m_node->width();
+    int height = this->m_node->height();
     int stride = return_type::typesize;
     ShHostStoragePtr cursto = shref_dynamic_cast<ShHostStorage>(memory()->findStorage("host"));
     ShHostMemoryPtr newmem = new ShHostMemory(width * height * stride * sizeof(float));
@@ -356,7 +356,7 @@ public:
     h2 = mad(6.0,dtc22(2,3),h2);
 
     // clamp coordinates to the texture size to avoid artifacts with mip-mapping
-    ShAttrib2f limit = size() - ShAttrib2f(1.0,1.0);
+    ShAttrib2f limit = this->size() - ShAttrib2f(1.0,1.0);
     ShAttrib2f u_1 = u - ShAttrib2f(1.0,1.0);
     ShAttrib4f u12 = u(0,1,0,1) + ShConstAttrib4f(1.0,1.0,2.0,2.0);
     u_1 = SH::max(ShAttrib2f(0.0,0.0),u_1);
@@ -374,7 +374,7 @@ public:
   }
       
   return_type operator()(const ShTexCoord2f tc) const {
-    return operator[](tc*size());
+    return operator[](tc*this->size());
   }
 
 };
@@ -400,19 +400,19 @@ public:
 
   void setCoeff(float lambda) {
     m_lambda = lambda;
-    m_node->memory()->flush();
+    this->m_node->memory()->flush();
   }
 
   void memory(ShMemoryPtr mem) {
-    m_node->memory(mem);
-    m_node->memory()->add_dep(this);
+    this->m_node->memory(mem);
+    this->m_node->memory()->add_dep(this);
   }
 
-  ShMemoryPtr memory() { return m_node->memory(); }
+  ShMemoryPtr memory() { return this->m_node->memory(); }
 
   void memory_update() {
-    int width = m_node->width();
-    int height = m_node->height();
+    int width = this->m_node->width();
+    int height = this->m_node->height();
     int stride = return_type::typesize;
     ShHostStoragePtr cursto = shref_dynamic_cast<ShHostStorage>(memory()->findStorage("host"));
     ShHostMemoryPtr newmem = new ShHostMemory(width * height * stride * sizeof(float));
@@ -529,7 +529,7 @@ public:
     h2 = mad(6.0,dtc22(2,3),h2);
 
     // clamp coordinates to the texture size to avoid artifacts with mip-mapping
-    ShAttrib2f limit = size() - ShAttrib2f(1.0,1.0);
+    ShAttrib2f limit = this->size() - ShAttrib2f(1.0,1.0);
     ShAttrib2f u_1 = u - ShAttrib2f(1.0,1.0);
     ShAttrib4f u12 = u(0,1,0,1) + ShConstAttrib4f(1.0,1.0,2.0,2.0);
     u_1 = SH::max(ShAttrib2f(0.0,0.0),u_1);
@@ -547,7 +547,7 @@ public:
   }
       
   return_type operator()(const ShTexCoord2f tc) const {
-    return operator[](tc*size());
+    return operator[](tc*this->size());
   }
 
 private:
