@@ -1,8 +1,8 @@
 To compile shrike you will need
 
  - an installed version of libsh, available from
-   http://libsh.sf.net/. At least libsh 0.0.20040322 is required, a
-   newer version may be required if this paragraph is out of date.
+   http://libsh.org/. You'll probably need a version of Sh matching
+   the version number of shrike
  - the shmedia package, available from the Sh website.
  - OpenGL
  - a recent glext.h, if you want the ARB backend to work. If you got

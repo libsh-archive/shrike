@@ -1,5 +1,5 @@
 shrike is a utility application that acts as a testbed
-for shaders written in Sh (http://libsh.sf.net/).
+for shaders written in Sh (http://libsh.org/).
 
 See INSTALL for installation instructions and prerequisites.
 
@@ -13,5 +13,20 @@ shift and middle button will move it closer or further away from the
 object.
 
 Everything else is available from the on-screen menus.
+
+CAVEATS
+
+Note that some of the shaders are not working under some
+configurations right now. Usually this is because they use features
+only supported by certain graphics cards. For example, the "Branching"
+shaders will generally only work under NV40 series cards. Derivatives
+don't work under any ATI cards right now. Many shaders don't work
+under ATI R3xx (9x00) series cards, since the instruction limits are
+very short. In all of these cases you'll see no object being rendered
+at all. Sometimes shrike might crash -- sorry.
+
+If you're seeing a black object, you might not have an appropriate
+texture. Remember to point shrike at the correct location for shmedia
+when compiling it.
 
 If you have any questions, please contact libsh-devel@lists.sf.net.
