@@ -2,14 +2,13 @@
 #include <fstream>
 #include <sh/sh.hpp>
 #include <sh/shutil.hpp>
-#define GL_GLEXT_LEGACY
-#include <GL/gl.h>
-#include <GL/glext.h>
-#undef GL_GLEXT_LEGACY
+#include "ShrikeGl.hpp"
 #include "Shader.hpp"
 #include "Globals.hpp"
 #include "Text.hpp"
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 #include <sh/ShObjMesh.hpp>
 
 using namespace SH;

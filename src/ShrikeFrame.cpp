@@ -246,13 +246,20 @@ void ShrikeFrame::showProgram(ShProgram program,
   std::string title = name + " Shader Code";
   wxFrame* frame = new wxFrame(0, -1, title.c_str());
 
+
   wxTextCtrl* control = new wxTextCtrl(frame, -1, "",
                                        wxDefaultPosition,
                                        wxDefaultSize,
                                        wxTE_MULTILINE | wxTE_READONLY);
-  
+
+#ifndef NO_TEXT_WINDOW_STREAM
   std::ostream stream(control);
   program.node()->code()->print(stream);
+#else
+  std::ostringstream s;
+  program.node()->code()->print(s);
+  control->AppendText(s.str().c_str());
+#endif
 
   frame->Show();
 }
@@ -271,8 +278,7 @@ void ShrikeFrame::showInterface(ShProgram program,
                                        wxDefaultSize,
                                        wxTE_MULTILINE | wxTE_READONLY);
   
-  std::ostream stream(control);
-  stream << program.describe_interface();
+  control->AppendText(program.describe_interface().c_str());
 
   frame->Show();
 }

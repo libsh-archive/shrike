@@ -15,7 +15,7 @@ float ShTimer::value(void)
   {
   LARGE_INTEGER freq;
   QueryPerformanceFrequency(&freq);
-  return (float)(t.QuadPart)/(freq.QuadPart/1000);
+  return ((float)t.QuadPart)/((float)freq.QuadPart/1000.0);
   }
 
 ShTimer ShTimer::now(void)

@@ -2,13 +2,13 @@
 #include <fstream>
 #include <sh/sh.hpp>
 #include <sh/shutil.hpp>
-#define GL_GLEXT_LEGACY
-#include <GL/gl.h>
-#include <GL/glext.h>
-#undef GL_GLEXT_LEGACY
+#include <wx/wx.h>
+#include "ShrikeGl.hpp"
 #include "Shader.hpp"
 #include "Globals.hpp"
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 #include "ShrikeCanvas.hpp"
 #include <sh/ShObjMesh.hpp>
 
@@ -65,7 +65,8 @@ void EdgeGooch::render() {
     m_obj.normalizeNormals();
     initLists();
   }
-  aspect = canvas->m_width / (float)canvas->m_height; 
+  aspect = canvas->GetClientSize().GetWidth() 
+    / (float)canvas->GetClientSize().GetHeight(); 
 
   // render fill 
   shBind(vsh);

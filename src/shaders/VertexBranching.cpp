@@ -1,9 +1,6 @@
 #include <sh/sh.hpp>
 #include <iostream>
-#define GL_GLEXT_LEGACY
-#include <GL/gl.h>
-#include <GL/glext.h>
-#undef GL_GLEXT_LEGACY
+#include "ShrikeGl.hpp"
 #include "Shader.hpp"
 #include "Globals.hpp"
 

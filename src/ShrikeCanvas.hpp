@@ -1,6 +1,7 @@
 #ifndef SHRIKECANVAS_HPP
 #define SHRIKECANVAS_HPP
 
+#include <wx/wx.h>
 #include <wx/glcanvas.h>
 #include <sh/ShObjMesh.hpp>
 #include "Camera.hpp"
