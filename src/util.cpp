@@ -16,19 +16,6 @@ irradiance (
   return pos(normal | light);
 }
 
-// Reflect vector about surface given by normal.
-ShVector3f
-reflect (
-   ShVector3f v, 
-   ShNormal3f n
-) {
-   v = normalize(v);
-   n = normalize(n);
-   ShVector3f r = ShVector3f(2.0f * (n|v) * n - v); 
-   // TODO: r.unit(true);
-   return r;
-}
-
 // Refract vector through surface given by normal.
 ShVector3f
 refract (

@@ -15,20 +15,6 @@ irradiance (
    ShVector3f light
 );
 
-/** Reflect vector about surface given by normal.
- * Note that input vectors do not have to be normalized, this
- * function does that.   We depend on the compiler to do domain-specific
- * optimizations to remove redundant calls to normalization as well
- * as removing multiple calls via common subexpression elimination.
- * Returns the reflected vector (which will be unit length; we mark this
- * fact so the domain-specific optimizer can do the right thing later).
- */
-ShVector3f
-reflect (
-   ShVector3f v, 
-   ShNormal3f n
-);
-
 /** Refract vector through surface given by normal.
  * Note that input vectors do not have to be normalized, this
  * function does that.   We depend on the compiler to do domain-specific
