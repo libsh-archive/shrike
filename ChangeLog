@@ -1,5 +1,7 @@
 2004-11-05  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
+	* src/shaders/SimplePhong.cpp: Made "Simple Phong" simpler.
+
 	* configure.ac: Bump version to 0.7.5 in preparation for imminent release.
 
 	* src/HDRImages/*.hpp: More gcc 3.4 fixes.

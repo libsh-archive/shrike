@@ -67,7 +67,6 @@ bool SimplePhong::init()
     ShOutputNormal3f onorm;
     ShInOutTexCoord2f tc; // pass through tex coords
     ShOutputVector3f view;
-    ShOutputVector3f halfv;
     ShOutputVector3f lightv; // direction to light
 
     opos = Globals::mvp | ipos; // Compute NDC position
@@ -78,7 +77,6 @@ bool SimplePhong::init()
 
     ShPoint3f viewv = -normalize(posv); // Compute view vector
     view = normalize(viewv - posv);
-    halfv = normalize(viewv + lightv); // Compute half vector
   } SH_END;
   
   ShColor3f SH_DECL(specular) = ShColor3f(0.5, 1.0, 1.0);
@@ -90,29 +88,16 @@ bool SimplePhong::init()
     ShInputNormal3f normal;
     ShInputTexCoord2f tc; // ignore texcoords
     ShInputVector3f view;
-    ShInputVector3f half;
     ShInputVector3f light;
     ShInputPosition4f posh;
 
     ShOutputColor3f result;
     normal = normalize(normal);
-    half = normalize(half);
     light = normalize(light);
 
     // Compute phong lighting.
-    ShMatrix3x3f identity = ShMatrix3x3f();
-    ShMatrix3x1f normalmat; // to transpose the normal
-    normalmat[0] = sqrt(2.0) * normal[0]; // need to multiply the matrix by 2
-    normalmat[1] = sqrt(2.0) * normal[1];
-    normalmat[2] = sqrt(2.0) * normal[2];
-    ShMatrix3x3f Householder = (normalmat | transpose(normalmat));
-    Householder -= identity; // Compuse Householder transformation matrix
-    ShMatrix1x3f viewtranspose; // to transpose the view vector
-    viewtranspose[0][0] = view[0];
-    viewtranspose[0][1] = view[1];
-    viewtranspose[0][2] = view[2];
     ShAttrib1f irrad = pos(normal | light);
-    result = diffuse * irrad + specular * pow(pos(viewtranspose | Householder | light), exponent) / (normal | light);
+    result = diffuse * irrad + specular * pow(pos(view | reflect(light, normal)), exponent);
   } SH_END;
   return true;
 }
@@ -155,7 +140,6 @@ bool ModifiedPhong::init()
     ShOutputNormal3f onorm;
     ShInOutTexCoord2f tc; // pass through tex coords
     ShOutputVector3f view;
-    ShOutputVector3f halfv;
     ShOutputVector3f lightv; // direction to light
 
     opos = Globals::mvp | ipos; // Compute NDC position
@@ -166,7 +150,6 @@ bool ModifiedPhong::init()
 
     ShPoint3f viewv = -normalize(posv); // Compute view vector
     view = normalize(viewv - posv);
-    halfv = normalize(viewv + lightv); // Compute half vector
   } SH_END;
   
   ShColor3f SH_DECL(specular) = ShColor3f(0.5, 1.0, 1.0);
@@ -178,31 +161,18 @@ bool ModifiedPhong::init()
     ShInputNormal3f normal;
     ShInputTexCoord2f tc; // ignore texcoords
     ShInputVector3f view;
-    ShInputVector3f half;
     ShInputVector3f light;
     ShInputPosition4f posh;
 
     ShOutputColor3f result;
     
     normal = normalize(normal);
-    half = normalize(half);
     light = normalize(light);
 
     // Compute phong lighting.
     ShAttrib1f irrad = pos(normal | light);
-    ShMatrix3x3f identity = ShMatrix3x3f();
-    ShMatrix3x1f normalmat; // to transpose the normal
-    normalmat[0] = sqrt(2.0) * normal[0]; // need to multiply the matrix by 2
-    normalmat[1] = sqrt(2.0) * normal[1];
-    normalmat[2] = sqrt(2.0) * normal[2];
-    ShMatrix3x3f Householder =  normalmat | transpose(normalmat);
-    Householder -= identity; // Compuse Householder transformation matrix
-    ShMatrix1x3f viewtranspose; // to transpose the view vector
-    viewtranspose[0][0] = view[0];
-    viewtranspose[0][1] = view[1];
-    viewtranspose[0][2] = view[2];
-    result = diffuse * irrad / M_PI  +
-	    specular * (exponent+2)/(2*M_PI) * pow(pos(viewtranspose | Householder | light), exponent);
+    
+    result = irrad * (diffuse/M_PI + specular*(exponent+2)/(2*M_PI) * pow(pos(view | reflect(light, normal)), exponent));
   } SH_END;
   return true;
 }

@@ -78,14 +78,16 @@ shrike_SOURCES += shaders/EdgeDetection.cpp
 shrike_SOURCES += shaders/CannyEdgeDetector.cpp
 shrike_SOURCES += shaders/GaussianBlur.cpp
 shrike_SOURCES += shaders/AnisotropicDiffusion.cpp
-shrike_SOURCES += shaders/LargeTexture.cpp
-shrike_SOURCES += shaders/ClipMap.cpp
+# Disabled large texture demo, to reduce the need for a new shmedia.
+# shrike_SOURCES += shaders/LargeTexture.cpp
+# shrike_SOURCES += shaders/ClipMap.cpp
 
 # HDR headers
 shrike_SOURCES += HDRImages/HDRImage.hpp HDRImages/Filters.hpp HDRImages/HDRInterp.hpp
 shrike_SOURCES += HDRImages/HDRMipmap.hpp HDRImages/HDRProbe.hpp HDRImages/HDRTonemap.hpp
-shrike_SOURCES += HDRImages/LargeTexture.hpp HDRImages/HDRCubeMap.hpp
-shrike_SOURCES += shaders/ClipMap.hpp
+# shrike_SOURCES += HDRImages/LargeTexture.hpp 
+shrike_SOURCES += HDRImages/HDRCubeMap.hpp
+# shrike_SOURCES += shaders/ClipMap.hpp
 
 AM_CXXFLAGS = `${WX_CONFIG} --cxxflags` -Wall
 AM_CPPFLAGS = `${WX_CONFIG} --cppflags`
