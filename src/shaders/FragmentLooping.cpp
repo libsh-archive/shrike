@@ -92,13 +92,13 @@ bool FragmentLooping::init()
     u /= zoom;
     
     ShAttrib1f i = 0.0; 
-    SH_WHILE((dot(u, u) < 2.0) * (i < julia_max_iter)) {
+    SH_DO {
       ShTexCoord2f v;
       v(0) = u(0)*u(0) - u(1)*u(1);
       v(1) = 2.0 * u(0) * u(1);
       u = v + julia_c;
       i += 1.0;
-    } SH_ENDWHILE;
+    } SH_UNTIL (0 == ((dot(u, u) < 2.0) * (i < julia_max_iter)));
 
     ShAttrib1f disp = pow(i / julia_max_iter, gamma);
     ocol = disp * diffuse * brightness;
