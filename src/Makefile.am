@@ -13,6 +13,7 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 PhongShader.cpp \
 		 WorleyShader.cpp \
 		 TexShader.cpp \
+	         CelShader.cpp \
 		 Ashikhmin.cpp 
 
 AM_CXXFLAGS = `${WX_CONFIG} --cxxflags` -Wall

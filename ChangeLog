@@ -1,5 +1,10 @@
 2004-02-19  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
+	* src/UniformPanel.cpp (setShader): Don't display widgets for constants.
+
+	* src/CelShader.cpp: Added the super awesome CelShader using
+	Shader Algebra.
+
 	* src/ShrikeFrame.cpp (openModel): Use SHMEDIA_DIR.
 	(ShrikeFrame): Use SHMEDIA_DIR.
 

@@ -134,6 +134,7 @@ void ShrikeCanvas::init()
   glEnable(GL_VERTEX_PROGRAM_ARB);
   glEnable(GL_FRAGMENT_PROGRAM_ARB);
 
+  glClearColor(0.2, 0.2, 0.2, 1.0);
   setupView();
   
   shSetBackend("arb");
