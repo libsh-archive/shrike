@@ -4,27 +4,30 @@
 #include <oglft/OGLFT.h>
 #include <GL/gl.h>
 #include <sh/sh.hpp>
+#include "GrPort.hpp"
+#include "GrView.hpp"
 
 using namespace SH;
 
 namespace {
 const float border = 2.0;
+const float port_width = 8.0;
 const float shadow = 2.0;
 const float conn_radius = 3.0;
 const float conn_sep = conn_radius/2.0;
 const float io_sep = 10.0;
 }
 
-unsigned int GrNode::m_max_gl_name = 0;
-
 GrNode::GrNode(const SH::ShProgram& program,
                double x, double y,
-               OGLFT::Face* face)
+               OGLFT::Face* face,
+               GrView* view)
   : m_program(program),
     m_x(x), m_y(y),
     m_face(face),
-    m_gl_name(m_max_gl_name++)
-{
+    m_view(view),
+    m_gl_name(view->addPicker(PICK_NODE, this))
+ {
   // Compute width, height
 
   m_width = 0;
@@ -62,10 +65,35 @@ GrNode::GrNode(const SH::ShProgram& program,
     double width = bbox.x_max_ - bbox.x_min_;
     if (width > m_width) m_width = width;
   }
+
   
+  m_width += border * 2.0;
+  m_width += port_width * 2.0;
   m_width += border * 2.0;
   m_height += border * 2.0;
   m_width += io_sep;
+
+  { // Set up ports
+    double y;
+    y = m_height - m_font_height - (m_height - m_font_height * m_program->inputs.size())/2.0;
+    for (I = m_program->inputs.begin(); I != m_program->inputs.end(); ++I) {
+      m_ports.push_back(new GrPort(this, *I, border, y, true));
+      y -= m_font_height;
+    }
+    
+    y = m_height - m_font_height - (m_height - m_font_height * m_program->outputs.size())/2.0;
+    for (I = m_program->outputs.begin(); I != m_program->outputs.end(); ++I) {
+      m_ports.push_back(new GrPort(this, *I, - border + m_width - port_width, y, false));
+      y -= m_font_height;
+    }
+  }
+}
+
+GrNode::~GrNode()
+{
+  for (PortList::iterator I = m_ports.begin(); I != m_ports.end(); ++I) {
+    delete *I;
+  }
 }
 
 void GrNode::draw_box()
@@ -112,8 +140,8 @@ void GrNode::draw_box()
   // Centre line
   glColor3f(1.0, 1.0, 1.0);
   glBegin(GL_LINES); {
-    glVertex3f(m_x + border + m_in_width + io_sep/2.0, m_y, 0.0);
-    glVertex3f(m_x + border + m_in_width + io_sep/2.0, m_y + m_height, 0.0);
+    glVertex3f(m_x + border + m_in_width + port_width + io_sep/2.0, m_y, 0.0);
+    glVertex3f(m_x + border + m_in_width + port_width + io_sep/2.0, m_y + m_height, 0.0);
   } glEnd();
 
   // Outline
@@ -124,6 +152,10 @@ void GrNode::draw_box()
     glVertex3f(m_x + m_width, m_y + m_height, 0.0);
     glVertex3f(m_x, m_y + m_height, 0.0);
   } glEnd();
+
+  for (PortList::iterator I = m_ports.begin(); I != m_ports.end(); ++I) {
+    (*I)->draw();
+  }
   
   glPopAttrib();
   glPopName();
@@ -131,6 +163,9 @@ void GrNode::draw_box()
 
 void GrNode::draw_edges()
 {
+  for (PortList::iterator I = m_ports.begin(); I != m_ports.end(); ++I) {
+    (*I)->draw_edges();
+  }
 }
 
 void GrNode::draw_labels()
@@ -142,7 +177,7 @@ void GrNode::draw_labels()
   
   m_face->setHorizontalJustification( OGLFT::Face::LEFT );
   for (I = m_program->inputs.begin(); I != m_program->inputs.end(); ++I) {
-    m_face->draw(m_x + border, y, (*I)->name().c_str());
+    m_face->draw(m_x + border * 2.0 + port_width, y, (*I)->name().c_str());
     y -= m_font_height;
   }
 
@@ -150,7 +185,7 @@ void GrNode::draw_labels()
   
   y = m_y + m_height - m_font_height - (m_height - m_font_height * m_program->outputs.size())/2.0;
   for (I = m_program->outputs.begin(); I != m_program->outputs.end(); ++I) {
-    m_face->draw(m_x - border + m_width, y, (*I)->name().c_str());
+    m_face->draw(m_x - border * 2.0 + m_width - port_width, y, (*I)->name().c_str());
     y -= m_font_height;
   }
 

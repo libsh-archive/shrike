@@ -9,11 +9,17 @@ namespace OGLFT {
   class Face;
 };
 
+class GrPort;
+class GrView;
+
 class GrNode {
 public:
   GrNode(const SH::ShProgram& program,
          double x, double y,
-         OGLFT::Face* face);
+         OGLFT::Face* face,
+         GrView* view);
+
+  ~GrNode();
   
   void draw_box();
   void draw_edges(); // Draws outgoing edges only.
@@ -23,12 +29,15 @@ public:
 
   double x() const { return m_x; }
   double y() const { return m_y; }
+
+  GrView* view() const { return m_view; }
   
 private:
   
   SH::ShProgram m_program;
   double m_x, m_y;
   OGLFT::Face* m_face;
+  GrView* m_view;
   double m_width, m_height;
   double m_in_height, m_out_height;
   double m_in_width, m_out_width;
@@ -39,16 +48,9 @@ private:
 
   static unsigned int m_max_gl_name;
 
-  struct VarDest {
-    SH::ShProgram program;
-    SH::ShVariableNodePtr var;
-    bool outgoing;
-  };
+  typedef std::list<GrPort*> PortList;
   
-  typedef std::map<SH::ShVariableNodePtr, std::list<VarDest> > VarMap;
-
-  VarMap m_outgoing;
-  VarMap m_incoming;
+  PortList m_ports;
 };
 
 #endif

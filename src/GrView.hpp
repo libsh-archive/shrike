@@ -10,6 +10,12 @@ namespace OGLFT {
 };
 
 class GrNode;
+class GrPort;
+enum PickType {
+  PICK_NODE,
+  PICK_PORT,
+  PICK_EDGE
+};
 
 class GrView : public wxGLCanvas {
 public:
@@ -24,6 +30,9 @@ public:
 
   void addProgram(const SH::ShProgram& program, int x, int y);
   
+  int addPicker(PickType type, void* data);
+  int pick(int x, int y);
+  
 private:
   void init();
   void setupView();
@@ -36,13 +45,26 @@ private:
   long m_last_x, m_last_y;
   
   OGLFT::Face* m_font;
+
+  struct PickInfo {
+    int id;
+    PickType type;
+    void* data;
+  };
+  typedef std::vector<PickInfo> PickList;
+  PickList m_pickables;
   
   typedef std::vector<GrNode*> NodeList;
   NodeList m_nodes;
 
   GrNode* m_selected;
+  GrPort* m_connecting;
   double m_sel_dx, m_sel_dy;
 
+  struct {
+    double x_from, y_from, x_to, y_to;
+  } m_current_edge;
+  
   DECLARE_EVENT_TABLE()
 };
 
