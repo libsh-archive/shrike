@@ -17,7 +17,7 @@ using namespace SH;
 
 
 LCDSmall::LCDSmall()
-  : Shader("LCD - Hand-Optimized")
+  : Shader("LCD: Hand-Optimized")
 {
 }
 
