@@ -39,7 +39,13 @@ public:
   void setShader(Shader* shader);
 
 private:
+
+  void addVar(const SH::ShVariableNodePtr& node,
+              wxFlexGridSizer* sizer);
+  
   wxBoxSizer* m_sizer;
+
+  std::list<SH::ShVariableNodePtr> m_vars;
 };
 
 #endif

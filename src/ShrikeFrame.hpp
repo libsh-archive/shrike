@@ -47,6 +47,8 @@ enum {
 
   SHRIKE_MENU_SHADER_REINIT,
 
+  SHRIKE_MENU_SHADER_OPTIMIZE,
+
   SHRIKE_MENU_VIEW_RESET,
   SHRIKE_MENU_VIEW_SCREENSHOT,
   SHRIKE_MENU_VIEW_BACKGROUND,
@@ -84,6 +86,7 @@ public:
   void resetView(wxCommandEvent& event);
   void setBackground(wxCommandEvent& event);
   void fullscreen(wxCommandEvent& event);
+  void optimize(wxCommandEvent& event);
   void wireframe(wxCommandEvent& event);
   void screenshot(wxCommandEvent& event);
   void setFullscreen(bool);
@@ -111,6 +114,8 @@ private:
   wxTreeCtrl* m_shaderList;
   Shader* m_shader;
 
+  wxMenu* m_shaderMenu;
+  
   bool m_fullscreen;
   bool m_fps;
 

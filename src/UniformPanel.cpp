@@ -31,7 +31,9 @@
 #include <utility>
 #include <algorithm>
 #include <wx/colordlg.h>
+#include <wx/event.h>
 #include "ShrikeCanvas.hpp"
+#include "ShrikeFrame.hpp"
 
 #ifdef min
 #undef min
@@ -48,7 +50,6 @@ UniformPanel::UniformPanel(wxWindow* parent)
 {
   Show();
 }
-
 
 class AttribSlider : public wxSlider {
 public:
@@ -280,6 +281,47 @@ BEGIN_EVENT_TABLE(TextureButton, wxButton)
   EVT_BUTTON(-1, TextureButton::clicked)
 END_EVENT_TABLE()
 
+class DepButton : public wxButton {
+public:
+  DepButton(wxWindow* parent,
+                const ShVariableNodePtr& node)
+    : wxButton(parent, -1, "Show code"),
+      m_node(node)
+  {
+  }
+
+  void clicked(wxCommandEvent& event)
+  {
+
+    if (!m_node->evaluator()) return;
+    
+    std::string title = m_node->name() + " Code";
+    wxFrame* frame = new wxFrame(0, -1, title.c_str());
+    
+    wxTextCtrl* control = new wxTextCtrl(frame, -1, "",
+                                         wxDefaultPosition,
+                                         wxDefaultSize,
+                                         wxTE_MULTILINE | wxTE_READONLY);
+
+    std::ostringstream os;
+    m_node->evaluator()->ctrlGraph->print(os, 0);
+    
+    control->AppendText(os.str().c_str());
+    
+    frame->Show();
+  }
+  
+private:
+
+  ShVariableNodePtr m_node;
+  
+  DECLARE_EVENT_TABLE()
+};
+
+BEGIN_EVENT_TABLE(DepButton, wxButton)
+  EVT_BUTTON(-1, DepButton::clicked)
+END_EVENT_TABLE()
+
 class ColorButton : public wxButton {
 public:
   ColorButton(wxWindow* parent,
@@ -324,51 +366,75 @@ BEGIN_EVENT_TABLE(ColorButton, wxButton)
   EVT_BUTTON(-1, ColorButton::clicked)
 END_EVENT_TABLE()
 
+void UniformPanel::addVar(const ShVariableNodePtr& var,
+                          wxFlexGridSizer* sizer)
+{
+  if (std::find(m_vars.begin(), m_vars.end(), var) != m_vars.end()) return;
+
+  m_vars.push_back(var);
+  
+  if (var->evaluator()) {
+    for (ShProgramNode::VarList::iterator I = var->evaluator()->uniforms.begin();
+         I != var->evaluator()->uniforms.end(); ++I) {
+      addVar(*I, sizer);
+    }
+  }
+  
+  if (var->kind() != SH_TEMP) return;
+  if (var->internal()) return;
+  if (!var->has_name()) return;
+  wxSizer* lps = new wxBoxSizer(wxVERTICAL);
+  wxPanel* lp = new wxPanel(this, -1, wxDefaultPosition, wxDefaultSize, 
+                            wxSUNKEN_BORDER);
+  AnimCheckBox* cb = 0;
+  if (!var->evaluator()) {
+    cb = new AnimCheckBox(lp, var);
+    lps->Add(cb, 0);
+  }
+  wxStaticText* label = new wxStaticText(lp, -1, var->name().c_str());
+  lps->Add(label, 0, wxALIGN_CENTER);
+  lp->SetSizerAndFit(lps);
+  sizer->Add(lp, 0, wxEXPAND);
+
+  if (var->evaluator()) {
+    DepButton* button = new DepButton(this, var);
+    sizer->Add(button);
+  } else if (var->specialType() == SH_COLOR
+      && var->lowBound() == 0.0
+      && var->highBound() == 1.0) {
+    ColorButton* button = new ColorButton(this, var);
+    sizer->Add(button);
+  } else {
+    wxSizer* vsizer = new wxBoxSizer(wxVERTICAL);
+    AttribSlider* last = 0;
+    for (int i = 0; i < var->size(); i++) {
+      AttribSlider* slider = new AttribSlider(this, var, i);
+      if (i == 0) cb->slider(slider);
+      vsizer->Add(slider, 0, wxEXPAND);
+      if (last) last->next(slider);
+      last = slider;
+    }
+    sizer->Add(vsizer, 1, wxEXPAND);
+  }
+}
+  
 void UniformPanel::setShader(Shader* shader)
 {
   DestroyChildren();
+  m_vars.clear();
 
   wxFlexGridSizer* sizer = new wxFlexGridSizer(2, 2, 2);
   sizer->AddGrowableCol(1);
   SetSizer(sizer);
 
   UniformTimer::instance()->clear();
+
   
   if (shader) {
     int p = 0;
     for (ShProgram prg = shader->vertex(); p < 2; prg = shader->fragment(), p++) {
       for (ShProgramNode::VarList::iterator I = prg.node()->uniforms.begin(); I != prg.node()->uniforms.end(); ++I) {
-        ShVariableNodePtr var = *I;
-        if (var->kind() != SH_TEMP) continue;
-        if (var->internal()) continue;
-        if (!var->has_name()) continue;
-        wxSizer* lps = new wxBoxSizer(wxVERTICAL);
-        wxPanel* lp = new wxPanel(this, -1, wxDefaultPosition, wxDefaultSize, 
-                                  wxSUNKEN_BORDER);
-        AnimCheckBox* cb = new AnimCheckBox(lp, var);
-        lps->Add(cb, 0);
-        wxStaticText* label = new wxStaticText(lp, -1, var->name().c_str());
-        lps->Add(label, 0, wxALIGN_CENTER);
-        lp->SetSizerAndFit(lps);
-        sizer->Add(lp, 0, wxEXPAND);
-
-        if (var->specialType() == SH_COLOR
-            && var->lowBound() == 0.0
-            && var->highBound() == 1.0) {
-          ColorButton* button = new ColorButton(this, var);
-          sizer->Add(button);
-        } else {
-          wxSizer* vsizer = new wxBoxSizer(wxVERTICAL);
-          AttribSlider* last = 0;
-          for (int i = 0; i < var->size(); i++) {
-            AttribSlider* slider = new AttribSlider(this, var, i);
-            if (i == 0) cb->slider(slider);
-            vsizer->Add(slider, 0, wxEXPAND);
-            if (last) last->next(slider);
-            last = slider;
-          }
-          sizer->Add(vsizer, 1, wxEXPAND);
-        }
+        addVar(*I, sizer);
       }
       for (ShProgramNode::TexList::iterator I = prg.node()->textures.begin(); I != prg.node()->textures.end(); ++I) {
         ShTextureNodePtr tex = *I;

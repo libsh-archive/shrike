@@ -49,6 +49,7 @@ BEGIN_EVENT_TABLE(ShrikeFrame, wxFrame)
   EVT_MENU(SHRIKE_MENU_SHADER_SHOW_VSHIF, ShrikeFrame::showVshInterface)
   EVT_MENU(SHRIKE_MENU_SHADER_SHOW_FSHIF, ShrikeFrame::showFshInterface)
   EVT_MENU(SHRIKE_MENU_SHADER_REINIT, ShrikeFrame::reinit)
+  EVT_MENU(SHRIKE_MENU_SHADER_OPTIMIZE, ShrikeFrame::optimize)
   EVT_MENU(SHRIKE_MENU_VIEW_RESET, ShrikeFrame::resetView)
   EVT_MENU(SHRIKE_MENU_VIEW_SCREENSHOT, ShrikeFrame::screenshot)
   EVT_MENU(SHRIKE_MENU_VIEW_BACKGROUND, ShrikeFrame::setBackground)
@@ -86,28 +87,36 @@ ShrikeFrame::ShrikeFrame()
   fileMenu->AppendSeparator();
   fileMenu->Append(SHRIKE_MENU_QUIT, "&Quit");
 
-  wxMenu* shaderMenu = new wxMenu();
-  shaderMenu->Append(SHRIKE_MENU_SHADER_PROPS, "&Properties");
-  shaderMenu->AppendSeparator();
-  shaderMenu->Append(SHRIKE_MENU_SHADER_REINIT, "Re&initialize");
-  shaderMenu->AppendSeparator();
-  shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_VSHIF, "Show &vertex interface");
-  shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_FSHIF, "Show &fragment interface");
-  shaderMenu->AppendSeparator();
-  shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_VSH, "Show &vertex assembly");
-  shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_FSH, "Show &fragment assembly");
+  m_shaderMenu = new wxMenu();
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_PROPS, "&Properties");
+  m_shaderMenu->AppendSeparator();
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_REINIT, "Re&initialize");
+  m_shaderMenu->AppendSeparator();
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_VSHIF, "Show &vertex interface");
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_FSHIF, "Show &fragment interface");
+  m_shaderMenu->AppendSeparator();
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_VSH, "Show &vertex assembly");
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_FSH, "Show &fragment assembly");
+  m_shaderMenu->AppendSeparator();
+  wxMenuItem* optitem = new wxMenuItem(m_shaderMenu, SHRIKE_MENU_SHADER_OPTIMIZE,
+                                       "Turn on &optimizations", "",
+                                       wxITEM_CHECK);
+  m_shaderMenu->Append(optitem);
+  optitem->Check(true);
+
+  m_shaderMenu->AppendSeparator();
 
   wxMenu* viewMenu = new wxMenu();
   viewMenu->Append(SHRIKE_MENU_VIEW_RESET, "&Reset");
   viewMenu->Append(SHRIKE_MENU_VIEW_BACKGROUND, "Set &background colour...");
-  viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FULLSCREEN, "Fullscreen");
+  viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FULLSCREEN, "&Fullscreen");
   viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_WIREFRAME, "&Wireframe");
-  viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FPS, "Show framerate");
-  viewMenu->Append(SHRIKE_MENU_VIEW_SCREENSHOT, "Screenshot");
+  viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FPS, "Show framera&te");
+  viewMenu->Append(SHRIKE_MENU_VIEW_SCREENSHOT, "&Screenshot");
 
   wxMenuBar* menuBar = new wxMenuBar();
   menuBar->Append(fileMenu, "&File");
-  menuBar->Append(shaderMenu, "&Shader");
+  menuBar->Append(m_shaderMenu, "&Shader");
   menuBar->Append(viewMenu, "&View");
   
   SetMenuBar(menuBar);
@@ -319,6 +328,15 @@ void ShrikeFrame::showInterface(ShProgram program,
 void ShrikeFrame::fullscreen(wxCommandEvent& event)
 {
   setFullscreen(event.IsChecked());
+}
+
+void ShrikeFrame::optimize(wxCommandEvent& event)
+{
+  if (event.IsChecked()) {
+    ShContext::current()->optimization(2);
+  } else {
+    ShContext::current()->optimization(0);
+  }
 }
 
 void ShrikeFrame::wireframe(wxCommandEvent& event)
