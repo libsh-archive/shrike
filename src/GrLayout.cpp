@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <unistd.h>
 #include "GrView.hpp"
 #include "GrNode.hpp"
 #include "GrPort.hpp"
@@ -17,7 +18,9 @@ void GrView::layout()
 
   out << "digraph shtudio {" << std::endl;
   out << "rankdir=LR;" << std::endl;
-  out << "nodesep=20;" << std::endl;
+  //out << "nodesep=20;" << std::endl;
+  out << "ordering=out;" << std::endl;
+  out << "center=1;" << std::endl;
   out << "edge [minlen=20];" << std::endl;
   for (NodeList::iterator I = m_nodes.begin(); I != m_nodes.end(); ++I) {
     GrNode* node = *I;
@@ -54,63 +57,49 @@ void GrView::layout()
   
   std::string cmdline;
 
-  cmdline = "dot ";
+  cmdline = "dot -Tplain ";
   cmdline += filename;
   cmdline += " > ";
   cmdline += resfilename;
-
   
   system(cmdline.c_str());
 
-  std::cerr << "Result in " << resfilename << std::endl;
   std::ifstream in(resfilename);
 
   while (!in.eof()) {
-    std::string line;
-    std::getline(in, line);
+    std::string type;
+    in >> std::ws >> type;
     if (in.eof()) break;
-    if (line.find("shape=box") == std::string::npos) continue;
-    std::string::size_type l = line.find("label=");
-    if (l == std::string::npos) continue;
-    std::string label = line.substr(l + 6);
-    std::string::size_type le = label.find(',');
-    if (le == std::string::npos) continue;
-    label = label.substr(0, le);
+    if (type != "node") { while (in.get() != '\n'); continue; }
+
+    std::string name;
+    double x, y, width, height;
+
+    in >> std::ws >> name;
+    in >> std::ws >> x;
+    in >> std::ws >> y;
+    in >> std::ws >> width;
+    in >> std::ws >> height;
     int index = -1;
-    {
-      std::istringstream is(label);
-      is >> index;
-    }
+    in >> std::ws >> index;
+
+    while (in.get() != '\n');
+
     if (index < 0) continue;
-    
-    std::string::size_type p = line.find("pos=\"");
-    if (p == std::string::npos) continue;
-    line = line.substr(p + 5);
-    std::string::size_type e = line.find('"');
-    if (e == std::string::npos) continue;
-    line = line.substr(0, e);
-    std::string::size_type c = line.find(',');
-    if (c == std::string::npos) continue;
-    double x, y;
-    {
-      std::istringstream is(line.substr(0, c));
-      is >> x;
-    }
-    {
-      std::istringstream is(line.substr(c+1));
-      is >> y;
-    }
-    y/=72.0;
-    x/=72.0;
-    std::cerr << index << " at " << x << ", " << y << std::endl;
+
+//     std::cerr << index << " at " << x << ", " << y << std::endl;
 
     GrNode* node = *(m_nodes.begin() + index);
     node->moveTo(x - node->width()/2.0,
-                 y + node->height()/2.0);
+                 y - node->height()/2.0);
   }
 
+  
   SetCurrent();
   setupView();
   paint();
+
+  unlink(filename);
+  unlink(resfilename);
   
 }

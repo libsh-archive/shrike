@@ -1,6 +1,7 @@
 #include "GrProgramMenu.hpp"
 #include <string>
 #include <vector>
+#include <sstream>
 #include <wx/wx.h>
 #include <sh/sh.hpp>
 #include "Shader.hpp"
@@ -57,6 +58,37 @@ do { \
   name ## _menu->append(name <ShAttrib4f>(), "4"); \
   parent->Append(0, # name, name ## _menu); \
 } while (0)
+
+template<int N>
+ShProgram makeSplit()
+{
+  ShProgram split = SH_BEGIN_PROGRAM() {
+    ShAttrib<N, SH_INPUT> in;
+    for (int i = 0; i < N; i++) {
+      std::ostringstream os;
+      os << i;
+      ShOutputAttrib1f SH_NAMEDECL(out, os.str()) = in(i);
+    }
+  } SH_END;
+  split->name("split");
+  return split;
+}
+
+template<int N>
+ShProgram makeJoin()
+{
+  ShProgram join = SH_BEGIN_PROGRAM() {
+    ShAttrib<N, SH_OUTPUT> out;
+    for (int i = 0; i < N; i++) {
+      std::ostringstream os;
+      os << i;
+      ShInputAttrib1f SH_NAMEDECL(in, os.str());
+      out(i) = in;
+    }
+  } SH_END;
+  join->name("join");
+  return join;
+}
   
 wxMenu* makeProgramMenu(GrView* view, int evx, int evy)
 {
@@ -119,6 +151,22 @@ wxMenu* makeProgramMenu(GrView* view, int evx, int evy)
   fc_menu->append(fillcast<ShAttrib1f, ShAttrib4f>(), "1->4");
   misc->Append(0, "fillcast", fc_menu);
   menu->Append(0, "Miscellaneous", misc);
+
+  ProgramMenu* swiz = new ProgramMenu(view, evx, evy);
+  ProgramMenu* split = new ProgramMenu(view, evx, evy);
+  ProgramMenu* join = new ProgramMenu(view, evx, evy);
+
+  split->append(makeSplit<2>(), "2");
+  split->append(makeSplit<3>(), "3");
+  split->append(makeSplit<4>(), "4");
+
+  join->append(makeJoin<2>(), "2");
+  join->append(makeJoin<3>(), "3");
+  join->append(makeJoin<4>(), "4");
+  
+  swiz->Append(0, "split", split);
+  swiz->Append(0, "join", join);
+  menu->Append(0, "Swizzling", swiz);
   
   ProgramMenu* shaders = new ProgramMenu(view, evx, evy);
   for (Shader::iterator I = Shader::begin(); I != Shader::end(); I++) {
