@@ -1,3 +1,4 @@
+// HACK: really a copy of SatinShader, with different defaults
 #include <sh/sh.hpp>
 #include <sh/shutil.hpp>
 #include <iostream>
@@ -9,10 +10,10 @@ using namespace ShUtil;
 
 #include "util.hpp"
 
-class HomomorphicShader : public Shader {
+class SatinShader : public Shader {
 public:
-  HomomorphicShader();
-  ~HomomorphicShader();
+  SatinShader();
+  ~SatinShader();
 
   bool init();
 
@@ -21,19 +22,19 @@ public:
 
   ShProgram vsh, fsh;
 
-  static HomomorphicShader instance;
+  static SatinShader instance;
 };
 
-HomomorphicShader::HomomorphicShader()
-  : Shader("Homomorphic Factorization: Parabolic")
+SatinShader::SatinShader()
+  : Shader("Satin: Parabolic Homomorphic Factorization")
 {
 }
 
-HomomorphicShader::~HomomorphicShader()
+SatinShader::~SatinShader()
 {
 }
 
-bool HomomorphicShader::init()
+bool SatinShader::init()
 {
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
@@ -53,8 +54,8 @@ bool HomomorphicShader::init()
     ShVector3f viewv = -normalize(posv); // Compute view vector
 
     // compute local surface frame (in view space)
-    ShVector3f t = normalize(itan - (itan|n)*n);
-    // ShVector3f t = normalize(itan);
+    // ShVector3f t = normalize(itan - (itan|n)*n);
+    ShVector3f t = normalize(itan);
     ShVector3f s = normalize(cross(t,n));
     
     // project view and light vectors onto local surface frame
@@ -73,23 +74,24 @@ bool HomomorphicShader::init()
   // factor for each, hidden uniforms (don't want user to play with
   // alpha, really), pulldown menu to select BRDFs from list,
   // settings for extra specularities, etc. etc.
-  image.loadPng(SHMEDIA_DIR "/brdfs/garnetred/garnetred64_0.png");
+  image.loadPng(SHMEDIA_DIR "/brdfs/satin/satinp.png");
   ShTexture2D<ShColor3f> ptex(image.width(), image.height());
   ptex.memory(image.memory());
 
-  image.loadPng(SHMEDIA_DIR "/brdfs/garnetred/garnetred64_1.png");
+  image.loadPng(SHMEDIA_DIR "/brdfs/satin/satinq.png");
   ShTexture2D<ShColor3f> qtex(image.width(), image.height());
   qtex.memory(image.memory());
 
+  // HACK, satin doesn't have specular part, turned off by default
   image.loadPng(SHMEDIA_DIR "/brdfs/garnetred/garnetred64_spec_0.png");
   ShTexture2D<ShColor3f> stex(image.width(), image.height());
   stex.memory(image.memory());
 
-  // these scale factors are specific to garnet red
-  ShColor3f SH_DECL(alpha) = ShColor3f(0.0410592,0.0992037,0.0787714);
+  // these scale factors are specific to satin
+  ShColor3f SH_DECL(alpha) = ShColor3f(0.762367,0.762367,0.762367);
   ShAttrib1f SH_DECL(diffuse) = ShAttrib1f(5.0);
   diffuse.range(0.0,20.0);
-  ShAttrib1f SH_DECL(specular) = ShAttrib1f(0.5);
+  ShAttrib1f SH_DECL(specular) = ShAttrib1f(0.0);
   specular.range(0.0,1.0);
   ShColor3f SH_DECL(light_color) = ShColor3f(1.0,1.0,1.0);
   light_color.range(0.0,1.0);
@@ -143,6 +145,6 @@ bool HomomorphicShader::init()
 // are normalized more than once in the code, the final assembly should
 // only do it once.
 
-HomomorphicShader HomomorphicShader::instance = HomomorphicShader();
+SatinShader SatinShader::instance = SatinShader();
 
 

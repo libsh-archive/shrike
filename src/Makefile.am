@@ -33,6 +33,7 @@ shrike_SOURCES += Pants.cpp
 shrike_SOURCES += EnvMapShader.cpp
 shrike_SOURCES += ShinyBumpMapShader.cpp
 shrike_SOURCES += HomomorphicShader.cpp
+shrike_SOURCES += SatinShader.cpp
 
 # this is a hack and should be removed eventually
 shrike_SOURCES += DummyShader.cpp
