@@ -93,7 +93,7 @@ ShrikeFrame::ShrikeFrame()
   // Setup menus
 
   wxMenu* fileMenu = new wxMenu();
-  fileMenu->Append(SHRIKE_MENU_OPEN_MODEL, "&Open Model");
+  fileMenu->Append(SHRIKE_MENU_OPEN_MODEL, "&Open Model...");
   fileMenu->AppendSeparator();
   fileMenu->Append(SHRIKE_MENU_QUIT, "&Quit");
 
@@ -143,20 +143,18 @@ ShrikeFrame::ShrikeFrame()
     item->Check(true);
   }
 
-  m_shaderMenu->AppendSeparator();
-
-  wxMenu* viewMenu = new wxMenu();
-  viewMenu->Append(SHRIKE_MENU_VIEW_RESET, "&Reset");
-  viewMenu->Append(SHRIKE_MENU_VIEW_BACKGROUND, "Set &background colour...");
-  viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FULLSCREEN, "&Fullscreen");
-  viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_WIREFRAME, "&Wireframe");
-  viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FPS, "Show framera&te");
-  viewMenu->Append(SHRIKE_MENU_VIEW_SCREENSHOT, "&Screenshot");
+  m_viewMenu = new wxMenu();
+  m_viewMenu->Append(SHRIKE_MENU_VIEW_RESET, "&Reset");
+  m_viewMenu->Append(SHRIKE_MENU_VIEW_BACKGROUND, "Set &background colour...");
+  m_viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FULLSCREEN, "&Fullscreen");
+  m_viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_WIREFRAME, "&Wireframe");
+  m_viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FPS, "Show framera&te");
+  m_viewMenu->Append(SHRIKE_MENU_VIEW_SCREENSHOT, "&Screenshot...");
 
   wxMenuBar* menuBar = new wxMenuBar();
   menuBar->Append(fileMenu, "&File");
   menuBar->Append(m_shaderMenu, "&Shader");
-  menuBar->Append(viewMenu, "&View");
+  menuBar->Append(m_viewMenu, "&View");
   
   SetMenuBar(menuBar);
 
@@ -231,8 +229,7 @@ void ShrikeFrame::shaderProps(wxCommandEvent& event)
 
 void ShrikeFrame::quit(wxCommandEvent& event)
 {
-  Destroy();
-  //  Close(true);
+  Close(true);
 }
 
 void ShrikeFrame::close(wxCloseEvent& event)
@@ -457,6 +454,8 @@ void ShrikeFrame::wireframe(wxCommandEvent& event)
   } else {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   }
+
+  m_canvas->Refresh(FALSE);
 }
 
 void ShrikeFrame::setFullscreen(bool fs)
@@ -471,6 +470,7 @@ void ShrikeFrame::setFullscreen(bool fs)
       m_shaderList->Show();
     }
   }
+  m_viewMenu->Check(SHRIKE_MENU_VIEW_FULLSCREEN, fs);
   m_fullscreen = fs;
 }
 

@@ -1,3 +1,14 @@
+2004-10-07  Kevin Moule  <krmoule@cgl.uwaterloo.ca>
+
+	* win32.mk, src/Makefile.win32: Shrike needs glext.h, added
+	appropriate makefile goo. makedepend doesn't recognize /I and
+	/D, change all references to -I and -D
+
+	* src/ShrikeFrame.cpp, src/ShrikeFrame.hpp: Cosmetic changes in
+	menu, Fullscreen check updated when exiting fullscreen, Wireframe
+	forces refresh, removed extraneous separator, added "..." to couple
+	of entries.
+
 2004-10-05  Kevin Moule  <krmoule@cgl.uwaterloo.ca>
 
 	* win32.mk: Updated for building with Visual C++ 2005
