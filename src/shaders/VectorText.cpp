@@ -232,21 +232,23 @@ bool VectorText::init()
   int width = font.width();
   int height = font.height();
   int edges = font.edges();
+  float halfx = font.halfx();
+  float halfy = font.halfy();
   int elements = 4;
 
   // textures for line segment endpoints
-  ShArray2D<ShAttrib4f> ftexture[edges];
+  ShArrayRect<ShAttrib4f> ftexture[edges];
   for(int i=0; i<edges; i++) {
 	  ftexture[i].size(width, height);
   	  ftexture[i].memory(font.memory(i));
   }
 
+  /*
   // texture for number of edges
   // not used for now, just for debugging
   ShArray2D<ShAttrib1f> findex(width, height);
   findex.memory(font.edge());
 
-  /*
   //debug info
   for(int i=0; i<height; i++) {
 	  for(int j=0; j<width; j++) {
@@ -280,6 +282,8 @@ bool VectorText::init()
   std::cerr << " the image width is " << font.width() << std::endl;
   std::cerr << " the image height is " << font.height() << std::endl;
   std::cerr << " the image maxedge is " << font.edges() << std::endl;
+  std::cerr << " the image halfx is " << font.halfx() << std::endl;
+  std::cerr << " the image halfy is " << font.halfy() << std::endl;
 
 
   /*
@@ -338,19 +342,21 @@ bool VectorText::init()
 
     // transform texture coords (should be in vertex shader really, but)
 
-    ShAttrib2f x = (tc - m_offset) * m_size;
+    //ShAttrib2f x = (tc - m_offset) * m_size;
+    ShAttrib2f x = tc;
     ShAttrib4f L[edges];
+
     for(int i=0; i<edges; i++) {
-    	L[i] = ftexture[i](x);
+    	L[i] = ftexture[i][x];
     }
 
+    /*
     for (int i=0; i<edges; i++) {
         ShVector2f d = normalize(L[i](2,3) - L[i](0,1));
         L[i](0,1) += d * eps;
         L[i](2,3) -= d * eps;
     }
   
-    /*
     // compute signed distance map
     ShAttrib4f r = segdist(L[0],x);
     ShAttrib4f nr;
@@ -482,7 +488,7 @@ bool VectorText::init()
 bool VectorText::m_done_init = false;
 ShAttrib1f VectorText::m_scale = ShAttrib1f(6.0);
 ShVector2f VectorText::m_offset = ShVector2f(0,0);
-ShAttrib1f VectorText::m_size = ShAttrib1f(1);
+ShAttrib1f VectorText::m_size = ShAttrib1f(512);
 ShAttrib1f VectorText::m_fw = ShAttrib1f(1.0);
 ShAttrib2f VectorText::m_thres = ShAttrib2f(0.0,0.05);
 ShColor3f VectorText::m_color1 = ShColor3f(0.0, 0.0, 0.0);

@@ -57,6 +57,8 @@ public:
   int height() const; ///< Determine the height of the image
   int edges() const;   ///< Determine the max number of edges in a cell
   int elements() const; ///< Determine the depth (floats per pixel) of
+  float halfx() const; ///< shift coordinates in x axis
+  float halfy() const; ///< shift coordinates in y axis
                         ///the image
   void ShFont::loadFont(const std::string&);
 
@@ -82,6 +84,7 @@ private:
   int m_width, m_height;
   int m_elements;
   int m_edges;
+  float m_halfx, m_halfy;
   ShHostMemoryPtr *m_memory;
   ShHostMemoryPtr m_edgenum;
 };

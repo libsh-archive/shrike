@@ -74,6 +74,16 @@ int ShFont::elements() const
   return m_elements;
 }
 
+float ShFont::halfx() const
+{
+  return m_halfx;
+}
+
+float ShFont::halfy() const
+{
+  return m_halfy;
+}
+
 void ShFont::loadFont(const std::string& filename)
 {
 	try {
@@ -82,21 +92,20 @@ void ShFont::loadFont(const std::string& filename)
 		m_edgenum = 0;
 
 		int ifile;
-		int tsizex, tsizey, tmaxedges;
 		int tindex, tnum;
 		float coord;
 
 		ifile = open(filename.c_str(), O_RDONLY);
 
 		if(ifile > 0 ) {
-			read(ifile, &tsizex, sizeof(int));
-			read(ifile, &tsizey, sizeof(int));
-			read(ifile, &tmaxedges, sizeof(int));
-			std::cout << tsizex << " " << tsizey << " " << tmaxedges << std::endl;
+			read(ifile, &m_width, sizeof(int));
+			read(ifile, &m_height, sizeof(int));
+			read(ifile, &m_edges, sizeof(int));
+			read(ifile, &m_halfx, sizeof(float));
+			read(ifile, &m_halfy, sizeof(float));
+			std::cout << m_width << " " << m_height << " " << m_edges << " ";
+			std::cout << m_halfx << " " << m_halfy << std::endl;
 
-			m_width = tsizex;
-			m_height = tsizey;
-			m_edges = tmaxedges;
 			m_elements = 4;
 
 			// buffer for edge coordinates and edge number
