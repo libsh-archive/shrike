@@ -117,6 +117,9 @@ bool Ashikhmin::init()
 
     ShOutputColor3f color;
 
+    tan1 = normalize(tan1);
+    normal = normalize(normal);
+
     ShVector3f tan2 = cross(normal, tan1);
     color = ashikhmin(nu, nv, normalize(normal), normalize(halfvec), normalize(lightvec),
                       normalize(viewvec),

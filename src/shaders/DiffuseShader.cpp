@@ -18,6 +18,8 @@ public:
   ShProgram fragment() { return fsh;}
   
   ShProgram vsh, fsh;
+
+  static DiffuseShader instance;
 };
 
 DiffuseShader::DiffuseShader()
@@ -42,5 +44,6 @@ bool DiffuseShader::init()
   return true;
 }
 
-DiffuseShader the_diffuse_shader;
+DiffuseShader DiffuseShader::instance = DiffuseShader();
+
 

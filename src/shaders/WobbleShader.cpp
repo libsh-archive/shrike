@@ -41,7 +41,7 @@ bool WobbleShader::init()
   ShAttrib1f SH_DECL(scale) = 1.0f;
   scale.range(0.0f, 10.0f);
   ShAttrib1f SH_DECL(frequency) = 0.5f;
-  frequency.range(0.0f, 1.0f);
+  frequency.range(0.0f, 5.0f);
   ShProgram wobbler = SH_BEGIN_PROGRAM() {
     ShInOutPosition4f pos;
     ShInOutNormal3f normal;
