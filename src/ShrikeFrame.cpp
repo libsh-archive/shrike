@@ -1,3 +1,4 @@
+#include <iostream>
 #include <fstream>
 #include <wx/splitter.h>
 #include <sh/ShObjMesh.hpp>
@@ -14,11 +15,15 @@ using namespace ShUtil;
 BEGIN_EVENT_TABLE(ShrikeFrame, wxFrame)
   EVT_MENU(SHRIKE_MENU_OPEN_MODEL, ShrikeFrame::openModel)
   EVT_MENU(SHRIKE_MENU_QUIT, ShrikeFrame::quit)
-  EVT_LISTBOX(SHRIKE_LISTBOX_SHADERS, ShrikeFrame::setShader)
+  EVT_MENU(SHRIKE_MENU_SHADER_PROPS, ShrikeFrame::shaderProps)
+  EVT_MENU(SHRIKE_MENU_SHADER_SHOW_VSH, ShrikeFrame::showVsh)
+  EVT_MENU(SHRIKE_MENU_SHADER_SHOW_FSH, ShrikeFrame::showFsh)
+  EVT_LISTBOX(SHRIKE_LISTBOX_SHADERS, ShrikeFrame::onShaderSelect)
 END_EVENT_TABLE()
 
 ShrikeFrame::ShrikeFrame()
-  : wxFrame(0, -1, "Shrike")
+  : wxFrame(0, -1, "Shrike"),
+    m_shader(0)
 {
   CreateStatusBar();
 
@@ -31,8 +36,14 @@ ShrikeFrame::ShrikeFrame()
   fileMenu->AppendSeparator();
   fileMenu->Append(SHRIKE_MENU_QUIT, "&Quit");
 
+  wxMenu* shaderMenu = new wxMenu();
+  shaderMenu->Append(SHRIKE_MENU_SHADER_PROPS, "&Properties");
+  shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_VSH, "Show &vertex program");
+  shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_FSH, "Show &fragment program");
+  
   wxMenuBar* menuBar = new wxMenuBar();
   menuBar->Append(fileMenu, "&File");
+  menuBar->Append(shaderMenu, "&Shader");
   
   SetMenuBar(menuBar);
 
@@ -75,20 +86,72 @@ void ShrikeFrame::openModel(wxCommandEvent& event)
   }
 }
 
+void ShrikeFrame::shaderProps(wxCommandEvent& event)
+{
+  if (!m_shader) return;
+  if (m_shader->paramCount() == 0) return;
+  ShrikePropsDialog dialog(this, m_shader);
+  
+  if (dialog.ShowModal() != wxID_OK) return;
+
+  m_shader->init();
+  setShader(m_shader);
+}
+
 void ShrikeFrame::quit(wxCommandEvent& event)
 {
   Close(true);
 }
 
-void ShrikeFrame::setShader(wxCommandEvent& event)
+void ShrikeFrame::onShaderSelect(wxCommandEvent& event)
 {
   Shader* shader = reinterpret_cast<Shader*>(event.GetClientData());
+  setShader(shader);
+}
+
+void ShrikeFrame::setShader(Shader* shader)
+{
   m_canvas->SetCurrent();
-  shader->bind();
+  if (shader) shader->bind();
   m_canvas->usingShaders(shader != 0);
   m_canvas->render();
   m_panel->setShader(shader);
+  m_shader = shader;
 }
+
+
+void ShrikeFrame::showVsh(wxCommandEvent& event)
+{
+  if (!m_shader) return;
+  showProgram(m_shader->vertex(), "Vertex");
+}
+
+void ShrikeFrame::showFsh(wxCommandEvent& event)
+{
+  if (!m_shader) return;
+  showProgram(m_shader->fragment(), "Fragment");
+}
+
+void ShrikeFrame::showProgram(const ShProgram& program,
+                              std::string name)
+{
+  if (!program) return;
+  if (!program->code(ShEnvironment::backend)) return;
+
+  std::string title = name + " Shader Code";
+  wxFrame* frame = new wxFrame(0, -1, title.c_str());
+
+  wxTextCtrl* control = new wxTextCtrl(frame, -1, "",
+                                       wxDefaultPosition,
+                                       wxDefaultSize,
+                                       wxTE_MULTILINE | wxTE_READONLY);
+  
+  std::ostream stream(control);
+  program->code(ShEnvironment::backend)->print(stream);
+
+  frame->Show();
+}
+
 
 wxListBox* ShrikeFrame::initShaderList(wxWindow* parent)
 {

@@ -1,5 +1,23 @@
 2004-03-04  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
+	* src/Ashikhmin.cpp (ashikhmin_specular): clamp more properly,
+	although I think it's still slightly off.
+
+	* src/Texter.cpp (Texter): Use setStringParam to allow the user to
+	change the text.
+	(doText): Added a few letters.
+
+	* src/ShrikeFrame.cpp (showProgram): Added functions to show the
+	assembly code in a separate window.
+	(ShrikeFrame): Added a "Shader" menu.
+
+	* src/Shader.cpp (bind): Don't print out the shader program assembly.
+	(beginStringParams): Added this function.
+	(endStringParams): Added this function.
+	(setStringParam): Added this function, to be used by derived classes.
+
+	* src/ShrikePropsDialog.cpp: Added property dialog.
+
 	* src/Texter.cpp: Sh has a "Hello World" program now.
 
 	* src/ShrikeCanvas.cpp (usingShaders): Only enabled

@@ -14,8 +14,10 @@ void Shader::bind() {
   SH::ShProgram vsh = vertex();
   SH::ShProgram fsh = fragment();
   std::cerr << "Binding " << name() << std::endl;
+  /*
   vsh->code()->print(std::cerr);
   fsh->code()->print(std::cerr);
+  */
   SH::shBindShader(vsh);
   SH::shBindShader(fsh);
 }
@@ -23,6 +25,21 @@ void Shader::bind() {
 const std::string& Shader::name() const
 {
   return m_name;
+}
+
+std::size_t Shader::paramCount() const
+{
+  return m_stringParams.size();
+}
+
+Shader::StringParamList::iterator Shader::beginStringParams()
+{
+  return m_stringParams.begin();
+}
+
+Shader::StringParamList::iterator Shader::endStringParams()
+{
+  return m_stringParams.end();
 }
 
 Shader::iterator Shader::begin()
@@ -43,6 +60,12 @@ Shader::const_iterator Shader::begin_const()
 Shader::const_iterator Shader::end_const()
 {
   return getList()->end();
+}
+
+void Shader::setStringParam(const std::string& name,
+                            std::string& param)
+{
+  m_stringParams.push_back(StringParam(name, param));
 }
 
 void Shader::append(Shader* shader)

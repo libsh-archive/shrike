@@ -50,7 +50,7 @@ ShColor3f ashikhmin_specular(ShAttrib1f nu, ShAttrib1f nv,
 {
   ShVector3f k = viewer; // either light or viewer works here
 
-#define CLAMP(x) min(x, 0.99)
+#define CLAMP(x) max(x, 0.01)
   
   ShAttrib1f hn = CLAMP(h|n);
   ShAttrib1f kn = CLAMP(k|n);

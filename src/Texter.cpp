@@ -7,28 +7,33 @@
 using namespace SH;
 using namespace ShUtil;
 
-class Hello : public Shader {
+class Texter : public Shader {
 public:
-  Hello();
-  ~Hello();
+  Texter(const std::string&);
+  ~Texter();
 
   bool init();
-  void bind();
 
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
   
   ShProgram vsh, fsh;
 
-  static Hello* instance;
+private:
+  
+  std::string m_text;
+
+  static Texter* instance;
 };
 
-Hello::Hello()
-  : Shader("Hello")
+Texter::Texter(const std::string& text)
+  : Shader("\"" + text + "\""),
+    m_text(text)
 {
+  setStringParam("text", m_text);
 }
 
-Hello::~Hello()
+Texter::~Texter()
 {
 }
 
@@ -81,13 +86,16 @@ ShProgram circ(float x, float y, float r)
   return res;
 }
 
-ShProgram doText(const char* str)
+ShProgram doText(const std::string& text)
 {
   float px = 0.0;
+  float py = 0.0;
   float sep = 7.0;
-  ShProgram cur = SH_BEGIN_PROGRAM() { ShOutputAttrib1f result = 0.0; } SH_END;
-  for (const char* c = str; *c; c++) {
-    ShProgram step = SH_BEGIN_PROGRAM() { ShOutputAttrib1f result = 0.0; } SH_END;
+  float lineheight = 60.0;
+  float linesep = 20.0;
+  ShProgram phrase = SH_BEGIN_PROGRAM() { ShOutputAttrib1f result = 0.0; } SH_END;
+  for (std::string::const_iterator c = text.begin(); c != text.end(); c++) {
+    ShProgram letter = SH_BEGIN_PROGRAM() { ShOutputAttrib1f result = 0.0; } SH_END;
     switch (*c) {
     case 'H':
       {
@@ -96,9 +104,9 @@ ShProgram doText(const char* str)
         float hw = 27.0;
         float hy = 24.0;
         float hh = 11.0;
-        step = u(u(rect(px, 0.0, vw, vh),
-                   rect(px + vw, hy, hw, hh)),
-                 rect(px + vw + hw, 0.0, vw, vh));
+        letter = u(u(rect(px, py, vw, vh),
+                   rect(px + vw, py + hy, hw, hh)),
+                 rect(px + vw + hw, py, vw, vh));
 
         px += vw + hw + vw;
       }
@@ -108,10 +116,10 @@ ShProgram doText(const char* str)
         float ro = 18.0;
         float w = 12.0;
         float ri = ro - w;
-        step = u(s(s(circ(px + ro, ro, ro), circ(px + ro, ro, ri)),
-                   rect(px, ro, ro, ro)),
-                 s(s(circ(px + ro, ro + ro + ri, ro), circ(px + ro, ro + ro + ri, ri)),
-                   rect(px + ro, ro + ri, ro, ro)));
+        letter = u(s(s(circ(px + ro, py + ro, ro), circ(px + ro, py + ro, ri)),
+                   rect(px, py + ro, ro, ro)),
+                 s(s(circ(px + ro, py + ro + ro + ri, ro), circ(px + ro, py + ro + ro + ri, ri)),
+                   rect(px + ro, py + ro + ri, ro, ro)));
         px += ro + ro;
       }
       break;
@@ -120,10 +128,10 @@ ShProgram doText(const char* str)
         float vw = 13.0;
         float vh = 60.0;
         float w1 = 17.0;
-        step = srect(px + w1, 0.0, vw, vh, -w1);
-        step = u(step, srect(px + w1, 0.0, vw, vh, w1));
-        step = u(step, srect(px + w1 + w1 + w1, 0.0, vw, vh, -w1));
-        step = u(step, srect(px + w1 + w1 + w1, 0.0, vw, vh, w1));
+        letter = srect(px + w1, py, vw, vh, -w1);
+        letter = u(letter, srect(px + w1, py, vw, vh, w1));
+        letter = u(letter, srect(px + w1 + w1 + w1, py, vw, vh, -w1));
+        letter = u(letter, srect(px + w1 + w1 + w1, py, vw, vh, w1));
 
         px += vw + w1 * 4.0;
       }
@@ -132,8 +140,8 @@ ShProgram doText(const char* str)
       {
         float ro = 22.5;
         float ri = ro - 12.0;
-        step = u(s(circ(px + ro, ro, ro), circ(px + ro, ro, ri)),
-                 rect(px + ro + ri, 0.0, ro - ri, ro + ro));
+        letter = u(s(circ(px + ro, py + ro, ro), circ(px + ro, py + ro, ri)),
+                 rect(px + ro + ri, py, ro - ri, ro + ro));
         px += ro + ro;
       }
       break;
@@ -142,8 +150,8 @@ ShProgram doText(const char* str)
         float vh = 60.0;
         float ro = 22.5;
         float ri = ro - 12.0;
-        step = u(s(circ(px + ro, ro, ro), circ(px + ro, ro, ri)),
-                 rect(px, 0.0, ro - ri, vh));
+        letter = u(s(circ(px + ro, py + ro, ro), circ(px + ro, py + ro, ri)),
+                 rect(px, py, ro - ri, vh));
         px += ro + ro;
       }
       break;
@@ -152,8 +160,8 @@ ShProgram doText(const char* str)
         float vh = 60.0;
         float ro = 22.5;
         float ri = ro - 12.0;
-        step = u(s(circ(px + ro, ro, ro), circ(px + ro, ro, ri)),
-                 rect(px + ro + ri, 0.0, ro - ri, vh));
+        letter = u(s(circ(px + ro, py + ro, ro), circ(px + ro, py + ro, ri)),
+                 rect(px + ro + ri, py, ro - ri, vh));
         px += ro + ro;
       }
       break;
@@ -162,10 +170,22 @@ ShProgram doText(const char* str)
         float ro = 22.5;
         float ri = ro - 12.0;
         float eh = 8.0;
-        step = u(s(s(circ(px + ro, ro, ro), circ(px + ro, ro, ri)),
-                   rect(px + ro, ro - ri + ri/2.0, ro, ri/2.0 - eh/2.0)),
-                 rect(px + (ro-ri), ro - eh/2.0, ri * 2.0, eh));
+        letter = u(s(s(circ(px + ro, py + ro, ro), circ(px + ro, py + ro, ri)),
+                   rect(px + ro, py + ro - ri + ri/2.0, ro, ri/2.0 - eh/2.0)),
+                 rect(px + (ro-ri), py + ro - eh/2.0, ri * 2.0, eh));
         px += ro + ro;
+      }
+      break;
+    case 'i':
+      {
+        float ro = 22.5;
+        float vw = 13.0;
+        float w = vw/2.0;
+        float vh = 60.0;
+        letter = u(rect(px, py, vw, ro + ro),
+                   circ(px + w, py + ro + ro + w + w, w));
+
+        px += vw;
       }
       break;
     case 'h':
@@ -174,10 +194,10 @@ ShProgram doText(const char* str)
         float ro = 22.5;
         float w = 12.0;
         float ri = ro - w;
-        step = u(u(s(s(circ(px + ro, ro, ro), circ(px + ro, ro, ri)),
-                     rect(px, 0.0, ro + ro, ro)),
-                   rect(px + ro + ri, 0.0, w, ro)),
-                 rect(px, 0.0, w, vh));
+        letter = u(u(s(s(circ(px + ro, py + ro, ro), circ(px + ro, py + ro, ri)),
+                     rect(px, py, ro + ro, ro)),
+                   rect(px + ro + ri, py, w, ro)),
+                 rect(px, py, w, vh));
         px += ro + ro;
       }
       break;
@@ -186,10 +206,10 @@ ShProgram doText(const char* str)
         float ro = 22.5;
         float w = 12.0;
         float ri = ro - w;
-        step = u(u(s(s(circ(px + ro, ro, ro), circ(px + ro, ro, ri)),
-                     rect(px, 0.0, ro + ro, ro)),
-                   rect(px + ro + ri, 0.0, w, ro)),
-                 rect(px, 0.0, w, ro+ro));
+        letter = u(u(s(s(circ(px + ro, py + ro, ro), circ(px + ro, py + ro, ri)),
+                     rect(px, py, ro + ro, ro)),
+                   rect(px + ro + ri, py, w, ro)),
+                 rect(px, py, w, ro+ro));
         px += ro + ro;
       }
       break;
@@ -197,7 +217,7 @@ ShProgram doText(const char* str)
       {
         float vw = 13.0;
         float vh = 60.0;
-        step = rect(px, 0.0, vw, vh);
+        letter = rect(px, py, vw, vh);
 
         px += vw;
       }
@@ -206,7 +226,7 @@ ShProgram doText(const char* str)
       {
         float ro = 22.5;
         float ri = ro - 12.0;
-        step = s(circ(px + ro, ro, ro), circ(px + ro, ro, ri));
+        letter = s(circ(px + ro, py + ro, ro), circ(px + ro, py + ro, ri));
         px += ro + ro;
       }
       break;
@@ -214,32 +234,48 @@ ShProgram doText(const char* str)
       {
         float ro = 22.5;
         float ri = ro - 12.0;
-        step = u(s(s(circ(px + ro, ro, ro), circ(px + ro, ro, ri)),
-                   rect(px, 0.0, ro + ro, ro)),
-                 rect(px, 0.0, ro - ri, ro + ro));
+        letter = u(s(s(circ(px + ro, py + ro, ro), circ(px + ro, py + ro, ri)),
+                   rect(px, py, ro + ro, ro)),
+                 rect(px, py, ro - ri, ro + ro));
         px += ro + ro;
+      }
+      break;
+    case 'v':
+      {
+        float vw = 6.5;
+        float vh = 45.0;
+        float w1 = vw;
+        letter = srect(px + w1, py, vw, vh, -w1);
+        letter = u(letter, srect(px + w1, py, vw, vh, w1));
+
+        px += vw + w1 + w1;
       }
       break;
     case ' ':
       px += 21.0;
+      break;
+    case '\n':
+      px = -sep;
+      py -= lineheight + linesep;
+      break;
     default:
       break;
     }
-    cur = u(cur, step);
+    phrase = u(phrase, letter);
     px += sep;
   }
-  return cur;
+  return phrase;
 }
 
-bool Hello::init()
+bool Texter::init()
 {
   std::cerr << "Initializing " << name() << std::endl;
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
-  ShAttrib2f SH_DECL(scale) = ShAttrib2f(100.0, 100.0);
-  scale.range(10.0, 500.0);
-  ShAttrib2f SH_DECL(trans) = ShAttrib2f(0.0, 0.0);
+  ShAttrib2f SH_DECL(scale) = ShAttrib2f(500.0, 500.0);
+  scale.range(100.0, 1000.0);
+  ShAttrib2f SH_DECL(trans) = ShAttrib2f(-50.0, -250.0);
   trans.range(-500.0, 500.0);
 
   ShProgram scaler = SH_BEGIN_PROGRAM() {
@@ -249,7 +285,7 @@ bool Hello::init()
     tc += trans;
   } SH_END;
   
-  ShProgram texter = (doText("Shade") >> posn) << scaler;
+  ShProgram texter = (doText(m_text) >> posn) << scaler;
 
   ShProgram renderer = SH_BEGIN_FRAGMENT_PROGRAM {
     ShInputAttrib1f in;
@@ -263,14 +299,5 @@ bool Hello::init()
   return true;
 }
 
-void Hello::bind()
-{
-  vsh->code()->print(std::cerr);
-  fsh->code()->print(std::cerr);
-  std::cerr << "Binding " << name() << std::endl;
-  shBindShader(vsh);
-  shBindShader(fsh);
-}
-
-Hello* Hello::instance = new Hello();
+Texter* Texter::instance = new Texter("Hello World");
 

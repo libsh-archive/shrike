@@ -3,10 +3,15 @@
 
 #include <wx/wx.h>
 #include "UniformPanel.hpp"
-
+#include "Shader.hpp"
+#include "ShrikePropsDialog.hpp"
 enum {
   SHRIKE_MENU_OPEN_MODEL,
   SHRIKE_MENU_QUIT,
+  
+  SHRIKE_MENU_SHADER_PROPS,
+  SHRIKE_MENU_SHADER_SHOW_VSH,
+  SHRIKE_MENU_SHADER_SHOW_FSH,
 
   SHRIKE_LISTBOX_SHADERS
 };
@@ -21,13 +26,23 @@ public:
   void quit(wxCommandEvent& event);
   void openModel(wxCommandEvent& event);
 
-  void setShader(wxCommandEvent& event);
+  void onShaderSelect(wxCommandEvent& event);
+  
+  void setShader(Shader* shader);
+
+  void shaderProps(wxCommandEvent& event);
+  void showVsh(wxCommandEvent& event);
+  void showFsh(wxCommandEvent& event);
+  void showProgram(const SH::ShProgram& program,
+                   std::string name);
   
 private:
   wxListBox* initShaderList(wxWindow* parent);
 
   ShrikeCanvas* m_canvas;
   UniformPanel* m_panel;
+
+  Shader* m_shader;
   
   DECLARE_EVENT_TABLE()
 };
