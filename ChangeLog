@@ -1,5 +1,9 @@
 2004-10-04  Kevin Moule  <krmoule@cgl.uwaterloo.ca>
 
+	* src/shaders/EdgeDetection.cpp: WIN32 changes broke linux, fixed.
+
+2004-10-04  Kevin Moule  <krmoule@cgl.uwaterloo.ca>
+
 	* src/Camera.cpp, src/ShrikeGl.hpp, src/UniformPanel.cpp,
 	src/shaders/AlgebraShader.cpp, src/shaders/Ashikhmin.cpp,
 	src/shaders/EdgeDetection.cpp, src/shaders/HairShader.cpp:

@@ -35,8 +35,8 @@
 #include <fstream>
 #include "Shader.hpp"
 #include "Globals.hpp"
-#include <GL/gl.h>
 #define GL_GLEXT_PROTOTYPES
+#include <GL/gl.h>
 #include <GL/glext.h>
 #undef GL_GLEXT_PROTOTYPES
 #include <sh/ShObjMesh.hpp>
