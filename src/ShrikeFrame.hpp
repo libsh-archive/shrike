@@ -17,6 +17,7 @@ enum {
   SHRIKE_MENU_SHADER_REINIT,
 
   SHRIKE_MENU_VIEW_RESET,
+  SHRIKE_MENU_VIEW_BACKGROUND,
 
   SHRIKE_LISTBOX_SHADERS
 };
@@ -41,6 +42,7 @@ public:
   void reinit(wxCommandEvent& event);
 
   void resetView(wxCommandEvent& event);
+  void setBackground(wxCommandEvent& event);
   
 private:
   void showProgram(const SH::ShProgram& program,

@@ -21,6 +21,8 @@ public:
   void motion(wxMouseEvent& event);
 
   void resetView();
+
+  void setBackground(unsigned char r, unsigned char g, unsigned char b);
   
   void setShader(Shader* shader);
   
@@ -39,6 +41,10 @@ private:
   Shader* m_shader;
 
   bool m_showLight;
+
+  float m_bg_r;
+  float m_bg_g;
+  float m_bg_b;
   
   static ShrikeCanvas* m_instance;
   

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <wx/splitter.h>
+#include <wx/colordlg.h>
 #include <sh/ShObjMesh.hpp>
 #include "ShrikeFrame.hpp"
 #include "ShrikeCanvas.hpp"
@@ -20,6 +21,7 @@ BEGIN_EVENT_TABLE(ShrikeFrame, wxFrame)
   EVT_MENU(SHRIKE_MENU_SHADER_SHOW_FSH, ShrikeFrame::showFsh)
   EVT_MENU(SHRIKE_MENU_SHADER_REINIT, ShrikeFrame::reinit)
   EVT_MENU(SHRIKE_MENU_VIEW_RESET, ShrikeFrame::resetView)
+  EVT_MENU(SHRIKE_MENU_VIEW_BACKGROUND, ShrikeFrame::setBackground)
   EVT_LISTBOX(SHRIKE_LISTBOX_SHADERS, ShrikeFrame::onShaderSelect)
 END_EVENT_TABLE()
 
@@ -48,6 +50,7 @@ ShrikeFrame::ShrikeFrame()
 
   wxMenu* viewMenu = new wxMenu();
   viewMenu->Append(SHRIKE_MENU_VIEW_RESET, "&Reset");
+  viewMenu->Append(SHRIKE_MENU_VIEW_BACKGROUND, "Set &background colour...");
   
   wxMenuBar* menuBar = new wxMenuBar();
   menuBar->Append(fileMenu, "&File");
@@ -153,6 +156,16 @@ void ShrikeFrame::reinit(wxCommandEvent& event)
 void ShrikeFrame::resetView(wxCommandEvent& event)
 {
   m_canvas->resetView();
+}
+
+void ShrikeFrame::setBackground(wxCommandEvent& event)
+{
+  wxColourDialog dialog(this);
+
+  if (dialog.ShowModal() != wxID_OK) return;
+
+  wxColour c = dialog.GetColourData().GetColour();
+  m_canvas->setBackground(c.Red(), c.Green(), c.Blue());
 }
 
 void ShrikeFrame::showProgram(const ShProgram& program,

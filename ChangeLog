@@ -1,3 +1,12 @@
+2004-03-15  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/ShrikeFrame.cpp: Add a menu item to change the background colour.
+
+	* src/ShrikeCanvas.cpp (setBackground): Allow the background
+	colour to be changed.
+
+	* src/UniformPanel.cpp (setShader): Allow the user to change textures.
+
 2004-03-11  Bryan Chan  <b8chan@uwaterloo.ca>
 	* src/NoiseShader.cpp: Moved shdemo over to shrike.
 	
