@@ -45,8 +45,7 @@ shrike_SOURCES += shaders/GlassShader.cpp
 shrike_SOURCES += shaders/LuciteShader.cpp
 shrike_SOURCES += shaders/CookTorrance.cpp
 shrike_SOURCES += shaders/Banks.cpp
-shrike_SOURCES += Brick.cpp
-shrike_SOURCES += BrickWall.cpp
+shrike_SOURCES += shaders/BrickWall.cpp
 
 # this is a hack and should be removed eventually
 # shrike_SOURCES += DummyShader.cpp

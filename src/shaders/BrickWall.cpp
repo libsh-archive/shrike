@@ -31,7 +31,7 @@ public:
 };
 
 BrickID::BrickID()
-  : Shader("Tiling: BrickID")
+  : Shader("Tiling: Brick Wall")
 {
 }
 
@@ -78,68 +78,101 @@ bool BrickID::init()
   ShAttrib3f SH_DECL(colorVariations) = ShAttrib3f(0.2, 0.1, 0.1);
   colorVariations.range(0.0, 1.0);
  
-  ShAttrib1f NewBrick = 0.0;
-
+  /* Create the bricks and the mortar between them
+   */
   ShProgram brickID = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputPosition4f pos;
-    ShInputTexCoord2f tc;
-    ShInputNormal3f norm;
-
-    ShOutputAttrib1f id;
-    ShOutputAttrib1f tmp;
-    ShOutputNormal3f bumpnorm;
+    ShInOutTexCoord2f tc;
+    ShInOutNormal3f norm;
+    ShOutputAttrib1f changeNorm;
+    ShOutputAttrib1f id; // define if the current point belongs to a brick or to the mortar
+    ShOutputAttrib1f changeColor; // used to generate different colors
 
     tc *= scale;
-    tmp = abs(floor(tc(1)+2)) * abs(floor(tc(0)+1));
+    changeNorm = tc(0)*tc(1)*pos(0)*pos(1);
     tc[0] = tc(0) - floor(tc(1))*offset; // change the horizontal position of a line
+    changeColor = abs(floor(tc(1))) * abs(floor(tc(0)+0.5)); // change the color for each brick
     tc[1] = tc(1) - floor(tc(1)+0.5);
     tc[0] = tc(0) - floor(tc(0)+0.5);
 
-    bumpnorm = norm;
-    //bumpnorm = bumpnorm + ShVector3f(tc(0)/abs(tc(0)) * 0.5 * (tanh(10*tc(0)+2)+1), ShAttrib1f(0.0), ShAttrib1f(0.0));
-    bumpnorm = bumpnorm + ShVector3f(ShAttrib1f(0.0),tc(1)/abs(tc(1)) * 0.5 * (tanh(10*tc(1)+2)+1), ShAttrib1f(0.0));
-    bumpnorm = cond( max(abs(tc(0)) > 0.5-1*mortarsize(0), abs(tc(1)) < 1*mortarsize(1)), bumpnorm, norm);
-    bumpnorm = normalize(bumpnorm);
-    
     ShAttrib1f inside;
-    
-    ShAttrib1f BrickColor;
-    inside = min(abs(tc(0)) < 0.5-mortarsize(0), abs(tc(1)) > mortarsize(1));
+    inside = min(abs(tc(0)) < 0.5-mortarsize(0), abs(tc(1)) > mortarsize(1)); // limits of a brick
     id = cond(inside, ShConstAttrib1f(1.0), ShConstAttrib1f(0.0));
 
   } SH_END;
 
+  
+  /* Add bump-mapping to the wall
+   * edges are bumpmapped with a tanh function
+   * bricks and mortar are bumpmapped with some noise
+   */
+  ShProgram bumpmap = SH_BEGIN_PROGRAM("gpu:fragment") {
+    ShInputTexCoord2f tc;
+    ShInputNormal3f norm;
+    ShInputAttrib1f changeNorm;
+    ShOutputNormal3f bumpnorm = norm;
+ 
+    ShVector3f normDeformation;
+
+    for(int i=0 ; i<2 ; i++) {
+      bumpnorm[i] += 0.03*cellnoise<1>(changeNorm, false, false);
+    }
+
+    // set the limits of edges
+    ShAttrib1f verticalLimits = min(abs(tc(0)) < 0.5-mortarsize(0)+0.01, abs(tc(0)) > 0.5-mortarsize(0)-0.01);
+    ShAttrib1f horizontalLimits = min(abs(tc(1)) > mortarsize(1)-0.01, abs(tc(1)) < mortarsize(1)+0.01);
+    // change the normals with a tanh function
+    normDeformation = ShVector3f(tc(0)/abs(tc(0)) * 0.5 * (tanh(10*abs(tc(0))-0.5-mortarsize(0))+1), ShAttrib1f(0.0), ShAttrib1f(0.0));
+    bumpnorm = cond( min(verticalLimits, abs(tc(1))>mortarsize(1)), bumpnorm + normDeformation, bumpnorm);
+    normDeformation = ShVector3f(ShAttrib1f(0.0),tc(1)/abs(tc(1)) * 0.5 * (tanh(10*abs(tc(1)-mortarsize(1)))+1), ShAttrib1f(0.0));
+    bumpnorm = cond( min(horizontalLimits, abs(tc(0))<0.5-mortarsize(0)), bumpnorm + normDeformation, bumpnorm);
+   
+    bumpnorm = normalize(bumpnorm); // normalize the new normals
+    
+  } SH_END;
+  
+  /* Change the color of a brick
+   * a noise function is used to add variations to the initial color
+   */
   ShProgram brickModifier = SH_BEGIN_PROGRAM("gpu:fragment") {
-    ShInputAttrib1f tmp;
+    ShInputAttrib1f changeColor;
     ShOutputColor3f brickVariations;  
     for(int i=0 ; i<3 ; i++) {
-      brickVariations[i] = colorVariations(i) * cellnoise<1>(tmp, false, false);
+      brickVariations[i] = colorVariations(i) * cellnoise<1>(changeColor, false, false);
     }
     brickVariations += brick;
     
   } SH_END;
   
+  /* Select the color to render in function of the id
+   * id = 1.0 is a brick
+   * id = 0.0 is the mortar
+   */
   ShProgram select = SH_BEGIN_PROGRAM("gpu:fragment") {
+    ShInputNormal3f normal;
     ShInputAttrib1f id;
     ShInputColor3f brickVariations;
-    ShInputNormal3f normal;
     ShInputVector3f half;
     ShInputVector3f light;
  
     ShOutputColor3f result;
   
+    result= cond(id<0.5, mortar, brickVariations);
+
+    // add Phong lighting
     normal = normalize(normal);
     half = normalize(half);
     light = normalize(light);
-
-    result= cond(id<0.5, mortar, brickVariations);
-
     ShAttrib1f irrad = pos(normal | light);
-    result = result * irrad + result * pow(pos(normal | half), ShAttrib1f(30.0)) / (normal | light);
+    result = result * irrad + result * pow(pos(normal | half), ShAttrib1f(50.0)) / (normal | light);
          
   } SH_END;
  
-  fsh = select << ((((keep<ShAttrib1f>() & brickModifier & keep<ShNormal3f>()) << brickID)) & keep<ShVector3f>() & keep<ShVector3f>());
+  
+  fsh = select <<
+	  ((((keep<ShNormal3f>() & keep<ShAttrib1f>() & brickModifier) <<
+	  (bumpmap & keep<ShAttrib1f>() & keep<ShAttrib1f>()) <<
+	  brickID)) & keep<ShVector3f>() & keep<ShVector3f>());
   
   return true;
 }
