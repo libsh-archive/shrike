@@ -32,10 +32,9 @@
 #include <sh/sh.hpp>
 
 using namespace SH;
-using namespace std;
 
 template<typename T, int N, int M>
-class LargeTexture : public T {
+class LargeTexture : public T, public ShMemoryDep {
 public:
   typedef T parent_type;
   typedef typename T::return_type return_type;
@@ -54,7 +53,15 @@ public:
 	LargeTexture(int width, int height, int depth) : parent_type(width, height, depth)
 	{}
 
-  void updateLargeTexture() {
+  void memory(ShMemoryPtr mem) {
+    m_node->memory(mem);
+    m_node->memory()->add_dep(this);
+    m_node->memory()->flush();
+  }
+
+  ShMemoryPtr memory() { return m_node->memory(); }
+
+  void memory_update() {
     width = m_node->width() / N;
     height = m_node->height() / M;
     int stride = return_type::typesize;

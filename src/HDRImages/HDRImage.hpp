@@ -30,9 +30,6 @@
 #include <string>
 #include <sh/sh.hpp>
 
-using namespace std;
-using namespace SH;
-
 class HDRImage {
 public:
 	HDRImage();
@@ -50,8 +47,6 @@ public:
 	void loadHDR(const char filename[]); // load a HDR file
 	void saveHDR(const char filename[]); // save a HDR file
 
-	void CreateHDRCubeMap(const char filename[]); // save a cubemap
-	
   float operator()(int x, int y, int i) const { return m_image(x,y,i); }
   float& operator()(int x, int y, int i) { return m_image(x,y,i); }
 	
@@ -65,21 +60,19 @@ public:
   
 	void savePng16(const std::string& filename) { m_image.savePng16(filename); }
 
-	ShImage getNormalImage() { return m_image.getNormalImage(); }
+	SH::ShImage getNormalImage() { return m_image.getNormalImage(); }
 
   const float* data() const { return m_image.data(); }
   float* data() { return m_image.data(); }
 	
 	void dirty() { m_image.dirty(); }
-	ShMemoryPtr	memory() { return m_image.memory(); }
-	ShPointer<const ShMemory>	memory() const { return m_image.memory(); }
+	SH::ShMemoryPtr	memory() { return m_image.memory(); }
+	SH::ShPointer<const SH::ShMemory>	memory() const { return m_image.memory(); }
 	
-	ShImage image() { return m_image; }
+	SH::ShImage image() { return m_image; }
 	
 private:
-	void ComputeCubeMap();
-	ShImage m_image;
-	ShImage m_cubemapimage;
+	SH::ShImage m_image;
 	int m_width, m_height;
   int m_elements;
 };

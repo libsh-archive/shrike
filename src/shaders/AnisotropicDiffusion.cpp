@@ -57,7 +57,7 @@ public:
 };
 
 AnisotropicDiff::AnisotropicDiff()
-  : Shader("Anisotropic Diffusion"), fname("1")
+  : Shader("Filters: Anisotropic Diffusion"), fname("1")
 {
 	setStringParam("time", fname);
 }

@@ -51,19 +51,19 @@ public:
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
 
-	virtual void initInterp() = 0; // the fragment shader of the specific interpolations
-	
+  virtual void initInterp() = 0; // the fragment shader of the specific interpolations
+  
   ShProgram vsh, fsh;
-	ShProgram tonemapping;
-	
-	std::string fname;
+  ShProgram tonemapping;
+  
+  std::string fname;
 
 };
 
 Interpolation::Interpolation(std::string type)
   : Shader(std::string("HDR: Interpolation: ") + type), fname("memorial.hdr")
 {
-	setStringParam("Image Name", fname);
+  setStringParam("Image Name", fname);
 }
 
 Interpolation::~Interpolation()
@@ -71,7 +71,6 @@ Interpolation::~Interpolation()
 
 bool Interpolation::init()
 {
-	
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
     ShInputNormal3f inorm;
@@ -79,34 +78,34 @@ bool Interpolation::init()
     ShOutputPosition4f opos; // Position in NDC
     ShInOutTexCoord2f tc; // pass through tex coords
     ShOutputNormal3f onorm;
-		
+    
     opos = Globals::mvp | ipos; // Compute NDC position
     onorm = Globals::mv | inorm; // Compute view-space normal
   } SH_END;
 
-	ShAttrib1f SH_DECL(level) = ShAttrib1f(0.0);
-	level.range(-10.0,10.0);
+  ShAttrib1f SH_DECL(level) = ShAttrib1f(0.0);
+  level.range(-10.0,10.0);
 
-	tonemapping = SH_BEGIN_PROGRAM("gpu:fragment") {
-		ShInputAttrib4f interp;
-		ShOutputColor3f result;
-		
-		// display the image
-		ShAttrib3f RGB = pow(2, level + 2.47393) * interp(0,1,2);
-		ShAttrib1f f = 0.184874;
-		ShAttrib1f e = 2.718281828;
-		ShAttrib1f R = cond(RGB(0)>1.0, 1.0 + log2((RGB(0)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(0));
-		ShAttrib1f G = cond(RGB(1)>1.0, 1.0 + log2((RGB(1)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(1));
-		ShAttrib1f B = cond(RGB(2)>1.0, 1.0 + log2((RGB(2)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(2));
-		ShAttrib1f gammainv = 0.454545455; // gamma-correction = 1/2.2
-		R = pow(R,gammainv);
-		G = pow(G,gammainv);
-		B = pow(B,gammainv);
-		result	= ShColor3f(R,G,B) * 0.285714286; // scale to get the correct range	(0.285714286=1/3.5)
-	} SH_END;
+  tonemapping = SH_BEGIN_PROGRAM("gpu:fragment") {
+    ShInputAttrib4f interp;
+    ShOutputColor3f result;
+    
+    // display the image
+    ShAttrib3f RGB = pow(2, level + 2.47393) * interp(0,1,2);
+    ShAttrib1f f = 0.184874;
+    ShAttrib1f e = 2.718281828;
+    ShAttrib1f R = cond(RGB(0)>1.0, 1.0 + log2((RGB(0)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(0));
+    ShAttrib1f G = cond(RGB(1)>1.0, 1.0 + log2((RGB(1)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(1));
+    ShAttrib1f B = cond(RGB(2)>1.0, 1.0 + log2((RGB(2)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(2));
+    ShAttrib1f gammainv = 0.454545455; // gamma-correction = 1/2.2
+    R = pow(R,gammainv);
+    G = pow(G,gammainv);
+    B = pow(B,gammainv);
+    result  = ShColor3f(R,G,B) * 0.285714286; // scale to get the correct range (0.285714286=1/3.5)
+  } SH_END;
 
-	initInterp();
-	
+  initInterp();
+  
   return true;
 }
 
@@ -114,39 +113,40 @@ bool Interpolation::init()
   */
 class LinearInterpolation: public Interpolation {
 public:
-	LinearInterpolation(): Interpolation("Linear") {};
-	
-	static LinearInterpolation instance;
-	
-	void initInterp() {
-		HDRImage image;
+  LinearInterpolation(): Interpolation("Linear") {};
+  
+  static LinearInterpolation instance;
+  
+  void initInterp() {
+    HDRImage image;
 
-		std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
-		image.loadHDR(filename.c_str());
+    std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
+    image.loadHDR(filename.c_str());
 
-		ShUnclamped<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
-		Img.internal(true);
-		Img.memory(image.memory());
-	
-		LinInterp<ShUnclamped<ShTextureRect<ShVector4f> > > LinImg(image.width(), image.height());
-		LinImg.internal(true);
-		LinImg.memory(image.memory());
+    ShUnclamped<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
+    Img.internal(true);
+    Img.memory(image.memory());
+  
+    LinInterp<ShUnclamped<ShTextureRect<ShVector4f> > > LinImg(image.width(), image.height());
+    LinImg.internal(true);
+    LinImg.memory(image.memory());
+    
+    ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
+    scale.range(0.1,10.0);
 
-		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
-		scale.range(0.1,10.0);
+    ShAttrib1f SH_DECL(interpolation) = ShAttrib1f(0.0);
 
-		ShAttrib1f SH_DECL(interpolation) = ShAttrib1f(0.0);
-
-	  fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
-	    ShInputPosition4f posh;
-	    ShInputTexCoord2f tc;
-	    ShInputNormal3f normal;
-	 		tc *= scale;
-			ShOutputAttrib4f interp = cond(interpolation > 0.5, Img(tc), LinImg(tc));
-		} SH_END;
-	
-		fsh = tonemapping << fsh;
-	}
+    fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
+      ShInputPosition4f posh;
+      ShInputTexCoord2f tc;
+      ShInputNormal3f normal;
+      tc *= scale;
+      //ShOutputAttrib4f result = cond(interpolation > 0.5, Img(tc), LinImg(tc));
+      ShOutputAttrib4f result = LinImg(tc);
+    } SH_END;
+  
+    fsh = tonemapping << fsh;
+  }
 };
 
 LinearInterpolation LinearInterpolation::instance = LinearInterpolation();
@@ -155,39 +155,39 @@ LinearInterpolation LinearInterpolation::instance = LinearInterpolation();
   */
 class CatmullRomInterpolation: public Interpolation {
 public:
-	CatmullRomInterpolation(): Interpolation("Catmull-Rom spline") {};
-	
-	static CatmullRomInterpolation instance;
-	
-	void initInterp() {
-		HDRImage image;
+  CatmullRomInterpolation(): Interpolation("Catmull-Rom spline") {};
+  
+  static CatmullRomInterpolation instance;
+  
+  void initInterp() {
+    HDRImage image;
 
-		std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
-		image.loadHDR(filename.c_str());
+    std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
+    image.loadHDR(filename.c_str());
 
-		ShUnclamped<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
-		Img.internal(true);
-		Img.memory(image.memory());
-	
-		CatmullRomInterp<ShUnclamped<ShTextureRect<ShVector4f> > > CatmullRomImg(image.width(), image.height());
-		CatmullRomImg.internal(true);
-		CatmullRomImg.memory(image.memory());
+    ShUnclamped<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
+    Img.internal(true);
+    Img.memory(image.memory());
+  
+    CatmullRomInterp<ShUnclamped<ShTextureRect<ShVector4f> > > CatmullRomImg(image.width(), image.height());
+    CatmullRomImg.internal(true);
+    CatmullRomImg.memory(image.memory());
 
-		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
-		scale.range(0.1,10.0);
+    ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
+    scale.range(0.1,10.0);
 
-		ShAttrib1f SH_DECL(interpolation) = ShAttrib1f(0.0);
-		
-	  fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
-	    ShInputPosition4f posh;
-	    ShInputTexCoord2f tc;
-	    ShInputNormal3f normal;
-	 		tc *= scale;
-			ShOutputAttrib4f interp = cond(interpolation > 0.5, Img(tc), CatmullRomImg(tc));
-		} SH_END;
-	
-		fsh = tonemapping << fsh;
-	}
+    ShAttrib1f SH_DECL(interpolation) = ShAttrib1f(0.0);
+    
+    fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
+      ShInputPosition4f posh;
+      ShInputTexCoord2f tc;
+      ShInputNormal3f normal;
+      tc *= scale;
+      ShOutputAttrib4f interp = cond(interpolation > 0.5, Img(tc), CatmullRomImg(tc));
+    } SH_END;
+  
+    fsh = tonemapping << fsh;
+  }
 };
 
 CatmullRomInterpolation CatmullRomInterpolation::instance = CatmullRomInterpolation();
@@ -197,39 +197,39 @@ CatmullRomInterpolation CatmullRomInterpolation::instance = CatmullRomInterpolat
   */
 class BSplineInterpolation: public Interpolation {
 public:
-	BSplineInterpolation(): Interpolation("cubic B-spline") {};
-	
-	static BSplineInterpolation instance;
-	
-	void initInterp() {
-		HDRImage image;
+  BSplineInterpolation(): Interpolation("cubic B-spline") {};
+  
+  static BSplineInterpolation instance;
+  
+  void initInterp() {
+    HDRImage image;
 
-		std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
-		image.loadHDR(filename.c_str());
+    std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
+    image.loadHDR(filename.c_str());
 
-		ShUnclamped<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
-		Img.internal(true);
-		Img.memory(image.memory());
-	
-		CubicBSplineInterp<ShUnclamped<ShTextureRect<ShVector4f> > > BSplineImg(image.width(), image.height());
-		BSplineImg.internal(true);
-		BSplineImg.memory(image.memory());
+    ShUnclamped<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
+    Img.internal(true);
+    Img.memory(image.memory());
+  
+    CubicBSplineInterp<ShUnclamped<ShTextureRect<ShVector4f> > > BSplineImg(image.width(), image.height());
+    BSplineImg.internal(true);
+    BSplineImg.memory(image.memory());
 
-		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
-		scale.range(0.1,10.0);
+    ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
+    scale.range(0.1,10.0);
 
-		ShAttrib1f SH_DECL(interpolation) =  ShAttrib1f(0.0);
-	
-	  fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
-	    ShInputPosition4f posh;
-	    ShInputTexCoord2f tc;
-	    ShInputNormal3f normal;
-	 		tc *= scale;
-			ShOutputAttrib4f interp = cond(interpolation > 0.5, Img(tc), BSplineImg(tc));
-		} SH_END;
-	
-		fsh = tonemapping << fsh;
-	}
+    ShAttrib1f SH_DECL(interpolation) =  ShAttrib1f(0.0);
+  
+    fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
+      ShInputPosition4f posh;
+      ShInputTexCoord2f tc;
+      ShInputNormal3f normal;
+      tc *= scale;
+      ShOutputAttrib4f interp = cond(interpolation > 0.5, Img(tc), BSplineImg(tc));
+    } SH_END;
+  
+    fsh = tonemapping << fsh;
+  }
 };
 
 BSplineInterpolation BSplineInterpolation::instance = BSplineInterpolation();
@@ -238,40 +238,39 @@ BSplineInterpolation BSplineInterpolation::instance = BSplineInterpolation();
   */
 class CardSplineInterpolation: public Interpolation {
 public:
-	CardSplineInterpolation(): Interpolation("cardinal Spline") {};
-	
-	static CardSplineInterpolation instance;
-	
-	void initInterp() {
-		HDRImage image;
+  CardSplineInterpolation(): Interpolation("cardinal Spline") {};
+  
+  static CardSplineInterpolation instance;
+  
+  void initInterp() {
+    HDRImage image;
 
-		std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
-		image.loadHDR(filename.c_str());
+    std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
+    image.loadHDR(filename.c_str());
 
-		ShUnclamped<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
-		Img.internal(true);
-		Img.memory(image.memory());
-	
-		CardinalSplineInterp<ShUnclamped<ShTextureRect<ShVector4f> > > CardSplineImg(image.width(), image.height());
-		CardSplineImg.internal(true);
-		CardSplineImg.memory(image.memory());
-		CardSplineImg.updateCardSpline();
+    ShUnclamped<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
+    Img.internal(true);
+    Img.memory(image.memory());
+  
+    CardinalSplineInterp<ShUnclamped<ShTextureRect<ShVector4f> > > CardSplineImg(image.width(), image.height());
+    CardSplineImg.internal(true);
+    CardSplineImg.memory(image.memory());
 
-		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
-		scale.range(0.1,10.0);
+    ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
+    scale.range(0.1,10.0);
 
-		ShAttrib1f SH_DECL(interpolation) =  ShAttrib1f(0.0);
-	
-	  fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
-	    ShInputPosition4f posh;
-	    ShInputTexCoord2f tc;
-	    ShInputNormal3f normal;
-	 		tc *= scale;
-			ShOutputAttrib4f interp = cond(interpolation > 0.5, Img(tc), CardSplineImg(tc));
-		} SH_END;
-	
-		fsh = tonemapping << fsh;
-	}
+    ShAttrib1f SH_DECL(interpolation) =  ShAttrib1f(0.0);
+  
+    fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
+      ShInputPosition4f posh;
+      ShInputTexCoord2f tc;
+      ShInputNormal3f normal;
+      tc *= scale;
+      ShOutputAttrib4f interp = cond(interpolation > 0.5, Img(tc), CardSplineImg(tc));
+    } SH_END;
+  
+    fsh = tonemapping << fsh;
+  }
 };
 
 CardSplineInterpolation CardSplineInterpolation::instance = CardSplineInterpolation();
@@ -291,16 +290,16 @@ public:
   ShProgram fragment() { return fsh;}
 
   ShProgram vsh, fsh;
-	
-	std::string lambda;
+  
+  std::string lambda;
 
-	static SmoothSplineInterpolation instance;
+  static SmoothSplineInterpolation instance;
 };
 
 SmoothSplineInterpolation::SmoothSplineInterpolation()
-  : Shader(std::string("HDR: Interpolation: smooth Spline")), lambda("1")
+  : Shader(std::string("HDR: Interpolation: smooth Spline")), lambda("5")
 {
-	setStringParam("coefficient", lambda);
+  setStringParam("coefficient", lambda);
 }
 
 SmoothSplineInterpolation::~SmoothSplineInterpolation()
@@ -308,68 +307,64 @@ SmoothSplineInterpolation::~SmoothSplineInterpolation()
 
 bool SmoothSplineInterpolation::init()
 {
-	HDRImage image;
-	std::string filename = SHMEDIA_DIR "/hdr/hdr/memorial.hdr";
-	image.loadHDR(filename.c_str());
+  HDRImage image;
+  std::string filename = SHMEDIA_DIR "/hdr/hdr/memorial.hdr";
+  image.loadHDR(filename.c_str());
 
-	ShUnclamped<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
-	Img.internal(true);
-	Img.memory(image.memory());
+  ShUnclamped<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
+  Img.internal(true);
+  Img.memory(image.memory());
 
-	SmoothSplineInterp<ShUnclamped<ShTextureRect<ShVector4f> > > SmoothSplineImg(image.width(), image.height());
-	SmoothSplineImg.internal(true);
-	SmoothSplineImg.memory(image.memory());
-	SmoothSplineImg.updateSmoothSpline(atol(lambda.c_str()));
+  SmoothSplineInterp<ShUnclamped<ShTextureRect<ShVector4f> > > SmoothSplineImg(image.width(), image.height());
+  SmoothSplineImg.internal(true);
+  SmoothSplineImg.memory(image.memory());
+  SmoothSplineImg.setCoeff(atol(lambda.c_str()));
 
-	vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
+  vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
     ShInputNormal3f inorm;
     
     ShOutputPosition4f opos; // Position in NDC
     ShInOutTexCoord2f tc; // pass through tex coords
     ShOutputNormal3f onorm;
-		
+    
     opos = Globals::mvp | ipos; // Compute NDC position
     onorm = Globals::mv | inorm; // Compute view-space normal
 
-		ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
+    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
   } SH_END;
 
-	ShAttrib1f SH_DECL(level) = ShAttrib1f(0.0);
-	level.range(-10.0,10.0);
+  ShAttrib1f SH_DECL(level) = ShAttrib1f(0.0);
+  level.range(-10.0,10.0);
 
-	ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
-	scale.range(0.1,10.0);
+  ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
+  scale.range(0.1,10.0);
 
-	ShAttrib1f SH_DECL(interpolation) =  ShAttrib1f(0.0);
-		
-	fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
-	  ShInputPosition4f posh;
-	  ShInputTexCoord2f tc;
-	  ShInputNormal3f normal;
-		
-		ShOutputColor3f result;
-	 	
-		tc *= scale;
-		result = cond(interpolation > 0.5, Img(tc)(0,1,2), SmoothSplineImg(tc)(0,1,2));
-		
-		// display the image
-		level = pow (2, level + 2.47393);
-		result *= level;
-		
-		ShAttrib1f f = 0.184874;
-		ShAttrib1f e = 2.718281828;
-		ShAttrib1f R = cond(result(0)>1.0, 1.0 + log2((result(0)-1.0) * f + 1.0) * rcp(f*log2(e)), result(0));
-		ShAttrib1f G = cond(result(1)>1.0, 1.0 + log2((result(1)-1.0) * f + 1.0) * rcp(f*log2(e)), result(1));
-		ShAttrib1f B = cond(result(2)>1.0, 1.0 + log2((result(2)-1.0) * f + 1.0) * rcp(f*log2(e)), result(2));
-		ShAttrib1f gammainv = 0.454545455; // gamma-correction = 1/2.2
-		R = pow(R,gammainv);
-		G = pow(G,gammainv);
-		B = pow(B,gammainv);
-		
-		result	= ShColor3f(R,G,B) * 0.285714286; // scale to get the correct range	(0.285714286=1/3.5)
-		
-	} SH_END;
+  ShAttrib1f SH_DECL(interpolation) =  ShAttrib1f(0.0);
+    
+  fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
+    ShInputPosition4f posh;
+    ShInputTexCoord2f tc;
+    ShInputNormal3f normal;
+    
+    ShOutputColor3f result;
+    
+    tc *= scale;
+    result = cond(interpolation > 0.5, Img(tc)(0,1,2), SmoothSplineImg(tc)(0,1,2));
+    
+    // display the image
+    ShAttrib3f RGB = pow(2, level + 2.47393) * result(0,1,2);
+    ShAttrib1f f = 0.184874;
+    ShAttrib1f e = 2.718281828;
+    ShAttrib1f R = cond(RGB(0)>1.0, 1.0 + log2((RGB(0)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(0));
+    ShAttrib1f G = cond(RGB(1)>1.0, 1.0 + log2((RGB(1)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(1));
+    ShAttrib1f B = cond(RGB(2)>1.0, 1.0 + log2((RGB(2)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(2));
+    ShAttrib1f gammainv = 0.454545455; // gamma-correction = 1/2.2
+    R = pow(R,gammainv);
+    G = pow(G,gammainv);
+    B = pow(B,gammainv);
+    result  = ShColor3f(R,G,B) * 0.285714286; // scale to get the correct range (0.285714286=1/3.5)
+  } SH_END;
 
   return true;
 }

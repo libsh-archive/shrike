@@ -128,7 +128,6 @@ public:
 		MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > MipMapImg(image.width(), image.height());
 		MipMapImg.internal(true);
 		MipMapImg.memory(image.memory());
-		MipMapImg.updateMipMap();
 
 		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
 		scale.range(0.1,10.0);
@@ -162,7 +161,6 @@ public:
 		LinInterp<MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > > MipMapImg(image.width(), image.height());
 		MipMapImg.internal(true);
 		MipMapImg.memory(image.memory());
-		MipMapImg.updateMipMap();
 
 		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
 		scale.range(0.1,10.0);
@@ -196,7 +194,6 @@ public:
 		CatmullRomInterp<MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > > MipMapImg(image.width(), image.height());
 		MipMapImg.internal(true);
 		MipMapImg.memory(image.memory());
-		MipMapImg.updateMipMap();
 
 		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
 		scale.range(0.1,10.0);
@@ -230,7 +227,6 @@ public:
 		CubicBSplineInterp<MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > > MipMapImg(image.width(), image.height());
 		MipMapImg.internal(true);
 		MipMapImg.memory(image.memory());
-		MipMapImg.updateMipMap();
 
 		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
 		scale.range(0.1,10.0);
@@ -248,41 +244,5 @@ public:
 };
 
 BSplineMipMap BSplineMipMap::instance = BSplineMipMap();
-
-class CardSplineMipMap: public Mipmap {
-public:
-	CardSplineMipMap(): Mipmap("cardinal Spline Interpolation") {};
-	
-	static CardSplineMipMap instance;
-	
-	void initMipMap() {
-		HDRImage image;
-
-		std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
-		image.loadHDR(filename.c_str());
-
-		CardinalSplineInterp<MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > > MipMapImg(image.width(), image.height());
-		MipMapImg.internal(true);
-		MipMapImg.memory(image.memory());
-		MipMapImg.updateCardSpline();
-		MipMapImg.updateMipMap();
-
-		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
-		scale.range(0.1,10.0);
-	
-	  fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
-	    ShInputPosition4f posh;
-	    ShInputTexCoord2f tc;
-	    ShInputNormal3f normal;
-	 		tc *= scale;
-			ShOutputAttrib4f result = MipMapImg(tc);
-		} SH_END;
-	
-		fsh = tonemapping << fsh;
-	}
-};
-
-CardSplineMipMap CardSplineMipMap::instance = CardSplineMipMap();
-
 
 

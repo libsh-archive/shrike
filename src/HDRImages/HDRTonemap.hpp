@@ -35,152 +35,183 @@
 
 using namespace SH;
 
-/** filters the data with a Gaussian filter
-  * by doing 2 passes, one vertical and one horizontal
-  */
-ShHostMemoryPtr GaussianFilter(float* data, int width, int height, int stride, int sigma) {
-  int filterWidth = 2*sigma+1; // the size of the filter depends on sigma
-	float* horizontaldata = new float[width * height * stride];
-	ShHostMemoryPtr filter = new ShHostMemory(width * height * stride * sizeof(float)); // create the result space
-	float* verticaldata = (float*)filter->hostStorage()->data();
+
+template<typename T>
+class ToneMap : public T {
+public:
+  typedef T parent_type;
+  typedef typename T::return_type return_type;
+	typedef typename T::base_type base_type;
+	typedef ToneMap<typename T::rectangular_type> rectangular_type;
+
+  virtual ~ToneMap() {};
+
+  ToneMap(): parent_type() {}
+	ToneMap(int width) : parent_type(width) {}
+	ToneMap(int width, int height) : parent_type(width, height) {}
+	ToneMap(int width, int height, int depth) : parent_type(width, height, depth) {}
+	
+	virtual return_type operator[](const ShTexCoord2f tc) const = 0;
+			
+	virtual return_type operator()(const ShTexCoord2f tc) const = 0;
   
-  // compute the coefficients
-  float* gauss = new float[filterWidth];
-	for(int i=0 ; i<filterWidth ; i++) {
-    gauss[i] = exp(-(float)i*i/(2.0*sigma*sigma)) / (sqrt(2.0*M_PI)*sigma);
+protected:
+  
+  /** filters the data with a Gaussian filter
+    * by doing 2 passes, one vertical and one horizontal
+    */
+  ShHostMemoryPtr GaussianFilter(float* data, int width, int height, int stride, int sigma) {
+    int filterWidth = 2*sigma+1; // the size of the filter depends on sigma
+	  float* horizontaldata = new float[width * height * stride];
+	  ShHostMemoryPtr filter = new ShHostMemory(width * height * stride * sizeof(float)); // create the result space
+	  float* verticaldata = (float*)filter->hostStorage()->data();
+  
+    // compute the coefficients
+    float* gauss = new float[filterWidth];
+	  for(int i=0 ; i<filterWidth ; i++) {
+      gauss[i] = exp(-(float)i*i/(2.0*sigma*sigma)) / (sqrt(2.0*M_PI)*sigma);
+    }
+    // horizontal
+	  for(int i=0 ; i<width ; i++) {
+		  for(int j=0 ; j<height ; j++) {
+			  for(int k=0 ; k<stride ; k++) {
+          horizontaldata[(j*width+i)*stride+k] = 0.0;
+          for(int d=-filterWidth+1 ; d<filterWidth ; d++) {
+            int newi = i+d > width-1 ? width-1 : i+d;
+            newi = newi < 0 ? 0 : newi; 
+					  horizontaldata[(j*width+i)*stride + k] += gauss[abs(d)]*data[(j*width+newi)*stride+k];
+          }
+  		  }
+  	  }
+	  }
+    // vertical
+	  for(int i=0 ; i<width ; i++) {
+		  for(int j=0 ; j<height ; j++) {
+			  for(int k=0 ; k<stride ; k++) {
+          verticaldata[(j*width+i)*stride+k] = 0.0;
+          for(int d=-filterWidth+1 ; d<filterWidth ; d++) {
+            int newj = j+d > height-1 ? height-1 : j+d;
+            newj = newj < 0 ? 0 : newj; 
+				    verticaldata[(j*width+i)*stride + k] += gauss[abs(d)]*horizontaldata[(newj*width+i)*stride+k];
+          }
+			  }
+		  }
+	  }
+    return filter;
   }
-  // horizontal
-	for(int i=0 ; i<width ; i++) {
-		for(int j=0 ; j<height ; j++) {
-			for(int k=0 ; k<stride ; k++) {
-        horizontaldata[(j*width+i)*stride+k] = 0.0;
-        for(int d=-filterWidth+1 ; d<filterWidth ; d++) {
-          int newi = i+d > width-1 ? width-1 : i+d;
-          newi = newi < 0 ? 0 : newi; 
-					horizontaldata[(j*width+i)*stride + k] += gauss[abs(d)]*data[(j*width+newi)*stride+k];
-        }
-  		}
-  	}
-	}
-  // vertical
-	for(int i=0 ; i<width ; i++) {
-		for(int j=0 ; j<height ; j++) {
-			for(int k=0 ; k<stride ; k++) {
-        verticaldata[(j*width+i)*stride+k] = 0.0;
-        for(int d=-filterWidth+1 ; d<filterWidth ; d++) {
-          int newj = j+d > height-1 ? height-1 : j+d;
-          newj = newj < 0 ? 0 : newj; 
-				  verticaldata[(j*width+i)*stride + k] += gauss[abs(d)]*horizontaldata[(newj*width+i)*stride+k];
-        }
-			}
-		}
-	}
-  return filter;
-}
 
-
-/** returns the anisotropic diffusion filter of the data
-  */
-ShHostMemoryPtr AnisotropicDiffFilter(float* data, int width, int height, int stride, int t) {
-	ShHostMemoryPtr dist = new ShHostMemory(width * height * 2 * stride * sizeof(float));
-	float* distdata = (float*)dist->hostStorage()->data();
-	ShHostMemoryPtr filter = new ShHostMemory(width * height * stride * sizeof(float));
-	float* filterdata = (float*)filter->hostStorage()->data();
-  while(t>0) {
-    // compute the distance between a point and its neighbour
-    for(int i=0 ; i<width ; i++) {
-      for(int j=0 ; j<height ; j++) {
-        int iplus = i>width-2 ? width-1 : i+1;
-        int jplus = j>height-2 ? height-1 : j+1;
-        for(int k=0 ; k<stride ; k++) {
-          distdata[(j*width+i)*2*stride+k] = data[(jplus*width+i)*stride+k] - data[(j*width+i)*stride+k];
-          distdata[(j*width+i)*2*stride+stride+k] = data[(j*width+iplus)*stride+k] - data[(j*width+i)*stride+k];
+  /** returns the anisotropic diffusion filter of the data
+    */
+  ShHostMemoryPtr AnisotropicDiffFilter(float* data, int width, int height, int stride, int t) {
+	  ShHostMemoryPtr dist = new ShHostMemory(width * height * 2 * stride * sizeof(float));
+	  float* distdata = (float*)dist->hostStorage()->data();
+	  ShHostMemoryPtr filter = new ShHostMemory(width * height * stride * sizeof(float));
+	  float* filterdata = (float*)filter->hostStorage()->data();
+    while(t>0) {
+      // compute the distance between a point and its neighbour
+      for(int i=0 ; i<width ; i++) {
+        for(int j=0 ; j<height ; j++) {
+          int iplus = i>width-2 ? width-1 : i+1;
+          int jplus = j>height-2 ? height-1 : j+1;
+          for(int k=0 ; k<stride ; k++) {
+            distdata[(j*width+i)*2*stride+k] = data[(jplus*width+i)*stride+k] - data[(j*width+i)*stride+k];
+            distdata[(j*width+i)*2*stride+stride+k] = data[(j*width+iplus)*stride+k] - data[(j*width+i)*stride+k];
+          }
         }
       }
-    }
-    // compute the luminance and the filter
-    for(int i=0 ; i<width ; i++) {
-      for(int j=0 ; j<height ; j++) {
-        int iminus = i>1 ? i-1 : 0;
-        int jminus = j>1 ? j-1 : 0;
-        float v1 = 0.2 * abs(0.27*distdata[(j*width+i)*2*stride] +
-                             0.67*distdata[(j*width+i)*2*stride+1] +
-                             0.06*distdata[(j*width+i)*2*stride+2]);
-        float u1 = 0.2 * abs(0.27*distdata[(j*width+i)*2*stride+stride] +
-                             0.67*distdata[(j*width+i)*2*stride+stride+1] +
-                             0.06*distdata[(j*width+i)*2*stride+stride+2]);
-        float v0 = 0.2 * abs(0.27*distdata[(jminus*width+i)*2*stride] +
-                             0.67*distdata[(jminus*width+i)*2*stride+1] +
-                             0.06*distdata[(jminus*width+i)*2*stride+2]);
-        float u0 = 0.2 * abs(0.27*distdata[(j*width+iminus)*2*stride+stride] +
-                             0.67*distdata[(j*width+iminus)*2*stride+stride+1] +
-                             0.06*distdata[(j*width+iminus)*2*stride+stride+2]);
-        v1 = 1.0/(1.0+v1*v1);
-        u1 = 1.0/(1.0+u1*u1);
-        v0 = 1.0/(1.0+v0*v0);
-        u0 = 1.0/(1.0+u0*u0);
-        for(int k=0 ; k<3 ; k++) {
-          filterdata[(j*width+i)*stride+k] = data[(j*width+i)*stride+k] +
-                                             0.25 * (v1*distdata[(j*width+i)*2*stride+k] +
-                                                     u1*distdata[(j*width+i)*2*stride+stride+k] -
-                                                     v0*distdata[(jminus*width+i)*2*stride+k] -
-                                                     u0*distdata[(j*width+iminus)*2*stride+stride+k]);
+      // compute the luminance and the filter
+      for(int i=0 ; i<width ; i++) {
+        for(int j=0 ; j<height ; j++) {
+          int iminus = i>1 ? i-1 : 0;
+          int jminus = j>1 ? j-1 : 0;
+          float v1 = 0.2 * fabs(0.27*distdata[(j*width+i)*2*stride] +
+                               0.67*distdata[(j*width+i)*2*stride+1] +
+                               0.06*distdata[(j*width+i)*2*stride+2]);
+          float u1 = 0.2 * fabs(0.27*distdata[(j*width+i)*2*stride+stride] +
+                               0.67*distdata[(j*width+i)*2*stride+stride+1] +
+                               0.06*distdata[(j*width+i)*2*stride+stride+2]);
+          float v0 = 0.2 * fabs(0.27*distdata[(jminus*width+i)*2*stride] +
+                               0.67*distdata[(jminus*width+i)*2*stride+1] +
+                               0.06*distdata[(jminus*width+i)*2*stride+2]);
+          float u0 = 0.2 * fabs(0.27*distdata[(j*width+iminus)*2*stride+stride] +
+                               0.67*distdata[(j*width+iminus)*2*stride+stride+1] +
+                               0.06*distdata[(j*width+iminus)*2*stride+stride+2]);
+          v1 = 1.0/(1.0+v1*v1);
+          u1 = 1.0/(1.0+u1*u1);
+          v0 = 1.0/(1.0+v0*v0);
+          u0 = 1.0/(1.0+u0*u0);
+          for(int k=0 ; k<3 ; k++) {
+            filterdata[(j*width+i)*stride+k] = data[(j*width+i)*stride+k] +
+                                               0.25 * (v1*distdata[(j*width+i)*2*stride+k] +
+                                                       u1*distdata[(j*width+i)*2*stride+stride+k] -
+                                                       v0*distdata[(jminus*width+i)*2*stride+k] -
+                                                       u0*distdata[(j*width+iminus)*2*stride+stride+k]);
+          }
         }
       }
+      data = filterdata;
+      t--;
     }
-    data = filterdata;
-    t--;
+    return filter;
   }
-  return filter;
-}
 
-/** shrink an image by a factor 2
-  * and then filter the result
-  */
-ShHostMemoryPtr Reduction(float *data, int width, int height, int stride, int sigma) {
-	int doublewidth = width;
-	width /= 2;
-	height /= 2;
-	ShHostMemoryPtr reduc = new ShHostMemory(width * height * stride * sizeof(float));
-	float* reducdata = (float*)reduc->hostStorage()->data();
+  /** shrink an image by a factor 2
+    * and then filter the result
+    */
+  ShHostMemoryPtr Reduction(float *data, int width, int height, int stride, int sigma) {
+	  int doublewidth = width;
+	  width /= 2;
+	  height /= 2;
+	  ShHostMemoryPtr reduc = new ShHostMemory(width * height * stride * sizeof(float));
+	  float* reducdata = (float*)reduc->hostStorage()->data();
 
-	for(int i=0 ; i<width ; i++) {
-		for(int j=0 ; j<height ; j++) {
-			for(int k=0 ; k<stride ; k++) {
-				reducdata[(j*width+i)*stride+k] = 0.25*(data[(2*j*doublewidth+2*i)*stride+k] + data[((2*j+1)*doublewidth+2*i)*stride+k] +
-																							  data[(2*j*doublewidth+2*i+1)*stride+k] + data[((2*j+1)*doublewidth+2*i+1)*stride+k]);
-			}
-		}
-	}
+	  for(int i=0 ; i<width ; i++) {
+		  for(int j=0 ; j<height ; j++) {
+			  for(int k=0 ; k<stride ; k++) {
+				  reducdata[(j*width+i)*stride+k] = 0.25*(data[(2*j*doublewidth+2*i)*stride+k] + data[((2*j+1)*doublewidth+2*i)*stride+k] +
+					  																		  data[(2*j*doublewidth+2*i+1)*stride+k] + data[((2*j+1)*doublewidth+2*i+1)*stride+k]);
+			  }
+	  	}
+	  }
 #if (USE_GAUSSIAN)
-	return GaussianFilter(reducdata, width, height, stride, sigma); // filter the reduced image
+	  return GaussianFilter(reducdata, width, height, stride, sigma); // filter the reduced image
 #else
-	return AnisotropicDiffFilter(reducdata, width, height, stride, sigma); // filter the reduced image
+  	return AnisotropicDiffFilter(reducdata, width, height, stride, sigma); // filter the reduced image
 #endif
-}
+  }
+
+};
 
 /** define the tone-mapping operator presented by M. Ashikhmin
   * the max and min of the luminance of a zone are computed
   * then used to compute a logarithm scaling factor
   * used on the data inside the zone used
   */
-template<typename T>
-class AshikhminToneMap : public T {
+template<typename TM>
+class AshikhminToneMap : public ToneMap<TM>, public ShMemoryDep {
 public:
-  typedef T parent_type;
-  typedef typename T::return_type return_type;
-	typedef typename T::base_type base_type;
-	typedef AshikhminToneMap<typename T::rectangular_type> rectangular_type;
+  typedef TM parent_type;
+  typedef typename TM::return_type return_type;
+	typedef typename TM::base_type base_type;
+	typedef AshikhminToneMap<typename TM::rectangular_type> rectangular_type;
 
-	AshikhminToneMap(): parent_type() {}
+	AshikhminToneMap(): ToneMap<TM>() {}
 
-	AshikhminToneMap(int width) : parent_type(width) {}
+	AshikhminToneMap(int width) : ToneMap<TM>(width) {}
 
-	AshikhminToneMap(int width, int height) : parent_type(width, height) {}
+	AshikhminToneMap(int width, int height) : ToneMap<TM>(width, height) {}
 
-	AshikhminToneMap(int width, int height, int depth) : parent_type(width, height, depth) {}
+	AshikhminToneMap(int width, int height, int depth) : ToneMap<TM>(width, height, depth) {}
 	
-	void updateToneMap() {
+  void memory(ShMemoryPtr mem) {
+    m_node->memory(mem);
+    m_node->memory()->add_dep(this);
+    m_node->memory()->flush();
+  }
+
+  ShMemoryPtr memory() { return m_node->memory(); }
+
+  void memory_update() {
 		int width = m_node->width();
 		int height = m_node->height();
 		int stride = return_type::typesize;
@@ -207,7 +238,7 @@ public:
 				float newlum = oldlum;
 				int filter = 1;
 				// compute the local adapatation level
-				while(abs((oldlum - newlum)/oldlum) < 0.5 && filter <= 20) { // stop if there is a too big contrast
+				while(fabs((oldlum - newlum)/oldlum) < 0.5 && filter <= 20) { // stop if there is a too big contrast
 					int cmpt = 0;
 					oldlum = newlum;
 					newlum = 0.0;
@@ -273,12 +304,12 @@ public:
 	}
 	
 	return_type operator[](const ShTexCoord2f tc) const {
-		const T *bt = this;
+		const TM *bt = this;
 		return (*bt)[tc]; // nothing special here
 	}
 			
 	return_type operator()(const ShTexCoord2f tc) const {
-		const T *bt = this;
+		const TM *bt = this;
 		return (*bt)(tc); // nothing special here
 	}
 };
@@ -288,23 +319,31 @@ public:
   * the data are scaled by a simple coefficient
   * depending on the average luminosity of a disk
   */
-template<typename T>
-class ReinhardToneMap : public T {
+template<typename TM>
+class ReinhardToneMap : public ToneMap<TM>, public ShMemoryDep {
 public:
-  typedef T parent_type;
-  typedef typename T::return_type return_type;
-	typedef typename T::base_type base_type;
-	typedef ReinhardToneMap<typename T::rectangular_type> rectangular_type;
+  typedef TM parent_type;
+  typedef typename TM::return_type return_type;
+	typedef typename TM::base_type base_type;
+	typedef ReinhardToneMap<typename TM::rectangular_type> rectangular_type;
 
-	ReinhardToneMap() : parent_type()	{}
+	ReinhardToneMap() : ToneMap<TM>()	{}
 
-	ReinhardToneMap(int width) : parent_type(width)	{}
+	ReinhardToneMap(int width) : ToneMap<TM>(width)	{}
 
-	ReinhardToneMap(int width, int height) : parent_type(width, height)	{}
+	ReinhardToneMap(int width, int height) : ToneMap<TM>(width, height)	{}
 
-	ReinhardToneMap(int width, int height, int depth) : parent_type(width, height, depth)	{}
+	ReinhardToneMap(int width, int height, int depth) : ToneMap<TM>(width, height, depth)	{}
 
-	void updateToneMap() {
+  void memory(ShMemoryPtr mem) {
+    m_node->memory(mem);
+    m_node->memory()->add_dep(this);
+    m_node->memory()->flush();
+  }
+
+  ShMemoryPtr memory() { return m_node->memory(); }
+
+  void memory_update() {
 		int width = m_node->width();
 		int height = m_node->height();
 		int stride = return_type::typesize;
@@ -334,7 +373,7 @@ public:
 				float V2 = 0.0;
 				float s = 1.0;
         float a = 0.30;
-				while(abs((V1-V2)/(256*a/(s*s)+V1)) > 0.05 && s < 43.0) { // stop if there is a too big contrast
+				while(fabs((V1-V2)/(256*a/(s*s)+V1)) > 0.05 && s < 43.0) { // stop if there is a too big contrast
 					V1=0.0;
 					V2=0.0;
 					float s2 = s*s;
@@ -364,12 +403,12 @@ public:
 	}
 	
 	return_type operator[](const ShTexCoord2f tc) const {
-		const T *bt = this;
+		const TM *bt = this;
 		return (*bt)[tc];
 	}
 			
 	return_type operator()(const ShTexCoord2f tc) const {
-		const T *bt = this;
+		const TM *bt = this;
 		return (*bt)(tc);
 	}
 

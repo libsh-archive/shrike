@@ -39,10 +39,10 @@ using namespace ShUtil;
 
 #include "util.hpp"
 
-class testToneMap : public Shader {
+class AshikhminToneMapShader : public Shader {
 public:
-  testToneMap();
-  ~testToneMap();
+  AshikhminToneMapShader();
+  ~AshikhminToneMapShader();
 
   bool init();
   
@@ -53,34 +53,29 @@ public:
 	
 	std::string fname;
 
-	static testToneMap instance;
+	static AshikhminToneMapShader instance;
 };
 
-testToneMap::testToneMap()
+AshikhminToneMapShader::AshikhminToneMapShader()
   : Shader("HDR: ToneMapping: Ashikhmin"), fname("memorial.hdr")
 {
 	setStringParam("Image Name", fname);
 }
 
-testToneMap::~testToneMap()
+AshikhminToneMapShader::~AshikhminToneMapShader()
 {}
 
-bool testToneMap::init()
+bool AshikhminToneMapShader::init()
 {
 	HDRImage image;
 
 	std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
 	image.loadHDR(filename.c_str());
 
-	ShUnclamped<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
-	Img.internal(true);
-	Img.memory(image.memory());
-	
 	AshikhminToneMap<ShUnclamped<ShTextureRect<ShVector4f> > > ToneMapImg(image.width(), image.height());
 	ToneMapImg.internal(true);
 	ToneMapImg.memory(image.memory());
-	ToneMapImg.updateToneMap();
-	
+  
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
     ShInputNormal3f inorm;
@@ -120,7 +115,7 @@ bool testToneMap::init()
   return true;
 }
 
-testToneMap testToneMap::instance = testToneMap();
+AshikhminToneMapShader AshikhminToneMapShader::instance = AshikhminToneMapShader();
 
 class ReinhardToneMapShader : public Shader {
 public:
@@ -158,7 +153,6 @@ bool ReinhardToneMapShader::init()
 	ReinhardToneMap<ShUnclamped<ShTextureRect<ShVector4f> > > ToneMapImg(image.width(), image.height());
 	ToneMapImg.internal(true);
 	ToneMapImg.memory(image.memory());
-	ToneMapImg.updateToneMap();
 	
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;

@@ -120,11 +120,12 @@ bool BrickWall::init()
   ShProgram brickID = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputPosition4f pos;
     ShInOutTexCoord2f tc;
+    ShOutputAttrib1f changeColor; // change the color between 2 consecutive bricks
     ShInOutNormal3f norm;
     ShOutputAttrib1f id; // define if the current point belongs to a brick or to the mortar
-
     tc *= scale;
     tc(0) -= floor(tc(1))*offset; // change the horizontal position of a line
+    changeColor = abs(floor(tc(1))) * abs(floor(tc(0)+0.5));
     tc(1) -= floor(tc(1)+0.5);
     tc(0) -= floor(tc(0)+0.5);
 
@@ -139,6 +140,7 @@ bool BrickWall::init()
    */
   ShProgram bumpmap = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInOutTexCoord2f tc;
+    ShInOutAttrib1f changeColor;
     ShInOutNormal3f norm;
  
     ShVector3f TilePerturb = noiseScale * sperlin<3>(tc * noiseFreq, noiseAmps, true);
@@ -162,10 +164,12 @@ bool BrickWall::init()
    */
   ShProgram brickModifier = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputTexCoord2f tc;
-    ShOutputColor3f brickVariations;  
-    brickVariations = noiseScale * sperlin<3>(tc * noiseFreq, noiseAmps, true);
+    ShInputAttrib1f changeColor;
+    ShOutputColor3f brickVariations; 
+    brickVariations = noiseScale * perlin<3>(tc * noiseFreq, noiseAmps, true);
+    brickVariations = mad(cellnoise<1>(changeColor, false), colorVariations, brickVariations);
     brickVariations = mad(0.35, brickVariations, brick);
-    
+
   } SH_END;
   
   /* Select the color to render in function of the id

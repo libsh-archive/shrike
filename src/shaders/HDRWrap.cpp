@@ -39,10 +39,10 @@ using namespace ShUtil;
 #include "util.hpp"
 
 
-class testWrap : public Shader {
+class WrapShader : public Shader {
 public:
-  testWrap(std::string type);
-  ~testWrap();
+  WrapShader(std::string type);
+  ~WrapShader();
 
   bool init();
   
@@ -58,16 +58,16 @@ public:
 
 };
 
-testWrap::testWrap(std::string type)
+WrapShader::WrapShader(std::string type)
   : Shader(std::string("HDR: Wrapping: ") + type), fname("memorial.hdr")
 {
 	setStringParam("Image Name", fname);
 }
 
-testWrap::~testWrap()
+WrapShader::~WrapShader()
 {}
 
-bool testWrap::init()
+bool WrapShader::init()
 {
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
@@ -111,11 +111,11 @@ bool testWrap::init()
   return true;
 }
 
-class testWrapRepeat: public testWrap {
+class WrapRepeatShader: public WrapShader {
 public:
-	testWrapRepeat(): testWrap("Repeat") {};
+	WrapRepeatShader(): WrapShader("Repeat") {};
 	
-	static testWrapRepeat instance;
+	static WrapRepeatShader instance;
 	
 	void initWrap() {
 		HDRImage image;
@@ -126,7 +126,6 @@ public:
 		MipMap<ShWrapRepeat<ShUnclamped<ShTextureRect<ShVector4f> > > > Img(image.width(), image.height());
 		Img.internal(true);
 		Img.memory(image.memory());
-		Img.updateMipMap();
 	
 		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
 		scale.range(0.1,10.0);
@@ -142,5 +141,5 @@ public:
 	}
 };
 
-testWrapRepeat testWrapRepeat::instance = testWrapRepeat();
+WrapRepeatShader WrapRepeatShader::instance = WrapRepeatShader();
 

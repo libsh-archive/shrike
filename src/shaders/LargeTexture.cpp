@@ -53,7 +53,7 @@ public:
 };
 
 LargeTextureShader::LargeTextureShader()
-  : Shader("Large Texture"), fname("large_cubemap.png")
+  : Shader("Textures: Large Texture"), fname("earth.png")
 {
   setStringParam("Image Name", fname);
 }
@@ -67,10 +67,9 @@ bool LargeTextureShader::init()
   ShImage image;
   std::string filename = SHMEDIA_DIR "/largetextures/" + fname;
   image.loadPng(filename.c_str());
-  LinInterp<LargeTexture<ShUnclamped<ShTextureRect<ShColor4f> >, 1, 2 > > Img(image.width(), image.height());
+  LinInterp<LargeTexture<ShUnclamped<ShTextureRect<ShColor4f> >, 4, 2 > > Img(image.width(), image.height());
   Img.internal(true);
   Img.memory(image.memory());
-  Img.updateLargeTexture();
 
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;

@@ -115,17 +115,18 @@ bool Banks::init()
     
     normal = normalize(normal);
     // to rotate the tangent, a orthogonal vector is computed, then added to the tangent
-    tangent = (1-tangent_modif) * tangent + tangent_modif * cross(tangent, normal);
+    tangent = (1.0-tangent_modif) * tangent + tangent_modif * cross(tangent, normal);
     tangent = normalize(tangent);
     light = normalize(light);
     eye = normalize(eye);
     half = normalize(half);
 
     ShAttrib1f irrad = pos(normal | light);
-    ShAttrib1f lightDotTan = (light | tangent);
-    ShAttrib1f brightcomp = sqrt(1 - lightDotTan * lightDotTan);
-    ShAttrib1f viewDotTan = (eye | tangent);
-    result = diffuse * irrad * pow(brightcomp, compensation)+ specular * pow(pos(brightcomp * sqrt(1 - viewDotTan * viewDotTan) - lightDotTan * viewDotTan), exponent);
+    ShAttrib1f lightDotTan = light | tangent;
+    ShAttrib1f brightcomp = sqrt(1.0 - lightDotTan*lightDotTan);
+    ShAttrib1f viewDotTan = eye | tangent;
+    result = diffuse * irrad * pow(brightcomp, compensation) +
+             specular * pow(pos(brightcomp * sqrt(1.0 - viewDotTan*viewDotTan) - lightDotTan*viewDotTan), exponent);
     result = result * (normal | light);
     
   } SH_END;

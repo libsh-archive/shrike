@@ -57,7 +57,7 @@ public:
 };
 
 GaussianBlur::GaussianBlur()
-  : Shader("Gaussian Blur"), fname("1")
+  : Shader("Filters: Gaussian Blur"), fname("1")
 {
 	setStringParam("standard deviation", fname);
 }

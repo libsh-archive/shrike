@@ -1,6 +1,6 @@
 # shgenmap is a tool to generate 16 bit png files to use as bumpmaps, not sure
 # if we want to keep it in this directory
-bin_PROGRAMS = shrike shgenmap shgencubemap shsparse shgenSBRDF
+bin_PROGRAMS = shrike shgenmap shHDRfunc shsparse
 
 AUTOMAKE_OPTIONS = subdir-objects
 
@@ -64,8 +64,9 @@ shrike_SOURCES += shaders/BumpMapShader.cpp
 shrike_SOURCES += shaders/FragmentBranching.cpp
 shrike_SOURCES += shaders/SparseTexture.cpp
 shrike_SOURCES += shaders/FragmentLooping.cpp
+shrike_SOURCES += HDRImages/HDRImage.cpp
 shrike_SOURCES += shaders/SpatialBRDF.cpp
-shrike_SOURCES += shaders/HDRViewer.cpp HDRImages/HDRImage.cpp
+shrike_SOURCES += shaders/HDRViewer.cpp
 shrike_SOURCES += shaders/HDRMipMap.cpp
 shrike_SOURCES += shaders/HDRInterp.cpp
 shrike_SOURCES += shaders/HDRToneMapping.cpp
@@ -77,6 +78,7 @@ shrike_SOURCES += shaders/CannyEdgeDetector.cpp
 shrike_SOURCES += shaders/GaussianBlur.cpp
 shrike_SOURCES += shaders/AnisotropicDiffusion.cpp
 shrike_SOURCES += shaders/LargeTexture.cpp
+shrike_SOURCES += shaders/ClipMap.cpp
 
 # this is a hack and should be removed eventually
 # shrike_SOURCES += DummyShader.cpp
@@ -91,18 +93,12 @@ shgenmap_SOURCES = ShGenMap.cpp
 shgenmap_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
 shgenmap_LDADD = -lsh -lshutil
 
-shgencubemap_SOURCES = ShGenCubeMap.cpp HDRImages/HDRImage.cpp
-shgencubemap_CPPFLAGS = -IHDRImages
-shgencubemap_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
-shgencubemap_LDADD = -lsh -lshutil
+shHDRfunc_SOURCES = ShHDRFunc.cpp HDRImages/HDRImage.cpp
+shHDRfunc_CPPFLAGS = -IHDRImages
+shHDRfunc_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
+shHDRfunc_LDADD = -lsh -lshutil
 
 shsparse_SOURCES = ShSparse.cpp HDRImages/HDRImage.cpp
 shsparse_CPPFLAGS = -IHDRImages
 shsparse_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
 shsparse_LDADD = -lsh -lshutil
-
-shgenSBRDF_SOURCES = ShGenSBRDF.cpp HDRImages/HDRImage.cpp
-shgenSBRDF_CPPFLAGS = -IHDRImages
-shgenSBRDF_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
-shgenSBRDF_LDADD = -lsh -lshutil
-

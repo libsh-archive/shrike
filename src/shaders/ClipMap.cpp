@@ -27,18 +27,20 @@
 #include <sh/sh.hpp>
 #include <sh/shutil.hpp>
 #include <iostream>
+#include <cmath>
 #include "Shader.hpp"
 #include "Globals.hpp"
-#include <HDRImage.hpp>
+#include "ClipMap.hpp"
 
 using namespace SH;
 using namespace ShUtil;
 
+#define SIZE_IMAGE 1024
 
-class SparseTexture : public Shader {
+class ClipMapShader : public Shader {
 public:
-  SparseTexture();
-  ~SparseTexture();
+  ClipMapShader();
+  ~ClipMapShader();
 
   bool init();
   
@@ -47,67 +49,62 @@ public:
 
   ShProgram vsh, fsh;
 
-  static SparseTexture instance;
+  std::string fcenter;
+
+  static ClipMapShader instance;
+
+private:
+  bool textInit;
+  ClipMap<ShTextureRect<ShColor4f>, SIZE_IMAGE > Img;
 };
 
-SparseTexture::SparseTexture()
-  : Shader("Textures: Sparse Texture")
+ClipMapShader::ClipMapShader()
+  : Shader("Textures: Clip Map"), fcenter("512:512")
+{
+  setStringParam("view center", fcenter);
+  textInit = false;
+}
+
+ClipMapShader::~ClipMapShader()
 {
 }
 
-SparseTexture::~SparseTexture()
+bool ClipMapShader::init()
 {
-}
-
-bool SparseTexture::init()
-{
-	HDRImage data, map;
-  data.loadHDR(SHMEDIA_DIR "/sparse/sparse_data.hdr");
-  map.loadHDR(SHMEDIA_DIR "/sparse/sparse_map.hdr");
-
-	ShUnclamped<ShTextureRect<ShAttrib4f> > dataTex(data.width(), data.height());
-  dataTex.memory(data.memory());
-	
-	ShUnclamped<ShTextureRect<ShAttrib4f> > mapTex(map.width(), map.height());
-  mapTex.memory(map.memory());
+  if(!textInit) {
+    ShImage image;
+    std::string filename = SHMEDIA_DIR "/largetextures/earth.png";
+    image.loadPng(filename.c_str());
+    Img = ClipMap<ShTextureRect<ShColor4f>, SIZE_IMAGE>(image.width(), image.height());
+    Img.internal(true);
+    Img.memory(image.memory());
+    textInit = true;
+  }
+  int center[2];
+  sscanf(fcenter.c_str(),"%i:%i",&(center[0]),&(center[1]));
+  Img.setCenter(center);
 
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
     ShInputNormal3f inorm;
-    
     ShOutputPosition4f opos; // Position in NDC
     ShInOutTexCoord2f tc; // pass through tex coords
     ShOutputNormal3f onorm;
-
+    
     opos = Globals::mvp | ipos; // Compute NDC position
     onorm = Globals::mv | inorm; // Compute view-space normal
 
+    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
   } SH_END;
 
-	ShAttrib1f SH_DECL(blocksize) = ShAttrib1f(16.0);
-	blocksize.range(0.0,256.0);
-	
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputPosition4f posh;
     ShInputTexCoord2f tc;
     ShInputNormal3f normal;
      
-    ShOutputColor3f result;
-	
-		tc *= mapTex.size(); // scale to get the current position on the map texture
-		ShAttrib2f u = frac(tc) * blocksize; // get the position on a single block
-		tc = floor(tc); // get position on the map texture
-		ShAttrib2f blockcoords = mapTex[tc](0,1); // get the offset to find the right block on the data texture
-		u += blockcoords; // add the offset
-		u = floor(u); // need to get integers values
-		
-		result = dataTex[u](0,1,2);
-		
-	} SH_END;
+    ShOutputColor3f result = Img(tc)(0,1,2);
+  } SH_END;
   return true;
 }
 
-SparseTexture SparseTexture::instance = SparseTexture();
-
-
-
+ClipMapShader ClipMapShader::instance = ClipMapShader();

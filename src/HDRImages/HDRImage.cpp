@@ -108,7 +108,7 @@ void HDRImage::loadEXR(const char filename[]) {
 // save m_image to and OpenEXR file
 void HDRImage::saveEXR(const char filename[]) {
 	RgbaOutputFile file (filename, m_width, m_height, WRITE_RGBA);
-	cout<<m_width<<" "<<m_height<<endl;
+	std::cout<<m_width<<" "<<m_height<<std::endl;
 	Array2D<Rgba> pixels;
 	pixels.resizeErase (m_height,m_width);
 	for(int j=0 ; j < m_height ; j++) { // fill the buffer with the image values
@@ -134,7 +134,7 @@ void HDRImage::loadHDR(const char filename[]) {
 	int i,j,k;
 
   if (f == NULL) {
-    cout<<"file not found"<<endl;
+    std::cout<<"file not found"<<std::endl;
     return;
   }
 	
@@ -143,7 +143,7 @@ void HDRImage::loadHDR(const char filename[]) {
   fgets(line, sizeof(line), f);
   if ((sscanf(line, "+X %d +Y %d\n", &m_height, &m_width) != 2) && // get size infos
       (sscanf(line, "-Y %d +X %d\n", &m_height, &m_width) != 2)) {
-    cout<<"Bad header: "<<line<<endl;
+    std::cout<<"Bad header: "<<line<<std::endl;
     return;
   }
 	m_elements = 4;
@@ -159,7 +159,7 @@ void HDRImage::loadHDR(const char filename[]) {
 		}
  		getc(f);	// ignore next character
 	  if (((getc(f) << 8) | getc(f)) != m_width) { // another check on the size...
-	    cout<<"error: length mismatch"<<endl;
+	    std::cout<<"error: length mismatch"<<std::endl;
 			break;
 		}
 		int code, val;
@@ -201,7 +201,7 @@ void HDRImage::saveHDR(const char filename[]) {
   FILE *f = fopen(filename, "wb");
   
 	if (f == NULL) {
-    cout<<"error when creating/opening file"<<endl;
+    std::cout<<"error when creating/opening file"<<std::endl;
     return;
   }
 
@@ -279,260 +279,4 @@ void HDRImage::saveHDR(const char filename[]) {
 	fclose(f);
 }
 
-/** Compute the HDR cube map of a scene from a HDR probe file
- */
-void HDRImage::CreateHDRCubeMap(const char filename[]) {
-	ShImage tmp = m_image;
-	ComputeCubeMap();
-	m_image = m_cubemapimage;
-	m_width = m_cubemapimage.width();
-	m_height = m_cubemapimage.height();
-	saveHDR(filename);
-	m_image = tmp;
-	m_width = m_image.width();
-	m_height = m_image.height();
-}
-
-/** Create a ShImage with the data of the cube-map
- */
-void HDRImage::ComputeCubeMap() {
-	ShImage img(m_width+4,3*m_height/2+6,4);
-	ShImage cur1(m_width,m_height,4); // used for the reduction of images
-	ShImage cur2(m_width,m_height,4);
-
-	for(int i=0 ; i<m_width ; i++) {
-		for(int j=0 ; j<m_height ; j++) {
-			float x = (float)i/m_width-0.5;
-			float y = (float)j/m_height-0.5;
-			float z = 0.5;
-			float norm = sqrt(x*x+y*y+z*z);
-			x /= norm;
-			y /= norm;
-			z /= norm;
-			float r = acos(z)/(M_PI*sqrt(x*x+y*y)); // change from spheric coordinates to planar coordinates
-			int u = (int)((x*r + 1.0) * m_width/2);
-			int v = (int)((y*r + 1.0) * m_height/2);
-			for(int k=0 ; k<4 ; k++) {
-				cur1(i,j,k) = m_image(u,v,k); // save the info to a temporary image
-			}
-			r = acos(-z)/(M_PI*sqrt(x*x+y*y));
-			u = (int)((x*r + 1.0) * m_width/2); 
-			v = (int)((y*r + 1.0) * m_height/2); 	
-			for(int k=0 ; k<4 ; k++) {
-				cur2(i,j,k) = m_image(u,v,k); // save the other side
-			}
-		}
-	}
-	
-	// shrink the 2 images with a bilinear interpolation and save them in the cubemap image
-	for(int i=0 ; i<m_width/2 ; i++) {
-		for(int j=0 ; j<m_height/2 ; j++) {
-			for(int k=0 ; k<4 ; k++) {
-				int u = min(2*(i+1),m_width-1);
-				int v = min(2*(j+1),m_height-1);
-				img(i+1,j+1,k) = 0.25*(cur1(2*i,2*j,k)+cur1(u,2*j,k)+cur1(2*i,v,k)+cur1(u,v,k));
-				img(i+m_width/2+3,j+1,k) = 0.25*(cur2(2*i,2*j,k)+cur2(u,2*j,k)+cur2(2*i,v,k)+cur2(u,v,k));
-			}
-		}
-	}
-
-	// 2 other faces
-	for(int i=0 ; i<m_width ; i++) {
-		for(int j=0 ; j<m_height ; j++) {
-			float z = (float)i/m_width-0.5;
-			float y = (float)j/m_height-0.5;
-			float x = 0.5;
-			float norm = sqrt(x*x+y*y+z*z);
-			x /= norm;
-			y /= norm;
-			z /= norm;
-			float r = acos(z)/(M_PI*sqrt(x*x+y*y));
-			int u = (int)((x*r + 1.0) * m_width/2); 
-			int v = (int)((y*r + 1.0) * m_height/2); 	
-			for(int k=0 ; k<4 ; k++) {
-				cur1(i,j,k) = m_image(u,v,k);
-			}
-			u = (int)((-x*r + 1.0) * m_width/2); 
-			v = (int)((y*r + 1.0) * m_height/2); 	
-			for(int k=0 ; k<4 ; k++) {
-				cur2(i,j,k) = m_image(u,v,k);
-			}
-		}
-	}
-	
-	// shrink the 2 new faces
-	for(int i=0 ; i<m_width/2 ; i++) {
-		for(int j=0 ; j<m_height/2 ; j++) {
-			for(int k=0 ; k<4 ; k++) {
-				int u = min(2*(i+1),m_width-1);
-				int v = min(2*(j+1),m_height-1);
-				img(i+1,j+m_height/2+3,k) = 0.25*(cur1(2*i,2*j,k)+cur1(u,2*j,k)+cur1(2*i,v,k)+cur1(u,v,k));
-				img(i+m_width/2+3,j+m_height/2+3,k) = 0.25*(cur2(2*i,2*j,k)+cur2(u,2*j,k)+cur2(2*i,v,k)+cur2(u,v,k));
-			}
-		}
-	}
-	
-	// the 2 last faces
-	for(int i=0 ; i<m_width ; i++) {
-		for(int j=0 ; j<m_height ; j++) {
-			float x = (float)i/m_width-0.5;
-			float z = (float)j/m_height-0.5;
-			float y = 0.5;
-			float norm = sqrt(x*x+y*y+z*z);
-			x /= norm;
-			y /= norm;
-			z /= norm;
-			float r = acos(z)/(M_PI*sqrt(x*x+y*y));
-			int u = (int)((x*r + 1.0) * m_width/2); 
-			int v = (int)((y*r + 1.0) * m_height/2); 	
-			for(int k=0 ; k<4 ; k++) {
-				cur1(i,j,k) = m_image(u,v,k);
-			}
-			u = (int)((x*r + 1.0) * m_width/2); 
-			v = (int)((-y*r + 1.0) * m_height/2); 	
-			for(int k=0 ; k<4 ; k++) {
-				cur2(i,j,k) = m_image(u,v,k);
-			}
-		}
-	}
-	
-	// shrink
-	for(int i=0 ; i<m_width/2 ; i++) {
-		for(int j=0 ; j<m_height/2 ; j++) {
-			for(int k=0 ; k<4 ; k++) {
-				int u = min(2*(i+1),m_width-1);
-				int v = min(2*(j+1),m_height-1);
-				img(i+1,j+m_height+5,k) = 0.25*(cur1(2*i,2*j,k)+cur1(u,2*j,k)+cur1(2*i,v,k)+cur1(u,v,k));
-				img(i+m_width/2+3,j+m_height+5,k) = 0.25*(cur2(2*i,2*j,k)+cur2(u,2*j,k)+cur2(2*i,v,k)+cur2(u,v,k));
-			}
-		}
-	}
-
-	// compute the intersections between the faces, 4 lines by face
-	for(int j=0 ; j<m_height/2 ; j++) {
-		for(int k=0 ; k<4 ; k++) {
-			img(0,j+1,k) = img(m_width+2,j+m_height/2+3,k);
-			img(m_width+3,j+m_height/2+3,k) = img(1,j+1,k);
-			
-			img(m_width/2+1,j+1,k) = img(m_width/2,j+m_height/2+3,k);
-			img(m_width/2+1,j+m_height/2+3,k) = img(m_width/2,j+1,k);
-
-			img(m_width/2+2,j+1,k) = img(m_width/2+3,j+m_height/2+3,k);
-			img(m_width/2+2,j+m_height/2+3,k) = img(m_width/2+3,j+1,k); 
-
-			img(m_width+3,j+1,k) = img(1,j+m_height/2+3,k);
-			img(0,j+m_height/2+3,k) = img(m_width+2,j+1,k);
-		
-			img(m_width/2+1,j+m_height+5,k) = img(j+1,m_height+2,k);			
-			img(j+1,m_height+3,k) = img(m_width/2,j+m_height+5,k);
-			
-			img(0,j+m_height+5,k) = img(j+m_width/2+3,m_height+2,k);			
-			img(j+m_width/2+3,m_height+3,k) = img(1,j+m_height+5,k);
-		}
-	}
-
-	for(int i=0 ; i<m_width/2 ; i++) {
-		for(int k=0 ; k<4 ; k++) {
-			img(i+1,0,k) = img(i+m_width/2+3,3*m_height/2+4,k);
-			img(i+m_width/2+3,3*m_height/2+5,k) = img(i+1,1,k);
-			
-			img(i+1,m_height/2+1,k) = img(i+1,3*m_height/2+4,k);
-			img(i+1,3*m_height/2+5,k) = img(i+1,m_height/2,k);
-		
-			img(i+m_width/2+3,0,k) = img(i+m_width/2+3,m_height+5,k);
-			img(i+m_width/2+3,m_height+4,k) = img(i+m_width/2+3,1,k);
-			
-			img(i+m_width/2+3,m_height/2+1,k) = img(i+1,m_height+5,k);
-			img(i+1,m_height+4,k) = img(i+m_width/2+3,m_height/2,k);
-			
-			img(i+1,m_height/2+2,k) = img(m_width+2,i+m_height+5,k);
-			img(m_width+3,i+m_height+5,k) = img(i+1,m_height/2+3,k);
-
-			img(i+m_width/2+3,m_height/2+2,k) = img(m_width/2+3,i+m_height+5,k);
-			img(m_width/2+2,i+m_height+5,k) = img(i+m_width/2+3,m_height/2+3,k);
-		}
-	}
-
-	// compute the pixels at the corner of the faces, 4 pixels by face 
-	// the value is the average of the 3 adjacent pixel values
-	for(int k=0 ; k<4 ; k++) {
-		img(0,0,k) = 0.333333*(img(1,0,k) + img(0,1,k) + img(1,1,k));
-		img(m_width/2+1,0,k) = 0.333333*(img(m_width/2,0,k) +
-																		 img(m_width/2+1,1,k) +
-																		 img(m_width/2,1,k));
-		img(m_width/2+2,0,k) = 0.333333*(img(m_width/2+3,0,k) +
-																		 img(m_width/2+2,1,k) +
-																		 img(m_width/2+3,1,k));
-		img(m_width+3,0,k) = 0.333333*(img(m_width+2,0,k) +
-																	 img(m_width+2,1,k) +
-																	 img(m_width+3,1,k));
-		
-		img(0,m_height/2+1,k) = 0.333333*(img(0,m_height/2,k) +
-																			img(1,m_height/2,k) +
-																			img(1,m_height/2+1,k));
-		img(m_width/2+1,m_height/2+1,k) = 0.333333*(img(m_width/2+1,m_height/2,k) +
-																								img(m_width/2,m_height/2,k) +	
-																								img(m_width/2,m_height/2+1,k));
-		img(m_width/2+2,m_height/2+1,k) = 0.333333*(img(m_width/2+2,m_height/2,k) +
-																								img(m_width/2+3,m_height/2+1,k) +
-																								img(m_width/2+3,m_height/2,k));
-		img(m_width+3,m_height/2+1,k) = 0.333333*(img(m_width+3,m_height/2,k) +
-																							img(m_width+2,m_height/2+1,k) +
-																							img(m_width+2,m_height/2,k));
-		
-		img(0,m_height/2+2,k) = 0.333333*(img(0,m_height/2+3,k) +
-																			img(1,m_height/2+2,k) +
-																			img(1,m_height/2+3,k));
-		img(m_width/2+1,m_height/2+2,k) = 0.333333*(img(m_width/2+1,m_height/2+3,k) +
-																								img(m_width/2,m_height/2+3,k) +
-																								img(m_width/2,m_height/2+2,k));
-		img(m_width/2+2,m_height/2+2,k) = 0.333333*(img(m_width/2+2,m_height/2+3,k) +
-																								img(m_width/2+3,m_height/2+3,k) +
-																								img(m_width/2+3,m_height/2+2,k));
-		img(m_width+3,m_height/2+2,k) = 0.333333*(img(m_width+3,m_height/2+3,k) +
-																							img(m_width+2,m_height/2+2,k) +
-																							img(m_width+3,m_height/2+3,k));
-
-		img(0,m_height+3,k) = 0.333333*(img(0,m_height+2,k) +
-																		img(1,m_height+2,k) +
-																		img(1,m_height+3,k));
-		img(m_width/2+1,m_height+3,k) = 0.333333*(img(m_width/2+1,m_height+2,k) +
-																							img(m_width/2,m_height+2,k) +
-																							img(m_width/2,m_height/2+1,k));
-		img(m_width/2+2,m_height+3,k) = 0.333333*(img(m_width/2+2,m_height+2,k) +
-																							img(m_width/2+3,m_height+3,k) +
-																							img(m_width/2+3,m_height+2,k));
-		img(m_width+3,m_height+3,k) = 0.333333*(img(m_width+3,m_height+2,k) +
-																						img(m_width+2,m_height+3,k) +
-																						img(m_width+2,m_height+2,k));
-		
-		img(0,m_height+4,k) = 0.333333*(img(0,m_height+5,k) +
-																		img(1,m_height+5,k) +
-																		img(1,m_height+4,k));
-		img(m_width/2+1,m_height+4,k) = 0.333333*(img(m_width/2+1,m_height+5,k) +
-																							img(m_width/2,m_height+5,k) +
-																							img(m_width/2,m_height+4,k));
-		img(m_width/2+2,m_height+4,k) = 0.333333*(img(m_width/2+2,m_height+5,k) +
-																							img(m_width/2+3,m_height+5,k) +
-																							img(m_width/2+3,m_height+4,k));
-		img(m_width+3,m_height+4,k) = 0.333333*(img(m_width+3,m_height+5,k) +
-																						img(m_width+2,m_height+4,k) +
-																						img(m_width+3,m_height+5,k));
-
-		img(0,3*m_height/2+5,k) = 0.333333*(img(1,3*m_height/2+5,k) +
-																				img(0,3*m_height/2+4,k) +
-																				img(1,3*m_height/2+4,k));
-		img(m_width/2+1,3*m_height/2+5,k) = 0.333333*(img(m_width/2,3*m_height/2+5,k) +
-																									img(m_width/2+1,3*m_height/2+4,k) +
-																									img(m_width/2,3*m_height/2+4,k));
-		img(m_width/2+2,3*m_height/2+5,k) = 0.333333*(img(m_width/2+3,3*m_height/2+5,k) +
-																									img(m_width/2+2,3*m_height/2+4,k) +
-																									img(m_width/2+3,3*m_height/2+4,k));
-		img(m_width+3,3*m_height/2+5,k) = 0.333333*(img(m_width+2,3*m_height/2+5,k) +
-																								img(m_width+2,3*m_height/2+4,k) +
-																								img(m_width+3,3*m_height/2+4,k));		
-	}
-
-	m_cubemapimage = img; // save the cube map to a specific image
-}
 
