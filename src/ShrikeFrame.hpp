@@ -26,6 +26,7 @@ enum {
   SHRIKE_MENU_VIEW_BACKGROUND,
   SHRIKE_MENU_VIEW_FULLSCREEN,
   SHRIKE_MENU_VIEW_FPS,
+  SHRIKE_MENU_VIEW_WIREFRAME,
 
   SHRIKE_TREECTRL_SHADERS
 };
@@ -55,6 +56,7 @@ public:
   void resetView(wxCommandEvent& event);
   void setBackground(wxCommandEvent& event);
   void fullscreen(wxCommandEvent& event);
+  void wireframe(wxCommandEvent& event);
   void screenshot(wxCommandEvent& event);
   void setFullscreen(bool);
   void fps(wxCommandEvent& event);

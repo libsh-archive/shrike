@@ -23,7 +23,7 @@ public:
 };
 
 Derivatives::Derivatives()
-  : Shader("Derivatives: Derivatives")
+  : Shader("Debugging: Derivatives")
 {
 }
 

@@ -23,7 +23,7 @@ public:
 };
 
 TexShader::TexShader()
-  : Shader("Textures: Texcoords")
+  : Shader("Debugging: Texture Coordinates")
 {
 }
 

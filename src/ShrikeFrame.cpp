@@ -27,6 +27,7 @@ BEGIN_EVENT_TABLE(ShrikeFrame, wxFrame)
   EVT_MENU(SHRIKE_MENU_VIEW_SCREENSHOT, ShrikeFrame::screenshot)
   EVT_MENU(SHRIKE_MENU_VIEW_BACKGROUND, ShrikeFrame::setBackground)
   EVT_MENU(SHRIKE_MENU_VIEW_FULLSCREEN, ShrikeFrame::fullscreen)
+  EVT_MENU(SHRIKE_MENU_VIEW_WIREFRAME, ShrikeFrame::wireframe)
   EVT_MENU(SHRIKE_MENU_VIEW_FPS, ShrikeFrame::fps)
   EVT_KEY_DOWN(ShrikeFrame::keyDown)
   //  EVT_LISTBOX(SHRIKE_LISTBOX_SHADERS, ShrikeFrame::onShaderSelect)
@@ -73,8 +74,9 @@ ShrikeFrame::ShrikeFrame()
   viewMenu->Append(SHRIKE_MENU_VIEW_RESET, "&Reset");
   viewMenu->Append(SHRIKE_MENU_VIEW_BACKGROUND, "Set &background colour...");
   viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FULLSCREEN, "Fullscreen");
+  viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_WIREFRAME, "&Wireframe");
   viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FPS, "Show framerate");
-  viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_SCREENSHOT, "Screenshot");
+  viewMenu->Append(SHRIKE_MENU_VIEW_SCREENSHOT, "Screenshot");
 
   wxMenuBar* menuBar = new wxMenuBar();
   menuBar->Append(fileMenu, "&File");
@@ -278,6 +280,17 @@ void ShrikeFrame::showInterface(ShProgram program,
 void ShrikeFrame::fullscreen(wxCommandEvent& event)
 {
   setFullscreen(event.IsChecked());
+}
+
+void ShrikeFrame::wireframe(wxCommandEvent& event)
+{
+  m_canvas->SetCurrent();
+  
+  if (event.IsChecked()) {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  } else {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  }
 }
 
 void ShrikeFrame::setFullscreen(bool fs)

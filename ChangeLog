@@ -1,5 +1,18 @@
 2004-07-13  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
+	* src/ShrikeFrame.cpp (wireframe): Implemented wireframe support.
+
+	* src/ShrikeFrame.hpp: Added support for wireframe.
+
+	* src/shaders/TexShader.cpp (TexShader): Change name.
+
+	* src/shaders/Derivatives.cpp (Derivatives): Change name.
+
+	* src/shaders/TangentArrows.cpp: Added more complicated tangent
+	debugging shader.
+
+	* src/shaders/Tangents.cpp: Added simple tangent debugging shader.
+
 	* src/shaders/Checkerboard.cpp: Compute average colour in the
 	shader, made colours static members.
 
