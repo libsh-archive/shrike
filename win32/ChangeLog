@@ -1,0 +1,332 @@
+2004-07-15  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/shaders/FragmentLooping.cpp: Added fragment looping demo.
+
+2004-07-14  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/shaders/FragmentBranching.cpp: Add simple fragment branching demo.
+
+2004-07-14  Kevin Moule  <krmoule@veil.uwaterloo.ca>
+
+	* src/ShrikeCanvas.cpp (renderObject): Pass in all three
+	coordinates of the tangent values.
+
+	* src/shaders/TangentArrows.cpp (render): Pass in all the tangents
+	for NormalArrows too.
+
+	* src/shaders/BumpMapShader.cpp: Added this shader.
+
+2004-07-13  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/shaders/TangentArrows.cpp (render): Fix a bug, now the z
+	component of the tangents actually gets sent. Add a NormalArrows
+	shader while we're at it.
+
+	* src/ShrikeFrame.cpp (wireframe): Implemented wireframe support.
+
+	* src/ShrikeFrame.hpp: Added support for wireframe.
+
+	* src/shaders/TexShader.cpp (TexShader): Change name.
+
+	* src/shaders/Derivatives.cpp (Derivatives): Change name.
+
+	* src/shaders/TangentArrows.cpp: Added more complicated tangent
+	debugging shader.
+
+	* src/shaders/Tangents.cpp: Added simple tangent debugging shader.
+
+	* src/shaders/Checkerboard.cpp: Compute average colour in the
+	shader, made colours static members.
+
+	* src/UniformPanel.cpp: Use previous colour in the colour dialogues.
+
+2004-07-12  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/shaders/VertexBranching.cpp: Added better geometry.
+
+2004-07-09  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/shaders/VertexBranching.cpp: Added shader to illustrate
+	branching in the vertex program. Works on
+	NV_vertex_program2_option-capable cards.
+
+	* src/shaders/Checkerboard.cpp: Added this shader.
+
+	* src/shaders/Derivatives.cpp: Added this shader.
+
+2004-07-05  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/util.cpp: Remove refract function.
+
+	* src/util.hpp: Remove refract function.
+
+	* src/utilimpl.hpp: Remove clamp functions.
+
+	* ChangeLog: Clean up the spaces in this file a bit.
+
+	* src/ShrikeFrame.cpp: Implement fragment/vertex program interface
+	displays using ShProgramNode::describe_interface().
+
+	* src/ShrikeFrame.hpp: Add functions for viewing fragment/vertex
+	program interfaces.
+
+2004-06-30  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/util.hpp: Remove reflect function, since Sh now has a real one.
+
+2004-06-28  Bryan Chan <b8chan@uwaterloo.ca>
+	
+	* src/shaders/LCDSmall.?pp, src/ShrikeCanvas.?pp: Crammed the FPS
+	counter under ATI limits. (issue121)
+
+2004-06-19  Bryan Chan <b8chan@uwaterloo.ca>
+
+	* src/shaders/WorleyShader.cpp: Minor improvements to the worley
+	shaders for the video and final poster submission.
+
+	* src/shaders/AlgebraShader.cpp: Updated for worley interfaces
+	that match the book.
+
+	* src/shaders/LCD.cpp:
+	Added restriction on number of fractional digits.
+
+	* src/ShrikeCanvas.cpp:
+	Added FPS counter using LCD shader.
+
+	* src/Timer.?pp: Copied these over from shdemo for timing
+	functions.
+	
+2004-06-16  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/ShrikeFrame.cpp (showProgram): You guessed it... More fixes
+	for the new ShProgram class.
+
+	* src/ShrikeFrame.hpp: Fixes for the new ShProgram class.
+
+	* src/UniformPanel.cpp (setShader): Fixes for new ShProgram class.
+
+2004-06-11  Bryan Chan <b8chan@uwaterloo.ca>
+
+	* src/ShrikeCanvas.?pp (renderObject): Use display lists. (Fix
+	issue120)
+
+2004-06-10  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/shaders/AlgebraShader.cpp (init_all): Use the NDC position
+	to halftone, instead of texture coordinates.
+
+	* src/shaders/LCD.cpp: This should be a great debugging tool :).
+
+2004-06-01  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/shaders/NonPeriodic.cpp: Use the new boolean functions.
+
+	* src/shaders/AlgebraShader.cpp: Give the textures names.
+
+2004-05-27  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/UniformPanel.cpp (setShader): Use has_name() instead of hasName().
+
+2004-05-21  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/shaders/*: Remove redundant bind() implementations, and
+	replace shBindShader with shBind (see r937, issue1).
+
+2004-05-20  Bryan Chan <b8chan@uwaterloo.ca>
+
+	* src/shaders/WorleyShader.cpp: Added a bucket load of Worley shaders. 
+  
+2004-04-14  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/AlgebraShader.cpp (AlgebraShaders): Don't include "nulls" in
+	names.
+	Rename AlgebraShader to AlgebraShaders and don't make it an
+	ShShader. Cut away some unnecessary code while we're at it.
+
+	* src/ShrikeFrame.cpp: Use a treeview instead of a list control
+	for the list of shaders.
+
+2004-04-07  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* Ever so many fixes for the new Sh.
+
+2004-04-04  Michael McCool <mmccool@uwaterloo.ca>
+
+	* src/JeweledShader.cpp:
+	a complex "hero" shader that uses three brdfs, a specular map,
+	material mapping, and environment mapping.   Lots of fun parameters.
+	However, discovered two problems:
+	  - Lack of a default constructor with no arguments leads to
+	    problems when allocating textures in arrays.   Tried to fix
+	    by providing default sizes in sh, but this leads to problems
+	    with trait wrappers.   Added 1D, 2D, 3D versions of trait
+	    wrappers as a temporary fix, but I don't like it.  Will have
+	    to revisit this part of the design.
+	  - There is a bug with the initialization of output attributes
+	    modified with read-write-modify (i.e. +=); they don't seem
+	    to be getting initialized to zero properly.   Of course this
+	    means a hidden temporary is introduced, probably IT is not
+	    being initialized properly.
+
+2004-03-25  Bryan Chan <b8chan@uwaterloo.ca>
+
+	* src/AlgebraShader.cpp: Added demo of algebra (note: this
+	  generates *lots* of subshaders, so it might be a good idea to
+	  disable it by default in Makefile.am)
+	 
+2004-03-18  Bryan Chan <b8chan@uwaterloo.ca>
+	* src/EdgeGooch.cpp: Added Gooch w sillhouette shader.
+	
+2004-03-15  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/ShrikeFrame.cpp: Add a menu item to change the background colour.
+
+	* src/ShrikeCanvas.cpp (setBackground): Allow the background
+	colour to be changed.
+
+	* src/UniformPanel.cpp (setShader): Allow the user to change textures.
+
+2004-03-11  Bryan Chan  <b8chan@uwaterloo.ca>
+	* src/NoiseShader.cpp: Moved shdemo over to shrike.
+	
+2004-03-11  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/ShrikeFrame.cpp (setShader): Use firstTimeInit() here
+	instead of initializing everything in initShaderList(). This cuts
+	down the startup time a lot.
+
+	* src/Shader.cpp (firstTimeInit): Implement firstTimeInit(), which
+	only calls init() once.
+
+	* src/Shader.hpp: Add a prototype for firstTimeInit().
+
+	* src/Textures.cpp: Added a simple example of using textures.
+
+	* src/Pants.cpp: Added this really cool new shader. Thanks to
+	Craig Kaplan.
+
+	* src/NonPeriodic.cpp: Added this new shader. Thanks to Craig Kaplan.
+
+2004-03-09  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/ShrikeFrame.cpp: Added a "Reset View" menu item.
+
+	* src/ShrikeFrame.hpp: Added a reset view event.
+
+	* src/ShrikeCanvas.cpp (resetView): Added this function.
+
+	* src/Logo.cpp (render): Use an S object file from Houdini.
+
+	* src/ShrikeFrame.cpp (reinit): Implemented reinit.
+
+	* src/ShrikeFrame.hpp: Added reinitialize function + event.
+
+2004-03-08  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/ShrikeCanvas.cpp (render): Call back the shader to do the
+	rendering (which by default gets us to render an object).
+	(motion): Rotate the light appropriately, taking into account the
+	current modelview matrix.
+	(motion): Add shift-middle drag to change the light distance from
+	the origin.
+
+	* src/Shader.hpp: Added render() as an overridable method.
+
+	* src/Logo.cpp: Added the Sh Logo shader.
+
+2004-03-04  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/ShrikeFrame.cpp (ShrikeFrame): Use more sane default sizes
+	and a minimum panel size.
+
+	* src/Ashikhmin.cpp (ashikhmin_specular): clamp more properly,
+	although I think it's still slightly off.
+
+	* src/Texter.cpp (Texter): Use setStringParam to allow the user to
+	change the text.
+	(doText): Added a few letters.
+
+	* src/ShrikeFrame.cpp (showProgram): Added functions to show the
+	assembly code in a separate window.
+	(ShrikeFrame): Added a "Shader" menu.
+
+	* src/Shader.cpp (bind): Don't print out the shader program assembly.
+	(beginStringParams): Added this function.
+	(endStringParams): Added this function.
+	(setStringParam): Added this function, to be used by derived classes.
+
+	* src/ShrikePropsDialog.cpp: Added property dialog.
+
+	* src/Texter.cpp: Sh has a "Hello World" program now.
+
+	* src/ShrikeCanvas.cpp (usingShaders): Only enabled
+	GL_VERTEX_PROGRAM and GL_FRAGMENT_PROGRAM when a shader is set.
+
+2004-03-01  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/UniformPanel.cpp: Much better animation.
+
+2004-02-28  Bryan Chan <b8chan@uwaterloo.ca>
+
+	* src/ShrikeCanvas.?pp, src/ShrikeFrame.?pp:
+	Switched to ShObjMesh
+	
+2004-02-27  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/ShrikeCanvas.cpp (GL_GLEXT_LEGACY): Use this so that we get
+	glMultiTexCoord...ARB function prototypes.
+
+	* src/CelShader.cpp (init): Added a scale to the texcoord transform.
+
+	* src/Ashikhmin.cpp: Make Ashikhmin leaner, so it fits in ATI limits.
+
+	* src/ShrikeFrame.cpp (initShaderList): Sort listbox
+
+	* src/SimplePhong.cpp: Added simple phong example for educational uses.
+
+	* src/SimpleDiffuse.cpp: Added simple diffuse example for
+	educational uses.
+
+	* src/WobbleShader.cpp: Added Mr Wobble!
+
+2004-02-20  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/CelShader.cpp (init): Crazy CelShader craziness.
+	(init): CelShader improvements.
+
+	* src/DiscoShader.cpp (init): Use mv_inverse to transform the
+	reflection vector. Also make the texcoords move with time.
+
+	* src/Globals.hpp: Added mv_inverse.
+
+	* src/UniformPanel.cpp: Added some cheap animation. Push the
+	checkbox and bask in the glory of animated variables.
+
+2004-02-19  Bryan Chan <b8chan@uwaterloo.ca
+	* src/WorleyShader.cpp: Cleaned up worley shader
+
+	* src/DiscoShader.cpp: Added a funky cell noise demo
+	(currently with a time slider in anticipation of animation working
+	:)
+	
+2004-02-19  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/UniformPanel.cpp (setShader): Don't display widgets for constants.
+	(setShader): Don't display widgets for unnamed uniforms.
+
+	* src/CelShader.cpp: Added the super awesome CelShader using
+	Shader Algebra.
+
+	* src/ShrikeFrame.cpp (openModel): Use SHMEDIA_DIR.
+	(ShrikeFrame): Use SHMEDIA_DIR.
+
+	* configure.ac: Use WX_FIND_WX_CONFIG
+
+	* src/Makefile.am: Use ${WX_CONFIG} instead of wx-config.
+
+	* config/wx.m4: Added this file, to check for wx-config.
+
+	* configure.ac: Use SHMEDIA_WITH_SHMEDIA_DIR.
+
+	* config/shmedia.m4: Added this file.
+

@@ -1,0 +1,22 @@
+AC_INIT(shrike, 0.7.1, libsh-devel@lists.sourceforge.net)
+AM_INIT_AUTOMAKE
+AC_CONFIG_SRCDIR([src/ShrikeApp.cpp])
+AM_CONFIG_HEADER(config.h)
+
+AC_PROG_CXX
+AC_PROG_LIBTOOL
+
+AC_LANG(C++)
+
+SH_WITH_SH_DIR
+SH_CHECK_SH_HEADERS
+
+SHMEDIA_WITH_SHMEDIA_DIR
+
+WX_FIND_WX_CONFIG
+
+GL_WITH_GL_DIR
+
+AC_CONFIG_FILES([Makefile
+		 src/Makefile])
+AC_OUTPUT
