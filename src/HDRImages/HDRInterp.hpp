@@ -53,7 +53,6 @@ public:
   return_type operator[](const ShTexCoord2f tc) const {
     const T *bt = this;
     ShAttrib2f ftc1 = frac(tc);
-    return (*bt)[tc];
     ShAttrib2f ftc2 = ShAttrib2f(1.0,1.0)-ftc1;
     ShAttrib2f u = floor(tc);
     // clamp the texture coordinates
