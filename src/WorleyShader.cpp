@@ -14,7 +14,7 @@ enum WorleyType {
 class WorleyShader : public Shader {
 public:
   WorleyShader(std::string name, bool tex)
-    : Shader(name + (tex ? "(Texture Hash)" : "(Procedural Hash)")), useTexture(tex) {}
+    : Shader(name + (tex ? " (Texture Hash)" : " (Procedural Hash)")), useTexture(tex) {}
   virtual ~WorleyShader() {}
 
   ShProgram vertex() { return vsh;}
@@ -83,7 +83,7 @@ ShProgram WorleyShader::makeWorleySh(ShWorleyMetric m, const ShAttrib4f &c, cons
 
 class OrganicWorley: public WorleyShader {
   public:
-    OrganicWorley(bool useTexture): WorleyShader("Organic Worley", useTexture) {}
+    OrganicWorley(bool useTexture): WorleyShader("Worley: Organic", useTexture) {}
 
     void initfsh() {
       ShProgram worleysh = makeWorleySh(L2_SQ, coeff, freq, true); 
@@ -101,7 +101,7 @@ class OrganicWorley: public WorleyShader {
 
 class PolkaDotWorley: public WorleyShader {
   public:
-    PolkaDotWorley(bool useTexture): WorleyShader("Polka Dot Worley", useTexture) {}
+    PolkaDotWorley(bool useTexture): WorleyShader("Worley: Polka Dot", useTexture) {}
 
     void initfsh() {
       ShProgram worleysh = makeWorleySh(L2_SQ, coeff, freq, false); 
@@ -125,7 +125,7 @@ class PolkaDotWorley: public WorleyShader {
 
 class LavaWorley: public WorleyShader {
   public:
-    LavaWorley(bool useTexture): WorleyShader("Lava Worley", useTexture) {}
+    LavaWorley(bool useTexture): WorleyShader("Worley: Lava", useTexture) {}
 
     void initfsh() {
       coeff = ShConstant4f(-1, 1.2, 0, 0);
@@ -149,7 +149,7 @@ class LavaWorley: public WorleyShader {
 
 class GiraffeWorley: public WorleyShader {
   public:
-    GiraffeWorley(bool useTexture): WorleyShader("Giraffe Worley", useTexture) {}
+    GiraffeWorley(bool useTexture): WorleyShader("Worley: Giraffe", useTexture) {}
 
     void initfsh() {
       param = ShConstant1f(0.75);
@@ -183,7 +183,7 @@ class GiraffeWorley: public WorleyShader {
 
 class CircuitWorley: public WorleyShader {
   public:
-    CircuitWorley(bool useTexture): WorleyShader("Circuit Worley", useTexture) {}
+    CircuitWorley(bool useTexture): WorleyShader("Worley: Circuit", useTexture) {}
 
     void initfsh() {
       coeff = ShConstant4f(0, 0, 0, 1);
@@ -215,7 +215,7 @@ class CircuitWorley: public WorleyShader {
 
 class CrackedWorley: public WorleyShader {
   public:
-    CrackedWorley(bool useTexture): WorleyShader("Cracked Worley", useTexture) {}
+    CrackedWorley(bool useTexture): WorleyShader("Worley: Cracked", useTexture) {}
 
     void initfsh() {
       ShAttrib1f SH_DECL(time); 

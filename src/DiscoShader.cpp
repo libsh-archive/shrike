@@ -73,6 +73,7 @@ bool DiscoShader::init()
   ShAttrib1f SH_DECL(envAmount) = ShAttrib1f(0.5);
 
   ShColor3f SH_DECL(defaultColor) = ShConstant3f(0.25f, 0.25f, 0.25f);
+  ShAttrib1f SH_DECL(texscale) = 1.0;
 
   ShProgram discoTiler = SH_BEGIN_PROGRAM() {
     ShInputTexCoord2f SH_DECL(texcoord);
@@ -81,7 +82,7 @@ bool DiscoShader::init()
     ShOutputColor3f SH_DECL(ks);
 
     // Translate those texcoords a bit
-    texcoord(0) = texcoord(0) + time;
+    texcoord(0) = texcoord(0) + time * texscale;
     
     ShAttrib3f p;
     p(0,1) = texcoord * tileFrequency; 

@@ -1,3 +1,21 @@
+2004-02-27  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/ShrikeCanvas.cpp (GL_GLEXT_LEGACY): Use this so that we get
+	glMultiTexCoord...ARB function prototypes.
+
+	* src/CelShader.cpp (init): Added a scale to the texcoord transform.
+
+	* src/Ashikhmin.cpp: Make Ashikhmin leaner, so it fits in ATI limits.
+
+	* src/ShrikeFrame.cpp (initShaderList): Sort listbox
+
+	* src/SimplePhong.cpp: Added simple phong example for educational uses.
+
+	* src/SimpleDiffuse.cpp: Added simple diffuse example for
+	educational uses.
+
+	* src/WobbleShader.cpp: Added Mr Wobble!
+
 2004-02-20  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/CelShader.cpp (init): Crazy CelShader craziness.

@@ -1,5 +1,7 @@
+#define GL_GLEXT_LEGACY
 #include <GL/gl.h>
 #include <GL/glext.h>
+#undef GL_GLEXT_LEGACY
 #include <wx/glcanvas.h>
 #include "ShrikeCanvas.hpp"
 #include "Globals.hpp"

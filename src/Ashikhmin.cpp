@@ -30,24 +30,16 @@ Ashikhmin::~Ashikhmin()
 {
 }
 
-template<int Power> struct intpow {
-  template<int N>
-  ShVariableN<N, float> operator()(const ShVariableN<N, float>& f)
-  {
-    return f * intpow<Power - 1>()(f);
-  }
-};
-
-template<> struct intpow<0> {
-  template<int N> ShVariableN<N, float> operator()(const ShVariableN<N, float>& f)
-  {
-    return f;
-  }
-};
+template<int N>
+ShVariableN<N, float> pow5(const ShVariableN<N, float>& f)
+{
+  ShAttrib<N, SH_TEMP, float> t =  f * f;
+  return t * t * f;
+}
 
 ShColor3f schlick(ShColor3f refl, ShAttrib1f kh)
 {
-  return refl + (ShColor3f(1.0, 1.0, 1.0) - refl)*intpow<5>()(1.0f - kh);
+  return refl + (ShColor3f(1.0, 1.0, 1.0) - refl)*pow5(1.0f - kh);
 }
 
 ShColor3f ashikhmin_specular(ShAttrib1f nu, ShAttrib1f nv,
@@ -58,7 +50,7 @@ ShColor3f ashikhmin_specular(ShAttrib1f nu, ShAttrib1f nv,
 {
   ShVector3f k = viewer; // either light or viewer works here
 
-#define CLAMP(x) min(max(x, 0.01), 0.99)
+#define CLAMP(x) min(x, 0.99)
   
   ShAttrib1f hn = CLAMP(h|n);
   ShAttrib1f kn = CLAMP(k|n);
@@ -81,8 +73,8 @@ ShColor3f ashikhmin_diffuse(ShNormal3f normal,
 {
   ShColor3f scale = (28.0/(23.0*M_PI))*diffuse*(ShColor3f(1.0, 1.0, 1.0) - spec);
 
-  ShAttrib1f v = 1.0f - intpow<5>()(1.0f - max(normal|light, 0.0)/2.0f);
-  ShAttrib1f l = 1.0f - intpow<5>()(1.0f - max(normal|viewer, 0.0)/2.0f);
+  ShAttrib1f v = 1.0f - pow5(1.0f - max(normal|light, 0.0)/2.0f);
+  ShAttrib1f l = 1.0f - pow5(1.0f - max(normal|viewer, 0.0)/2.0f);
 
   return scale * v * l;
 }

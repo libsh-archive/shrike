@@ -22,7 +22,7 @@ public:
 };
 
 DiffuseShader::DiffuseShader()
-  : Shader("Simple diffuse lighting")
+  : Shader("Diffuse: Algebra")
 {
 }
 
@@ -36,8 +36,8 @@ bool DiffuseShader::init()
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
   vsh = vsh << shExtract("lightPos") << Globals::lightPos; 
   vsh = shSwizzle("normal", "lightVec", "posh") << vsh;
-  ShColor3f SH_DECL(diffuse) = ShColor3f(1.0, 1.0, 1.0);
-  fsh = ShKernelLib::shDiffuse<ShColor3f>() << diffuse;
+  ShColor3f SH_DECL(color) = ShColor3f(.5, 0.9, 0.2);
+  fsh = ShKernelLib::shDiffuse<ShColor3f>() << color;
   return true;
 }
 

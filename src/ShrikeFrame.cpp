@@ -38,7 +38,7 @@ ShrikeFrame::ShrikeFrame()
   wxSplitterWindow* hsplitter = new wxSplitterWindow(this, -1);
 
   wxListBox* shaderList = initShaderList(hsplitter);
-
+  
   // Probably should do this somewhere else...
   ShObjFile* model = 0;
 
@@ -94,7 +94,7 @@ wxListBox* ShrikeFrame::initShaderList(wxWindow* parent)
 {
   wxListBox* box = new wxListBox(parent, SHRIKE_LISTBOX_SHADERS,
                                  wxDefaultPosition, wxDefaultSize, 0, 0,
-                                 wxLB_SINGLE);
+                                 wxLB_SINGLE | wxLB_SORT);
 
   for (Shader::iterator I = Shader::begin(); I != Shader::end(); ++I) {
     Shader* shader = *I;
