@@ -114,7 +114,7 @@ void ShrikeFrame::setShader(Shader* shader)
 {
   m_canvas->SetCurrent();
   if (shader) shader->bind();
-  m_canvas->usingShaders(shader != 0);
+  m_canvas->setShader(shader);
   m_canvas->render();
   m_panel->setShader(shader);
   m_shader = shader;

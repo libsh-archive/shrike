@@ -9,7 +9,8 @@ struct Globals {
   static SH::ShMatrix4x4f mv_inverse;
   static SH::ShMatrix4x4f mvp;
   static SH::ShPoint3f lightPos; // in view space
-  static SH::ShPoint3f lightPosW; // in world space
+  static SH::ShVector3f lightDirW; // in world space
+  static SH::ShAttrib1f lightLenW; // in world space
 };
 
 #endif

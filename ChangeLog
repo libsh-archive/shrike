@@ -1,3 +1,16 @@
+2004-03-08  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/ShrikeCanvas.cpp (render): Call back the shader to do the
+	rendering (which by default gets us to render an object).
+	(motion): Rotate the light appropriately, taking into account the
+	current modelview matrix.
+	(motion): Add shift-middle drag to change the light distance from
+	the origin.
+
+	* src/Shader.hpp: Added render() as an overridable method.
+
+	* src/Logo.cpp: Added the Sh Logo shader.
+
 2004-03-04  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/ShrikeFrame.cpp (ShrikeFrame): Use more sane default sizes

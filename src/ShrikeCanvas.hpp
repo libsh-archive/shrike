@@ -4,6 +4,7 @@
 #include <wx/glcanvas.h>
 #include <sh/ShObjMesh.hpp>
 #include "Camera.hpp"
+#include "Shader.hpp"
 
 class ShrikeCanvas : public wxGLCanvas {
 public:
@@ -11,14 +12,15 @@ public:
                ShUtil::ShObjMesh* model);
   
   void render();
-
+  void renderObject();
+  
   void setModel(ShUtil::ShObjMesh* model);
   
   void paint();
   void reshape();
   void motion(wxMouseEvent& event);
 
-  void usingShaders(bool on);
+  void setShader(Shader* shader);
   
   static ShrikeCanvas* instance();
   
@@ -32,6 +34,10 @@ private:
 
   long m_last_x, m_last_y;
 
+  Shader* m_shader;
+
+  bool m_showLight;
+  
   static ShrikeCanvas* m_instance;
   
   DECLARE_EVENT_TABLE()

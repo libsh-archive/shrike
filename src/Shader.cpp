@@ -1,4 +1,5 @@
 #include "Shader.hpp"
+#include "ShrikeCanvas.hpp"
 
 Shader::Shader(const std::string& name)
   : m_name(name)
@@ -14,10 +15,6 @@ void Shader::bind() {
   SH::ShProgram vsh = vertex();
   SH::ShProgram fsh = fragment();
   std::cerr << "Binding " << name() << std::endl;
-  /*
-  vsh->code()->print(std::cerr);
-  fsh->code()->print(std::cerr);
-  */
   SH::shBindShader(vsh);
   SH::shBindShader(fsh);
 }
@@ -30,6 +27,11 @@ const std::string& Shader::name() const
 std::size_t Shader::paramCount() const
 {
   return m_stringParams.size();
+}
+
+void Shader::render()
+{
+  ShrikeCanvas::instance()->renderObject();
 }
 
 Shader::StringParamList::iterator Shader::beginStringParams()

@@ -16,6 +16,8 @@ public:
   virtual SH::ShProgram fragment() = 0;
   virtual SH::ShProgram vertex() = 0;
   
+  virtual void render();
+  
   const std::string& name() const;
 
   std::size_t paramCount() const;
