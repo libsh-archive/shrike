@@ -15,7 +15,7 @@ int main(int argc, char** argv)
     cout << " shgenmap n <png file> : Create normal map" << endl;
     cout << " shgenmap q <png file> : Create quaternion map using the same png file" << endl;
     cout << " shgenmap q <png file1> <png file2> : Create quaternion map using 2 different png files (1 for normal, 2 for tangent)" << endl;
-		cout << " shgenmap h <png file> : Create horizon maps (generate 2 files, one for 4 horizon directions)" << endl;
+		cout << " shgenmap h <png file> : Create horizon maps (2 files for 8 directions):" << endl;
     exit(1);
   }
   string type(argv[1]);

@@ -341,6 +341,7 @@ void UniformPanel::setShader(Shader* shader)
         ShTextureNodePtr tex = *I;
         if (tex->dims() == SH_TEXTURE_3D || tex->dims() == SH_TEXTURE_CUBE) continue;
 
+        if (tex->internal()) continue;
         std::string label = tex->name();
 
         switch (tex->dims()) {

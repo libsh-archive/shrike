@@ -7,7 +7,7 @@
 using namespace SH;
 using namespace ShUtil;
 
-#define IMG_TEXTURE 1 
+#define IMG_TEXTURE 1
 #define USE_QUAT 0 
 
 namespace {
@@ -159,7 +159,7 @@ bool FrameMapping::init()
   mapImage(fmap.tangentMap);
   ShUnclamped< ShTextureRect<ShVector3f> > normalMap(w, h);
   ShUnclamped< ShTextureRect<ShVector3f> > tangentMap(w2, h2);
-  normalMap.memory(fmap.normalMap.memory());
+	normalMap.memory(fmap.normalMap.memory());
   tangentMap.memory(fmap.tangentMap.memory());
 #endif
 #endif
@@ -206,17 +206,16 @@ bool FrameMapping::init()
     ShAttrib1f cond2 = (frac1 > 0.5);
     frac0 = frac(frac0*2.0);
     frac1 = frac(frac1*2.0);
-    ShQuaternionf q = rot.inverse()*tan1*rot;
-    ShAttrib1f cond12 = cond1*cond2 + (cond1==0.0)*(cond2==0.0);;
+		ShQuaternionf q = rot.inverse()*tan1*rot;
+		ShAttrib1f cond12 = cond1*cond2 + (cond1==0.0)*(cond2==0.0);;
     tan1 = cond12*q.getVector()(1, 2, 3) + (cond12 == 0.0)*tan1;
-    
-    ShAttrib1f bumpAngle =(cond12*(frac1 - 0.5) + 
-      (cond12==0.0)*(frac0 - 0.5));
+		
+    ShAttrib1f bumpAngle =(cond12*(frac1 - 0.5) + (cond12==0.0)*(frac0 - 0.5));
     ShQuaternionf bump(-bumpAngle, ShVector3f(tan1));
     ShQuaternionf qn = bump.inverse()*normal*bump;
     normal = qn.getVector()(1,2,3);
     qn = bump.inverse()*tan1*bump;
-    tan1 = qn.getVector()(1,2,3);
+	  tan1 = qn.getVector()(1,2,3);
     ShColor3f diffuse = cond12*diffuse1 + (cond12 == 0.0)*diffuse2;
     ShVector3f tan2;
 #else
@@ -258,7 +257,6 @@ bool FrameMapping::init()
     color = ashikhmin(nu, nv, normalize(normal), normalize(halfvec), 
         normalize(lightvec), normalize(viewvec), tan1, tan2, specular, diffuse)
       + ambient;
-    
   } SH_END_PROGRAM;
     
   return true;
