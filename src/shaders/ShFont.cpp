@@ -43,6 +43,7 @@
 #include "ShDebug.hpp"
 */
 #define BUFFERSIZE 256
+#define PACK
 
 ShFont::ShFont()
   : m_width(0), 
@@ -91,6 +92,7 @@ float ShFont::halfy() const
 
 void ShFont::loadFont(const std::string& filename)
 {
+#ifdef NOPACK
 	try {
 
 		m_memory = 0;
@@ -127,7 +129,7 @@ void ShFont::loadFont(const std::string& filename)
 			for(int n=0; n<len; n++) {
 				read(ifile, &tindex, sizeof(int));
 				read(ifile, &tnum, sizeof(int));
-				//std::cout << "index : " << tindex << " num : " << tnum << std::endl;
+				std::cout << "index : " << tindex << " num : " << tnum << std::endl;
 				edgenum()[tindex] = (float)tnum;
 			
 				for(int l=0; l<m_edges; l++) {
@@ -144,6 +146,39 @@ void ShFont::loadFont(const std::string& filename)
 		}
 		close(ifile);
 	} catch(...){std::cerr << "font exception " << std::endl;}
+#endif
+#ifdef PACK
+	try {
+
+		m_memory = 0;
+		m_edgenum = 0;
+
+		int ifile;
+		float coord;
+
+		ifile = open(filename.c_str(), O_RDONLY);
+
+		if(ifile > 0 ) {
+			read(ifile, &m_width, sizeof(int));
+			read(ifile, &m_height, sizeof(int));
+			std::cout << m_width << " " << m_height << std::endl;
+
+			m_elements = 4;
+
+			// buffer for edge coordinates and edge number
+			m_memory = new ShHostMemoryPtr[1];
+			m_memory[0] = new ShHostMemory(sizeof(float) * m_width * m_height * m_elements);
+
+			int len = m_width * m_height * m_elements;
+
+			for(int n=0; n<len; n++) {
+				read(ifile, &coord, sizeof(float));
+				coords(0)[n] = coord;
+			}
+		}
+		close(ifile);
+	} catch(...){std::cerr << "font exception " << std::endl;}
+#endif
 	
 }
 

@@ -35,6 +35,8 @@ using namespace SH;
 using namespace ShUtil;
 
 #include "util.hpp"
+#define PACK
+#define NEIGHBOURS 9
 
 class VectorText : public Shader {
 public:
@@ -221,12 +223,13 @@ VectorText::~VectorText()
 
 bool VectorText::init()
 {
+#ifdef NOPACK
   std::cerr << "Initializing " << name() << std::endl;
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
   ShFont font;
-  font.loadFont("/home/mmccool/dev/vectortexture/freetype/d.txt");
+  font.loadFont("/home/zqin/vectortexture/freetype/p.txt");
 
   int width = font.width();
   int height = font.height();
@@ -250,7 +253,6 @@ bool VectorText::init()
   // may not need this... but just in case
   shUpdate();
 
-  /*
   //debug info
   for(int i=0; i<height; i++) {
 	  for(int j=0; j<width; j++) {
@@ -266,33 +268,64 @@ bool VectorText::init()
 	  }
   }
 
-  //debug info
-  for(int i=0; i<height; i++) {
-	  for(int j=0; j<width; j++) {
-		  int num = (int)font.edgenum()[i*width+j];
-		  if(!num) { 
-		  	std::cerr << " " << " " << " ";
-			} else {
-		  	std::cerr << " " << "*" << " ";
-			}
-	  }
-	  std::cout << std::endl;
-  }
-  */
-
   std::cerr << " the image width is " << font.width() << std::endl;
   std::cerr << " the image height is " << font.height() << std::endl;
   std::cerr << " the image maxedge is " << font.edges() << std::endl;
   std::cerr << " the image halfx is " << font.halfx() << std::endl;
   std::cerr << " the image halfy is " << font.halfy() << std::endl;
+#endif
 
+#ifdef PACK
+  std::cerr << "Initializing " << name() << std::endl;
+  vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
+  vsh = shSwizzle("texcoord", "posh") << vsh;
+
+  ShFont font;
+  font.loadFont("/home/zqin/vectortexture/freetype/p.txt");
+
+  int width = font.width();
+  int height = font.height();
+  int elements = 4;
+
+  // textures for line segment endpoints
+  ShUnclamped< ShArrayRect<ShAttrib4f> > ftexture(width, height);
+  ftexture.memory(font.memory(0));
+
+  /*
+  //debug info
+  for(int i=0; i<height; i++) {
+	  for(int j=0; j<width; j++) {
+		  std::cout << i << " " << j << std::endl;
+		  for(int m=0; m<elements; m++) {
+			  int index = (i * width + j) * elements + m;
+			  std::cout << font.coords(0)[index] << " ";
+		  }
+		  std::cout << std::endl;
+	  }
+  }
+  */
+
+  std::cerr << " the image width is " << font.width() << std::endl;
+  std::cerr << " the image height is " << font.height() << std::endl;
+
+  ShAttrib2f size[9];
+  size[0] = ShAttrib2f(-1.0/width, -1.0/height);
+  size[1] = ShAttrib2f(0,          -1.0/height);
+  size[2] = ShAttrib2f(1.0/width,  -1.0/height);
+  size[3] = ShAttrib2f(-1.0/width,  0);
+  size[4] = ShAttrib2f(0,           0);
+  size[5] = ShAttrib2f(1.0/width,   0);
+  size[6] = ShAttrib2f(-1.0/width,  1.0/height);
+  size[7] = ShAttrib2f(0,           1.0/height);
+  size[8] = ShAttrib2f(1.0/width,   1.0/height);
+#endif
 
   fsh = SH_BEGIN_FRAGMENT_PROGRAM {
     ShInputTexCoord2f tc;
     ShOutputColor3f o;
 
     // transform texture coords (should be in vertex shader really, but)
-
+#ifdef NOPACK
     //ShAttrib2f x = tc * m_size - m_offset;
     ShAttrib2f x = tc - m_offset;
     ShAttrib4f L[edges];
@@ -302,6 +335,19 @@ bool VectorText::init()
     }
   
     ShAttrib4f r = segdists(L,edges,x);
+#endif
+
+#ifdef PACK
+    ShAttrib2f x = tc;
+    ShAttrib4f L[NEIGHBOURS];
+
+    for(int i=0; i<NEIGHBOURS; i++) {
+		x = tc + size[i];
+    	L[i] = ftexture(x); 
+    }
+  
+    ShAttrib4f r = segdists(L,NEIGHBOURS,x);
+#endif
 
     switch (m_mode) {
       case 0: {
