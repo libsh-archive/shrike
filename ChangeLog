@@ -1,3 +1,20 @@
+2004-04-04  Michael McCool <mmccool@uwaterloo.ca>
+	* src/JeweledShader.cpp:
+	a complex "hero" shader that uses three brdfs, a specular map,
+	material mapping, and environment mapping.   Lots of fun parameters.
+	However, discovered two problems:
+	  - Lack of a default constructor with no arguments leads to
+	    problems when allocating textures in arrays.   Tried to fix
+	    by providing default sizes in sh, but this leads to problems
+	    with trait wrappers.   Added 1D, 2D, 3D versions of trait
+	    wrappers as a temporary fix, but I don't like it.  Will have
+	    to revisit this part of the design.
+	  - There is a bug with the initialization of output attributes
+	    modified with read-write-modify (i.e. +=); they don't seem
+	    to be getting initialized to zero properly.   Of course this
+	    means a hidden temporary is introduced, probably IT is not
+	    being initialized properly.
+
 2004-03-25  Bryan Chan <b8chan@uwaterloo.ca>
 	* src/AlgebraShader.cpp:
 	  Added demo of algebra (note: this generates *lots* of subshaders,
