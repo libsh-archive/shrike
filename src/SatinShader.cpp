@@ -36,18 +36,11 @@ SatinShader::~SatinShader()
 
 bool SatinShader::init()
 {
-  // global tangent (hack, model tangents are wonky)
-  ShVector3f SH_DECL(tangent) = ShVector3f(1.0,0.0,0.0);
-  tangent.range(0.0,1.0);
-
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
     ShInputNormal3f inorm;
-    // ShInputVector3f itan;
-    // HACK replacement using projection of global vector against normal
-    ShVector3f itan;
-    ShNormal3f nm = normalize(inorm);
-    itan = tangent - (tangent|nm)*nm; // make perpendicular
+    ShInputTexCoord3f tc;  // ignored (for now)
+    ShInputVector3f itan;
     
     ShOutputPosition4f opos; // Position in NDC
     ShOutputVector3f light; // direction to light (surface frame)
@@ -55,7 +48,9 @@ bool SatinShader::init()
 
     opos = Globals::mvp | ipos; // Compute NDC position
     ShNormal3f n = Globals::mv | inorm; // Compute view-space normal
+    ShNormal3f t = Globals::mv | itan; // Compute view-space normal
     n = normalize(n);
+    t = normalize(t);
 
     ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
     ShVector3f lightv = normalize(Globals::lightPos - posv); // Compute light direction
@@ -63,7 +58,6 @@ bool SatinShader::init()
 
     // compute local surface frame (in view space)
     // ShVector3f t = normalize(itan - (itan|n)*n);
-    ShVector3f t = normalize(itan);
     ShVector3f s = normalize(cross(t,n));
     
     // project view and light vectors onto local surface frame
@@ -136,7 +130,7 @@ bool SatinShader::init()
     result *= ptex(vu);
 
     // Add in specular term (also represented using parabolic map)
-    result += specular * stex(hu);
+    result += specular * stex(hu) * pos(light(2));
 
     // Take into account light power and colour
     result *= light_power * light_color;

@@ -38,6 +38,7 @@ bool HomomorphicShader::init()
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
     ShInputNormal3f inorm;
+    ShInputTexCoord3f tc; // ignored for now, though
     ShInputVector3f itan;
     
     ShOutputPosition4f opos; // Position in NDC
@@ -126,7 +127,7 @@ bool HomomorphicShader::init()
     result *= ptex(vu);
 
     // Add in specular term (also represented using parabolic map)
-    result += specular * stex(hu);
+    result += specular * stex(hu) * pos(light(2));
 
     // Take into account light power and colour
     result *= light_power * light_color;
