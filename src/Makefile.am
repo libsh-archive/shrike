@@ -28,6 +28,7 @@ shrike_SOURCES += WobbleShader.cpp
 shrike_SOURCES += FrameMapping.cpp
 shrike_SOURCES += Logo.cpp
 shrike_SOURCES += NonPeriodic.cpp
+shrike_SOURCES += NonPeriodic3D.cpp
 shrike_SOURCES += NoiseShader.cpp
 shrike_SOURCES += EdgeGooch.cpp
 shrike_SOURCES += Textures.cpp
@@ -42,6 +43,7 @@ shrike_SOURCES += GlassShader.cpp
 shrike_SOURCES += LuciteShader.cpp
 shrike_SOURCES += CookTorrance.cpp
 shrike_SOURCES += Banks.cpp
+shrike_SOURCES += Brick.cpp
 
 # this is a hack and should be removed eventually
 # shrike_SOURCES += DummyShader.cpp
