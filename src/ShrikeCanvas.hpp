@@ -37,6 +37,10 @@ private:
   
   bool m_init;
   ShUtil::ShObjMesh* m_model;
+  bool m_model_dirty; // whether to regenerate display list on next render
+  unsigned int m_model_list; // OpenGl display list
+
+
   Camera m_camera;
 
   long m_last_x, m_last_y;

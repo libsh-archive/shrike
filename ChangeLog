@@ -1,3 +1,7 @@
+2004-06-11  Bryan Chan <b8chan@uwaterloo.ca>
+  * src/ShrikeCanvas.?pp (renderObject):
+  Usese display lists. (Fix issue120) 
+
 2004-06-10  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/shaders/AlgebraShader.cpp (init_all): Use the NDC position

@@ -25,6 +25,8 @@ ShrikeCanvas::ShrikeCanvas(wxWindow* parent, ShObjMesh* model)
   : wxGLCanvas(parent, -1, wxDefaultPosition, wxDefaultSize),
     m_init(false),
     m_model(model),
+    m_model_dirty(true),
+    m_model_list(0),
     m_shader(0),
     m_showLight(true),
     m_bg_r(0.2), m_bg_g(0.2), m_bg_b(0.2)
@@ -53,6 +55,7 @@ void ShrikeCanvas::setModel(ShObjMesh* model)
   if (m_model == model) return;
   delete m_model;
   m_model = model;
+  m_model_dirty = true;
   render();
 }
 
@@ -148,28 +151,37 @@ void ShrikeCanvas::render()
 
 void ShrikeCanvas::renderObject()
 {
-
-  float values[4];
-  glBegin(GL_TRIANGLES);
-  for(ShObjMesh::FaceSet::iterator I = m_model->faces.begin();
-      I != m_model->faces.end(); ++I) {
-    ShObjEdge *e = (*I)->edge;
-    do {
-      e->normal.getValues(values); 
-      glNormal3fv(values);
-
-      e->texcoord.getValues(values);
-      glMultiTexCoord2fvARB(GL_TEXTURE0, values);
-
-      e->tangent.getValues(values);
-      glMultiTexCoord2fvARB(GL_TEXTURE0 + 1, values);
-
-      e->start->pos.getValues(values);
-      glVertex3fv(values);
-      e = e->next;
-    } while(e != (*I)->edge);
+  if (m_model_list == 0) {
+    m_model_list = glGenLists(1);
   }
-  glEnd();
+
+  if (m_model_dirty) {
+    glNewList(m_model_list, GL_COMPILE_AND_EXECUTE);
+    float values[4];
+    glBegin(GL_TRIANGLES);
+    for(ShObjMesh::FaceSet::iterator I = m_model->faces.begin();
+        I != m_model->faces.end(); ++I) {
+      ShObjEdge *e = (*I)->edge;
+      do {
+        e->normal.getValues(values); 
+        glNormal3fv(values);
+
+        e->texcoord.getValues(values);
+        glMultiTexCoord2fvARB(GL_TEXTURE0, values);
+
+        e->tangent.getValues(values);
+        glMultiTexCoord2fvARB(GL_TEXTURE0 + 1, values);
+
+        e->start->pos.getValues(values);
+        glVertex3fv(values);
+        e = e->next;
+      } while(e != (*I)->edge);
+    }
+    glEnd();
+    glEndList();
+  } else {
+    glCallList(m_model_list);
+  }
 }
 
 void ShrikeCanvas::setupView()
