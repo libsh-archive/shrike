@@ -229,7 +229,7 @@ bool VectorText::init()
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
   ShFont font;
-  font.loadFont("/home/zqin/vectortexture/freetype/p.txt");
+  font.loadFont("/home/mmccool/dev/vectortexture/freetype/d.txt");
 
   int width = font.width();
   int height = font.height();
@@ -281,7 +281,7 @@ bool VectorText::init()
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
   ShFont font;
-  font.loadFont("/home/zqin/vectortexture/freetype/p.txt");
+  font.loadFont("/home/mmccool/dev/vectortexture/freetype/p.txt");
 
   int width = font.width();
   int height = font.height();
@@ -306,7 +306,8 @@ bool VectorText::init()
   std::cerr << " the image width is " << font.width() << std::endl;
   std::cerr << " the image height is " << font.height() << std::endl;
 
-  ShAttrib2f temp = ShAttrib2f(0.03125, 0.03125);
+  //ShAttrib2f temp = ShAttrib2f(0.03125, 0.03125);
+  ShAttrib2f temp = ShAttrib2f(0.0, 0.0);
   ShAttrib2f size[9];
   size[0] = ShAttrib2f(-1.0/width, -1.0/height) - temp;
   size[1] = ShAttrib2f(0,          -1.0/height) - temp;
@@ -341,8 +342,8 @@ bool VectorText::init()
     ShAttrib4f L[NEIGHBOURS];
 
     for(int i=0; i<NEIGHBOURS; i++) {
-		x = tc + size[i];
-    	L[i] = ftexture(x); 
+	ShAttrib2f y = tc + size[i];
+    	L[i] = ftexture(y); 
     }
   
     ShAttrib4f r = segdists(L,NEIGHBOURS,x);
