@@ -87,25 +87,25 @@ const char* AlgebraShader::lightName[] = {
 };
 
 const char*  AlgebraShader::surfmapName[] = {
-  "Identity Map",
+  "Identity",
   "Bump Map"
 };
 
 const char* AlgebraShader::surfName[] = {
   "Null Surface",
-  "Diffuse Surface",
+  "Diffuse",
 //  "Specular Surface",
 //  "Phong Surface",
-  "Textured Phong Surface",
-  "Procedural Worley Phong Surface",
-  "Gooch Surface",
+  "Textured Phong",
+  "Procedural Worley Phong",
+  "Gooch",
   "Satin Homomorphic BRDF",
   "Ashikhmin"
 };
 
 const char* AlgebraShader::postName[] = {
-  "Null Postprocessor",
-  "Halftone Postprocessor",
+  "Null PostOp",
+  "Halftone PostOp",
 };
 
 bool AlgebraWrapper::init() {
@@ -467,7 +467,7 @@ bool AlgebraShader::init_all()
   postsh[i++] = keep<ShColor3f>("result"); 
 
   ShAttrib1f SH_NAMEDECL(htscale, "Scaling Factor") = ShConstant1f(50.0f);
-  htscale.range(0.01f, 1.0f);
+  htscale.range(1.0f, 400.0f);
   postsh[i++] = ShKernelPost::halftone<ShColor3f>(halftoneTex) << (mul<ShAttrib1f>() << htscale << invheight);
 
   /*
