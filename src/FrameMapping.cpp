@@ -135,45 +135,48 @@ FrameMap FrameMapping::genFrameMap(const ShImage& img, int& width, int& height)
   int h = img.height();
   FrameMap result(w, h);
   float dx, dy;
+  float scale = 0.1;
   for (int i = 0; i < h; i++)
   {
     for (int j = 0; j < w; j++)
     {
       if (j == 0) 
       {
-        dx = 0.5*((img(j, i, 0) + img(j, i, 1) + img(j, i, 2))/3.0 - 
+        dx = ((img(j, i, 0) + img(j, i, 1) + img(j, i, 2))/3.0 - 
             (img(j+1, i, 0) + img(j+1, i, 1) + img(j+1, i, 2))/3.0);
       }
       else if (j == img.width()-1) 
       {
-        dx = 0.5*((img(j-1, i, 0) + img(j-1, i, 1) + img(j-1, i, 2))/3.0 - 
+        dx = ((img(j-1, i, 0) + img(j-1, i, 1) + img(j-1, i, 2))/3.0 - 
             (img(j, i, 0) + img(j, i, 1) + img(j, i, 2))/3.0);
       }
       else 
       {
-        dx = ((img(j-1, i, 0) + img(j-1, i, 1) + img(j-1, i, 2))/3.0 - 
+        dx = 0.5*((img(j-1, i, 0) + img(j-1, i, 1) + img(j-1, i, 2))/3.0 - 
             (img(j+1, i, 0) + img(j+1, i, 1) + img(j+1, i, 2))/3.0);
       }
       if (i == 0) 
       {
-        dy = 0.5*((img(j, i, 0) + img(j, i, 1) + img(j, i, 2))/3.0 - 
+        dy = ((img(j, i, 0) + img(j, i, 1) + img(j, i, 2))/3.0 - 
             (img(j, i+1, 0) + img(j, i+1, 1) + img(j, i+1, 2))/3.0);
       }
       else if (i == img.height()-1) 
       {
-        dy = 0.5*((img(j, i-1, 0) + img(j, i-1, 1) + img(j, i-1, 2))/3.0 - 
+        dy = ((img(j, i-1, 0) + img(j, i-1, 1) + img(j, i-1, 2))/3.0 - 
             (img(j, i, 0) + img(j, i, 1) + img(j, i, 2))/3.0);
       }
       else 
       {
-        dy = ((img(j, i-1, 0) + img(j, i-1, 1) + img(j, i-1, 2))/3.0 - 
+        dy = 0.5*((img(j, i-1, 0) + img(j, i-1, 1) + img(j, i-1, 2))/3.0 - 
             (img(j, i+1, 0) + img(j, i+1, 1) + img(j, i+1, 2))/3.0);
       }
-      ShVector3f gradient = ShVector3f(dx, 0, dy);
+      ShVector3f vZ = normalize(ShVector3f(0, scale*dx, 1));
+      ShVector3f vX = normalize(ShVector3f(1, -scale*dy, 0));
+      ShVector3f gradient = ShVector3f(-scale*dy, 0, scale*dx);
       ShAttrib1f norm = dot(gradient, gradient);
       float val;
       norm.getValues(&val);
-      if (val < 0.00001) {
+      if (val < 0.000001) {
 #if (USE_QUAT)
         result.quaternionMap(j, i, 0) = 1;
         result.quaternionMap(j, i, 1) = 0;
@@ -190,12 +193,13 @@ FrameMap FrameMapping::genFrameMap(const ShImage& img, int& width, int& height)
       }
       else 
       {
-        if (val > 1.0)
-          gradient = normalize(gradient);
+        //if (val > 1.0)
+        //  gradient = normalize(gradient);
         
-        ShVector3f normal = ShVector3f(0, 1, 0) + gradient;
-        normal = normalize(normal);
-        
+        //ShVector3f normal = ShVector3f(0, 1, 0) + gradient;
+        ShVector3f normal = normalize(cross(vZ, vX));
+        //normal = normalize(normal);
+       
         ShVector3f tangent = normalize(cross(cross(gradient, normal), normal));
 #if (USE_QUAT)
         
@@ -220,9 +224,9 @@ FrameMap FrameMapping::genFrameMap(const ShImage& img, int& width, int& height)
 #else
         float values[3];
         normal.getValues(values);
-        result.normalMap(j, i, 0) = 0;
-        result.normalMap(j, i, 1) = 1;
-        result.normalMap(j, i, 2) = 0;
+        result.normalMap(j, i, 0) = values[0];
+        result.normalMap(j, i, 1) = values[1];
+        result.normalMap(j, i, 2) = values[2];
         tangent.getValues(values);
         result.tangentMap(j, i, 0) = values[0];
         result.tangentMap(j, i, 1) = values[1];
@@ -241,7 +245,7 @@ bool FrameMapping::init()
 {
 #if (IMG_TEXTURE)
   ShImage texImg;
-  texImg.loadPng(SHMEDIA_DIR "/textures/abcd.png");
+  texImg.loadPng(SHMEDIA_DIR "/textures/dots.png");
   int w, h;
   FrameMap fmap = genFrameMap(texImg, w, h);
   ShAttrib2f texDim = ShAttrib2f(w, h);
@@ -327,6 +331,16 @@ bool FrameMapping::init()
 #else
     /*
     ShAttrib2f weight = frac(tc);
+    ShVector3f ymapLeft = normalMap(tc+ShAttrib2f(-1.0, 1.0));
+    ShVector3f ymapRight = normalMap(tc+ShAttrib2f(1.0, 1.0));
+    ShVector3f ymapDown = weight(0)*ymapRight + (1.0 - weight(0))*ymapLeft;
+    ymapLeft = normalMap(tc+ShAttrib2f(-1.0, -1.0));
+    ymapRight = normalMap(tc+ShAttrib2f(1.0, -1.0));
+    ShVector3f ymapUp = weight(0)*ymapRight + (1.0 - weight(0))*ymapLeft;
+    ShVector3f ymap = weight(1)*ymapDown + (1.0 - weight(1))*ymapUp;
+   */
+    /*
+    ShAttrib2f weight = frac(tc);
     ShVector3f ymapLeft = normalMap(tc+ShAttrib2f(-1.0, 0.0));
     ShVector3f ymapRight = normalMap(tc+ShAttrib2f(1.0, 0.0));
     ShVector3f ymapUp = normalMap(tc+ShAttrib2f(0.0, -1.0));
@@ -339,6 +353,7 @@ bool FrameMapping::init()
     ShVector3f zmap = tangentMap(tc);
     ShVector3f xmap = cross(ymap, zmap);
     ShMatrix4x4f rot;
+    
     rot[0](0) = xmap(0);
     rot[1](0) = xmap(1);
     rot[2](0) = xmap(2);
@@ -349,18 +364,21 @@ bool FrameMapping::init()
     rot[1](2) = zmap(1);
     rot[2](2) = zmap(2);
 
+    ShVector3f oldNormal = normal;
     normal = (mapNormal > 0.5)*(rot | normal) + (mapNormal <= 0.5)*normal;
     tan1 = (mapTangent > 0.5)*(rot | tan1) + (mapTangent <= 0.5)*tan1;
 #endif
 #endif
     ShVector3f tan2 = cross(normal, tan1);
    
-    color = ashikhmin(nu, nv, normalize(normal), normalize(halfvec), normalize(lightvec),
-                      normalize(viewvec),
-                      tan1, tan2,
-                      specular, diffuse)
-    + ambient;
-
+    color = ashikhmin(nu, nv, normalize(normal), normalize(halfvec), 
+        normalize(lightvec), normalize(viewvec), tan1, tan2, specular, diffuse)
+      + ambient;
+    /*
+    color(0) = abs(dot((normal - oldNormal), (normal - oldNormal)));
+    color(1) = color(0);
+    color(2) = color(0);
+*/
   } SH_END_PROGRAM;
     
   return true;
