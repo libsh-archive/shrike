@@ -46,15 +46,16 @@ bool HomomorphicShader::init()
 
     opos = Globals::mvp | ipos; // Compute NDC position
     ShNormal3f n = Globals::mv | inorm; // Compute view-space normal
+    ShNormal3f t = Globals::mv | itan; // Compute view-space tangent
     n = normalize(n);
+    t = normalize(t);
 
     ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
     ShVector3f lightv = normalize(Globals::lightPos - posv); // Compute light direction
     ShVector3f viewv = -normalize(posv); // Compute view vector
 
     // compute local surface frame (in view space)
-    ShVector3f t = normalize(itan - (itan|n)*n);
-    // ShVector3f t = normalize(itan);
+    // ShVector3f t = normalize(itan - (itan|n)*n);
     ShVector3f s = normalize(cross(t,n));
     
     // project view and light vectors onto local surface frame
@@ -81,7 +82,7 @@ bool HomomorphicShader::init()
   ShTexture2D<ShColor3f> qtex(image.width(), image.height());
   qtex.memory(image.memory());
 
-  image.loadPng(SHMEDIA_DIR "/brdfs/garnetred/garnetred64_spec_0.png");
+  image.loadPng(SHMEDIA_DIR "/brdfs/specular.png");
   ShTexture2D<ShColor3f> stex(image.width(), image.height());
   stex.memory(image.memory());
 

@@ -36,10 +36,18 @@ SatinShader::~SatinShader()
 
 bool SatinShader::init()
 {
+  // global tangent (hack, model tangents are wonky)
+  ShVector3f SH_DECL(tangent) = ShVector3f(1.0,0.0,0.0);
+  tangent.range(0.0,1.0);
+
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
     ShInputNormal3f inorm;
-    ShInputVector3f itan;
+    // ShInputVector3f itan;
+    // HACK replacement using projection of global vector against normal
+    ShVector3f itan;
+    ShNormal3f nm = normalize(inorm);
+    itan = tangent - (tangent|nm)*nm; // make perpendicular
     
     ShOutputPosition4f opos; // Position in NDC
     ShOutputVector3f light; // direction to light (surface frame)
@@ -83,20 +91,21 @@ bool SatinShader::init()
   qtex.memory(image.memory());
 
   // HACK, satin doesn't have specular part, turned off by default
-  image.loadPng(SHMEDIA_DIR "/brdfs/garnetred/garnetred64_spec_0.png");
+  image.loadPng(SHMEDIA_DIR "/brdfs/specular.png");
   ShTexture2D<ShColor3f> stex(image.width(), image.height());
   stex.memory(image.memory());
 
   // these scale factors are specific to satin
   ShColor3f SH_DECL(alpha) = ShColor3f(0.762367,0.762367,0.762367);
-  ShAttrib1f SH_DECL(diffuse) = ShAttrib1f(5.0);
-  diffuse.range(0.0,20.0);
+  ShAttrib1f SH_DECL(diffuse) = ShAttrib1f(1.0);
+  diffuse.range(0.0,5.0);
   ShAttrib1f SH_DECL(specular) = ShAttrib1f(0.0);
   specular.range(0.0,1.0);
   ShColor3f SH_DECL(light_color) = ShColor3f(1.0,1.0,1.0);
   light_color.range(0.0,1.0);
   ShAttrib1f SH_DECL(light_power) = ShAttrib1f(1.0);
   light_power.range(0.0,100.0);
+
   
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputPosition4f posh;
