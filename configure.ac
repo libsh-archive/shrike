@@ -1,4 +1,4 @@
-AC_INIT(shrike, 0.0.20040216, libsh-devel@lists.sourceforge.net)
+AC_INIT(shrike, 0.0.20040316, libsh-devel@lists.sourceforge.net)
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/ShrikeApp.cpp])
 AM_CONFIG_HEADER(config.h)
