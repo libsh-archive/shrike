@@ -2,6 +2,7 @@
 #include <sh/sh.hpp>
 #include <sh/shutil.hpp>
 #include <cstdlib>
+#include <sstream>
 #include "GrView.hpp"
 #include "GrNode.hpp"
 #include "GrPort.hpp"
@@ -9,41 +10,56 @@
 using namespace SH;
 using namespace ShUtil;
 
-GrPort* makeSwizzle(const ShVariable& var,
-                    GrPort* source,
-                    GrView* view)
+GrNode* makeSplit(GrPort* source, GrView* view)
 {
+  ShVariable var(source->var());
   ShProgram splitp = SH_BEGIN_PROGRAM() {
     ShVariable in(new ShVariableNode(SH_INPUT, var.node()->size(),
                                      var.node()->specialType()));
     if (var.node()->hasName()) in.name(var.name());
     for (int i = 0; i < var.node()->size(); i++) {
       ShVariable out(new ShVariableNode(SH_OUTPUT, 1, var.node()->specialType()));
-      // TODO out.name()
+
+      std::ostringstream os;
+      os << i;
+      out.name(os.str());
       ShVariable ini(in(i));
       shASN(out, ini);
     }
   } SH_END;
   splitp->name("split");
-
   GrNode* split = view->addProgram(splitp, 0, 0);
-
   join(source, *split->inputs_begin());
+  return split;
+  
+}
 
+GrNode* makeJoin(const ShVariable& var, GrView* view)
+{
   ShProgram joinp = SH_BEGIN_PROGRAM() {
     ShVariable out(new ShVariableNode(SH_OUTPUT, var.size(),
                                      var.node()->specialType()));
     if (var.node()->hasName()) out.name(var.name());
     for (int i = 0; i < var.size(); i++) {
       ShVariable in(new ShVariableNode(SH_INPUT, 1, var.node()->specialType()));
-      // TODO in.name()
+      std::ostringstream os;
+      os << i;
+      in.name(os.str());
       ShVariable outi(out(i));
       shASN(outi, in);
     }
   } SH_END;
   joinp->name("join");
+  return view->addProgram(joinp, 0, 0);
+}
 
-  GrNode* joinn = view->addProgram(joinp, 0, 0);
+GrPort* makeSwizzle(const ShVariable& var,
+                    GrPort* source,
+                    GrView* view)
+{
+  GrNode* split = makeSplit(source, view);
+
+  GrNode* joinn = makeJoin(var, view);
   for (int i = 0; i < var.size(); i++) {
     join(*(split->outputs_begin() + var.swizzle()[i]), *(joinn->inputs_begin() + i));
   }
@@ -84,6 +100,7 @@ void decompose(GrNode* source)
   std::map<ShVariableNodePtr, GrPort*> varmap;
 
   ShProgram inp = ShKernelLib::inputPass(program);
+  inp->name(program->name() + " [Inputs]");
 
   GrNode* inn = view->addProgram(inp, 0, 0);
 
@@ -121,7 +138,7 @@ void decompose(GrNode* source)
     }
     
     ShProgram nibble = SH_BEGIN_PROGRAM() {
-      ShVariable dest(new ShVariableNode(SH_OUTPUT, stmt.dest.node()->size(),
+      ShVariable dest(new ShVariableNode(SH_OUTPUT, stmt.dest.size(),
                                          stmt.dest.node()->specialType()),
                       stmt.dest.swizzle(), stmt.dest.neg());
       if (stmt.dest.node()->hasName()) dest.name(stmt.dest.name());
@@ -216,7 +233,7 @@ void decompose(GrNode* source)
 
     nibble->name(opInfo[stmt.op].name);
 
-    
+
     
     GrNode* nn = view->addProgram(nibble, 0, 0);
 
@@ -227,9 +244,74 @@ void decompose(GrNode* source)
       ++P;
     }
 
-    varmap[stmt.dest.node()] = *nn->outputs_begin();
+    // Insert writemasking code.
+
+    if (!stmt.dest.swizzle().identity()) {
+      // split node for result
+      GrNode* splitres;
+      if (stmt.dest.size() > 1) {
+        splitres = makeSplit(*nn->outputs_begin(), view);
+      } else {
+        splitres = nn;
+      }
+
+      // split node for previous IF stmt.dest.size() < node size
+      GrNode* splitprev = 0;
+      if (stmt.dest.size() < stmt.dest.node()->size()) {
+        GrPort* prev = varmap[stmt.dest.node()];
+        if (!prev) {
+          ShProgram init = SH_BEGIN_PROGRAM() {
+            ShVariable out(new ShVariableNode(SH_OUTPUT, stmt.dest.node()->size(), stmt.dest.node()->specialType()));
+          } SH_END;
+          init->name("init");
+          GrNode* prevnode = view->addProgram(init, 0, 0);
+          prev = *prevnode->outputs_begin();
+        }
+        splitprev = makeSplit(prev, view);
+      }
+      
+      // join node for previous/result (or result only IF destsize = nodesize)
+
+      GrNode* joinnode = makeJoin(ShVariable(stmt.dest.node()), view);
+      for (int i = 0; i < stmt.dest.node()->size(); i++) {
+        int o = -1;
+        for (int j = 0; j < stmt.dest.size(); j++) {
+          if (stmt.dest.swizzle()[j] == i) {
+            o = j;
+            break;
+          }
+        }
+        if (o < 0) {
+          join(*(splitprev->outputs_begin() + i), *(joinnode->inputs_begin() + i));
+        } else {
+          join(*(splitres->outputs_begin() + o), *(joinnode->inputs_begin() + i));
+        }
+      }
+
+      varmap[stmt.dest.node()] = *joinnode->outputs_begin();
+    } else {
+      varmap[stmt.dest.node()] = *nn->outputs_begin();
+    }
   }
 
+  ShProgram outp = ShKernelLib::outputPass(program);
+  outp->name(program->name() + " [Outputs]");
+
+  GrNode* outn = view->addProgram(outp, 0, 0);
+  
+  {
+    GrNode::PortList::iterator P = outn->inputs_begin();
+    for (ShProgramNode::VarList::iterator I = program->outputs.begin();
+         I != program->outputs.end(); ++I, ++P) {
+      if (!varmap[*I]) {
+        std::cerr << "While constructing outputs for " << program->name()
+                  << ", could not find varmap[" << (*I)->name() << std::endl;
+        abort();
+      }
+      join(varmap[*I], *P);
+    }
+  }
+  
   // TODO: Make output node.
 
   view->layout();
