@@ -159,10 +159,10 @@ void GrMonitor::draw()
   
   glColor3f(0.0, 0.0, 0.0);
   glBegin(GL_LINE_LOOP); {
-    glVertex3f(m_x, m_y, 0.0);
-    glVertex3f(m_x + m_width - 1, m_y, 0.0);
-    glVertex3f(m_x + m_width - 1, m_y + m_height - 1, 0.0);
-    glVertex3f(m_x, m_y + m_height - 1, 0.0);
+    glVertex3f(m_x - 1.0, m_y - 1.0, 0.0);
+    glVertex3f(m_x + m_width, m_y - 1.0, 0.0);
+    glVertex3f(m_x + m_width, m_y + m_height, 0.0);
+    glVertex3f(m_x - 1.0, m_y + m_height, 0.0);
   } glEnd();
 }
 

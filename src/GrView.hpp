@@ -47,6 +47,9 @@ public:
 
   bool drawingMonitors() const { return m_drawing_monitors; }
   
+  typedef std::vector<GrNode*> NodeList;
+  NodeList::iterator nodes_begin() { return m_nodes.begin(); }
+  NodeList::iterator nodes_end() { return m_nodes.end(); }
 private:
   void init();
   void setupView();
@@ -68,7 +71,6 @@ private:
   typedef std::vector<PickInfo> PickList;
   PickList m_pickables;
   
-  typedef std::vector<GrNode*> NodeList;
   NodeList m_nodes;
 
   typedef std::list<GrMonitor*> MonitorList;

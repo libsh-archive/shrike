@@ -36,7 +36,7 @@ struct InVarInfo : public VarInfo {
 std::map<ShVariableNodePtr, InVarInfo*> info_in_map;
 std::map<ShVariableNodePtr, OutVarInfo*> info_out_map;
 
-void makeVariableInfoNode(GrNode* node)
+void makeVariableInfoNode(GrNode* node, GrNode* final)
 {
   if (node->marked()) {
     std::cerr << "Already marked " << node->program()->name() << std::endl;
@@ -77,8 +77,18 @@ void makeVariableInfoNode(GrNode* node)
     GrPort* port = *I;
     for (GrPort::EdgeList::iterator J = port->begin_edges(); J != port->end_edges(); ++J) {
       GrEdge* edge = *J;
-      if (edge->to != port) continue;
-      makeVariableInfoNode(edge->from->parent());
+      if (edge->to == port)
+        makeVariableInfoNode(edge->from->parent(), final);
+    }
+  }
+  if (node != final) {
+    for (GrNode::PortList::iterator I = node->outputs_begin(); I != node->outputs_end(); ++I) {
+      GrPort* port = *I;
+      for (GrPort::EdgeList::iterator J = port->begin_edges(); J != port->end_edges(); ++J) {
+        GrEdge* edge = *J;
+        if (edge->from == port)
+          makeVariableInfoNode(edge->to->parent(), final);
+      }
     }
   }
 }
@@ -90,7 +100,7 @@ void makeVariableInfo(GrNode* final_node)
 
   final_node->clearMarked();
 
-  makeVariableInfoNode(final_node);
+  makeVariableInfoNode(final_node, final_node);
 
   final_node->clearMarked();
 }
@@ -150,9 +160,10 @@ ShProgram generateShader(GrNode* root_node, GrNode* final_node)
   } 
   
   bool done = false;
-  
+  int offset = 0;
+    
   ShProgramNode::VarList::iterator OI = p->outputs.begin();
-  while (!done) {
+  while (1) {
     ShVariableNodePtr output = *OI;
 
     std::cerr << "Considering output " << output->name() << std::endl;
@@ -220,37 +231,82 @@ ShProgram generateShader(GrNode* root_node, GrNode* final_node)
           }
         }
 
+        std::cerr << "Before adding " << target->name() << ":" << std::endl;
+        std::cerr << p->inputs << std::endl;
+        std::cerr << p->outputs << std::endl;
+        
         // Apply the permutation to the program outputs
         p = perm << p;
+
+        std::cerr << "After perms " << target->name() << ":" << std::endl;
+        std::cerr << p->inputs << std::endl;
+        std::cerr << p->outputs << std::endl;
 
         // Connect the target program for the permuted outputs
         p = target << p;
 
+        std::cerr << "After adding " << target->name() << ":" << std::endl;
+        std::cerr << p->inputs << std::endl;
+        std::cerr << p->outputs << std::endl;
+
+        // Put target outputs at the back.
+        if (target == final) {
+          std::cerr << "Target is final." << std::endl;
+          if (p->outputs.size() > final->outputs.size()) {
+            std::cerr << "Reordering back outputs:" << std::endl;
+            p = shRange((int)final->outputs.size(), -1)(0, (int)final->outputs.size() - 1) << p;
+            std::cerr << p->inputs << std::endl;
+            std::cerr << p->outputs << std::endl;
+          }
+        }
         ShProgramNode::VarList::iterator I = p->outputs.begin();
         //std::advance(I, target->outputs.size());
         ShProgramNode::VarList::iterator L = leftovers.begin();
         ShProgramNode::VarList::iterator T = target->outputs.begin();
         GrNode::PortList::iterator TN = target_node->outputs_begin();
         for (int count = 0; I != p->outputs.end(); ++I, ++count) {
-          if (count < target->outputs.size()) {
-            info_out_map[*I] = out_info(*T);
+          if (target == final) {
+            if (count >= p->outputs.size() - target->outputs.size()) {
+              info_out_map[*I] = out_info(*T);
 
-            GrPort* port = *TN;
-            if (port->monitor()) {
-              if (final->target() == "gpu:fragment") {
-                std::cerr << "Setting up monitor fragment program" << std::endl;
-                ShProgram adapt = SH_BEGIN_PROGRAM("gpu:fragment") {
-                  ShVariable v(new ShVariableNode(SH_INOUT, (*T)->size(), SH_COLOR));
-                } SH_END;
-                ShProgram monprog = adapt << (shSwizzle(count) << p);
-                port->monitor()->setFragmentProgram(monprog);
-              } 
+              GrPort* port = *TN;
+              if (port->monitor()) {
+                if (final->target() == "gpu:fragment") {
+                  std::cerr << "Setting up monitor fragment program" << std::endl;
+                  ShProgram adapt = SH_BEGIN_PROGRAM("gpu:fragment") {
+                    ShVariable v(new ShVariableNode(SH_INOUT, (*T)->size(), SH_COLOR));
+                  } SH_END;
+                  ShProgram monprog = adapt << (shSwizzle(count) << p);
+                  port->monitor()->setFragmentProgram(monprog);
+                } 
+              }
+              ++T;
+              ++TN;
+            } else {
+              info_out_map[*I] = out_info(*L);
+              ++L;
             }
-            ++T;
-            ++TN;
           } else {
-            info_out_map[*I] = out_info(*L);
-            ++L;
+            if (count < target->outputs.size()) {
+              info_out_map[*I] = out_info(*T);
+
+              GrPort* port = *TN;
+              if (port->monitor()) {
+                if (final->target() == "gpu:fragment") {
+                  std::cerr << "Setting up monitor fragment program" << std::endl;
+                  ShProgram adapt = SH_BEGIN_PROGRAM("gpu:fragment") {
+                    ShVariable v(new ShVariableNode(SH_INOUT, (*T)->size(), SH_COLOR));
+                  } SH_END;
+                  ShProgram monprog = adapt << (shSwizzle(count) << p);
+                  port->monitor()->setFragmentProgram(monprog);
+                } 
+              }
+              ++T;
+              ++TN;
+            } else {
+              info_out_map[*I] = out_info(*L);
+              ++L;
+            }
           }
         }
       
@@ -272,18 +328,16 @@ ShProgram generateShader(GrNode* root_node, GrNode* final_node)
       // If we can't handle any outputs, and we're not done yet,
       // there's a problem (e.g. a cycle).
       if (OI == p->outputs.end()) {
-        // TODO: Report cycle
+        if (done) break;
+
+        // TODO: Report
         std::cerr << "None of these outputs have worked. Aborting" << std::endl;
         return 0;
       }
     }
   }
 
-  // TODO: Set up monitors for discarded outputs.
-  // Requires more traversal. Hrmpf.
-  
-  p = shRange(0, (int)final->outputs.size() - 1) << p;
-
+  p = shRange(-((int)final->outputs.size()), -1) << p;
   
 //   while (!consumed_output_program) {
 //     o = next_unassigned_output;

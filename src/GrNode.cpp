@@ -90,6 +90,18 @@ void GrNode::clearMarked()
       edge->from->parent()->clearMarked();
     }
   }
+  for (PortList::iterator I = m_output_ports.begin(); I != m_output_ports.end(); ++I) {
+    GrPort* port = *I;
+    for (GrPort::EdgeList::iterator J = port->begin_edges(); J != port->end_edges(); ++J) {
+      GrEdge* edge = *J;
+      if (edge->from != port) {
+        std::cerr << "Skipping something" << std::endl;
+        continue;
+      }
+      std::cerr << "Marking something else as clear" << std::endl;
+      edge->to->parent()->clearMarked();
+    }
+  }
 }
 
 void GrNode::calcSizes()
