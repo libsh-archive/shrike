@@ -226,7 +226,7 @@ bool VectorText::init()
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
   ShFont font;
-  font.loadFont("/home/mmccool/dev/vectortexture/freetype/d.txt");
+  font.loadFont("/home/zqin/vectortexture/freetype/d.txt");
 
   int width = font.width();
   int height = font.height();
@@ -236,7 +236,7 @@ bool VectorText::init()
   int elements = 4;
 
   // textures for line segment endpoints
-  ShArrayRect<ShAttrib4f> ftexture[edges];
+  ShUnclamped< ShArrayRect<ShAttrib4f> > ftexture[edges];
   for(int i=0; i<edges; i++) {
 	  ftexture[i].size(width, height);
     ftexture[i].memory(font.memory(i));
@@ -251,6 +251,7 @@ bool VectorText::init()
 	shUpdate();
 
 	// dump out texture contents to see what it looks like
+	/*
   for(int i=0; i<height; i++) {
 	  for(int j=0; j<width; j++) {
       for(int e=0; e<edges; e++) {
@@ -284,7 +285,6 @@ bool VectorText::init()
 	  }
   }
 
-	/*
   //debug info
   for(int i=0; i<height; i++) {
 	  for(int j=0; j<width; j++) {
@@ -333,7 +333,7 @@ bool VectorText::init()
   // Yes, this IS a really evil hack, but it's cheap computationally.
   // Still get good distance field, only slight rounding of corners,
   // since epsilon can be in last bit of precision...
-   const float eps = 0.0001;
+   const float eps = 0.001;
   // const float xoff = 1.8;
 
   // const int ioff = 11;
@@ -362,20 +362,22 @@ bool VectorText::init()
 
     // transform texture coords (should be in vertex shader really, but)
 
-    ShAttrib2f x = tc * m_size - m_offset;
+    //ShAttrib2f x = tc * m_size - m_offset;
+    ShAttrib2f x = tc - m_offset;
     ShAttrib4f L[edges];
 
     for(int i=0; i<edges; i++) {
-    	L[i] = ftexture[i][x];
+    	//L[i] = ftexture[i][x]; // 0..512
+    	L[i] = ftexture[i](x); // 0..1
     }
 
-    /*
     for (int i=0; i<edges; i++) {
         ShVector2f d = normalize(L[i](2,3) - L[i](0,1));
         L[i](0,1) += d * eps;
         L[i](2,3) -= d * eps;
     }
   
+    /*
     // compute signed distance map
     ShAttrib4f r = segdist(L[0],x);
     ShAttrib4f nr;
@@ -495,7 +497,7 @@ bool VectorText::init()
 
 bool VectorText::m_done_init = false;
 ShAttrib1f VectorText::m_scale = ShAttrib1f(512);
-ShVector2f VectorText::m_offset = ShVector2f(0,0);
+ShVector2f VectorText::m_offset = ShVector2f(0.000976562,0.000976562);
 ShAttrib1f VectorText::m_size = ShAttrib1f(512);
 ShAttrib1f VectorText::m_fw = ShAttrib1f(1.0);
 ShAttrib2f VectorText::m_thres = ShAttrib2f(0.0,0.05);
