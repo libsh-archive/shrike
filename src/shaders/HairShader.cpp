@@ -27,7 +27,6 @@
 #include <iostream>
 #include <fstream>
 #include <list>
-#define _USE_MATH_DEFINES
 #include <cmath>
 #include <sh/sh.hpp>
 #include <sh/shutil.hpp>

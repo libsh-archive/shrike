@@ -1,8 +1,12 @@
 all: recurse-all
 clean: recurse-clean
+install: recurse-install
 
 recurse-all:
-	cd src & $(MAKE) -f Makefile.win32 all & cd ..
+	$(MAKE) -C src -f Makefile.win32 all
 
 recurse-clean:
-	cd src & $(MAKE) -f Makefile.win32 clean & cd ..
+	$(MAKE) -C src -f Makefile.win32 clean
+
+recurse-install:
+	$(MAKE) -C src -f Makefile.win32 install

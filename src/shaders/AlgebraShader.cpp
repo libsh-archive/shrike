@@ -36,13 +36,6 @@ using namespace SH;
 using namespace ShUtil;
 #include "util.hpp"
 
-#ifdef max
-#undef max
-#endif
-#ifdef min
-#undef min
-#endif
-
 // VCS direction and up
 ShVector3f lightDir;
 ShVector3f lightUp;

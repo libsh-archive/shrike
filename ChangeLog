@@ -1,3 +1,14 @@
+2004-10-04  Kevin Moule  <krmoule@cgl.uwaterloo.ca>
+
+	* src/Camera.cpp, src/ShrikeGl.hpp, src/UniformPanel.cpp,
+	src/shaders/AlgebraShader.cpp, src/shaders/Ashikhmin.cpp,
+	src/shaders/EdgeDetection.cpp, src/shaders/HairShader.cpp:
+	Removed use of _USE_MATH_DEFINES and undefines of min and
+	max, now controlled via win32.mk.
+
+	* win32.mk, Makefile.win32, src/Makefile.win32: General
+	WIN32 makefile cleanup/overhaul.
+
 2004-09-08  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* ...: Merged in changes from newopt branch to deal with dependent uniforms.

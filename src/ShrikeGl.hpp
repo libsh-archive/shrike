@@ -3,12 +3,6 @@
 
 #ifdef WIN32
 #include <windows.h>
-#ifdef max
-#undef max
-#endif
-#ifdef min
-#undef min
-#endif
 #endif
 
 #define GL_GLEXT_LEGACY
