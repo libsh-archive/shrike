@@ -173,14 +173,13 @@ ShProgram worleySurface() {
     ShAttrib1f SH_NAMEDECL(freq, "Worley Frequency") = ShConstAttrib1f(16.0f);
     freq.range(0.1f, 64.0f);
 
-    ShProgram worleysh = worleyProgram<4, float>(L2_SQ, false) << coeff; // pass in coefficient
+    ShProgram worleysh = shWorley<4, 2, float>(false) << coeff; // pass in coefficient
 
     ShProgram scaler = SH_BEGIN_PROGRAM() {
       ShInOutTexCoord2f SH_DECL(texcoord) = freq * texcoord;
     } SH_END; 
 
     worleysh = worleysh << scaler; 
-    worleysh = shDrop("gradient") << worleysh;
 
     ShProgram clamper = SH_BEGIN_PROGRAM() {
       ShInOutAttrib1f SH_DECL(scalar) = clamp(0.0f, 1.0f, scalar);
