@@ -136,10 +136,9 @@ void NormalArrows::render()
 
         float f = (i ? 1.0 : 0.0);
         glMultiTexCoord1fvARB(GL_TEXTURE0, &f);
-
       
         e->tangent.getValues(vs);
-        glMultiTexCoord2fvARB(GL_TEXTURE0 + 1, vs);
+        glMultiTexCoord3fvARB(GL_TEXTURE0 + 1, vs);
         
         e->start->pos.getValues(vs); glVertex3fv(vs); 
       }

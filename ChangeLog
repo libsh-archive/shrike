@@ -1,3 +1,13 @@
+2004-07-14  Kevin Moule  <krmoule@veil.uwaterloo.ca>
+
+	* src/ShrikeCanvas.cpp (renderObject): Pass in all three
+	coordinates of the tangent values.
+
+	* src/shaders/TangentArrows.cpp (render): Pass in all the tangents
+	for NormalArrows too.
+
+	* src/shaders/BumpMapShader.cpp: Added this shader.
+
 2004-07-13  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/shaders/TangentArrows.cpp (render): Fix a bug, now the z

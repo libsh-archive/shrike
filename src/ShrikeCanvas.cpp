@@ -205,7 +205,7 @@ void ShrikeCanvas::renderObject()
         glMultiTexCoord2fvARB(GL_TEXTURE0, values);
 
         e->tangent.getValues(values);
-        glMultiTexCoord2fvARB(GL_TEXTURE0 + 1, values);
+        glMultiTexCoord3fvARB(GL_TEXTURE0 + 1, values);
 
         e->start->pos.getValues(values);
         glVertex3fv(values);

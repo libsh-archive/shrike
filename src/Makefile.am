@@ -59,6 +59,7 @@ shrike_SOURCES += shaders/Checkerboard.cpp
 shrike_SOURCES += shaders/VertexBranching.cpp
 shrike_SOURCES += shaders/Tangents.cpp
 shrike_SOURCES += shaders/TangentArrows.cpp
+shrike_SOURCES += shaders/BumpMapShader.cpp
 
 # this is a hack and should be removed eventually
 # shrike_SOURCES += DummyShader.cpp
