@@ -72,6 +72,8 @@ bool DiscoShader::init()
 
   ShAttrib1f SH_DECL(envAmount) = ShAttrib1f(0.5);
 
+  ShColor3f SH_DECL(defaultColor) = ShConstant3f(0.25f, 0.25f, 0.25f);
+
   ShProgram discoTiler = SH_BEGIN_PROGRAM() {
     ShInputTexCoord2f SH_DECL(texcoord);
     ShInputVector3f SH_DECL(reflectVec);
@@ -79,7 +81,7 @@ bool DiscoShader::init()
     ShOutputColor3f SH_DECL(ks);
 
     ShAttrib3f p;
-    p(0,1) = hashmrg<2>(texcoord * tileFrequency); 
+    p(0,1) = texcoord * tileFrequency; 
     p(2) = 0.0f; // use z for the time parameter
 
     // use cellnoise to decide when to switch colours on a cell
@@ -93,6 +95,11 @@ bool DiscoShader::init()
     kd(0) = pow(kd(0), ShConstant1f(2.0f));
     kd(1) = pow(kd(1), ShConstant1f(2.0f));
     kd(2) = pow(kd(2), ShConstant1f(2.0f));
+
+    // make little circles...
+    p = frac(p) - ShConstant3f(0.5f, 0.5f, 0.0f); 
+    kd = lerp( (dot(p(0,1), p(0,1)) < 0.25), kd, defaultColor);
+
     kd = cubemap(reflectVec)(0,1,2) * kd; 
     ks = kd;
   } SH_END;
