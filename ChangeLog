@@ -1,3 +1,14 @@
+2004-10-05  Kevin Moule  <krmoule@cgl.uwaterloo.ca>
+
+	* win32.mk: Updated for building with Visual C++ 2005
+	Express Beta 1.
+
+	* src/shaders/Texter.cpp: Workaround for internal compiler
+	error on Visual C++ 2005 Express Beta 1.
+
+	* src/ShrikeGl.hpp: Fixed inconsistent function pointer
+	definitions.
+
 2004-10-04  Kevin Moule  <krmoule@cgl.uwaterloo.ca>
 
 	* src/shaders/EdgeDetection.cpp: WIN32 changes broke linux, fixed.
