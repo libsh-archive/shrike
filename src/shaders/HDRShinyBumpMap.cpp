@@ -49,14 +49,14 @@ public:
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
 
-	std::string fname;
+  std::string fname;
 	
 };
 
 testShinyBumpMapShader::testShinyBumpMapShader()
   : Shader("HDR: Shiny Bump Mapping"), fname("Cf_cubemap.hdr")
 {
-	setStringParam("Image Name", fname);
+  setStringParam("Image Name", fname);
 }
 
 testShinyBumpMapShader::~testShinyBumpMapShader()
@@ -65,12 +65,12 @@ testShinyBumpMapShader::~testShinyBumpMapShader()
 
 bool testShinyBumpMapShader::init()
 {
-	HDRImage image;
-	std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
-	image.loadHDR(filename.c_str());
-	CubeMap<ShUnclamped<ShTextureRect<ShVector4f> > > Img(image.width(), image.height());
-	Img.internal(true);
-	Img.memory(image.memory());
+  HDRImage image;
+  std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
+  image.loadHDR(filename.c_str());
+  CubeMap<ShUnclamped<ShTextureRect<ShVector4f> > > Img(image.width(), image.height());
+  Img.internal(true);
+  Img.memory(image.memory());
 
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
@@ -98,10 +98,10 @@ bool testShinyBumpMapShader::init()
   ShAttrib3f SH_DECL(scale) = ShAttrib3f(2.0,2.0,1.0);
   scale.range(0.0f,10.0f);
   
-	ShAttrib1f SH_DECL(level) = ShAttrib1f(0.0);
-	level.range(-10.0,10.0);  
+  ShAttrib1f SH_DECL(level) = ShAttrib1f(0.0);
+  level.range(-10.0,10.0);  
 
-	fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
+  fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputPosition4f posh;
     ShInputTexCoord2f u;
     ShInputNormal3f n;
@@ -124,21 +124,21 @@ bool testShinyBumpMapShader::init()
 
     result = Img(r)(0,1,2); 
 
-		// display the image
-		level = pow (2, level + 2.47393);
-		ShAttrib3f RGB = level * result(0,1,2);
-		
-		ShAttrib1f f = 0.184874;
-		ShAttrib1f e = 2.718281828;
-		ShAttrib1f R = cond(RGB(0)>1.0, 1.0 + log2((RGB(0)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(0));
-		ShAttrib1f G = cond(RGB(1)>1.0, 1.0 + log2((RGB(1)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(1));
-		ShAttrib1f B = cond(RGB(2)>1.0, 1.0 + log2((RGB(2)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(2));
-		ShAttrib1f gammainv = 0.454545455; // gamma-correction = 1/2.2
-		R = pow(R,gammainv);
-		G = pow(G,gammainv);
-		B = pow(B,gammainv);
-		
-		result	= ShColor3f(R,G,B) * 0.285714286; // scale to get the correct range	(0.285714286=1/3.5)
+    // display the image
+    ShAttrib1f nlevel = pow (2, level + 2.47393);
+    ShAttrib3f RGB = nlevel * result(0,1,2);
+    
+    ShAttrib1f f = 0.184874;
+    ShAttrib1f e = 2.718281828;
+    ShAttrib1f R = cond(RGB(0)>1.0, 1.0 + log2((RGB(0)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(0));
+    ShAttrib1f G = cond(RGB(1)>1.0, 1.0 + log2((RGB(1)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(1));
+    ShAttrib1f B = cond(RGB(2)>1.0, 1.0 + log2((RGB(2)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(2));
+    ShAttrib1f gammainv = 0.454545455; // gamma-correction = 1/2.2
+    R = pow(R,gammainv);
+    G = pow(G,gammainv);
+    B = pow(B,gammainv);
+    
+    result = ShColor3f(R,G,B) * 0.285714286; // scale to get the correct range	(0.285714286=1/3.5)
   } SH_END;
 
   return true;

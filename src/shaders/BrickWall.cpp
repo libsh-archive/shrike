@@ -141,8 +141,8 @@ bool BrickWall::init()
     ShInOutTexCoord2f tc;
     ShInOutNormal3f norm;
  
-		ShVector3f TilePerturb = noiseScale * sperlin<3>(tc * noiseFreq, noiseAmps, true);
-		norm += lerp(ShAttrib1f(0.65), ShVector3f(0.0,0.0,0.0), TilePerturb);
+    ShVector3f TilePerturb = noiseScale * sperlin<3>(tc * noiseFreq, noiseAmps, true);
+    norm = mad(0.35, TilePerturb, norm);
 
     // set the limits of edges
     ShAttrib1f verticalLimits = min(abs(tc(0)) < 0.5-mortarsize(0)+0.01, abs(tc(0)) > 0.5-mortarsize(0)-0.01);
@@ -163,8 +163,8 @@ bool BrickWall::init()
   ShProgram brickModifier = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputTexCoord2f tc;
     ShOutputColor3f brickVariations;  
-		brickVariations = noiseScale * sperlin<3>(tc * noiseFreq, noiseAmps, true);
-		brickVariations = brick + lerp(ShAttrib1f(0.65), ShVector3f(0.0,0.0,0.0), brickVariations);
+    brickVariations = noiseScale * sperlin<3>(tc * noiseFreq, noiseAmps, true);
+    brickVariations = mad(0.35, brickVariations, brick);
     
   } SH_END;
   

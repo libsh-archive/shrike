@@ -223,8 +223,7 @@ bool HairFiber::init()
 		Ntrt = cond(-D, Ntrt+Ntrt2, Ntrt); // test if 3 solutions
 		
 		if(render_first_highlight) {
-			ShColor3f white = ShColor3f(1.0,1.0,1.0);
-			result = white * 10 * Mr*Nr / cosThetad2;
+			result = (Mr*Nr / cosThetad2)(0,0,0);
 		}
 		else {
 			result = ShColor3f(0.0,0.0,0.0);

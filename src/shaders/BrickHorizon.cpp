@@ -138,10 +138,10 @@ bool BrickHorizon::init()
     ShInOutTexCoord2f tc;
     ShInOutNormal3f normal;
     
- 		ShVector3f TilePerturb = noiseScale * sperlin<3>(tc * noiseFreq, noiseAmps, true);
-		normal += lerp(ShAttrib1f(0.65), ShVector3f(0.0,0.0,0.0), TilePerturb);
-
-		normal = normalize(normal);
+    ShVector3f TilePerturb = noiseScale * sperlin<3>(tc * noiseFreq, noiseAmps, true);
+    normal = mad(0.35, TilePerturb, normal);
+    
+    normal = normalize(normal);
 		
   } SH_END;
 
@@ -151,8 +151,8 @@ bool BrickHorizon::init()
   ShProgram brickModifier = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInOutTexCoord2f tc;
     ShOutputColor3f brickVariations;  
-		brickVariations = noiseScale * sperlin<3>(tc * noiseFreq, noiseAmps, true);
-		brickVariations = brick + lerp(ShAttrib1f(0.65), ShVector3f(0.0,0.0,0.0), brickVariations);
+    brickVariations = noiseScale * sperlin<3>(tc * noiseFreq, noiseAmps, true);
+    brickVariations = mad(0.35, brickVariations, brick);
   } SH_END;
 
   /* Select the color to render in function of the id

@@ -1,3 +1,13 @@
+2004-08-24  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/shaders/HairPhysics.cpp (init): More cleanups...
+
+	* src/shaders/BrickWall.cpp (init): Clean up some code.
+
+	* src/shaders/HDRShinyBumpMap.cpp (init): Reindent.
+
+	* src/shaders/HairShader.cpp (init): Clean up a bit of code.
+
 2004-07-27  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/ShrikeCanvas.cpp (motion): Change from inv to inverse.
