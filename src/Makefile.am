@@ -48,7 +48,7 @@ shrike_SOURCES += shaders/Banks.cpp
 shrike_SOURCES += shaders/BrickWall.cpp
 shrike_SOURCES += shaders/BrickHorizon.cpp
 shrike_SOURCES += shaders/HorizonMapping.cpp
-shrike_SOURCES += shaders/HairFibers.cpp
+shrike_SOURCES += shaders/HairShader.cpp
 
 # this is a hack and should be removed eventually
 # shrike_SOURCES += DummyShader.cpp

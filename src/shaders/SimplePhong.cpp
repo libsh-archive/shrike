@@ -169,7 +169,7 @@ bool ModifiedPhong::init()
     normalmat[0] = sqrt(2) * normal[0]; // need to multiply the matrix by 2
     normalmat[1] = sqrt(2) * normal[1];
     normalmat[2] = sqrt(2) * normal[2];
-    ShMatrix3x3f Householder = (normalmat | transpose(normalmat));
+    ShMatrix3x3f Householder =  normalmat | transpose(normalmat);
     Householder -= identity; // Compuse Householder transformation matrix
     ShMatrix1x3f viewtranspose; // to transpose the view vector
     viewtranspose[0][0] = view[0];

@@ -114,7 +114,7 @@ int main(int argc, char** argv)
 		SH::ShImage outputImage1(inputImage.width(), inputImage.height(), 4);
 		SH::ShImage outputImage2(inputImage.width(), inputImage.height(), 4);
 
-		int size_bump = 20;
+		int size_bump = 10;
 		// clear the images
 		for(int i=0 ; i<inputImage.width() ; i++)
     	for(int j=0; j<inputImage.height() ; j++)

@@ -43,10 +43,13 @@ bool HorizonMapping::init()
   
 	ShTexture2D<ShVector3f> bump(image.width(),image.height());
   bump.memory(image.memory());
+	bump.name("surface");
 	ShTexture2D<ShColor4f> horizon1(horizmap1.width(), horizmap1.height());
   horizon1.memory(horizmap1.memory());
+	horizon1.name("horizon maps");
   ShTexture2D<ShColor4f> horizon2(horizmap2.width(), horizmap2.height());
   horizon2.memory(horizmap2.memory());
+	horizon2.name("horizon maps");
 
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
@@ -69,13 +72,9 @@ bool HorizonMapping::init()
 
   } SH_END;
 
-	ShColor3f SH_DECL(diffuse) = ShColor3f(1.0,0.0,0.0);
-  ShAttrib3f SH_DECL(scale) = ShAttrib3f(2.0,2.0,1.0);
-  scale.range(0.0f,20.0f);
-	
-	ShAttrib1f SH_DECL(intensity) = ShAttrib1f(10.0);
-	intensity.name("shadow intensity");
-	intensity.range(1.0,30.0);
+	ShAttrib1f SH_DECL(softness) = ShAttrib1f(10.0);
+	softness.name("shadow softness");
+	softness.range(1.0,30.0);
 
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputPosition4f posh;
@@ -92,24 +91,18 @@ bool HorizonMapping::init()
     light = normalize(light);
     surface = normalize(surface);
 
-    // create the bumps by changing the normal 
-    ShVector3f bu = bump(u) - ShAttrib3f(0.5,0.5,0.0);
-    bu *= scale;
-    ShVector3f bn = tangent * bu(0) + surface * bu(1) + normal * bu(2);
-    
 		// compute the light vector in tangent coordinates
     ShAttrib1f lt = tangent | light;
     ShAttrib1f ls = surface | light;
     ShAttrib1f ln = normal | light;
 
     result = ShColor3f(bump(u)(0)/2+0.5, bump(u)(1)/2+0.5, bump(u)(2)/2+0.5); // draw the bumps
-    //result = (bn | light) * diffuse; // draw the bumps
 
     ShColor3f shadow = ShColor3f(0.5,0.5,0.5); // substracted to the color to make shadows
 
     ShAttrib1f cosAngle = sqrt(lt*lt+ls*ls) / sqrt(lt*lt+ls*ls+ln*ln); // compute the light angle
 		
-		// get the normalized values
+		// get normalized values
     ShVector2f lightS = ShVector2f(lt,ls);
 		lightS = normalize(lightS);
     lt = lightS(0); // cos(phi)
@@ -117,16 +110,17 @@ bool HorizonMapping::init()
 
 		ShAttrib1f b = 2*lt*lt-1; // 2*cos(phi)*cos(phi)-1
     ShAttrib1f bb = b*b;
-		
+		ShAttrib2f basis = ShAttrib2f(bb,1.0-bb);
+										
 		ShAttrib2f b1,b2,b3,b4,b5,b6,b7,b8; // the basis functions used to blend
-		b1 = cond( min( min(lt<0.0, b>0.0), ls>0.0), ShAttrib2f(bb,1.0-bb), ShAttrib2f(0.0,0.0));
-		b2 = cond( min( min(lt<0.0, b<0.0), ls>0.0), ShAttrib2f(bb,1.0-bb), ShAttrib2f(0.0,0.0));
-		b3 = cond( min( min(lt>0.0, b<0.0), ls>0.0), ShAttrib2f(bb,1.0-bb), ShAttrib2f(0.0,0.0));
-		b4 = cond( min( min(lt>0.0, b>0.0), ls>0.0), ShAttrib2f(bb,1.0-bb), ShAttrib2f(0.0,0.0));
-		b5 = cond( min( min(lt>0.0, b>0.0), ls<0.0), ShAttrib2f(bb,1.0-bb), ShAttrib2f(0.0,0.0));
-		b6 = cond( min( min(lt>0.0, b<0.0), ls<0.0), ShAttrib2f(bb,1.0-bb), ShAttrib2f(0.0,0.0));
-		b7 = cond( min( min(lt<0.0, b<0.0), ls<0.0), ShAttrib2f(bb,1.0-bb), ShAttrib2f(0.0,0.0));
-		b8 = cond( min( min(lt<0.0, b>0.0), ls<0.0), ShAttrib2f(bb,1.0-bb), ShAttrib2f(0.0,0.0));
+		b1 = cond( min( min(lt<0.0, b>0.0), ls>0.0), basis, ShAttrib2f(0.0,0.0));
+		b2 = cond( min( min(lt<0.0, b<0.0), ls>0.0), basis, ShAttrib2f(0.0,0.0));
+		b3 = cond( min( min(lt>0.0, b<0.0), ls>0.0), basis, ShAttrib2f(0.0,0.0));
+		b4 = cond( min( min(lt>0.0, b>0.0), ls>0.0), basis, ShAttrib2f(0.0,0.0));
+		b5 = cond( min( min(lt>0.0, b>0.0), ls<0.0), basis, ShAttrib2f(0.0,0.0));
+		b6 = cond( min( min(lt>0.0, b<0.0), ls<0.0), basis, ShAttrib2f(0.0,0.0));
+		b7 = cond( min( min(lt<0.0, b<0.0), ls<0.0), basis, ShAttrib2f(0.0,0.0));
+		b8 = cond( min( min(lt<0.0, b>0.0), ls<0.0), basis, ShAttrib2f(0.0,0.0));
 
 		// the interpolated horizon value
 		ShAttrib1f cosHorizon = b1(0)*horizon1(u)(0) + b1(1)*horizon2(u)(0) +
@@ -138,10 +132,11 @@ bool HorizonMapping::init()
 														b7(0)*horizon1(u)(3) + b7(1)*horizon2(u)(3) +
 														b8(0)*horizon1(u)(0) + b8(1)*horizon2(u)(3);
 
-	
-		ShAttrib1f x = abs(cosAngle-cosHorizon)*intensity;
+		ShAttrib1f x = abs(cosAngle-cosHorizon)*softness;
 		shadow = ((pow(M_E, 2*x) - 1) / (pow(M_E, 2*x) + 1))*shadow; // use tanh to create soft shadows
 		result = cond( cosAngle>cosHorizon, result-shadow, result); // draw shadows in function of the angle
+
+		//result = ShColor3f(cosAngle, ShAttrib1f(0.0), ShAttrib1f(0.0));
 		
   } SH_END;
   return true;
@@ -180,8 +175,8 @@ ViewHorizonMaps::~ViewHorizonMaps()
 bool ViewHorizonMaps::init()
 {
   ShImage horizmap1, horizmap2;
-  horizmap1.loadPng(SHMEDIA_DIR "/horizonmaps/bricks_horizon1.png");
-  horizmap2.loadPng(SHMEDIA_DIR "/horizonmaps/bricks_horizon2.png");
+  horizmap1.loadPng(SHMEDIA_DIR "/horizonmaps/cross_horizon1.png");
+  horizmap2.loadPng(SHMEDIA_DIR "/horizonmaps/cross_horizon2.png");
   
 	ShTexture2D<ShColor4f> horizon1(horizmap1.width(), horizmap1.height());
   horizon1.memory(horizmap1.memory());
