@@ -49,6 +49,11 @@ public:
   
   void calcSizes();
 
+  double width() const { return m_width; }
+  double height() const;
+
+  unsigned int pickid() const { return m_gl_name; }
+  
 private:
   
   SH::ShProgram m_program;
@@ -63,8 +68,6 @@ private:
 
   unsigned int m_gl_name;
 
-  static unsigned int m_max_gl_name;
-  
   PortList m_input_ports, m_output_ports;
 
   bool m_marked;

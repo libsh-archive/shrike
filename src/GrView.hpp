@@ -34,6 +34,8 @@ public:
   
   int addPicker(PickType type, void* data);
   int pick(int x, int y);
+
+  void layout();
   
 private:
   void init();

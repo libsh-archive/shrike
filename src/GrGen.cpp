@@ -112,6 +112,8 @@ InVarInfo* in_info(const ShVariableNodePtr& var)
 
 ShProgram generateShader(GrNode* root_node, GrNode* final_node)
 {
+  ShEnvironment::useExceptions = true;
+  
   // TODO: Make all variable info
   // E.g. backward DFS/BFS from the final node.
   makeVariableInfo(final_node);
@@ -184,43 +186,51 @@ ShProgram generateShader(GrNode* root_node, GrNode* final_node)
     }
 
     if (!skip) {
-      std::cerr << "Doing some smashing" << std::endl;
-      // Add the rest of the outputs to the permutation
-      // (Thereby making it an actual permutation)
-      int i = 0;
-      ShProgramNode::VarList leftovers;
-      for (ShProgramNode::VarList::iterator I = p->outputs.begin();
-           I != p->outputs.end(); ++I, ++i) {
-        if (!out_info(*I)->marked) {
-          leftovers.push_back(*I);
-          perm = perm(i);
+      try {
+        std::cerr << "Doing some smashing" << std::endl;
+        // Add the rest of the outputs to the permutation
+        // (Thereby making it an actual permutation)
+        int i = 0;
+        ShProgramNode::VarList leftovers;
+        for (ShProgramNode::VarList::iterator I = p->outputs.begin();
+             I != p->outputs.end(); ++I, ++i) {
+          if (!out_info(*I)->marked) {
+            leftovers.push_back(*I);
+            perm = perm(i);
+          }
         }
-      }
 
-      // Apply the permutation to the program outputs
-      p = perm << p;
+        // Apply the permutation to the program outputs
+        p = perm << p;
 
-      // Connect the target program for the permuted outputs
-      p = target << p;
+        // Connect the target program for the permuted outputs
+        p = target << p;
 
-      ShProgramNode::VarList::iterator I = p->outputs.begin();
-      //std::advance(I, target->outputs.size());
-      ShProgramNode::VarList::iterator L = leftovers.begin();
-      ShProgramNode::VarList::iterator T = target->outputs.begin();
-      for (int count = 0; I != p->outputs.end(); ++I, ++count) {
-        if (count < target->outputs.size()) {
-          info_out_map[*I] = out_info(*T);
-          ++T;
-        } else {
-          info_out_map[*I] = out_info(*L);
-          ++L;
+        ShProgramNode::VarList::iterator I = p->outputs.begin();
+        //std::advance(I, target->outputs.size());
+        ShProgramNode::VarList::iterator L = leftovers.begin();
+        ShProgramNode::VarList::iterator T = target->outputs.begin();
+        for (int count = 0; I != p->outputs.end(); ++I, ++count) {
+          if (count < target->outputs.size()) {
+            info_out_map[*I] = out_info(*T);
+            ++T;
+          } else {
+            info_out_map[*I] = out_info(*L);
+            ++L;
+          }
         }
-      }
       
-      // If we have reached the final program, we are done
-      if (target == final) done = true;
-      // Move on to the next output otherwise
-      OI = p->outputs.begin();
+        // If we have reached the final program, we are done
+        if (target == final) done = true;
+        // Move on to the next output otherwise
+        OI = p->outputs.begin();
+      } catch (const ShAlgebraException& e) {
+        std::cerr << e.message() << std::endl;
+        return 0;
+      } catch (const ShException& e) {
+        std::cerr << "Misc Error: " << e.message() << std::endl;
+        return 0;
+      }
     } else {
       // Skip this output, will handle it at some other point
       OI++;

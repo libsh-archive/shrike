@@ -23,7 +23,10 @@ std::string label(const SH::ShVariableNodePtr& node) {
 
 }
 
-
+double GrNode::height() const
+{
+  return m_height + (m_program->name().empty() ? 0.0 : m_font_height + border + border);
+}
 GrNode::GrNode(const SH::ShProgram& program,
                double x, double y,
                OGLFT::Face* face,

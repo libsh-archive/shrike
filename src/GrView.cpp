@@ -256,7 +256,7 @@ int GrView::pick(int ev_x, int ev_y)
     (*I)->draw_edges();
   }
   int hits = glRenderMode(GL_RENDER);
-  std::cerr << "hits = " << hits << std::endl;
+  // std::cerr << "hits = " << hits << std::endl;
 
   GLuint* p = buffer;
   bool first = true;
@@ -535,5 +535,7 @@ void GrView::keydown(wxKeyEvent& event)
 
     SimpleShader* s = new SimpleShader(vsh, fsh);
     ShrikeFrame::instance()->setShader(s);
+  } else if (event.GetKeyCode() == 'L') {
+    layout();
   }
 }

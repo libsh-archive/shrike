@@ -16,6 +16,7 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 GrPort.hpp GrPort.cpp \
 		 GrGen.hpp GrGen.cpp \
 		 GrProgramMenu.hpp GrProgramMenu.cpp \
+		 GrLayout.cpp \
 		 util.cpp
 
 #shrike_SOURCES += DiffuseShader.cpp
