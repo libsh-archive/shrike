@@ -1,5 +1,8 @@
 # -*- makefile -*-
 
+# comment this out if you want dependencies with makedepend
+DISABLE_DEPENDS = true
+
 WXWIN_DIR = \dev\wxwin
 CLEANFILES = shrike.exe
 
@@ -64,6 +67,14 @@ shrike_SOURCES += shaders/TangentArrows.cpp
 shrike_SOURCES += shaders/BumpMapShader.cpp
 shrike_SOURCES += shaders/FragmentBranching.cpp
 shrike_SOURCES += shaders/FragmentLooping.cpp
+shrike_SOURCES += shaders/SpatialBRDF.cpp
+shrike_SOURCES += shaders/HDRViewer.cpp HDRImages/HDRImage.cpp
+shrike_SOURCES += shaders/HDRMipMap.cpp HDRImages/HDRMipmap.cpp
+shrike_SOURCES += shaders/HDRInterp.cpp HDRImages/HDRInterp.cpp
+shrike_SOURCES += shaders/HDRToneMapping.cpp HDRImages/HDRTonemap.cpp
+shrike_SOURCES += shaders/HDRWrap.cpp
+shrike_SOURCES += shaders/CubeMap.cpp
+shrike_SOURCES += shaders/HDRLucite.cpp shaders/HDRGlass.cpp shaders/HDRShinyBumpMap.cpp
 
 # $(wildcard shaders/*.cpp)
 shrike_DEBUG_OBJECTS = $(shrike_SOURCES:.cpp=.d.obj)
@@ -104,14 +115,17 @@ shrike_DEPENDS = $(shrike_SOURCES:.cpp=.d.d) $(shrike_SOURCES:.cpp=.r.d)
 
 include ../../sh/win32.mk
 CPPFLAGS += -I.
+CPPFLAGS += -IHDRImages
 CPPFLAGS += -I$(SH_INSTALLDIR)\include
 CPPFLAGS += -DSHMEDIA_DIR=\"\\\\DEV\\\\SHMEDIA\"
 CPPFLAGS += -I$(OPENGL_DIR)\include
 CPPFLAGS += -I$(WXWIN_DIR)\include
 CPPFLAGS += -I$(WXWIN_DIR)\lib\msw
 CPPFLAGS +=  -DSH_DLLEXPORT=__declspec(dllimport)
-include $(shrike_DEPENDS)
 
+ifdef $(DISABLE_DEPENDS)
+include $(shrike_DEPENDS)
+endif
 
 libsh.dll: $(SH_INSTALLDIR)\lib\libsh.dll
 	copy $< $@
