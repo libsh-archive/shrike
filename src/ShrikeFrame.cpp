@@ -22,6 +22,7 @@ BEGIN_EVENT_TABLE(ShrikeFrame, wxFrame)
   EVT_MENU(SHRIKE_MENU_SHADER_SHOW_FSH, ShrikeFrame::showFsh)
   EVT_MENU(SHRIKE_MENU_SHADER_REINIT, ShrikeFrame::reinit)
   EVT_MENU(SHRIKE_MENU_VIEW_RESET, ShrikeFrame::resetView)
+  EVT_MENU(SHRIKE_MENU_VIEW_SCREENSHOT, ShrikeFrame::screenshot)
   EVT_MENU(SHRIKE_MENU_VIEW_BACKGROUND, ShrikeFrame::setBackground)
   EVT_MENU(SHRIKE_MENU_VIEW_FULLSCREEN, ShrikeFrame::fullscreen)
   EVT_KEY_DOWN(ShrikeFrame::keyDown)
@@ -66,6 +67,7 @@ ShrikeFrame::ShrikeFrame()
   viewMenu->Append(SHRIKE_MENU_VIEW_RESET, "&Reset");
   viewMenu->Append(SHRIKE_MENU_VIEW_BACKGROUND, "Set &background colour...");
   viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FULLSCREEN, "Fullscreen");
+  viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_SCREENSHOT, "Screenshot");
 
   wxMenuBar* menuBar = new wxMenuBar();
   menuBar->Append(fileMenu, "&File");
@@ -90,10 +92,17 @@ ShrikeFrame::ShrikeFrame()
   m_right_window = new wxSplitterWindow(m_hsplitter, -1);
   m_canvas = new ShrikeCanvas(m_right_window, model);
   m_panel = new UniformPanel(m_right_window);
-  
+
+  //m_preview = new wxFrame(0, -1, "Shrike Preview", wxDefaultPosition, wxSize(1024, 1024));
+  //m_canvas = new ShrikeCanvas(m_preview, model);
+  //m_panel = new UniformPanel(m_hsplitter);
+  //m_hsplitter->SplitVertically(m_shaderList, m_panel, 150);
+
   m_hsplitter->SplitVertically(m_shaderList, m_right_window, 150);
   m_right_window->SplitHorizontally(m_canvas, m_panel, -100);
   m_right_window->SetMinimumPaneSize(40);
+
+  //m_preview->Show();
 }
 
 ShrikeFrame::~ShrikeFrame()
@@ -256,6 +265,16 @@ void ShrikeFrame::keyDown(wxKeyEvent& event)
 ShrikeFrame* ShrikeFrame::instance()
 {
   return m_instance;
+}
+
+void ShrikeFrame::screenshot(wxCommandEvent& event)
+{
+  wxFileDialog* dialog = new wxFileDialog(this, "Save Screenshot",
+                                          ".", "",
+                                          "PNG Files (*.png)|*.png", wxSAVE);
+  if (dialog->ShowModal() == wxID_OK) {
+    m_canvas->screenshot(dialog->GetPath().c_str());
+  }
 }
 
 wxTreeCtrl* ShrikeFrame::initShaderList(wxWindow* parent)

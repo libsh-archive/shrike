@@ -95,6 +95,8 @@ ShMatrix4x4f Camera::perspective(float fov, float aspect, float near, float far)
   float xmin = ymin*aspect;
   float xmax = ymax*aspect;
 
+  
+  
   ShMatrix4x4f ret;
 
   ret[0](0) = 2.0*zmin/(xmax-xmin);

@@ -1,3 +1,4 @@
+#include <sstream>
 #define GL_GLEXT_LEGACY
 #include <GL/gl.h>
 #include <GL/glext.h>
@@ -185,10 +186,25 @@ void ShrikeCanvas::renderObject()
   }
 }
 
-void ShrikeCanvas::setupView()
+void ShrikeCanvas::setupView(int nsplit, int x, int y)
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
+
+  ShMatrix4x4f split;
+  
+  if (nsplit > 1) {
+    split[0][0] = 2.0;
+    split[1][1] = 2.0;
+    split[2][2] = 1.0;
+    split[3][3] = 1.0;
+    split[0][3] = (float)(1-x*2);
+    split[1][3] = (float)(1-y*2);
+    float values[16];
+    for (int i = 0; i < 16; i++) split[i%4](i/4).getValues(&values[i]);
+    glMultMatrixf(values);
+  }
+  
   m_camera.glProjection((float)m_width/m_height);
 
   glMatrixMode(GL_MODELVIEW);
@@ -197,8 +213,39 @@ void ShrikeCanvas::setupView()
 
   Globals::mv = m_camera.shModelView();
   Globals::mv_inverse = inv(Globals::mv);
-  Globals::mvp = m_camera.shModelViewProjection(ShMatrix4x4f());
+  Globals::mvp = m_camera.shModelViewProjection(split);
   Globals::lightPos = Globals::mv | ShPoint3f(Globals::lightDirW * Globals::lightLenW);
+}
+
+void ShrikeCanvas::screenshot(const std::string& filename)
+{
+  ShImage final(m_width*2, m_height*2, 3);
+  float* fd = final.data();
+    
+  for (int y = 0; y < 2; y++) for (int x = 0; x < 2; x++) {
+    ShImage img(m_width, m_height, 3);
+  
+    setupView(2, x, y);
+    render();
+    
+    glReadPixels(0, 0, m_width, m_height, GL_RGB, GL_FLOAT, img.data());
+
+    const float* id = img.data();
+    for (int b = 0; b < m_height; b++) for (int a = 0; a < m_width; a++) {
+      int row = (m_height * 2 - 1) - (m_height * y + b);
+      int col = m_width * x + a;
+      for (int i = 0; i < 3; i++) {
+        fd[(row * m_width * 2 + col)*3 + i ] = id[(b * m_width + a)*3 + i];
+      }
+    }
+//     std::ostringstream s;
+//     s << "_" << x << "_" << y;
+//     img.savePng(filename + s.str());
+  }
+  final.savePng(filename);
+
+  setupView();
+  render();
 }
 
 void ShrikeCanvas::init()

@@ -19,6 +19,7 @@ enum {
   SHRIKE_MENU_SHADER_REINIT,
 
   SHRIKE_MENU_VIEW_RESET,
+  SHRIKE_MENU_VIEW_SCREENSHOT,
   SHRIKE_MENU_VIEW_BACKGROUND,
   SHRIKE_MENU_VIEW_FULLSCREEN,
 
@@ -48,6 +49,7 @@ public:
   void resetView(wxCommandEvent& event);
   void setBackground(wxCommandEvent& event);
   void fullscreen(wxCommandEvent& event);
+  void screenshot(wxCommandEvent& event);
   void setFullscreen(bool);
 
   void keyDown(wxKeyEvent& event);
@@ -62,6 +64,7 @@ private:
 
   ShrikeCanvas* m_canvas;
   UniformPanel* m_panel;
+//  wxFrame* m_preview;
   wxSplitterWindow* m_hsplitter;
   wxSplitterWindow* m_right_window;
 

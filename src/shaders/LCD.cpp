@@ -89,7 +89,7 @@ ShAttrib1f lcd(const ShTexCoord2f& tc, ShAttrib1f number,
     digit = cond(number < 0.0, 9.0 - digit, digit);
   }
 
-  // ShAttrib1f digit = abs(index); // Useful for debugging
+  // digit = abs(index); // Useful for debugging
   
   ShAttrib<7, SH_TEMP> in[4];
   

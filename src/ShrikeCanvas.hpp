@@ -21,6 +21,8 @@ public:
   void reshape();
   void motion(wxMouseEvent& event);
 
+  void screenshot(const std::string& filename);
+  
   void resetView();
 
   void setBackground(unsigned char r, unsigned char g, unsigned char b);
@@ -33,7 +35,7 @@ public:
   
 private:
   void init();
-  void setupView();
+  void setupView(int split = 1, int x = 0, int y = 0);
   
   bool m_init;
   ShUtil::ShObjMesh* m_model;
