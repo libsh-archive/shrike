@@ -37,12 +37,12 @@ using namespace ShUtil;
 
 #include "util.hpp"
 
-class testShinyBumpMapShader : public Shader {
+class HDRShinyBumpMapShader : public Shader {
 public:
   ShProgram vsh, fsh;
 
-  testShinyBumpMapShader();
-  ~testShinyBumpMapShader();
+  HDRShinyBumpMapShader();
+  ~HDRShinyBumpMapShader();
 
   bool init();
 
@@ -53,17 +53,17 @@ public:
 	
 };
 
-testShinyBumpMapShader::testShinyBumpMapShader()
+HDRShinyBumpMapShader::HDRShinyBumpMapShader()
   : Shader("HDR: Shiny Bump Mapping"), fname("Cf_cubemap.hdr")
 {
   setStringParam("Image Name", fname);
 }
 
-testShinyBumpMapShader::~testShinyBumpMapShader()
+HDRShinyBumpMapShader::~HDRShinyBumpMapShader()
 {
 }
 
-bool testShinyBumpMapShader::init()
+bool HDRShinyBumpMapShader::init()
 {
   HDRImage image;
   std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
@@ -124,25 +124,24 @@ bool testShinyBumpMapShader::init()
 
     result = Img(r)(0,1,2); 
 
-    // display the image
-    ShAttrib1f nlevel = pow (2, level + 2.47393);
-    ShAttrib3f RGB = nlevel * result(0,1,2);
-    
-    ShAttrib1f f = 0.184874;
-    ShAttrib1f e = 2.718281828;
-    ShAttrib1f R = cond(RGB(0)>1.0, 1.0 + log2((RGB(0)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(0));
-    ShAttrib1f G = cond(RGB(1)>1.0, 1.0 + log2((RGB(1)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(1));
-    ShAttrib1f B = cond(RGB(2)>1.0, 1.0 + log2((RGB(2)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(2));
-    ShAttrib1f gammainv = 0.454545455; // gamma-correction = 1/2.2
-    R = pow(R,gammainv);
-    G = pow(G,gammainv);
-    B = pow(B,gammainv);
-    
-    result = ShColor3f(R,G,B) * 0.285714286; // scale to get the correct range	(0.285714286=1/3.5)
+		// display the image
+		ShAttrib3f RGB = pow(2, level + 2.47393) * result(0,1,2);
+		
+		ShAttrib1f f = 0.184874;
+		ShAttrib1f e = 2.718281828;
+		ShAttrib1f R = cond(RGB(0)>1.0, 1.0 + log2((RGB(0)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(0));
+		ShAttrib1f G = cond(RGB(1)>1.0, 1.0 + log2((RGB(1)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(1));
+		ShAttrib1f B = cond(RGB(2)>1.0, 1.0 + log2((RGB(2)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(2));
+		ShAttrib1f gammainv = 0.454545455; // gamma-correction = 1/2.2
+		R = pow(R,gammainv);
+		G = pow(G,gammainv);
+		B = pow(B,gammainv);
+		
+		result	= ShColor3f(R,G,B) * 0.285714286; // scale to get the correct range	(0.285714286=1/3.5)
   } SH_END;
 
   return true;
 }
 
 
-testShinyBumpMapShader the_hdr_shinybumpmap_shader;
+HDRShinyBumpMapShader HDRShinyNumpMap;

@@ -60,11 +60,11 @@ public:
 	
 private:
 	ShObjMesh* m_model;
-  unsigned int  _iTexture; 
+  unsigned int _iTexture; 
 };
 
 EdgeDetection::EdgeDetection()
-  : Shader("EdgeDetection"), fname("triceratops.obj")
+  : Shader("Edge Detection: Object Detection "), fname("triceratops.obj")
 {
 	setStringParam("Object", fname);
 }
@@ -79,13 +79,15 @@ void EdgeDetection::render()
 	shBind(vsh_model);
 	shBind(fsh_model);
 	int vp[4];
+  Shader::render();
 	glGetIntegerv(GL_VIEWPORT, vp);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_DEPTH_BUFFER_BIT);
 	glViewport(0, 0, 512,512);
 	glClear(GL_COLOR_BUFFER_BIT);
   float values[4];
   glBegin(GL_TRIANGLES);
-  for(ShObjMesh::FaceSet::iterator I = m_model->faces.begin();
-      I != m_model->faces.end(); ++I) {
+  for(ShObjMesh::FaceSet::iterator I = m_model->faces.begin(); I != m_model->faces.end(); ++I) {
     ShObjEdge *e = (*I)->edge;
     do {
       e->normal.getValues(values); 
@@ -112,8 +114,9 @@ void EdgeDetection::render()
 	shBind(fsh_edge);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glClear(GL_DEPTH_BUFFER_BIT);
-	glBindTexture(GL_TEXTURE_2D, _iTexture);
+  glBindTexture(GL_TEXTURE_2D, _iTexture);
 	glEnable(GL_TEXTURE_2D);
+  
 	glBegin(GL_QUADS); { // just render a square with the texture
 	  glTexCoord2f(0.0, 0.0);
 	  glVertex2f(-1.0, -1.0);
@@ -123,9 +126,7 @@ void EdgeDetection::render()
 	  glVertex2f(1.0, 1.0);
 	  glTexCoord2f(1.0, 0.0);
 	  glVertex2f(1.0, -1.0);
-	} glEnd();
-	glDisable(GL_TEXTURE_2D);
-
+	} glEnd(); 
 }
 
 bool EdgeDetection::init()
@@ -139,7 +140,7 @@ bool EdgeDetection::init()
   }
 
 	ShTexture2D<ShColor3f> img(512,512);
-	ShHostMemoryPtr newmem = new ShHostMemory(512*512*3*sizeof(float));
+	ShHostMemoryPtr newmem = new ShHostMemory(515*512*3*sizeof(float));
 	img.memory(newmem);
 		
 	glGenTextures(1, &_iTexture);

@@ -123,7 +123,6 @@ bool SpatialBRDF::init()
 	
 		ShAttrib3f p = C * view;
 		ShAttrib1f normp = sqrt(p | p);
-
 		
 		ShAttrib3f absn = abs(refl);
 		ShAttrib1f maxcoord = SH::max(SH::max(absn(0), absn(1)), absn(2));
@@ -135,14 +134,11 @@ bool SpatialBRDF::init()
 		u += ShAttrib2f(1.0,1.0);
 		u *= ShAttrib2f(0.25,0.1666666);
 		u(0) = cond(Xface+Yface+Zface, u(0), u(0)+0.5);
-		u(1) = cond(abs(Xface), u(1)+0.333333, u(1));
-		u(1) = cond(abs(Yface), u(1)+0.666667, u(1));
+		u(1) = cond(abs(Xface), u(1)+0.333333, cond(abs(Yface), u(1)+0.666667, u(1)));
 		
     result = diffuse*DiffImg(u)(0,1,2) + specular * SpecImg(u)(0,1,2) * pow(normp,128) *  pos(normal | p);
 
-		
-		level = pow (2, level + 2.47393);
-		ShAttrib3f RGB = level * result;
+		ShAttrib3f RGB = pow(2, level + 2.47393) * result;
 		
 		ShAttrib1f f = 0.184874;
 		ShAttrib1f e = 2.718281828;

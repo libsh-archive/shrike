@@ -92,8 +92,7 @@ bool Interpolation::init()
 		ShOutputColor3f result;
 		
 		// display the image
-		level = pow (2, level + 2.47393);
-		ShAttrib3f RGB = level * interp(0,1,2);
+		ShAttrib3f RGB = pow(2, level + 2.47393) * interp(0,1,2);
 		
 		ShAttrib1f f = 0.184874;
 		ShAttrib1f e = 2.718281828;

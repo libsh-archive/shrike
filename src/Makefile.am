@@ -67,13 +67,16 @@ shrike_SOURCES += shaders/SparseTexture.cpp
 shrike_SOURCES += shaders/FragmentLooping.cpp
 shrike_SOURCES += shaders/SpatialBRDF.cpp
 shrike_SOURCES += shaders/HDRViewer.cpp HDRImages/HDRImage.cpp
-shrike_SOURCES += shaders/HDRMipMap.cpp HDRImages/HDRMipmap.cpp
-shrike_SOURCES += shaders/HDRInterp.cpp HDRImages/HDRInterp.cpp
-shrike_SOURCES += shaders/HDRToneMapping.cpp HDRImages/HDRTonemap.cpp
+shrike_SOURCES += shaders/HDRMipMap.cpp HDRImages/HDRMipmap.hpp
+shrike_SOURCES += shaders/HDRInterp.cpp HDRImages/HDRInterp.hpp
+shrike_SOURCES += shaders/HDRToneMapping.cpp HDRImages/HDRTonemap.hpp
 shrike_SOURCES += shaders/HDRWrap.cpp
 shrike_SOURCES += shaders/CubeMap.cpp HDRImages/HDRCubeMap.hpp
 shrike_SOURCES += shaders/HDRLucite.cpp shaders/HDRGlass.cpp shaders/HDRShinyBumpMap.cpp
 shrike_SOURCES += shaders/EdgeDetection.cpp
+shrike_SOURCES += shaders/CannyEdgeDetector.cpp HDRImages/Filters.hpp
+shrike_SOURCES += shaders/GaussianBlur.cpp
+shrike_SOURCES += shaders/AnisotropicDiffusion.cpp
 
 # this is a hack and should be removed eventually
 # shrike_SOURCES += DummyShader.cpp
@@ -102,3 +105,4 @@ shgenSBRDF_SOURCES = ShGenSBRDF.cpp HDRImages/HDRImage.cpp
 shgenSBRDF_CPPFLAGS = -IHDRImages
 shgenSBRDF_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
 shgenSBRDF_LDADD = -lsh -lshutil
+
