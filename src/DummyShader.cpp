@@ -92,7 +92,7 @@ bool DummyShader::init()
       output_image(i,j,2) = z;    
     }
   }
-  output_image.savePng(SHMEDIA_DIR "/bumpmaps/bumps_normals.png");
+  output_image.savePng16(SHMEDIA_DIR "/bumpmaps/bumps_normals.png");
 
   ShTexture2D<ShVector3f> bump(w,h);
   bump.memory(output_image.memory());
