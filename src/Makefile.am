@@ -84,6 +84,7 @@ shrike_SOURCES += shaders/ClipMap.cpp
 shrike_SOURCES += HDRImages/HDRImage.hpp HDRImages/Filters.hpp HDRImages/HDRInterp.hpp
 shrike_SOURCES += HDRImages/HDRMipmap.hpp HDRImages/HDRProbe.hpp HDRImages/HDRTonemap.hpp
 shrike_SOURCES += HDRImages/LargeTexture.hpp HDRImages/HDRCubeMap.hpp
+shrike_SOURCES += shaders/ClipMap.hpp
 
 AM_CXXFLAGS = `${WX_CONFIG} --cxxflags` -Wall
 AM_CPPFLAGS = `${WX_CONFIG} --cppflags`

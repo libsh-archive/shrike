@@ -47,6 +47,7 @@ shrike_SOURCES += HDRImages\HDRMipmap.hpp
 shrike_SOURCES += HDRImages\HDRProbe.hpp
 shrike_SOURCES += HDRImages\HDRToneMap.hpp
 shrike_SOURCES += HDRImages\LargeTexture.hpp
+shrike_SOURCES += shaders\ClipMap.hpp
 
 # shaders
 shrike_SOURCES += shaders\AlgebraShader.cpp
@@ -59,6 +60,7 @@ shrike_SOURCES += shaders\BumpMapShader.cpp
 shrike_SOURCES += shaders\CannyEdgeDetector.cpp
 #shrike_SOURCES += shaders\CelShader.cpp
 shrike_SOURCES += shaders\Checkerboard.cpp
+shrike_SOURCES += shaders\ClipMap.cpp
 shrike_SOURCES += shaders\CookTorrance.cpp
 shrike_SOURCES += shaders\CubeMap.cpp
 shrike_SOURCES += shaders\Derivatives.cpp
@@ -77,7 +79,7 @@ shrike_SOURCES += shaders\HDRGlass.cpp
 shrike_SOURCES += shaders\HDRInterp.cpp
 shrike_SOURCES += shaders\HDRLucite.cpp
 shrike_SOURCES += shaders\HDRMipMap.cpp
-shirke_SOURCES += shaders\HDRShinyBumpMap.cpp
+shrike_SOURCES += shaders\HDRShinyBumpMap.cpp
 shrike_SOURCES += shaders\HDRToneMapping.cpp
 shrike_SOURCES += shaders\HDRViewer.cpp
 shrike_SOURCES += shaders\HDRWrap.cpp
