@@ -108,8 +108,8 @@ void ShFont::loadFont(const std::string& filename)
 			read(ifile, &m_edges, sizeof(int));
 			read(ifile, &m_halfx, sizeof(float));
 			read(ifile, &m_halfy, sizeof(float));
-			//std::cout << m_width << " " << m_height << " " << m_edges << " ";
-			//std::cout << m_halfx << " " << m_halfy << std::endl;
+			std::cout << m_width << " " << m_height << " " << m_edges << " ";
+			std::cout << m_halfx << " " << m_halfy << std::endl;
 
 			m_elements = 4;
 

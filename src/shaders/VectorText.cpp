@@ -226,7 +226,7 @@ bool VectorText::init()
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
   ShFont font;
-  font.loadFont("/home/zqin/vectortexture/freetype/d.txt");
+  font.loadFont("/home/mmccool/dev/vectortexture/freetype/d.txt");
 
   int width = font.width();
   int height = font.height();
@@ -247,29 +247,10 @@ bool VectorText::init()
   ShArray2D<ShAttrib1f> findex(width, height);
   findex.memory(font.edge());
 
-	// may not need this... but just in case
-	shUpdate();
+  // may not need this... but just in case
+  shUpdate();
 
-	// dump out texture contents to see what it looks like
-	/*
-  for(int i=0; i<height; i++) {
-	  for(int j=0; j<width; j++) {
-      for(int e=0; e<edges; e++) {
-				std::cerr << "L[" << e << "][";
-				// ShTexCoord2f u = ShTexCoord2f(double(j)/width,double(i)/height);
-				ShTexCoord2f u = ShTexCoord2f(j,i);
-				std::cerr << u.getValue(0) << ";";
-				std::cerr << u.getValue(1) << "] = ";
-				// ShAttrib4f v = ftexture[e](u);
-				ShAttrib4f v = ftexture[e][u];
-				std::cerr << v.getValue(0) << ",";
-				std::cerr << v.getValue(1) << ",";
-				std::cerr << v.getValue(2) << ",";
-				std::cerr << v.getValue(3) << std::endl;
-			}
-		}
-	}
-
+  /*
   //debug info
   for(int i=0; i<height; i++) {
 	  for(int j=0; j<width; j++) {
@@ -297,7 +278,7 @@ bool VectorText::init()
 	  }
 	  std::cout << std::endl;
   }
-	*/
+  */
 
   std::cerr << " the image width is " << font.width() << std::endl;
   std::cerr << " the image height is " << font.height() << std::endl;
@@ -305,56 +286,6 @@ bool VectorText::init()
   std::cerr << " the image halfx is " << font.halfx() << std::endl;
   std::cerr << " the image halfy is " << font.halfy() << std::endl;
 
-
-  /*
-  // a test consisting of two contours (a letter A, actually)
-  // const int N = 11;
-  ShAttrib4f L[N];
-
-  // DOESN'T WORK! Ambiguity in sign at acute vertices 
-   
-  L[0] = ShAttrib4f(0.3,0.0,0.0,0.0);
-  L[1] = ShAttrib4f(0.0,0.0,0.5,1.5);
-  L[2] = ShAttrib4f(0.5,1.5,0.9,1.5);
-  L[3] = ShAttrib4f(0.9,1.5,1.4,0.0);
-  L[4] = ShAttrib4f(1.4,0.0,1.1,0.0);
-  L[5] = ShAttrib4f(1.1,0.0,1.0,0.3);
-  L[6] = ShAttrib4f(1.0,0.3,0.4,0.3);
-
-  L[7] = ShAttrib4f(0.4,0.3,0.3,0);
-  L[8] = ShAttrib4f(0.5,0.6,0.9,0.6);
-  L[9] = ShAttrib4f(0.9,0.6,0.7,1.2);
-  L[10] = ShAttrib4f(0.7,1.2,0.5,0.6);
-  */
-  /* */
-
-  // THE FIX:
-  // Can "break apart" acute vertices to resolve ambiguity.
-  // Yes, this IS a really evil hack, but it's cheap computationally.
-  // Still get good distance field, only slight rounding of corners,
-  // since epsilon can be in last bit of precision...
-   const float eps = 0.001;
-  // const float xoff = 1.8;
-
-  // const int ioff = 11;
-  // const float xoff = 0.0;
-  // const int ioff = 0;
-  // L[ioff+0] = ShAttrib4f(xoff+0.3,0.0-eps,xoff+0.0,0.0-eps);
-  // L[ioff+1] = ShAttrib4f(xoff+0.0-eps,0.0+eps,xoff+0.5,1.5);
-  // L[ioff+2] = ShAttrib4f(xoff+0.5,1.5,xoff+0.9,1.5);
-  // L[ioff+3] = ShAttrib4f(xoff+0.9,1.5,xoff+1.4+eps,0.0+eps);
-  // L[ioff+4] = ShAttrib4f(xoff+1.4,0.0-eps,xoff+1.1,0.0-eps);
-  // L[ioff+5] = ShAttrib4f(xoff+1.1,0.0,xoff+1.0,0.3);
-  // L[ioff+6] = ShAttrib4f(xoff+1.0,0.3,xoff+0.4,0.3);
-  // L[ioff+7] = ShAttrib4f(xoff+0.4,0.3,xoff+0.3,0);
-  // L[ioff+8] = ShAttrib4f(xoff+0.5,0.6-eps,xoff+0.9,0.6-eps);
-  // L[ioff+9] = ShAttrib4f(xoff+0.9+eps,0.6,xoff+0.7+eps,1.2);
-  // L[ioff+10] = ShAttrib4f(xoff+0.7-eps,1.2,xoff+0.5-eps,0.6);
-
-
-  // a better fix: contract each line segment by epsilon.
-  // this gives better angles for the pseudodistance (useful for
-  // "sharp" miter rules).
 
   fsh = SH_BEGIN_FRAGMENT_PROGRAM {
     ShInputTexCoord2f tc;
@@ -367,27 +298,8 @@ bool VectorText::init()
     ShAttrib4f L[edges];
 
     for(int i=0; i<edges; i++) {
-    	//L[i] = ftexture[i][x]; // 0..512
-    	L[i] = ftexture[i](x); // 0..1
+    	L[i] = ftexture[i](x); 
     }
-
-    for (int i=0; i<edges; i++) {
-        ShVector2f d = normalize(L[i](2,3) - L[i](0,1));
-        L[i](0,1) += d * eps;
-        L[i](2,3) -= d * eps;
-    }
-  
-    /*
-    // compute signed distance map
-    ShAttrib4f r = segdist(L[0],x);
-    ShAttrib4f nr;
-    for (int i=1; i<edges; i++) {
-       nr = segdist(L[i],x);
-       r = cond(nr(0) < r(0),nr,r);
-    }
-    // transfer sign
-    r(0) = cond(r(1) < 0.0, -r(0), r(0));
-    */
   
     ShAttrib4f r = segdists(L,edges,x);
 
