@@ -109,8 +109,11 @@ bool HairFiber::init()
 	
 	ShAttrib1f SH_DECL(a) = ShAttrib1f(1.0);
 	a.range(0.85,1.18);
+	
   ShColor3f SH_DECL(color) = ShColor3f(0.74, 0.47, 0.47);
+	
 	ShColor3f SH_DECL(sigmaa) = ShColor3f(0.44,0.64,0.9); // attenuation in the fiber
+	
 	ShAttrib2f SH_DECL(scale) = ShAttrib2f(500.0,500);
 	scale.range(1.0,1000.0);
   
@@ -131,8 +134,8 @@ bool HairFiber::init()
 		ShVector3f surface = cross(normal, tangent);
 		surface = normalize(surface);
 
-		normal[0] = normal(0) + 0.4*cellnoise<1>(scale(0)*tc(0), false, false);
-		normal[1] = normal(1) + 0.4*cellnoise<1>(scale(1)*tc(0), false, false);
+		normal(0) += 0.4*cellnoise<1>(scale(0)*tc(0), false, false);
+		normal(1) += 0.4*cellnoise<1>(scale(1)*tc(0), false, false);
 		normal = normalize(normal);
 
 		ShVector3f azimut = (0.7*cellnoise<1>(100*tc(0), false, false)+0.3) * normal;
@@ -156,7 +159,7 @@ bool HairFiber::init()
 
 		// Conpute Nr
 		ShAttrib1f Nr = fresnel(eta1, -phi/2); // -phi/2 is the root of the equation phi(0,h)-phi=0
-		Nr *= abs(cos(phi/2.0)) / 4.0;
+		Nr *= abs(cos(phi/2)) / 4.0;
 
 		ShAttrib1f eta2 = etaprime(eta, phii);
 		ShAttrib1f c = asin(1.0f/eta2);
@@ -172,7 +175,6 @@ bool HairFiber::init()
 		Ntt = (1.0f - Ntt) * (1.0f - Ntt) * pow(M_E,-2.0*sigmaa(0)*(1.0f+cos(2.0f*gammat)));
 		Ntt = - Ntt * abs(cos(h) /(2.0f * ((6.0f*c/M_PI-2.0f) - 24.0f*c*h*h/(M_PI*M_PI*M_PI))));
 */
-		
 		ShAttrib1f etastar1 = 2.0*(eta-1.0)*a*a - eta + 2.0;
 		ShAttrib1f etastar2 = 2.0*(eta-1.0)/(a*a) - eta + 2.0;
 		ShAttrib1f etastar = 0.5*(etastar1+etastar2 + cos(phii+phir)*(etastar1 - etastar2));
@@ -200,15 +202,13 @@ bool HairFiber::init()
 		Ntrt2 += N2(c, eta1, sigmaa, gammai);
 
 		Ntrt = cond(D < 0.0, Ntrt+Ntrt2, Ntrt);
-		
-	
-		//Ntrt *= (1.0 - t*gaussian((phi-phic)*180.0/M_PI,1.5) / gaussian(0.0,1.5));
-		//Ntrt *= (1.0 - t*gaussian((phi+phic)*180.0/M_PI,1.5) / gaussian(0.0,1.5));
-		//Ntrt += t*0.4*deltah*(gaussian((phi-phic)*180.0/M_PI,1.5)+gaussian((phi+phic)*180.0/M_PI,1.5));
+/*		
+		Ntrt *= (1.0 - t*gaussian((phi-phic)*180.0/M_PI,1.5) / gaussian(0.0,1.5));
+		Ntrt *= (1.0 - t*gaussian((phi+phic)*180.0/M_PI,1.5) / gaussian(0.0,1.5));
+		Ntrt += t*0.4*deltah*(gaussian((phi-phic)*180.0/M_PI,1.5)+gaussian((phi+phic)*180.0/M_PI,1.5));
+*/
+		result = color * (Nr*Mr) / (cos(thetad)*cos(thetad));
 
-		
-		result = color * (Mtrt*Ntrt) / (cos(thetad)*cos(thetad));
-		result = cond(Ntrt > 0.0, result, ShColor3f(1.0,0.0,0.0));
 	} SH_END;
   return true;
 }

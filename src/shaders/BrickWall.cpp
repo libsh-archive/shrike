@@ -97,9 +97,7 @@ bool BrickWall::init()
     tc[1] = tc(1) - floor(tc(1)+0.5);
     tc[0] = tc(0) - floor(tc(0)+0.5);
 
-    ShAttrib1f inside;
-    inside = min(abs(tc(0)) < 0.5-mortarsize(0), abs(tc(1)) > mortarsize(1)); // limits of a brick
-    id = cond(inside, ShConstAttrib1f(1.0), ShConstAttrib1f(0.0));
+    id = min(abs(tc(0)) < 0.5-mortarsize(0), abs(tc(1)) > mortarsize(1)); // limits of a brick
 
   } SH_END;
 
@@ -167,14 +165,11 @@ bool BrickWall::init()
     half = normalize(half);
     light = normalize(light);
     ShAttrib1f irrad = pos(normal | light);
-    result = result * irrad + result * pow(pos(normal | half), ShAttrib1f(30.0)) / (normal | light);
+    result = result * irrad;
          
   } SH_END;
  
- fsh = select <<
-	  ((((keep<ShNormal3f>() & keep<ShAttrib1f>() & brickModifier) <<
-	  (bumpmap & keep<ShAttrib1f>() & keep<ShAttrib1f>()) <<
-	  brickID)) & keep<ShVector3f>() & keep<ShVector3f>());
+ fsh = select << (((keep<ShNormal3f>() & keep<ShAttrib1f>() & brickModifier) << (bumpmap & keep<ShAttrib1f>() & keep<ShAttrib1f>()) << brickID) & keep<ShVector3f>() & keep<ShVector3f>());
   
   return true;
 }

@@ -35,16 +35,17 @@ HorizonMapping::~HorizonMapping()
 
 bool HorizonMapping::init()
 {
+	// load the image and put them in different textures
   ShImage image, horizmap1, horizmap2, dirmap1, dirmap2;
   image.loadPng(SHMEDIA_DIR "/horizonmaps/cross.png");
   horizmap1.loadPng(SHMEDIA_DIR "/horizonmaps/cross_horizon1.png");
   horizmap2.loadPng(SHMEDIA_DIR "/horizonmaps/cross_horizon2.png");
   
-  ShTexture2D<ShVector3f> bump(image.width(),image.height());
+	ShTexture2D<ShVector3f> bump(image.width(),image.height());
   bump.memory(image.memory());
-	ShTexture2D<ShColor4f> horizon1(image.width(), image.height());
+	ShTexture2D<ShColor4f> horizon1(horizmap1.width(), horizmap1.height());
   horizon1.memory(horizmap1.memory());
-  ShTexture2D<ShColor4f> horizon2(image.width(), image.height());
+  ShTexture2D<ShColor4f> horizon2(horizmap2.width(), horizmap2.height());
   horizon2.memory(horizmap2.memory());
 
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
@@ -56,11 +57,13 @@ bool HorizonMapping::init()
     ShInOutTexCoord2f tc; // pass through tex coords
     ShOutputNormal3f onorm;
     ShOutputVector3f otan;
+		ShOutputVector3f osurf;
     ShOutputVector3f lightv; // direction to light
 
     opos = Globals::mvp | ipos; // Compute NDC position
     onorm = Globals::mv | inorm; // Compute view-space normal
     otan = Globals::mv | itan;
+		osurf = cross(onorm, otan);
     ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
     lightv = normalize(Globals::lightPos - posv); // Compute light direction
 
@@ -79,6 +82,7 @@ bool HorizonMapping::init()
     ShInputTexCoord2f u;
     ShInputNormal3f normal;
     ShInputVector3f tangent;
+		ShInputVector3f surface;
     ShInputVector3f light;
      
     ShOutputColor3f result;
@@ -86,8 +90,6 @@ bool HorizonMapping::init()
     normal = normalize(normal);
     tangent = normalize(tangent);
     light = normalize(light);
-    
-		ShVector3f surface = cross(normal, tangent); // compute the surface vector
     surface = normalize(surface);
 
     // create the bumps by changing the normal 
@@ -197,7 +199,7 @@ bool ViewHorizonMaps::init()
 
 	ShColor3f SH_DECL(shadowcolor) = ShColor3f(1.0,1.0,0.0);
   ShAttrib1f SH_DECL(direction) = ShAttrib1f(1.0);
-  direction.range(1.0,8.0);
+  direction.range(1.0,9.0);
 
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputPosition4f posh;
@@ -214,6 +216,8 @@ bool ViewHorizonMaps::init()
 		result = cond(direction < 5.5, result, horizon2(u)(2)*shadowcolor);
 		result = cond(direction < 6.5, result, horizon1(u)(3)*shadowcolor);
 		result = cond(direction < 7.5, result, horizon2(u)(3)*shadowcolor);
+		result = cond(direction < 8.5, result, (horizon1(u)(0)+horizon1(u)(1)+horizon1(u)(2)+horizon1(u)(3)+
+																						horizon2(u)(0)+horizon2(u)(1)+horizon2(u)(2)+horizon2(u)(3))/8.0*shadowcolor);
 		result = shadowcolor - result; // to get black where there is no horizon value
 
   } SH_END;
