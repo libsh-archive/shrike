@@ -52,7 +52,7 @@ public:
   void render();
   
   ShProgram vertex() { return vsh;}
-  ShProgram fragment() { return fsh_h & fsh_s;}
+  ShProgram fragment() { return fsh_h;}
   
   ShProgram vsh;
   ShProgram fsh_h, fsh_s;
@@ -71,8 +71,10 @@ Logo::Logo()
 {
   saw = ShPoint3f(0, 1.35, 0);
   sbw = ShPoint3f(1, 1.35, 0);
-  saw.name("saw");
-  sbw.name("sbw");
+  saw.internal(true);
+  sbw.internal(true);
+  SH_NAME(saw);
+  SH_NAME(sbw);
 }
 
 Logo::~Logo()
@@ -145,12 +147,13 @@ bool Logo::init()
   vsh = vsh << shExtract("lightPos") << Globals::lightPos;
 
   ShProgram warper = SH_BEGIN_PROGRAM() {
-    ShPoint3f l;
-    ShPoint2f a, b;
-    ShInputTexCoord2f i;
-    ShOutputTexCoord2f o;
+    ShPoint3f SH_DECL(l);
+    ShPoint2f SH_DECL(a);
+    ShPoint2f SH_DECL(b);
+    ShInputTexCoord2f SH_DECL(i);
+    ShOutputTexCoord2f SH_DECL(o);
 
-    ShPoint3f lightPos = Globals::lightDirW * Globals::lightLenW;
+    ShPoint3f SH_DECL(lightPos) = Globals::lightDirW * Globals::lightLenW;
     
     a(0) = (lightPos(1)*saw(0) - lightPos(0)*saw(1)) /(lightPos(1) - saw(1));
     a(1) = (lightPos(1)*saw(2) - lightPos(2)*saw(1)) /(lightPos(1) - saw(1));

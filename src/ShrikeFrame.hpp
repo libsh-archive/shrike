@@ -34,7 +34,8 @@
 #include "UniformPanel.hpp"
 #include "Shader.hpp"
 #include "ShrikePropsDialog.hpp"
-enum {
+
+enum ShrikeId {
   SHRIKE_MENU_OPEN_MODEL,
   SHRIKE_MENU_QUIT,
   
@@ -44,8 +45,20 @@ enum {
   SHRIKE_MENU_SHADER_SHOW_FSH,
   SHRIKE_MENU_SHADER_SHOW_VSHIF,
   SHRIKE_MENU_SHADER_SHOW_FSHIF,
+  SHRIKE_MENU_SHADER_SHOW_VSHIR,
+  SHRIKE_MENU_SHADER_SHOW_FSHIR,
+
+  SHRIKE_MENU_SHADER_OPTS,
+  SHRIKE_MENU_SHADER_OPTS_LIFTING,
+  SHRIKE_MENU_SHADER_OPTS_PROPAGATION,
+  SHRIKE_MENU_SHADER_OPTS_DEADCODE,
+  SHRIKE_MENU_SHADER_OPTS_SUBST,
+  SHRIKE_MENU_SHADER_OPTS_COPY,
+  SHRIKE_MENU_SHADER_OPTS_STRAIGHT,
 
   SHRIKE_MENU_SHADER_REINIT,
+
+  SHRIKE_MENU_SHADER_OPTIMIZE,
 
   SHRIKE_MENU_VIEW_RESET,
   SHRIKE_MENU_VIEW_SCREENSHOT,
@@ -77,6 +90,8 @@ public:
   void shaderProps(wxCommandEvent& event);
   void showVsh(wxCommandEvent& event);
   void showFsh(wxCommandEvent& event);
+  void showVshIr(wxCommandEvent& event);
+  void showFshIr(wxCommandEvent& event);
   void showVshInterface(wxCommandEvent& event);
   void showFshInterface(wxCommandEvent& event);
   void reinit(wxCommandEvent& event);
@@ -84,6 +99,8 @@ public:
   void resetView(wxCommandEvent& event);
   void setBackground(wxCommandEvent& event);
   void fullscreen(wxCommandEvent& event);
+  void optimize(wxCommandEvent& event);
+  void setopts(wxCommandEvent& event);
   void wireframe(wxCommandEvent& event);
   void screenshot(wxCommandEvent& event);
   void setFullscreen(bool);
@@ -94,6 +111,8 @@ public:
 
   static ShrikeFrame* instance();
   
+  void showIR(SH::ShProgram program,
+              const std::string& name);
 private:
   void showProgram(SH::ShProgram program,
                    const std::string& name);
@@ -111,6 +130,8 @@ private:
   wxTreeCtrl* m_shaderList;
   Shader* m_shader;
 
+  wxMenu* m_shaderMenu;
+  
   bool m_fullscreen;
   bool m_fps;
 

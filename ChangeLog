@@ -1,3 +1,7 @@
+2004-09-08  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* ...: Merged in changes from newopt branch to deal with dependent uniforms.
+
 2004-08-24  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/shaders/HairPhysics.cpp (init): More cleanups...

@@ -46,9 +46,20 @@ BEGIN_EVENT_TABLE(ShrikeFrame, wxFrame)
   EVT_MENU(SHRIKE_MENU_SHADER_PROPS, ShrikeFrame::shaderProps)
   EVT_MENU(SHRIKE_MENU_SHADER_SHOW_VSH, ShrikeFrame::showVsh)
   EVT_MENU(SHRIKE_MENU_SHADER_SHOW_FSH, ShrikeFrame::showFsh)
+  EVT_MENU(SHRIKE_MENU_SHADER_SHOW_VSHIR, ShrikeFrame::showVshIr)
+  EVT_MENU(SHRIKE_MENU_SHADER_SHOW_FSHIR, ShrikeFrame::showFshIr)
   EVT_MENU(SHRIKE_MENU_SHADER_SHOW_VSHIF, ShrikeFrame::showVshInterface)
   EVT_MENU(SHRIKE_MENU_SHADER_SHOW_FSHIF, ShrikeFrame::showFshInterface)
   EVT_MENU(SHRIKE_MENU_SHADER_REINIT, ShrikeFrame::reinit)
+  EVT_MENU(SHRIKE_MENU_SHADER_OPTIMIZE, ShrikeFrame::optimize)
+
+  EVT_MENU(SHRIKE_MENU_SHADER_OPTS_LIFTING, ShrikeFrame::setopts)
+  EVT_MENU(SHRIKE_MENU_SHADER_OPTS_PROPAGATION, ShrikeFrame::setopts)
+  EVT_MENU(SHRIKE_MENU_SHADER_OPTS_DEADCODE, ShrikeFrame::setopts)
+  EVT_MENU(SHRIKE_MENU_SHADER_OPTS_SUBST, ShrikeFrame::setopts)
+  EVT_MENU(SHRIKE_MENU_SHADER_OPTS_COPY, ShrikeFrame::setopts)
+  EVT_MENU(SHRIKE_MENU_SHADER_OPTS_STRAIGHT, ShrikeFrame::setopts)
+  
   EVT_MENU(SHRIKE_MENU_VIEW_RESET, ShrikeFrame::resetView)
   EVT_MENU(SHRIKE_MENU_VIEW_SCREENSHOT, ShrikeFrame::screenshot)
   EVT_MENU(SHRIKE_MENU_VIEW_BACKGROUND, ShrikeFrame::setBackground)
@@ -86,28 +97,65 @@ ShrikeFrame::ShrikeFrame()
   fileMenu->AppendSeparator();
   fileMenu->Append(SHRIKE_MENU_QUIT, "&Quit");
 
-  wxMenu* shaderMenu = new wxMenu();
-  shaderMenu->Append(SHRIKE_MENU_SHADER_PROPS, "&Properties");
-  shaderMenu->AppendSeparator();
-  shaderMenu->Append(SHRIKE_MENU_SHADER_REINIT, "Re&initialize");
-  shaderMenu->AppendSeparator();
-  shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_VSHIF, "Show &vertex interface");
-  shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_FSHIF, "Show &fragment interface");
-  shaderMenu->AppendSeparator();
-  shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_VSH, "Show &vertex assembly");
-  shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_FSH, "Show &fragment assembly");
+  m_shaderMenu = new wxMenu();
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_PROPS, "&Properties");
+  m_shaderMenu->AppendSeparator();
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_REINIT, "Re&initialize");
+  m_shaderMenu->AppendSeparator();
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_VSHIF, "Show &vertex interface");
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_FSHIF, "Show &fragment interface");
+  m_shaderMenu->AppendSeparator();
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_VSH, "Show &vertex assembly");
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_FSH, "Show &fragment assembly");
+  m_shaderMenu->AppendSeparator();
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_VSHIR, "Show &vertex IR");
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_FSHIR, "Show &fragment IR");
+  m_shaderMenu->AppendSeparator();
+  wxMenuItem* optitem = new wxMenuItem(m_shaderMenu, SHRIKE_MENU_SHADER_OPTIMIZE,
+                                       "Turn on &optimizations", "",
+                                       wxITEM_CHECK);
+  m_shaderMenu->Append(optitem);
+  optitem->Check(true);
+
+  wxMenu* optmenu = new wxMenu();
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_OPTS, "Optimizations", optmenu);
+
+  char* optnames[] = {"Uniform Lifting",
+                      "Constant/Uniform Propagation",
+                      "Dead Code Removal",
+                      "Forward Substitution",
+                      "Copy Propagation",
+                      "Straightening",
+                      0};
+  ShrikeId optids[] = {SHRIKE_MENU_SHADER_OPTS_LIFTING,
+                       SHRIKE_MENU_SHADER_OPTS_PROPAGATION,
+                       SHRIKE_MENU_SHADER_OPTS_DEADCODE,
+                       SHRIKE_MENU_SHADER_OPTS_SUBST,
+                       SHRIKE_MENU_SHADER_OPTS_COPY,
+                       SHRIKE_MENU_SHADER_OPTS_STRAIGHT};
+  for (int i = 0; optnames[i]; i++) {
+    wxMenuItem* item = new wxMenuItem(optmenu,
+                                      optids[i],
+                                      optnames[i],
+                                      "",
+                                      wxITEM_CHECK);
+    optmenu->Append(item);
+    item->Check(true);
+  }
+
+  m_shaderMenu->AppendSeparator();
 
   wxMenu* viewMenu = new wxMenu();
   viewMenu->Append(SHRIKE_MENU_VIEW_RESET, "&Reset");
   viewMenu->Append(SHRIKE_MENU_VIEW_BACKGROUND, "Set &background colour...");
-  viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FULLSCREEN, "Fullscreen");
+  viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FULLSCREEN, "&Fullscreen");
   viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_WIREFRAME, "&Wireframe");
-  viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FPS, "Show framerate");
-  viewMenu->Append(SHRIKE_MENU_VIEW_SCREENSHOT, "Screenshot");
+  viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FPS, "Show framera&te");
+  viewMenu->Append(SHRIKE_MENU_VIEW_SCREENSHOT, "&Screenshot");
 
   wxMenuBar* menuBar = new wxMenuBar();
   menuBar->Append(fileMenu, "&File");
-  menuBar->Append(shaderMenu, "&Shader");
+  menuBar->Append(m_shaderMenu, "&Shader");
   menuBar->Append(viewMenu, "&View");
   
   SetMenuBar(menuBar);
@@ -231,6 +279,18 @@ void ShrikeFrame::showFsh(wxCommandEvent& event)
   showProgram(m_shader->fragment(), "Fragment");
 }
 
+void ShrikeFrame::showVshIr(wxCommandEvent& event)
+{
+  if (!m_shader) return;
+  showIR(m_shader->vertex(), "Vertex");
+}
+
+void ShrikeFrame::showFshIr(wxCommandEvent& event)
+{
+  if (!m_shader) return;
+  showIR(m_shader->fragment(), "Fragment");
+}
+
 void ShrikeFrame::showVshInterface(wxCommandEvent& event)
 {
   if (!m_shader) return;
@@ -316,9 +376,76 @@ void ShrikeFrame::showInterface(ShProgram program,
   frame->Show();
 }
 
+void ShrikeFrame::showIR(ShProgram program,
+                         const std::string& name)
+{
+  if (!program.node()) return;
+
+  std::string title = name + " Shader Code";
+  wxFrame* frame = new wxFrame(0, -1, title.c_str());
+
+
+  wxTextCtrl* control = new wxTextCtrl(frame, -1, "",
+                                       wxDefaultPosition,
+                                       wxDefaultSize,
+                                       wxTE_MULTILINE | wxTE_READONLY);
+
+#ifndef NO_TEXT_WINDOW_STREAM
+  std::ostream stream(control);
+  program.node()->ctrlGraph->print(stream, 0);
+#else
+  std::ostringstream s;
+  program.node()->ctrlGraph->print(s, 0);
+  control->AppendText(s.str().c_str());
+#endif
+
+  frame->Show();
+}
+
 void ShrikeFrame::fullscreen(wxCommandEvent& event)
 {
   setFullscreen(event.IsChecked());
+}
+
+void ShrikeFrame::optimize(wxCommandEvent& event)
+{
+  if (event.IsChecked()) {
+    ShContext::current()->optimization(2);
+  } else {
+    ShContext::current()->optimization(0);
+  }
+}
+
+void ShrikeFrame::setopts(wxCommandEvent& event)
+{
+  std::string name;
+  switch (event.GetId()) {
+  case SHRIKE_MENU_SHADER_OPTS_LIFTING:
+    name = "uniform lifting";
+    break;
+  case SHRIKE_MENU_SHADER_OPTS_PROPAGATION:
+    name = "propagation";
+    break;
+  case SHRIKE_MENU_SHADER_OPTS_DEADCODE:
+    name = "deadcode";
+    break;
+  case SHRIKE_MENU_SHADER_OPTS_SUBST:
+    name = "forward substitution";
+    break;
+  case SHRIKE_MENU_SHADER_OPTS_COPY:
+    name = "copy propagation";
+    break;
+  case SHRIKE_MENU_SHADER_OPTS_STRAIGHT:
+    name = "straightening";
+    break;
+  default:
+    return;
+  }
+  if (event.IsChecked()) {
+    ShContext::current()->enable_optimization(name);
+  } else {
+    ShContext::current()->disable_optimization(name);
+  }
 }
 
 void ShrikeFrame::wireframe(wxCommandEvent& event)
