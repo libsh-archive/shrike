@@ -1,3 +1,10 @@
+2004-06-10  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/shaders/AlgebraShader.cpp (init_all): Use the NDC position
+	to halftone, instead of texture coordinates.
+
+	* src/shaders/LCD.cpp: This should be a great debugging tool :).
+
 2004-06-01  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/shaders/NonPeriodic.cpp: Use the new boolean functions.

@@ -457,18 +457,23 @@ bool AlgebraShaders::init_all()
 
   postsh[i++] = keep<ShColor3f>("result"); 
 
-  ShAttrib1f SH_NAMEDECL(htscale, "Scaling Factor") = ShConstAttrib1f(50.0f);
+  ShAttrib1f SH_NAMEDECL(htscale, "Scaling Factor") = ShConstAttrib1f(10.0f);
   htscale.range(1.0f, 400.0f);
   ShProgram scaler = SH_BEGIN_PROGRAM() {
-    ShInOutTexCoord2f SH_DECL(texcoord) *= htscale; 
+    ShInputPosition4f SH_DECL(posh);
+    ShOutputTexCoord2f SH_DECL(texcoord) = posh(0,1) * invheight * htscale;
+    //ShInOutTexCoord2f SH_DECL(texcoord) *= htscale; 
   } SH_END;
   postsh[i++] = namedConnect(scaler, shHalftone<ShColor3f>(halftoneTex));
+  
+  ShAttrib1f SH_NAMEDECL(nscale, "Scaling Factor") = ShConstAttrib1f(50.0f);
+  nscale.range(1.0f, 400.0f);
 
   ShAttrib1f SH_NAMEDECL(noiseScale, "Noise Amount") = ShConstAttrib1f(0.2f);
   noiseScale.range(0.0f, 1.0f);
   scaler = SH_BEGIN_PROGRAM() {
     ShInputPosition4f SH_DECL(posh);
-    ShOutputTexCoord2f SH_DECL(texcoord) = posh(0,1) * invheight * htscale;
+    ShOutputTexCoord2f SH_DECL(texcoord) = posh(0,1) * invheight * nscale;
   } SH_END;
   // replace texcoord with scaled posh
   ShProgram noisifier = shNoisify<2, ShColor3f>(false) & lose<ShTexCoord2f>("texcoord"); 
