@@ -1,0 +1,26 @@
+To compile shrike you will need
+
+ - an installed version of libsh, available from
+   http://libsh.sf.net/. At least libsh 0.0.20040322 is required, a
+   newer version may be required if this paragraph is out of date.
+ - the shmedia package, available from the Sh website.
+ - OpenGL
+ - a recent glext.h, if you want the ARB backend to work. If you got
+   the Sh ARB backend to install you should be fine.
+ - wxwidgets, available from http://www.wxwidgets.org/
+
+To get the compilation process going, just run
+  ./configure --with-sh=PATH_TO_SH --with-shmedia=PATH_TO_SHMEDIA
+
+Where PATH_TO_SH and PATH_TO_SHMEDIA are the installation
+directories of Sh and shmedia. If you installed these into your system's
+default install directory (e.g. /usr or /usr/local) you won't need
+these options, although you will probably need the shmedia one.
+
+Once configure has completed successfully, run
+  make
+which will compile the program. You should then try running it with
+  src/shrike
+Optionally you can install shrike with "make install".
+
+See the README file for usage information.

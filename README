@@ -1,0 +1,17 @@
+shrike is a utility application that acts as a testbed
+for shaders written in Sh (http://libsh.sf.net/).
+
+See INSTALL for installation instructions and prerequisites.
+
+You can rotate the view by dragging the left mouse button. Dragging
+the middle mouse button will bring the object closer and further away
+from the camera. The right mouse button can be used to move along the
+screen axes.
+
+Holding shift and dragging the left mouse button will rotate the light,
+shift and middle button will move it closer or further away from the
+object.
+
+Everything else is available from the on-screen menus.
+
+If you have any questions, please contact libsh-devel@lists.sf.net.
