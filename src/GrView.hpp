@@ -2,7 +2,7 @@
 #define SHTUDIO_HPP
 
 #include <wx/glcanvas.h>
-#include <list>
+#include <vector>
 #include <sh/ShProgram.hpp>
 
 namespace OGLFT {
@@ -20,6 +20,7 @@ public:
   void motion(wxMouseEvent& event);
   void mousewheel(wxMouseEvent& event);
   void mdown(wxMouseEvent& event);
+  void mup(wxMouseEvent& event);
 
   void addProgram(const SH::ShProgram& program, int x, int y);
   
@@ -35,8 +36,12 @@ private:
   long m_last_x, m_last_y;
   
   OGLFT::Face* m_font;
+  
+  typedef std::vector<GrNode*> NodeList;
+  NodeList m_nodes;
 
-  std::list<GrNode*> m_nodes;
+  GrNode* m_selected;
+  double m_sel_dx, m_sel_dy;
 
   DECLARE_EVENT_TABLE()
 };

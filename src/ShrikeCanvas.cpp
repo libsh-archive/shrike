@@ -98,7 +98,7 @@ void ShrikeCanvas::motion(wxMouseEvent& event)
   if (event.RightIsDown()) {
     m_camera.move(dx/30.0, -dy/30.0, 0.0);
   }
-  
+
   setupView();
   render();
   m_last_x = event.GetX();
@@ -166,6 +166,7 @@ void ShrikeCanvas::renderObject()
 
 void ShrikeCanvas::setupView()
 {
+  SetCurrent();
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   m_camera.glProjection((float)m_width/m_height);

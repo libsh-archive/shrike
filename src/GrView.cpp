@@ -1,6 +1,7 @@
 #include "GrView.hpp"
 
 #include <vector>
+#include <iterator>
 
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -16,12 +17,30 @@
 
 using namespace SH;
 
+namespace {
+
+void unproject(int xi, int yi, double& x, double& y, double& z)
+{
+  GLdouble mv[16];
+  glGetDoublev(GL_MODELVIEW_MATRIX, mv);
+  GLdouble proj[16];
+  glGetDoublev(GL_PROJECTION_MATRIX, proj);
+  GLint view[4];
+  glGetIntegerv(GL_VIEWPORT, view);
+    
+  gluUnProject(xi, yi, 0, mv, proj, view, &x, &y, &z);
+}
+
+}
+
 BEGIN_EVENT_TABLE(GrView, wxGLCanvas)
   EVT_PAINT(GrView::paint)
   EVT_SIZE(GrView::reshape)
   EVT_MOTION(GrView::motion)
   EVT_LEFT_DOWN(GrView::mdown)
+  EVT_LEFT_UP(GrView::mup)
   EVT_RIGHT_DOWN(GrView::mdown)
+  EVT_RIGHT_UP(GrView::mup)
   EVT_MIDDLE_DOWN(GrView::mdown)
   EVT_MOUSEWHEEL(GrView::mousewheel)
 END_EVENT_TABLE()
@@ -68,7 +87,8 @@ GrView::GrView(wxWindow* parent)
     m_init(false),
     m_zoom(1.0),
     tx(0.0), ty(0.0),
-    m_font(0)
+    m_font(0),
+    m_selected(0)
 {
   FcInit();
 
@@ -119,7 +139,7 @@ void GrView::paint()
   
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  for (std::list<GrNode*>::iterator I = m_nodes.begin(); I != m_nodes.end(); ++I) {
+  for (NodeList::iterator I = m_nodes.begin(); I != m_nodes.end(); ++I) {
     (*I)->draw_box();
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
@@ -152,6 +172,13 @@ void GrView::motion(wxMouseEvent& event)
     changed = true;
   }
 
+  if (event.LeftIsDown() && m_selected) {
+    double x, y, z;
+    unproject(cur_x, m_height - cur_y, x, y, z);
+    m_selected->moveTo(x + m_sel_dx, y + m_sel_dy);
+    changed = true;
+  }
+  
   if (changed) {
     SetCurrent();
     setupView();
@@ -176,27 +203,80 @@ void GrView::mousewheel(wxMouseEvent& event)
 
 void GrView::addProgram(const ShProgram& program, int xi, int yi)
 {
-  GLdouble mv[16];
-  glGetDoublev(GL_MODELVIEW_MATRIX, mv);
-  GLdouble proj[16];
-  glGetDoublev(GL_PROJECTION_MATRIX, proj);
-  GLint view[4];
-  glGetIntegerv(GL_VIEWPORT, view);
-    
   double x, y, z;
-
-  gluUnProject(xi, m_height - yi, 0, mv, proj, view, &x, &y, &z);
-
+  unproject(xi, m_height - yi, x,y,z);
+  
   m_nodes.push_back(new GrNode(program, x, y, m_font));
+  paint();
 }
 
 void GrView::mdown(wxMouseEvent& event)
 {
   bool changed = false;
   if (event.LeftDown()) {
-    changed = true;
+    GLint view[4];
+    glGetIntegerv(GL_VIEWPORT, view);
 
-    addProgram(mul<ShAttrib4f>(), event.GetX(), event.GetY());
+    SetCurrent();
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluPickMatrix(event.GetX(), m_height - event.GetY(), 4.0, 4.0, view);
+    glOrtho(-m_width/2, m_width/2, -m_height/2, m_height/2, -1, 1);
+    
+    glMatrixMode(GL_MODELVIEW);
+
+    struct GlHit {
+      GLuint num_names;
+      GLuint min_depth;
+      GLuint max_depth;
+      GLuint names[0];
+    } __attribute__((packed));
+    
+    const int bufsize = 256;
+    GLuint buffer[bufsize];
+
+    glSelectBuffer(bufsize, buffer);
+    
+    std::reverse_iterator<NodeList::iterator> I(m_nodes.end());
+    std::reverse_iterator<NodeList::iterator> last(m_nodes.begin());
+    glRenderMode(GL_SELECT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glInitNames();
+    
+    for (; I != last; ++I) {
+      (*I)->draw_box();
+    }
+    int hits = glRenderMode(GL_RENDER);
+    std::cerr << "hits = " << hits << std::endl;
+
+    GLuint* p = buffer;
+    bool first = true;
+    GLuint min_depth = 0;
+    GLuint min_name = 0;
+    for (int i = 0; i < hits; i++) {
+      GlHit* hit = (GlHit*)p;
+      if (first || hit->min_depth < min_depth) {
+        min_depth = hit->min_depth;
+        min_name = hit->names[0];
+      }
+      (char*)p += sizeof(GlHit) + sizeof(GLuint) * hit->num_names;
+      first = false;
+    }
+    if (hits > 0) {
+      double x, y, z;
+      unproject(event.GetX(), m_height - event.GetY(), x, y, z);
+      m_selected = m_nodes[min_name];
+
+      m_sel_dx = m_selected->x() - x;
+      m_sel_dy = m_selected->y() - y;
+    }
+    
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+
   }
 
   if (event.RightDown()) {
@@ -244,6 +324,13 @@ void GrView::mdown(wxMouseEvent& event)
   
   if (changed) {
     paint();
+  }
+}
+
+void GrView::mup(wxMouseEvent& event)
+{
+  if (event.LeftUp()) {
+    m_selected = 0;
   }
 }
 

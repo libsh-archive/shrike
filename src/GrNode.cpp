@@ -15,12 +15,15 @@ const float conn_sep = conn_radius/2.0;
 const float io_sep = 10.0;
 }
 
+unsigned int GrNode::m_max_gl_name = 0;
+
 GrNode::GrNode(const SH::ShProgram& program,
                double x, double y,
                OGLFT::Face* face)
   : m_program(program),
     m_x(x), m_y(y),
-    m_face(face)
+    m_face(face),
+    m_gl_name(m_max_gl_name++)
 {
   // Compute width, height
 
@@ -67,6 +70,7 @@ GrNode::GrNode(const SH::ShProgram& program,
 
 void GrNode::draw_box()
 {
+  glPushName(m_gl_name);
   glPushAttrib(GL_CURRENT_BIT);
   glColor3f(0.0, 0.0, 0.0);
   // Shadow
@@ -122,6 +126,7 @@ void GrNode::draw_box()
   } glEnd();
   
   glPopAttrib();
+  glPopName();
 }
 
 void GrNode::draw_edges()
@@ -156,4 +161,8 @@ void GrNode::draw_labels()
   
 }
 
+void GrNode::moveTo(double x, double y)
+{
+  m_x = x; m_y = y;
+}
 
