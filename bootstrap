@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if test "x${AUTOMAKE}" = "x" ; then
+  AUTOMAKE=automake-1.7
+fi
+export AUTOMAKE
+if test "x${ACLOCAL}" = "x" ; then
+  ACLOCAL=aclocal-1.7
+fi
+export ACLOCAL
+
+cat config/*.m4 > acinclude.m4
+
+autoreconf -s -i
