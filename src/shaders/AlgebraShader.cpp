@@ -47,7 +47,7 @@ private:
   static const int LIGHT = 3;
   static const int SURFMAP = 2;
   static const int SURFACE = 7;
-  static const int POST = 2;
+  static const int POST = 3;
 
   static ShProgram lightsh[LIGHT];
   static const char* lightName[LIGHT];
@@ -99,6 +99,7 @@ const char* AlgebraShaders::surfName[] = {
 const char* AlgebraShaders::postName[] = {
   0,
   "Halftone PostOp",
+  "Noisify PostOp"
 };
 
 bool AlgebraWrapper::init() {
@@ -451,13 +452,21 @@ bool AlgebraShaders::init_all()
 
   ShAttrib1f SH_NAMEDECL(htscale, "Scaling Factor") = ShConstAttrib1f(50.0f);
   htscale.range(1.0f, 400.0f);
-  postsh[i++] = ShKernelPost::halftone<ShColor3f>(halftoneTex) << (mul<ShAttrib1f>() << htscale << invheight);
+  ShProgram scaler = SH_BEGIN_PROGRAM() {
+    ShInOutTexCoord2f SH_DECL(texcoord) *= htscale; 
+  } SH_END;
+  postsh[i++] = namedConnect(scaler, shHalftone<ShColor3f>(halftoneTex));
 
-  /*
   ShAttrib1f SH_NAMEDECL(noiseScale, "Noise Amount") = ShConstAttrib1f(0.2f);
   noiseScale.range(0.0f, 1.0f);
-  postsh[i++] = ShKernelPost::noisify<ShColor3f>() << (mul<ShAttrib1f>() << htscale << invheight)<< noiseScale; 
-  */
+  scaler = SH_BEGIN_PROGRAM() {
+    ShInputPosition4f SH_DECL(posh);
+    ShOutputTexCoord2f SH_DECL(texcoord) = posh(0,1) * invheight * htscale;
+  } SH_END;
+  // replace texcoord with scaled posh
+  ShProgram noisifier = shNoisify<2, ShColor3f>(false) & lose<ShTexCoord2f>("texcoord"); 
+  noisifier = noisifier << noiseScale;
+  postsh[i++] = namedConnect(scaler, noisifier); 
 
   return true;
 }
