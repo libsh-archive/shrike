@@ -20,6 +20,8 @@ BEGIN_EVENT_TABLE(ShrikeFrame, wxFrame)
   EVT_MENU(SHRIKE_MENU_SHADER_PROPS, ShrikeFrame::shaderProps)
   EVT_MENU(SHRIKE_MENU_SHADER_SHOW_VSH, ShrikeFrame::showVsh)
   EVT_MENU(SHRIKE_MENU_SHADER_SHOW_FSH, ShrikeFrame::showFsh)
+  EVT_MENU(SHRIKE_MENU_SHADER_SHOW_VSHIF, ShrikeFrame::showVshInterface)
+  EVT_MENU(SHRIKE_MENU_SHADER_SHOW_FSHIF, ShrikeFrame::showFshInterface)
   EVT_MENU(SHRIKE_MENU_SHADER_REINIT, ShrikeFrame::reinit)
   EVT_MENU(SHRIKE_MENU_VIEW_RESET, ShrikeFrame::resetView)
   EVT_MENU(SHRIKE_MENU_VIEW_SCREENSHOT, ShrikeFrame::screenshot)
@@ -60,6 +62,9 @@ ShrikeFrame::ShrikeFrame()
   shaderMenu->Append(SHRIKE_MENU_SHADER_PROPS, "&Properties");
   shaderMenu->AppendSeparator();
   shaderMenu->Append(SHRIKE_MENU_SHADER_REINIT, "Re&initialize");
+  shaderMenu->AppendSeparator();
+  shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_VSHIF, "Show &vertex interface");
+  shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_FSHIF, "Show &fragment interface");
   shaderMenu->AppendSeparator();
   shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_VSH, "Show &vertex assembly");
   shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_FSH, "Show &fragment assembly");
@@ -191,6 +196,18 @@ void ShrikeFrame::showFsh(wxCommandEvent& event)
   showProgram(m_shader->fragment(), "Fragment");
 }
 
+void ShrikeFrame::showVshInterface(wxCommandEvent& event)
+{
+  if (!m_shader) return;
+  showInterface(m_shader->vertex(), "Vertex");
+}
+
+void ShrikeFrame::showFshInterface(wxCommandEvent& event)
+{
+  if (!m_shader) return;
+  showInterface(m_shader->fragment(), "Fragment");
+}
+
 void ShrikeFrame::reinit(wxCommandEvent& event)
 {
   if (!m_shader) return;
@@ -219,7 +236,7 @@ void ShrikeFrame::setBackground(wxCommandEvent& event)
 }
 
 void ShrikeFrame::showProgram(ShProgram program,
-                              std::string name)
+                              const std::string& name)
 {
   if (!program.node()) return;
   if (!program.node()->code()) return;
@@ -234,6 +251,26 @@ void ShrikeFrame::showProgram(ShProgram program,
   
   std::ostream stream(control);
   program.node()->code()->print(stream);
+
+  frame->Show();
+}
+
+void ShrikeFrame::showInterface(ShProgram program,
+                                const std::string& name)
+{
+  if (!program.node()) return;
+  if (!program.node()->code()) return;
+
+  std::string title = name + " Shader Interface";
+  wxFrame* frame = new wxFrame(0, -1, title.c_str());
+
+  wxTextCtrl* control = new wxTextCtrl(frame, -1, "",
+                                       wxDefaultPosition,
+                                       wxDefaultSize,
+                                       wxTE_MULTILINE | wxTE_READONLY);
+  
+  std::ostream stream(control);
+  stream << program.describe_interface();
 
   frame->Show();
 }

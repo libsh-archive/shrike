@@ -16,6 +16,8 @@ enum {
   
   SHRIKE_MENU_SHADER_SHOW_VSH,
   SHRIKE_MENU_SHADER_SHOW_FSH,
+  SHRIKE_MENU_SHADER_SHOW_VSHIF,
+  SHRIKE_MENU_SHADER_SHOW_FSHIF,
 
   SHRIKE_MENU_SHADER_REINIT,
 
@@ -46,6 +48,8 @@ public:
   void shaderProps(wxCommandEvent& event);
   void showVsh(wxCommandEvent& event);
   void showFsh(wxCommandEvent& event);
+  void showVshInterface(wxCommandEvent& event);
+  void showFshInterface(wxCommandEvent& event);
   void reinit(wxCommandEvent& event);
 
   void resetView(wxCommandEvent& event);
@@ -62,7 +66,9 @@ public:
   
 private:
   void showProgram(SH::ShProgram program,
-                   std::string name);
+                   const std::string& name);
+  void showInterface(SH::ShProgram program,
+                     const std::string& name);
 
   wxTreeCtrl* initShaderList(wxWindow* parent);
 
