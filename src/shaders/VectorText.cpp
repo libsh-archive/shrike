@@ -120,7 +120,7 @@ bool VectorText::init()
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
   ShFont font;
-  font.loadFont("/home/zqin/dev/freetype/d.txt");
+  font.loadFont("/home/zqin/vectortexture/freetype/d.txt");
 
   int width = font.width();
   int height = font.height();
@@ -172,7 +172,7 @@ bool VectorText::init()
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
   ShFont font;
-  font.loadFont("/home/zqin/dev/freetype/p.txt");
+  font.loadFont("/home/zqin/vectortexture/freetype/p.txt");
 
   int width = font.width();
   int height = font.height();
@@ -197,18 +197,16 @@ bool VectorText::init()
   std::cerr << " the image width is " << font.width() << std::endl;
   std::cerr << " the image height is " << font.height() << std::endl;
 
-  //ShAttrib2f temp = ShAttrib2f(0.03125, 0.03125);
-  ShAttrib2f temp = ShAttrib2f(0.0, 0.0);
   ShAttrib2f size[9];
-  size[0] = ShAttrib2f(-1.0/width, -1.0/height) - temp;
-  size[1] = ShAttrib2f(0,          -1.0/height) - temp;
-  size[2] = ShAttrib2f(1.0/width,  -1.0/height) - temp;
-  size[3] = ShAttrib2f(-1.0/width,  0) - temp;
-  size[4] = ShAttrib2f(0,           0) - temp;
-  size[5] = ShAttrib2f(1.0/width,   0) - temp;
-  size[6] = ShAttrib2f(-1.0/width,  1.0/height) - temp;
-  size[7] = ShAttrib2f(0,           1.0/height) - temp;
-  size[8] = ShAttrib2f(1.0/width,   1.0/height) - temp;
+  size[0] = ShAttrib2f(-1.0/width, -1.0/height);
+  size[1] = ShAttrib2f(0,          -1.0/height);
+  size[2] = ShAttrib2f(1.0/width,  -1.0/height);
+  size[3] = ShAttrib2f(-1.0/width,  0);
+  size[4] = ShAttrib2f(0,           0);
+  size[5] = ShAttrib2f(1.0/width,   0);
+  size[6] = ShAttrib2f(-1.0/width,  1.0/height);
+  size[7] = ShAttrib2f(0,           1.0/height);
+  size[8] = ShAttrib2f(1.0/width,   1.0/height);
 #endif
 
 #ifdef PACK4
