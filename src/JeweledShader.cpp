@@ -129,7 +129,7 @@ bool JeweledShader::init()
     }
   }
   
-  ShWrapRepeat2D< ShTexture2D<ShColor3f> > mat[NMATS];
+  ShWrapRepeat< ShTexture2D<ShColor3f> > mat[NMATS];
 
   // Material map, channel 0
   image.loadPng(SHMEDIA_DIR "/mats/goldknot_ch1.png");
