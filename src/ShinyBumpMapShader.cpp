@@ -24,7 +24,7 @@ public:
 };
 
 ShinyBumpMapShader::ShinyBumpMapShader()
-  : Shader("Shiny Bump Map Shader")
+  : Shader("Bump and Frame Mapping: Shiny Bump Mapping")
 {
 }
 

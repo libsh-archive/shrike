@@ -23,7 +23,7 @@ public:
 };
 
 NonPeriodic::NonPeriodic()
-  : Shader("Nonperiodic tiling")
+  : Shader("Tiling: 1D Nonperiodic")
 {
 }
 

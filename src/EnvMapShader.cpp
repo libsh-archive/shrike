@@ -24,7 +24,7 @@ public:
 };
 
 EnvMapShader::EnvMapShader()
-  : Shader("Environment Map Mirror Shader")
+  : Shader("Reflection: Mirror")
 {
 }
 

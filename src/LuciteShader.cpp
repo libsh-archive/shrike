@@ -24,7 +24,7 @@ public:
 };
 
 LuciteShader::LuciteShader()
-  : Shader("Lucite")
+  : Shader("Refraction: Lucite")
 {
 }
 

@@ -23,7 +23,7 @@ public:
 };
 
 SimplePhong::SimplePhong()
-  : Shader("Phong: Simple")
+  : Shader("Basic Lighting Models: Phong: Simple")
 {
 }
 

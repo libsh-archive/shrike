@@ -48,7 +48,7 @@ public:
 };
 
 FrameMapping::FrameMapping()
-  : Shader("FrameMapping lighting model")
+  : Shader("Bump and Frame Mapping: Anisotropic Frame Mapping")
 {
 }
 

@@ -21,7 +21,7 @@ public:
 };
 
 PhongShader::PhongShader()
-  : Shader("Phong: Algebra")
+  : Shader("Basic Lighting Models: Phong: Algebra")
 {
 }
 

@@ -26,7 +26,7 @@ public:
 };
 
 SatinShader::SatinShader()
-  : Shader("Satin: Parabolic Homomorphic Factorization")
+  : Shader("Homomorphic Factorization: Satin")
 {
 }
 

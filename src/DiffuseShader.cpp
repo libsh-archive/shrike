@@ -21,7 +21,7 @@ public:
 };
 
 DiffuseShader::DiffuseShader()
-  : Shader("Diffuse: Algebra")
+  : Shader("Basic Lighting Models: Diffuse: Algebra")
 {
 }
 

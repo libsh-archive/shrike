@@ -23,7 +23,7 @@ public:
 };
 
 Pants::Pants()
-  : Shader("Dad's Pants")
+  : Shader("Noise: Dad's Pants")
 {
 }
 

@@ -47,7 +47,7 @@ private:
 };
 
 EdgeGooch::EdgeGooch()
-  : Shader("Sillhouetted Gooch") { 
+  : Shader("Non Photorealistic: Sillhouetted Gooch") { 
     m_canvasobj = 0;
 }
 

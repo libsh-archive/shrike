@@ -26,7 +26,7 @@ public:
 };
 
 JeweledShader::JeweledShader()
-  : Shader("Jeweled")
+  : Shader("Homomorphic Factorization: Material Mapping")
 {
 }
 

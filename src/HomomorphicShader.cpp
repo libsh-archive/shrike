@@ -25,7 +25,7 @@ public:
 };
 
 HomomorphicShader::HomomorphicShader()
-  : Shader("Homomorphic Factorization: Parabolic")
+  : Shader("Homomorphic Factorization: Garnet Red")
 {
 }
 

@@ -22,7 +22,7 @@ public:
 };
 
 TexShader::TexShader()
-  : Shader("Texcoords")
+  : Shader("Textures: Texcoords")
 {
 }
 

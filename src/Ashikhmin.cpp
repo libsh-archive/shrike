@@ -22,7 +22,7 @@ public:
 };
 
 Ashikhmin::Ashikhmin()
-  : Shader("Ashikhmin lighting model")
+  : Shader("Basic Lighting Models: Ashikhmin")
 {
 }
 

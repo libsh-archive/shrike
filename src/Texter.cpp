@@ -28,7 +28,7 @@ private:
 };
 
 Texter::Texter(const std::string& text)
-  : Shader("\"" + text + "\""),
+  : Shader("Vector Graphics: CSG Text: \"" + text + "\""),
     m_text(text)
 {
   setStringParam("text", m_text);

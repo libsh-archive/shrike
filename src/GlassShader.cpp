@@ -24,7 +24,7 @@ public:
 };
 
 GlassShader::GlassShader()
-  : Shader("Glass")
+  : Shader("Refraction: Glass")
 {
 }
 

@@ -22,7 +22,7 @@ public:
 };
 
 WobbleShader::WobbleShader()
-  : Shader("Mr Wobble")
+  : Shader("Animation: Wobble")
 {
 }
 

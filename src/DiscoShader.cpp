@@ -22,7 +22,7 @@ public:
 };
 
 DiscoShader::DiscoShader()
-  : Shader("Cellnoise Disco Shader")
+  : Shader("Animation: Cellnoise Disco Shader")
 {
 }
 

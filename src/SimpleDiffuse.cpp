@@ -23,7 +23,7 @@ public:
 };
 
 SimpleDiffuse::SimpleDiffuse()
-  : Shader("Diffuse: Simple")
+  : Shader("Basic Lighting Models: Diffuse: Simple")
 {
 }
 

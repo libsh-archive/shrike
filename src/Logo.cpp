@@ -42,7 +42,7 @@ private:
 };
 
 Logo::Logo()
-  : Shader("Sh Logo")
+  : Shader("Vector Graphics: Sh Logo")
 {
   saw = ShPoint3f(0, 1.35, 0);
   sbw = ShPoint3f(1, 1.35, 0);
