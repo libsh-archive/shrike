@@ -13,6 +13,7 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 Globals.hpp Globals.cpp \
 		 Camera.hpp Camera.cpp \
 		 ShTrackball.hpp ShTrackball.cpp \
+		 Timer.hpp Timer.cpp \
 		 util.hpp util.cpp utilimpl.hpp
 
 shrike_SOURCES += shaders/DiffuseShader.cpp
@@ -49,8 +50,8 @@ shrike_SOURCES += shaders/BrickWall.cpp
 shrike_SOURCES += shaders/BrickHorizon.cpp
 shrike_SOURCES += shaders/HorizonMapping.cpp
 shrike_SOURCES += shaders/HairShader.cpp
+shrike_SOURCES += shaders/LCD.hpp shaders/LCD.cpp
 shrike_SOURCES += shaders/LafortuneShader.cpp
-shrike_SOURCES += shaders/LCD.cpp
 shrike_SOURCES += shaders/HairPhysics.cpp
 
 # this is a hack and should be removed eventually

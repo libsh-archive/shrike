@@ -25,6 +25,7 @@ BEGIN_EVENT_TABLE(ShrikeFrame, wxFrame)
   EVT_MENU(SHRIKE_MENU_VIEW_SCREENSHOT, ShrikeFrame::screenshot)
   EVT_MENU(SHRIKE_MENU_VIEW_BACKGROUND, ShrikeFrame::setBackground)
   EVT_MENU(SHRIKE_MENU_VIEW_FULLSCREEN, ShrikeFrame::fullscreen)
+  EVT_MENU(SHRIKE_MENU_VIEW_FPS, ShrikeFrame::fps)
   EVT_KEY_DOWN(ShrikeFrame::keyDown)
   //  EVT_LISTBOX(SHRIKE_LISTBOX_SHADERS, ShrikeFrame::onShaderSelect)
   EVT_TREE_SEL_CHANGED(SHRIKE_TREECTRL_SHADERS, ShrikeFrame::onShaderSelect)
@@ -41,7 +42,7 @@ struct ShaderTreeData : public wxTreeItemData {
   
 ShrikeFrame::ShrikeFrame()
   : wxFrame(0, -1, "Shrike", wxDefaultPosition, wxSize(600, 400)),
-    m_shader(0), m_fullscreen(false)
+    m_shader(0), m_fullscreen(false), m_fps(false)
 {
   m_instance = this;
   CreateStatusBar();
@@ -67,6 +68,7 @@ ShrikeFrame::ShrikeFrame()
   viewMenu->Append(SHRIKE_MENU_VIEW_RESET, "&Reset");
   viewMenu->Append(SHRIKE_MENU_VIEW_BACKGROUND, "Set &background colour...");
   viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FULLSCREEN, "Fullscreen");
+  viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FPS, "Show framerate");
   viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_SCREENSHOT, "Screenshot");
 
   wxMenuBar* menuBar = new wxMenuBar();
@@ -89,20 +91,25 @@ ShrikeFrame::ShrikeFrame()
     model = new ShObjMesh(infile);
   }
 
+#if 0 // switch this on for fixed size separate preview window
+  // TODO implement this properly in the GUI
+  int width = 512 + 2; 
+  int height = 512 + 2; 
+  m_preview = new wxFrame(0, -1, "Shrike Preview", wxDefaultPosition, wxSize(width, height));
+  m_canvas = new ShrikeCanvas(m_preview, model);
+  m_panel = new UniformPanel(m_hsplitter);
+  m_hsplitter->SplitVertically(m_shaderList, m_panel, 150);
+  m_preview->Show();
+
+#else
   m_right_window = new wxSplitterWindow(m_hsplitter, -1);
   m_canvas = new ShrikeCanvas(m_right_window, model);
   m_panel = new UniformPanel(m_right_window);
-
-  //m_preview = new wxFrame(0, -1, "Shrike Preview", wxDefaultPosition, wxSize(1024, 1024));
-  //m_canvas = new ShrikeCanvas(m_preview, model);
-  //m_panel = new UniformPanel(m_hsplitter);
-  //m_hsplitter->SplitVertically(m_shaderList, m_panel, 150);
-
   m_hsplitter->SplitVertically(m_shaderList, m_right_window, 150);
   m_right_window->SplitHorizontally(m_canvas, m_panel, -100);
   m_right_window->SetMinimumPaneSize(40);
+#endif
 
-  //m_preview->Show();
 }
 
 ShrikeFrame::~ShrikeFrame()
@@ -249,6 +256,17 @@ void ShrikeFrame::setFullscreen(bool fs)
     }
   }
   m_fullscreen = fs;
+}
+
+void ShrikeFrame::fps(wxCommandEvent& event)
+{
+  setFps(event.IsChecked());
+}
+
+void ShrikeFrame::setFps(bool fps)
+{
+  m_fps = fps;
+  ShrikeCanvas::instance()->setShowFps(m_fps);
 }
 
 void ShrikeFrame::keyDown(wxKeyEvent& event)

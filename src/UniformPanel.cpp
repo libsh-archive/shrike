@@ -20,7 +20,8 @@ UniformPanel::UniformPanel(wxWindow* parent)
 class AttribSlider : public wxSlider {
 public:
   AttribSlider(wxWindow* parent, ShVariableNodePtr var, int i)
-    : wxSlider(parent, -1, 0, (int)(var->lowBound()*100.0f), (int)(var->highBound()*100.0f)),
+    : wxSlider(parent, -1, 0, (int)(var->lowBound()*100.0f), (int)(var->highBound()*100.0f),
+               wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL | wxSL_LABELS), 
       m_var(var), m_index(i)
   {
     setFloatValue(var->getValue(i));

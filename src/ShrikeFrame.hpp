@@ -3,6 +3,7 @@
 
 #include <wx/wx.h>
 #include <wx/treectrl.h>
+#include <wx/minifram.h>
 
 #include "UniformPanel.hpp"
 #include "Shader.hpp"
@@ -22,6 +23,7 @@ enum {
   SHRIKE_MENU_VIEW_SCREENSHOT,
   SHRIKE_MENU_VIEW_BACKGROUND,
   SHRIKE_MENU_VIEW_FULLSCREEN,
+  SHRIKE_MENU_VIEW_FPS,
 
   SHRIKE_TREECTRL_SHADERS
 };
@@ -51,6 +53,8 @@ public:
   void fullscreen(wxCommandEvent& event);
   void screenshot(wxCommandEvent& event);
   void setFullscreen(bool);
+  void fps(wxCommandEvent& event);
+  void setFps(bool);
 
   void keyDown(wxKeyEvent& event);
 
@@ -64,7 +68,7 @@ private:
 
   ShrikeCanvas* m_canvas;
   UniformPanel* m_panel;
-//  wxFrame* m_preview;
+  wxFrame* m_preview;
   wxSplitterWindow* m_hsplitter;
   wxSplitterWindow* m_right_window;
 
@@ -72,6 +76,7 @@ private:
   Shader* m_shader;
 
   bool m_fullscreen;
+  bool m_fps;
 
   static ShrikeFrame* m_instance;
   DECLARE_EVENT_TABLE()

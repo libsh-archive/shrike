@@ -3,23 +3,10 @@
 #include <cstdarg>
 #include "Shader.hpp"
 #include "Globals.hpp"
+#include "LCD.hpp"
 
 using namespace SH;
 
-class LCD : public Shader {
-public:
-  LCD();
-  ~LCD();
-
-  bool init();
-
-  ShProgram vertex() { return vsh;}
-  ShProgram fragment() { return fsh;}
-
-  ShProgram vsh, fsh;
-  
-  static LCD instance;
-};
 
 LCD::LCD()
   : Shader("LCD")
@@ -48,7 +35,7 @@ ShAttrib<N, SH_CONST> construct(double a, ...)
 }
 
 ShAttrib1f lcd(const ShTexCoord2f& tc, ShAttrib1f number,
-               int digits = 3, bool showgrid = false, bool handleneg = true)
+               int intDigits, int fracDigits, bool showgrid, bool handleneg)
 {
   float w = 0.2;
   float h = 0.5;
@@ -78,7 +65,7 @@ ShAttrib1f lcd(const ShTexCoord2f& tc, ShAttrib1f number,
 
   ShTexCoord2f loc = tc;
   ShAttrib1f f = floor(loc(0) / (w + t));
-  ShAttrib1f index = f - digits + 1;
+  ShAttrib1f index = f - intDigits + 1; 
   
   number = number * pow(10.0, index);
 
@@ -103,6 +90,8 @@ ShAttrib1f lcd(const ShTexCoord2f& tc, ShAttrib1f number,
   for (int d = 0; d < 10; d++) {
     result += (abs(digit - (float)d) < eps) * dot(segments[d], in[0]);
   }
+
+  result *= (index < fracDigits + 1 + eps); 
   
   if (handleneg) {
     result = cond(index < -0.9 && abs(number/10.0) < 0.1,

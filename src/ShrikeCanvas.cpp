@@ -9,6 +9,8 @@
 #include "Globals.hpp"
 #include "ShTrackball.hpp"
 #include <sh/sh.hpp>
+#include "Timer.hpp"
+#include "shaders/LCD.hpp"
 
 using namespace SH;
 using namespace ShUtil;
@@ -30,6 +32,7 @@ ShrikeCanvas::ShrikeCanvas(wxWindow* parent, ShObjMesh* model)
     m_model_list(0),
     m_shader(0),
     m_showLight(true),
+    m_showFps(false),
     m_bg_r(0.2), m_bg_g(0.2), m_bg_b(0.2)
 {
   m_instance = this;
@@ -119,6 +122,11 @@ void ShrikeCanvas::motion(wxMouseEvent& event)
 
 void ShrikeCanvas::render()
 {
+  ShTimer start;
+  if(m_showFps) {
+    start = ShTimer::now();
+  }
+
   SetCurrent();
   init();
   
@@ -145,8 +153,32 @@ void ShrikeCanvas::render()
     glEnable(GL_VERTEX_PROGRAM_ARB);
   }
   
-  glFlush();
+  //glFlush();
+  glFinish();
   
+  if (m_showFps && m_shader) {
+    ShTimer end = ShTimer::now();
+    double elapsed = (end - start).value() / 1000.0; 
+
+    m_fps = 1.0 / elapsed;
+    glDisable(GL_DEPTH_TEST);
+    shBind(m_fpsVsh);
+    shBind(m_fpsFsh);
+    double width = 0.3;
+    glBegin(GL_QUADS); {
+      glTexCoord2f(0.0, 0.0);
+      glVertex2f(-1.0, -1.0);
+      glTexCoord2f(0.0, 1.0);
+      glVertex2f(-1.0, -1.0 + width);
+      glTexCoord2f(1.0, 1.0);
+      glVertex2f(-1.0 + width, -1.0 + width);
+      glTexCoord2f(1.0, 0.0);
+      glVertex2f(-1.0 + width, -1.0);
+    } glEnd();
+    glEnable(GL_DEPTH_TEST);
+
+    m_shader->bind(); // rebind shader
+  }
   SwapBuffers();
 }
 
@@ -258,6 +290,20 @@ void ShrikeCanvas::init()
   setupView();
   
   shSetBackend("arb");
+
+  m_fpsVsh = SH_BEGIN_PROGRAM("gpu:vertex"); {
+    ShInOutPosition4f SH_DECL(pos);
+    ShInOutTexCoord2f SH_DECL(u);
+  } SH_END;
+
+  m_fpsFsh = SH_BEGIN_PROGRAM("gpu:fragment"); {
+    ShInputPosition4f SH_DECL(pos);
+    ShInputTexCoord2f SH_DECL(u);
+    ShOutputColor3f SH_DECL(result);
+    ShAttrib1f indigit = lcd(u, m_fps, 4, 0, false, false);
+    kill(1.0f - indigit);
+    result = indigit(0,0,0);
+  } SH_END;
   
   m_init = true;
 }
@@ -290,6 +336,13 @@ void ShrikeCanvas::setBackground(unsigned char r, unsigned char g, unsigned char
 
   glClearColor(m_bg_r, m_bg_g, m_bg_b, 1.0);
   
+  SetCurrent();
+  render();
+}
+
+void ShrikeCanvas::setShowFps(bool fps) {
+  m_showFps = fps;
+
   SetCurrent();
   render();
 }

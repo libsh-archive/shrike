@@ -29,6 +29,8 @@ public:
   
   void setShader(Shader* shader);
 
+  void setShowFps(bool);
+
   void keyDown(wxKeyEvent& event);
   
   static ShrikeCanvas* instance();
@@ -50,6 +52,11 @@ private:
   Shader* m_shader;
 
   bool m_showLight;
+
+  SH::ShAttrib1f m_fps;
+  SH::ShProgram m_fpsVsh;
+  SH::ShProgram m_fpsFsh;
+  bool m_showFps;
 
   float m_bg_r;
   float m_bg_g;

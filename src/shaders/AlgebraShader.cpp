@@ -174,7 +174,8 @@ ShProgram worleySurface() {
     ShAttrib1f SH_NAMEDECL(freq, "Worley Frequency") = ShConstAttrib1f(16.0f);
     freq.range(0.1f, 64.0f);
 
-    ShProgram worleysh = shWorley<4, 2, float>(false) << coeff; // pass in coefficient
+    ShProgram worleysh = shWorley<4, 2, float>(false); // pass in coefficient
+    worleysh = (dot<ShAttrib4f>() << coeff) << worleysh; 
 
     ShProgram scaler = SH_BEGIN_PROGRAM() {
       ShInOutTexCoord2f SH_DECL(texcoord) = freq * texcoord;
