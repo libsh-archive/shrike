@@ -61,6 +61,7 @@ private:
   float m_bg_r;
   float m_bg_g;
   float m_bg_b;
+  SH::ShColor3f m_bg;
   
   static ShrikeCanvas* m_instance;
   

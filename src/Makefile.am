@@ -51,6 +51,7 @@ shrike_SOURCES += shaders/BrickHorizon.cpp
 shrike_SOURCES += shaders/HorizonMapping.cpp
 shrike_SOURCES += shaders/HairShader.cpp
 shrike_SOURCES += shaders/LCD.hpp shaders/LCD.cpp
+shrike_SOURCES += shaders/LCDSmall.hpp shaders/LCDSmall.cpp
 shrike_SOURCES += shaders/LafortuneShader.cpp
 shrike_SOURCES += shaders/HairPhysics.cpp
 

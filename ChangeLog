@@ -1,3 +1,7 @@
+2004-06-28  Bryan Chan <b8chan@uwaterloo.ca>
+  * src/shaders/LCDSmall.?pp, src/ShrikeCanvas.?pp:
+  Crammed the FPS counter under ATI limits. (issue121)
+
 2004-06-19  Bryan Chan <b8chan@uwaterloo.ca>
 	* src/shaders/WorleyShader.cpp:
 	Minor improvements to the worley shaders for the video and

@@ -10,7 +10,7 @@
 #include "ShTrackball.hpp"
 #include <sh/sh.hpp>
 #include "Timer.hpp"
-#include "shaders/LCD.hpp"
+#include "shaders/LCDSmall.hpp"
 
 using namespace SH;
 using namespace ShUtil;
@@ -33,7 +33,8 @@ ShrikeCanvas::ShrikeCanvas(wxWindow* parent, ShObjMesh* model)
     m_shader(0),
     m_showLight(true),
     m_showFps(false),
-    m_bg_r(0.2), m_bg_g(0.2), m_bg_b(0.2)
+    m_bg_r(0.2), m_bg_g(0.2), m_bg_b(0.2),
+    m_bg(0.2, 0.2, 0.2)
 {
   m_instance = this;
   Globals::mv.internal(true);
@@ -164,14 +165,15 @@ void ShrikeCanvas::render()
     glDisable(GL_DEPTH_TEST);
     shBind(m_fpsVsh);
     shBind(m_fpsFsh);
-    double width = 0.3;
+    double width = 160.0/m_width;
+    double height = 80.0/m_height; 
     glBegin(GL_QUADS); {
       glTexCoord2f(0.0, 0.0);
       glVertex2f(-1.0, -1.0);
       glTexCoord2f(0.0, 1.0);
-      glVertex2f(-1.0, -1.0 + width);
+      glVertex2f(-1.0, -1.0 + height);
       glTexCoord2f(1.0, 1.0);
-      glVertex2f(-1.0 + width, -1.0 + width);
+      glVertex2f(-1.0 + width, -1.0 + height);
       glTexCoord2f(1.0, 0.0);
       glVertex2f(-1.0 + width, -1.0);
     } glEnd();
@@ -296,13 +298,14 @@ void ShrikeCanvas::init()
     ShInOutTexCoord2f SH_DECL(u);
   } SH_END;
 
+  ShConstColor3f yellow(1, 1, 0);
   m_fpsFsh = SH_BEGIN_PROGRAM("gpu:fragment"); {
     ShInputPosition4f SH_DECL(pos);
     ShInputTexCoord2f SH_DECL(u);
     ShOutputColor3f SH_DECL(result);
-    ShAttrib1f indigit = lcd(u, m_fps, 4, 0, false, false);
-    kill(1.0f - indigit);
-    result = indigit(0,0,0);
+    ShAttrib1f indigit = lcdSmall(u, m_fps, 4, 0, false, false, 0.23, 1.0, 0.026);
+    //kill(1.0f - indigit); // TODO should be using this, but it won't fit on ATI
+    result = lerp(indigit, yellow, m_bg); 
   } SH_END;
   
   m_init = true;
@@ -333,6 +336,9 @@ void ShrikeCanvas::setBackground(unsigned char r, unsigned char g, unsigned char
   m_bg_r = (float)r/255.0;
   m_bg_g = (float)g/255.0;
   m_bg_b = (float)b/255.0;
+  m_bg(0) = m_bg_r; 
+  m_bg(1) = m_bg_g; 
+  m_bg(2) = m_bg_b; 
 
   glClearColor(m_bg_r, m_bg_g, m_bg_b, 1.0);
   
