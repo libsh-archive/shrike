@@ -4,6 +4,7 @@
 #undef GL_GLEXT_LEGACY
 #include <wx/glcanvas.h>
 #include "ShrikeCanvas.hpp"
+#include "ShrikeFrame.hpp"
 #include "Globals.hpp"
 #include "ShTrackball.hpp"
 #include <sh/sh.hpp>
@@ -15,6 +16,7 @@ BEGIN_EVENT_TABLE(ShrikeCanvas, wxGLCanvas)
   EVT_PAINT(ShrikeCanvas::paint)
   EVT_SIZE(ShrikeCanvas::reshape)
   EVT_MOTION(ShrikeCanvas::motion)
+  EVT_KEY_DOWN(ShrikeCanvas::keyDown)
 END_EVENT_TABLE()
 
 ShrikeCanvas* ShrikeCanvas::m_instance = 0;
@@ -230,4 +232,9 @@ void ShrikeCanvas::setBackground(unsigned char r, unsigned char g, unsigned char
   
   SetCurrent();
   render();
+}
+
+void ShrikeCanvas::keyDown(wxKeyEvent& evt)
+{
+  ShrikeFrame::instance()->keyDown(evt);
 }

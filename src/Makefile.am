@@ -8,26 +8,27 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 ShrikePropsDialog.hpp ShrikePropsDialog.cpp \
 		 Globals.hpp Globals.cpp \
 		 Camera.hpp Camera.cpp \
-		 ShTrackball.hpp ShTrackball.cpp \
-		 DiffuseShader.cpp \
-		 DiscoShader.cpp \
-		 PhongShader.cpp \
-		 SimplePhong.cpp \
-		 SimpleDiffuse.cpp \
-		 WorleyShader.cpp \
-		 TexShader.cpp \
-	         CelShader.cpp \
-		 Ashikhmin.cpp \
-		 Texter.cpp \
-		 Text.cpp Text.hpp \
-		 WobbleShader.cpp \
-		 FrameMapping.cpp \
-		 Logo.cpp \
-		 NonPeriodic.cpp \
-		 NoiseShader.cpp \
-		 EdgeGooch.cpp \
-		 Textures.cpp \
-		 Pants.cpp
+		 ShTrackball.hpp ShTrackball.cpp
+
+shrike_SOURCES += DiffuseShader.cpp
+shrike_SOURCES += DiscoShader.cpp
+shrike_SOURCES += PhongShader.cpp
+shrike_SOURCES += SimplePhong.cpp
+shrike_SOURCES += SimpleDiffuse.cpp
+shrike_SOURCES += WorleyShader.cpp
+shrike_SOURCES += TexShader.cpp
+shrike_SOURCES += CelShader.cpp
+shrike_SOURCES += Ashikhmin.cpp
+shrike_SOURCES += Texter.cpp
+shrike_SOURCES += Text.cpp Text.hpp
+shrike_SOURCES += WobbleShader.cpp
+shrike_SOURCES += FrameMapping.cpp
+shrike_SOURCES += Logo.cpp
+shrike_SOURCES += NonPeriodic.cpp
+shrike_SOURCES += NoiseShader.cpp
+shrike_SOURCES += EdgeGooch.cpp
+shrike_SOURCES += Textures.cpp
+shrike_SOURCES += Pants.cpp
 
 AM_CXXFLAGS = `${WX_CONFIG} --cxxflags` -Wall
 AM_CPPFLAGS = `${WX_CONFIG} --cppflags`

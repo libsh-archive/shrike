@@ -26,6 +26,8 @@ public:
   void setBackground(unsigned char r, unsigned char g, unsigned char b);
   
   void setShader(Shader* shader);
+
+  void keyDown(wxKeyEvent& event);
   
   static ShrikeCanvas* instance();
   

@@ -1,9 +1,10 @@
 #include "UniformPanel.hpp"
-#include <sh/sh.hpp>
+#include <sh/ShProgram.hpp>
 #include <iostream>
 #include <cmath>
 #include <utility>
 #include <algorithm>
+#include <wx/colordlg.h>
 #include "ShrikeCanvas.hpp"
 
 using namespace SH;
@@ -244,6 +245,42 @@ BEGIN_EVENT_TABLE(TextureButton, wxButton)
   EVT_BUTTON(-1, TextureButton::clicked)
 END_EVENT_TABLE()
 
+class ColorButton : public wxButton {
+public:
+  ColorButton(wxWindow* parent,
+              const ShVariableNodePtr& node)
+    : wxButton(parent, -1, "Set colour"),
+      m_node(node)
+  {
+  }
+
+  void clicked(wxCommandEvent& event)
+  {
+    wxColourDialog dialog(this);
+
+    if (dialog.ShowModal() == wxID_OK) {
+      wxColourData& cd = dialog.GetColourData();
+      wxColour& c = cd.GetColour();
+
+      m_node->setValue(0, (float)c.Red()/255.0);
+      m_node->setValue(1, (float)c.Green()/255.0);
+      m_node->setValue(2, (float)c.Blue()/255.0);
+      
+      ShrikeCanvas::instance()->render();
+    }
+  }
+  
+private:
+
+  ShVariableNodePtr m_node;
+  
+  DECLARE_EVENT_TABLE()
+};
+
+BEGIN_EVENT_TABLE(ColorButton, wxButton)
+  EVT_BUTTON(-1, ColorButton::clicked)
+END_EVENT_TABLE()
+
 void UniformPanel::setShader(Shader* shader)
 {
   DestroyChildren();
@@ -271,16 +308,24 @@ void UniformPanel::setShader(Shader* shader)
         lps->Add(label, 0, wxALIGN_CENTER);
         lp->SetSizerAndFit(lps);
         sizer->Add(lp, 0, wxEXPAND);
-        wxSizer* vsizer = new wxBoxSizer(wxVERTICAL);
-        AttribSlider* last = 0;
-        for (int i = 0; i < var->size(); i++) {
-          AttribSlider* slider = new AttribSlider(this, var, i);
-          if (i == 0) cb->slider(slider);
-          vsizer->Add(slider, 0, wxEXPAND);
-          if (last) last->next(slider);
-          last = slider;
+
+        if (var->specialType() == SH_COLOR
+            && var->lowBound() == 0.0
+            && var->highBound() == 1.0) {
+          ColorButton* button = new ColorButton(this, var);
+          sizer->Add(button);
+        } else {
+          wxSizer* vsizer = new wxBoxSizer(wxVERTICAL);
+          AttribSlider* last = 0;
+          for (int i = 0; i < var->size(); i++) {
+            AttribSlider* slider = new AttribSlider(this, var, i);
+            if (i == 0) cb->slider(slider);
+            vsizer->Add(slider, 0, wxEXPAND);
+            if (last) last->next(slider);
+            last = slider;
+          }
+          sizer->Add(vsizer, 1, wxEXPAND);
         }
-        sizer->Add(vsizer, 1, wxEXPAND);
       }
       for (ShProgramNode::TexList::iterator I = prg->textures.begin(); I != prg->textures.end(); ++I) {
         ShTextureNodePtr tex = *I;
