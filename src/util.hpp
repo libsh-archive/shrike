@@ -15,21 +15,6 @@ irradiance (
    ShVector3f light
 );
 
-/** Refract vector through surface given by normal.
- * Note that input vectors do not have to be normalized, this
- * function does that.   We depend on the compiler to do domain-specific
- * optimizations to remove redundant calls to normalization as well
- * as removing multiple calls via common subexpression elimination.
- * Returns the refracted vector (which will be unit length; we mark this
- * fact so the domain-specific optimizer can do the right thing later).
- */
-ShVector3f
-refract (
-   ShVector3f v,      ///< incident vector
-   ShNormal3f n,      ///< surface normal
-   ShAttrib1f theta   ///< relative index of refraction
-);
-
 /** Compute fresnel coefficient.
  * This is the fraction of incident light that should be reflected
  * specularly for dielectrics.   More light tends to be reflected

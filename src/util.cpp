@@ -16,26 +16,6 @@ irradiance (
   return pos(normal | light);
 }
 
-// Refract vector through surface given by normal.
-ShVector3f
-refract (
-   ShVector3f v, 
-   ShNormal3f n, 
-   ShAttrib1f theta
-) {
-   v = normalize(v);
-   n = normalize(n);
-   ShAttrib1f c = (v|n);
-   ShAttrib1f k = c*c - 1.0f;
-   k = 1.0f + theta*theta*k;
-   k = clamp(k, 0.0f, 1.0f);
-   ShAttrib1f a = theta;
-   ShAttrib1f b = theta*c + sqrt(k);
-   ShVector3f r = a*v + b*n;
-   // TODO: r.unit(true);
-   return r;
-}
-
 // Compute fresnel coefficient.
 ShAttrib1f
 fresnel (

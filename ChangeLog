@@ -1,5 +1,9 @@
 2004-07-05  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
+	* src/util.cpp: Remove refract function.
+
+	* src/util.hpp: Remove refract function.
+
 	* src/utilimpl.hpp: Remove clamp functions.
 
 	* ChangeLog: Clean up the spaces in this file a bit.
