@@ -176,8 +176,8 @@ bool AlgebraShader::init_all()
   // TODO handle lightDirection and light up properly
   ShColor3f SH_NAMEDECL(kd, "Diffuse Color") = ShConstant3f(1.0f, 0.5f, 0.7f);
   ShColor3f SH_NAMEDECL(ks, "Specular Color") = ShConstant3f(0.7f, 0.7f, 0.7f);
-  ShColor3f SH_NAMEDECL(cool, "Specular Color") = ShConstant3f(0.4f, 0.4f, 1.0f);
-  ShColor3f SH_NAMEDECL(warm, "Specular Color") = ShConstant3f(1.0f, 0.4f, 0.4f);
+  ShColor3f SH_NAMEDECL(cool, "Cool Color") = ShConstant3f(0.4f, 0.4f, 1.0f);
+  ShColor3f SH_NAMEDECL(warm, "Warm Color") = ShConstant3f(1.0f, 0.4f, 0.4f);
   ShAttrib1f SH_NAMEDECL(specExp, "Specular Exponent") = ShConstant1f(48.13f);
   specExp.range(0.0f, 256.0f);
 
