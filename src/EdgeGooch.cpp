@@ -2,7 +2,7 @@
 #include <fstream>
 #include <sh/sh.hpp>
 #include <sh/shutil.hpp>
-#define GL_GLEXT_LOEGACY
+#define GL_GLEXT_LEGACY
 #include <GL/gl.h>
 #include <GL/glext.h>
 #undef GL_GLEXT_LEGACY
