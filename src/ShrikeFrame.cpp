@@ -1,14 +1,15 @@
 #include <fstream>
 #include <wx/splitter.h>
+#include <sh/ShObjMesh.hpp>
 #include "ShrikeFrame.hpp"
 #include "ShrikeCanvas.hpp"
 #include "Shader.hpp"
-#include "ShObjFile.hpp"
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
 using namespace SH;
+using namespace ShUtil;
 
 BEGIN_EVENT_TABLE(ShrikeFrame, wxFrame)
   EVT_MENU(SHRIKE_MENU_OPEN_MODEL, ShrikeFrame::openModel)
@@ -40,13 +41,12 @@ ShrikeFrame::ShrikeFrame()
   wxListBox* shaderList = initShaderList(hsplitter);
   
   // Probably should do this somewhere else...
-  ShObjFile* model = 0;
+  ShObjMesh* model = 0;
 
   // TODO: FIXME
   std::ifstream infile(SHMEDIA_DIR "/objs/sphere50.obj");
   if (infile) {
-    model = new ShObjFile();
-    infile >> *model;
+    model = new ShObjMesh(infile);
   }
 
   wxSplitterWindow* right_window = new wxSplitterWindow(hsplitter, -1);
@@ -69,8 +69,7 @@ void ShrikeFrame::openModel(wxCommandEvent& event)
   if (dialog->ShowModal() == wxID_OK) {
     std::ifstream infile(dialog->GetPath());
     if (infile) {
-      ShObjFile* model = new ShObjFile();
-      infile >> *model;
+      ShObjMesh* model = new ShObjMesh(infile);
       m_canvas->setModel(model);
     } // TODO: Complain if opening file failed
   }

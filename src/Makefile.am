@@ -5,7 +5,6 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 ShrikeCanvas.hpp ShrikeCanvas.cpp \
 		 Shader.hpp Shader.cpp \
 		 UniformPanel.hpp UniformPanel.cpp \
-		 ShObjFile.hpp ShObjFile.cpp \
 		 Globals.hpp Globals.cpp \
 		 Camera.hpp Camera.cpp \
 		 ShTrackball.hpp ShTrackball.cpp \

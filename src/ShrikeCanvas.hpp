@@ -2,17 +2,17 @@
 #define SHRIKECANVAS_HPP
 
 #include <wx/glcanvas.h>
-#include "ShObjFile.hpp"
+#include <sh/ShObjMesh.hpp>
 #include "Camera.hpp"
 
 class ShrikeCanvas : public wxGLCanvas {
 public:
   ShrikeCanvas(wxWindow* parent,
-               SH::ShObjFile* model);
+               ShUtil::ShObjMesh* model);
   
   void render();
 
-  void setModel(SH::ShObjFile* model);
+  void setModel(ShUtil::ShObjMesh* model);
   
   void paint();
   void reshape();
@@ -25,7 +25,7 @@ private:
   void setupView();
   
   bool m_init;
-  SH::ShObjFile* m_model;
+  ShUtil::ShObjMesh* m_model;
   Camera m_camera;
 
   long m_last_x, m_last_y;

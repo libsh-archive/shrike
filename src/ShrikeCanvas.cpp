@@ -9,6 +9,7 @@
 #include <sh/sh.hpp>
 
 using namespace SH;
+using namespace ShUtil;
 
 BEGIN_EVENT_TABLE(ShrikeCanvas, wxGLCanvas)
   EVT_PAINT(ShrikeCanvas::paint)
@@ -18,7 +19,7 @@ END_EVENT_TABLE()
 
 ShrikeCanvas* ShrikeCanvas::m_instance = 0;
   
-ShrikeCanvas::ShrikeCanvas(wxWindow* parent, ShObjFile* model)
+ShrikeCanvas::ShrikeCanvas(wxWindow* parent, ShObjMesh* model)
   : wxGLCanvas(parent, -1, wxDefaultPosition, wxDefaultSize),
     m_init(false),
     m_model(model)
@@ -41,7 +42,7 @@ void ShrikeCanvas::paint()
   render();
 }
 
-void ShrikeCanvas::setModel(ShObjFile* model)
+void ShrikeCanvas::setModel(ShObjMesh* model)
 {
   if (m_model == model) return;
   delete m_model;
@@ -91,28 +92,25 @@ void ShrikeCanvas::render()
   
   glClear(GL_COLOR_BUFFER_BIT + GL_DEPTH_BUFFER_BIT);
 
+  float values[4];
   glBegin(GL_TRIANGLES);
-  for(std::size_t i = 0; i < m_model->faces.size(); i++) {
-    float values[3];
-    for (int j = 0; j < 3; j++) {
-      if (m_model->normals.size() && m_model->faces[i].normals[j] >= 0) {
-        m_model->normals[m_model->faces[i].normals[j]].getValues(values);
-        glNormal3fv(values);
-      }
-      
-      if (m_model->texcoords.size() && m_model->faces[i].texcoords[j] >= 0) {
-        m_model->texcoords[m_model->faces[i].texcoords[j]].getValues(values);
-        glMultiTexCoord2fvARB(0, values);
-      }
+  for(ShObjMesh::FaceSet::iterator I = m_model->faces.begin();
+      I != m_model->faces.end(); ++I) {
+    ShObjEdge *e = (*I)->edge;
+    do {
+      e->normal.getValues(values); 
+      glNormal3fv(values);
 
-      if (m_model->tangents.size() && m_model->faces[i].tangents[j] >= 0) {
-        m_model->tangents[m_model->faces[i].tangents[j]].getValues(values);
-        glMultiTexCoord3fvARB(1, values);
-      }
+      e->texcoord.getValues(values);
+      glMultiTexCoord2fvARB(GL_TEXTURE0, values);
 
-      m_model->vertices[m_model->faces[i].points[j]].getValues(values);
+      e->tangent.getValues(values);
+      glMultiTexCoord2fvARB(GL_TEXTURE0 + 1, values);
+
+      e->start->pos.getValues(values);
       glVertex3fv(values);
-    }
+      e = e->next;
+    } while(e != (*I)->edge);
   }
   glEnd();
 

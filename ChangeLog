@@ -1,3 +1,7 @@
+2004-02-28  Bryan Chan <b8chan@uwaterloo.ca>
+	* src/ShrikeCanvas.?pp src/ShrikeFrame.?pp:
+	Switched to ShObjMesh
+	
 2004-02-27  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/ShrikeCanvas.cpp (GL_GLEXT_LEGACY): Use this so that we get
