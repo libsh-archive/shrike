@@ -36,10 +36,10 @@ bool DiscoShader::init()
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
   vsh = vsh << shExtract("lightPos") << Globals::lightPos; 
   vsh = namedCombine(vsh, keep<ShPoint4f>("posm"));
-  vsh = shSwizzle("posm", "normal", "halfVec", "lightVec", "posh") << vsh;
+  vsh = shSwizzle("texcoord", "normal", "halfVec", "lightVec", "posh") << vsh;
 
   ShAttrib1f SH_DECL(time) = 0.0;
-  time.range(0.0, 13.0); 
+  time.range(0.0f, 4.0f); 
 
   ShAttrib1f SH_DECL(tileFrequency) = 16.0;
   tileFrequency.range(0.0, 128.0);
@@ -48,12 +48,12 @@ bool DiscoShader::init()
   exponent.range(5.0f, 500.0f);
 
   ShProgram discoTiler = SH_BEGIN_PROGRAM() {
-    ShInputPoint4f SH_DECL(posm);
+    ShInputTexCoord2f SH_DECL(texcoord);
     ShOutputColor3f SH_DECL(kd);
     ShOutputColor3f SH_DECL(ks);
 
     ShAttrib3f p;
-    p(0,1) = (posm * tileFrequency)(0,1); 
+    p(0,1) = (texcoord * tileFrequency); 
     p(2) = 0.0f; // use z for the time parameter
 
     // use cellnoise to decide when to switch colours on a cell
