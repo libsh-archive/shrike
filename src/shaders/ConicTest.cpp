@@ -226,8 +226,7 @@ bool ConicTest::init()
 
 	    // generate interval guaranteed to have solution
 		ShAttrib3f G;
-		G(0,1) = ShAttrib2f(sign(x(0))*sqrt(pos(x(1)))*s,s*x(0));
-		G(0,1) = cond(G(0)<G(1),G(0,1),G(1,0));  // sort
+		G(0,1) = ShAttrib2f(s*sign(x(0))*sqrt(pos(x(1))),s*x(0));
 
 		// set up coefficients for distance cubic 
 		ShAttrib3f cc;
@@ -240,7 +239,7 @@ bool ConicTest::init()
 		A(0,1) = cc(0,0) + (cc(1,1) + cc(2,2)*G(0,1)*G(0,1))*G(0,1);
 
 	    // refine estimate using reguli-falsi
-		for (int i=0; i<0; i++) {
+		for (int i=0; i<5; i++) {
 		  G(2) = (A(0)*G(1) - A(1)*G(0))/(A(0) - A(1));
 		  A(2) = cc(0) + (cc(1) + cc(2)*G(2)*G(2))*G(2);
 		  ShAttrib1f c = (A(2)*A(0) > 0.0);
@@ -249,10 +248,8 @@ bool ConicTest::init()
 	    }
 		G(2) = (A(0)*G(1) - A(1)*G(0))/(A(0) - A(1));
 
-		G(2) = G(1);
-
-		// transform estimate back from canonical space
-		return G(2) + a[1](3);
+		// transform estimate back from canonical space to standard parameter space
+		return G(2) - a[1](3);
 	  }
 	  // solve for clamped t value of closest point on curve segment
 	  // compute squared distance, sign, unnormalized gradient vector to closest point on segment
@@ -261,9 +258,10 @@ bool ConicTest::init()
         ShAttrib2f xc = canonical(x);
 		// find t value of closest point on canonical quadratic
 		ShAttrib1f t = solve(xc);
+
 		// clamp to bounds
-		// ShAttrib1f ct = pos(sat(t));
-		ShAttrib1f ct = t;
+		ShAttrib1f ct = pos(sat(t));
+		// ShAttrib1f ct = t;
 		// find point on curve, tangent, and normal 
 		ShAttrib2f cP = position(ct);
 		ShAttrib2f uP = position(t);
@@ -273,6 +271,8 @@ bool ConicTest::init()
 		r(2,3) = cP - x;
 		r(0) = r(2,3) | r(2,3);
 		r(1) = (uP - x) | N;  // useful for pseudodistance
+
+		// r(0,1) = cond(t>0.5,ShAttrib2f(t,t),ShAttrib2f(t,-t));
 
 		// DEBUG
 		// just evaluate sign of xc relative to parabola
