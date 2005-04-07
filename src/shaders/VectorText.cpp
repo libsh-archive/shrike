@@ -24,11 +24,12 @@
 // 3. This notice may not be removed or altered from any source
 // distribution.
 //////////////////////////////////////////////////////////////////////////////
+
 #include <sh/sh.hpp>
 #include <sh/shutil.hpp>
 #include <iostream>
 #include "Shader.hpp"
-#include "ShFont.hpp"
+#include "ShGlyph.hpp"
 #include "Globals.hpp"
 
 using namespace SH;
@@ -119,27 +120,27 @@ bool VectorText::init()
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
-  ShFont font;
-  font.loadFont("/home/zqin/vectortexture/freetype/d.txt");
+  ShGlyph glyph;
+  glyph.loadGlyph("/home/zqin/vectortexture/freetype/d.txt");
 
-  int width = font.width();
-  int height = font.height();
-  int edges = font.edges();
-  float halfx = font.halfx();
-  float halfy = font.halfy();
+  int width = glyph.width();
+  int height = glyph.height();
+  int edges = glyph.edges();
+  float halfx = glyph.halfx();
+  float halfy = glyph.halfy();
   int elements = 4;
 
   // textures for line segment endpoints
   ShUnclamped< ShArrayRect<ShAttrib4f> > ftexture[edges];
   for(int i=0; i<edges; i++) {
 	  ftexture[i].size(width, height);
-    ftexture[i].memory(font.memory(i));
+    ftexture[i].memory(glyph.memory(i));
   }
 
   // texture for number of edges
   // not used for now, just for debugging
   ShArray2D<ShAttrib1f> findex(width, height);
-  findex.memory(font.edge());
+  findex.memory(glyph.edge());
 
   // may not need this... but just in case
   shUpdate();
@@ -147,23 +148,23 @@ bool VectorText::init()
   //debug info
   for(int i=0; i<height; i++) {
 	  for(int j=0; j<width; j++) {
-		  int num = (int)font.edgenum()[i*width+j];
+		  int num = (int)glyph.edgenum()[i*width+j];
 		  std::cerr << (i * width + j) << " " << num << " " << std::endl;
 		  for(int l=0; l<edges; l++) {
 			  for(int m=0; m<elements; m++) {
 				  int index = (i * width + j) * elements + m;
-				  std::cout << font.coords(l)[index] << " ";
+				  std::cout << glyph.coords(l)[index] << " ";
 			  }
 			  std::cout << std::endl;
 		  }
 	  }
   }
 
-  std::cerr << " the image width is " << font.width() << std::endl;
-  std::cerr << " the image height is " << font.height() << std::endl;
-  std::cerr << " the image maxedge is " << font.edges() << std::endl;
-  std::cerr << " the image halfx is " << font.halfx() << std::endl;
-  std::cerr << " the image halfy is " << font.halfy() << std::endl;
+  std::cerr << " the image width is " << glyph.width() << std::endl;
+  std::cerr << " the image height is " << glyph.height() << std::endl;
+  std::cerr << " the image maxedge is " << glyph.edges() << std::endl;
+  std::cerr << " the image halfx is " << glyph.halfx() << std::endl;
+  std::cerr << " the image halfy is " << glyph.halfy() << std::endl;
 #endif
 
 #ifdef PACK9
@@ -171,16 +172,16 @@ bool VectorText::init()
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
-  ShFont font;
-  font.loadFont("/home/zqin/vectortexture/freetype/p.txt");
+  ShGlyph glyph;
+  glyph.loadGlyph("/home/zqin/vectortexture/freetype/p.txt");
 
-  int width = font.width();
-  int height = font.height();
+  int width = glyph.width();
+  int height = glyph.height();
   int elements = 4;
 
   // textures for line segment endpoints
   ShUnclamped< ShArrayRect<ShAttrib4f> > ftexture(width, height);
-  ftexture.memory(font.memory(0));
+  ftexture.memory(glyph.memory(0));
 
   //debug info
   for(int i=0; i<height; i++) {
@@ -188,14 +189,14 @@ bool VectorText::init()
 		  std::cout << i << " " << j << std::endl;
 		  for(int m=0; m<elements; m++) {
 			  int index = (i * width + j) * elements + m;
-			  std::cout << font.coords(0)[index] << " ";
+			  std::cout << glyph.coords(0)[index] << " ";
 		  }
 		  std::cout << std::endl;
 	  }
   }
 
-  std::cerr << " the image width is " << font.width() << std::endl;
-  std::cerr << " the image height is " << font.height() << std::endl;
+  std::cerr << " the image width is " << glyph.width() << std::endl;
+  std::cerr << " the image height is " << glyph.height() << std::endl;
 
   ShAttrib2f temp = ShAttrib2f(0.03125, 0.03125);
   ShAttrib2f size[9];
@@ -215,19 +216,19 @@ bool VectorText::init()
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
-  ShFont font;
-  font.loadFont("/home/mmccool/Dev/vectortexture/freetype/p.txt");
+  ShGlyph glyph;
+  glyph.loadGlyph("/home/zqin/vectortexture/freetype/p.txt");
 
-  int width = font.width();
-  int height = font.height();
-  int edges = font.edges();
+  int width = glyph.width();
+  int height = glyph.height();
+  int edges = glyph.edges();
   int elements = 4;
 
   // textures for line segment endpoints
   ShUnclamped< ShArrayRect<ShAttrib4f> > ftexture(width, height);
   ShUnclamped< ShArrayRect<ShAttrib1f> > flag(width, height);
-  ftexture.memory(font.memory(0));
-  flag.memory(font.memory(1));
+  ftexture.memory(glyph.memory(0));
+  flag.memory(glyph.memory(1));
 
   //debug info
   for(int i=0; i<height; i++) {
@@ -235,21 +236,21 @@ bool VectorText::init()
 		  std::cout << i << " " << j << std::endl;
 		  for(int m=0; m<elements; m++) {
 			  int index = (i * width + j) * elements + m;
-			  std::cout << font.coords(0)[index] << " ";
+			  std::cout << glyph.coords(0)[index] << " ";
 		  }
 		  std::cout << std::endl;
 	  }
   }
   for(int i=0; i<height; i++) {
 	  for(int j=0; j<width; j++) {
-		  std::cout << font.coords(1)[i*width+j] << " ";
+		  std::cout << glyph.coords(1)[i*width+j] << " ";
 	  }
 	  std::cout << std::endl;
   }
 
-  std::cerr << " the image width is " << font.width() << std::endl;
-  std::cerr << " the image height is " << font.height() << std::endl;
-  std::cerr << " the image edges is " << font.edges() << std::endl;
+  std::cerr << " the image width is " << glyph.width() << std::endl;
+  std::cerr << " the image height is " << glyph.height() << std::endl;
+  std::cerr << " the image edges is " << glyph.edges() << std::endl;
 
   ShAttrib2f size[4];
   size[0] = ShAttrib2f(-0.5/width, -0.5/height);

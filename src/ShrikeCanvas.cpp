@@ -290,6 +290,7 @@ void ShrikeCanvas::renderObject()
     SHRIKE_GL_CHECK_ERROR(glNewList(m_model_list, GL_COMPILE_AND_EXECUTE));
     float values[4];
     SHRIKE_GL_CHECK_ERROR(glBegin(GL_TRIANGLES));
+
     for(ShObjMesh::FaceSet::iterator I = m_model->faces.begin();
         I != m_model->faces.end(); ++I) {
       ShObjEdge *e = (*I)->edge;

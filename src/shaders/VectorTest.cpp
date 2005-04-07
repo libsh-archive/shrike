@@ -273,6 +273,8 @@ bool VectorTest::init()
       } break;
     }
   } SH_END_PROGRAM;
+
+  std::cerr << "Finished initialising" << std::endl;
   return true;
 }
 
