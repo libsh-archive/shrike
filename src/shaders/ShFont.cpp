@@ -104,12 +104,12 @@ void ShFont::loadFont(const std::string& filename)
 			m_elements = 4;
 
 			// buffer for edge coordinates and edge number
-			m_memory = new ShHostMemoryPtr[3];
-			m_memory[0] = new ShHostMemory(sizeof(int) * m_glyphcount * 6);
+			m_memory = new ShHostMemoryPtr[5];
+			m_memory[0] = new ShHostMemory(sizeof(int) * m_glyphcount * 8);
 			m_memory[1] = new ShHostMemory(sizeof(float) * m_width * m_height * m_elements);
 			m_memory[2] = new ShHostMemory(sizeof(int) * m_width * m_height);
 
-			int len = 6 * m_glyphcount;
+			int len = 8 * m_glyphcount;
 			int temp;
 
 			for(int n=0; n<len; n++) {
@@ -138,19 +138,70 @@ void ShFont::loadFont(const std::string& filename)
 			}
 			//std::cerr << std::endl;
 			
-			/*
-			// debug
-			for(int i=0; i<m_height; i++) {
-				for(int j=0; j<m_width; j++) {
-					std::cerr << coords(2)[i*m_width+j] << " " ;
-				}
-				std::cerr << std::endl;
-			}
-			*/
 		}
 		close(ifile);
 		std::cerr << "file closed" << std::endl; // xxx
+
 	} catch(...){std::cerr << "glyph exception " << std::endl;}
+
+	// input sprite 
+
+	std::cout << "Please input glyph number, offsetx and offsety" << std::endl;
+
+	const int num = 4;
+	int * sp = new int[num * 3];
+
+	for(int i=0; i<num; i++) {
+		std::cin >> sp[i*3] >> sp[i*3+1] >> sp[i*3+2];
+	}
+
+	// for sprite
+	m_memory[3] = new ShHostMemory(sizeof(int) * num * 4);
+	m_memory[4] = new ShHostMemory(sizeof(int) * num * 4);
+
+	for(int i=0; i<num*4; i++) {
+		coords(3)[i] = 0;
+		coords(4)[i] = 0;
+	}
+
+	for(int i=0; i<num; i++) {
+
+		int gly = sp[i*3];
+
+		coords(3)[i*4] = sp[i*3+1];
+		coords(3)[i*4+1] = sp[i*3+2];
+
+		int j=0;
+		for(j=0; j<m_glyphcount; j++) {
+			if(coords(0)[j*8] == gly)
+				break;
+		}
+
+		coords(3)[i*4+2] = coords(0)[j*8+1];
+		coords(3)[i*4+3] = coords(0)[j*8+2];
+
+		coords(4)[i*4] = coords(0)[j*8+6];
+		coords(4)[i*4+1] = coords(0)[j*8+7];
+		coords(4)[i*4+2] = coords(0)[j*8+3];
+		coords(4)[i*4+3] = coords(0)[j*8+4];
+	}
+
+	// debug
+	for(int i=0; i<num; i++) {
+		std::cout << coords(3)[i*4] << " ";
+		std::cout << coords(3)[i*4+1] << " ";
+		std::cout << coords(3)[i*4+2] << " ";
+		std::cout << coords(3)[i*4+3] << " ";
+	}
+	std::cout << std::endl;
+
+	for(int i=0; i<num; i++) {
+		std::cout << coords(4)[i*4] << " ";
+		std::cout << coords(4)[i*4+1] << " ";
+		std::cout << coords(4)[i*4+2] << " ";
+		std::cout << coords(4)[i*4+3] << " ";
+	}
+	std::cout << std::endl;
 }
 
 const float* ShFont::coords(int i) const
