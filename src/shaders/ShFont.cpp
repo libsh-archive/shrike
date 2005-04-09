@@ -50,7 +50,8 @@ ShFont::ShFont()
     m_width(0), 
     m_height(0), 
     m_elements(0), 
-    m_memory(0) 
+    m_memory(0),
+    m_psize(0)
 {
 }
 
@@ -79,6 +80,21 @@ int ShFont::elements() const
   return m_elements;
 }
 
+int ShFont::psize() const
+{
+  return m_psize;
+}
+
+int ShFont::maxgheight() const
+{
+  return m_maxgheight;
+}
+
+int ShFont::maxgwidth() const
+{
+  return m_maxgwidth;
+}
+
 void ShFont::loadFont(const std::string& filename)
 {
 	try {
@@ -96,10 +112,14 @@ void ShFont::loadFont(const std::string& filename)
 
 			read(ifile, &m_glyphcount, sizeof(int));
 			read(ifile, &m_width, sizeof(int));
+			read(ifile, &m_maxgwidth, sizeof(int));
+			read(ifile, &m_maxgheight, sizeof(int));
 			m_height = m_width;  // cause the texture is always a square
 
 			std::cout << m_glyphcount << " ";
-			std::cout << m_width << " " << m_height << std::endl;
+			std::cout << m_width << " " << m_height << " " ;
+			std::cout << m_maxgwidth << std::endl;
+			std::cout << m_maxgheight << std::endl;
 
 			m_elements = 4;
 
@@ -146,27 +166,84 @@ void ShFont::loadFont(const std::string& filename)
 
 	// input sprite 
 
+	int num = 4;
+	/*
+	std::cout << "Please input grid number: " << std::endl;
+	std::cin >> num;
+	*/
+	m_psize = num;
+
+	int len = num * num;
+	float * sp = new float[len * 3];
+
+	/*
 	std::cout << "Please input glyph number, offsetx and offsety" << std::endl;
 
-	const int num = 4;
-	int * sp = new int[num * 3];
-
-	for(int i=0; i<num; i++) {
+	for(int i=0; i<len; i++) {
 		std::cin >> sp[i*3] >> sp[i*3+1] >> sp[i*3+2];
 	}
+	*/
+	sp[0] = int('i');
+	sp[1] = 0;
+	sp[2] = 0;
+	sp[3] = 0;
+	sp[4] = 0.25;
+	sp[5] = 0;
+	sp[6] = 0;
+	sp[7] = 0.5;
+	sp[8] = 0;
+	sp[9] = int('D');
+	sp[10] = 0.75;
+	sp[11] = 0;
+	sp[12] = int('D');
+	sp[13] = 0;
+	sp[14] = 0.25;
+	sp[15] = int('D');
+	sp[16] = 0.35;
+	sp[17] = 0.25;
+	sp[18] = int('k');
+	sp[19] = 0.5;
+	sp[20] = 0.25;
+	sp[21] = int('e');
+	sp[22] = 0.75;
+	sp[23] = 0.25;
+	sp[24] = int('a');
+	sp[25] = 0;
+	sp[26] = 0.5;
+	sp[27] = int('m');
+	sp[28] = 0.25;
+	sp[29] = 0.5;
+	sp[30] = int('d');
+	sp[31] = 0.5;
+	sp[32] = 0.5;
+	sp[33] = int('d');
+	sp[34] = 0.75;
+	sp[35] = 0.5;
+	sp[36] = int('f');
+	sp[37] = 0;
+	sp[38] = 0.75;
+	sp[39] = int('h');
+	sp[40] = 0.25;
+	sp[41] = 0.75;
+	sp[42] = int('i');
+	sp[43] = 0.5;
+	sp[44] = 0.75;
+	sp[45] = int('j');
+	sp[46] = 0.75;
+	sp[47] = 0.75;
 
 	// for sprite
-	m_memory[3] = new ShHostMemory(sizeof(int) * num * 4);
-	m_memory[4] = new ShHostMemory(sizeof(int) * num * 4);
+	m_memory[3] = new ShHostMemory(sizeof(float) * len * 4);
+	m_memory[4] = new ShHostMemory(sizeof(int) * len * 4);
 
-	for(int i=0; i<num*4; i++) {
+	for(int i=0; i<len*4; i++) {
 		coords(3)[i] = 0;
 		coords(4)[i] = 0;
 	}
 
-	for(int i=0; i<num; i++) {
+	for(int i=0; i<len; i++) {
 
-		int gly = sp[i*3];
+		int gly = (int)sp[i*3];
 
 		coords(3)[i*4] = sp[i*3+1];
 		coords(3)[i*4+1] = sp[i*3+2];
@@ -187,7 +264,7 @@ void ShFont::loadFont(const std::string& filename)
 	}
 
 	// debug
-	for(int i=0; i<num; i++) {
+	for(int i=0; i<len; i++) {
 		std::cout << coords(3)[i*4] << " ";
 		std::cout << coords(3)[i*4+1] << " ";
 		std::cout << coords(3)[i*4+2] << " ";
@@ -195,7 +272,7 @@ void ShFont::loadFont(const std::string& filename)
 	}
 	std::cout << std::endl;
 
-	for(int i=0; i<num; i++) {
+	for(int i=0; i<len; i++) {
 		std::cout << coords(4)[i*4] << " ";
 		std::cout << coords(4)[i*4+1] << " ";
 		std::cout << coords(4)[i*4+2] << " ";

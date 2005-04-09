@@ -54,19 +54,14 @@ public:
   ~ShFont();
 
   int glyphcount() const; ///< Determine the number of glyphs in the font
-  int width() const; ///< Determine the width of the image
+  int width() const; ///< Determine the width of the image for line segments
   int height() const; ///< Determine the height of the image
   int elements() const; ///< Determine the depth (floats per pixel) of
                         ///the image
+  int psize() const; ///< Determine the size of the picture user wants
+  int maxgwidth() const; ///< Determine the max height of all glyphs
+  int maxgheight() const; ///< Determine the max height of all glyphs
   void ShFont::loadFont(const std::string&);
-
-  //float operator()(int x, int y, int i) const; ///< Retrieve a
-                                               ///particular component
-                                               ///from the image.
-  //float& operator()(int x, int y, int i);  ///< Retrieve a
-                                               ///particular component
-                                               ///from the image.
-
 
   const float* coords(int) const;
   float* coords(int);
@@ -78,6 +73,9 @@ private:
   int m_glyphcount;
   int m_width, m_height;
   int m_elements;
+  int m_psize;
+  int m_maxgwidth;
+  int m_maxgheight;
   ShHostMemoryPtr *m_memory;
 };
 

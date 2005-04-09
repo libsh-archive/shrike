@@ -43,6 +43,14 @@ public:
   ~VectorDoc();
 
   bool init();
+  ShAttrib4f sprite_dist(
+  	const ShUnclamped< ShArrayRect<ShAttrib4f> >& ftexture,
+  	const ShUnclamped< ShArrayRect<ShAttrib1f> >& flag,
+  	const ShUnclamped< ShArrayRect<ShAttrib4f> >& sprite1,
+  	const ShUnclamped< ShArrayRect<ShAttrib4f> >& sprite2,
+        ShAttrib2f x,
+        ShAttrib2f fx
+  );
 
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
@@ -61,6 +69,16 @@ private:
   static ShAttrib2f m_thres;
   static ShColor3f m_color1, m_color2;
   static ShColor3f m_vcolor1, m_vcolor2;
+
+  ShFont font;
+  int glyphcount;
+  int width;
+  int height;
+  int psize;
+  int maxgwidth;
+  int maxgheight;
+  int elements;
+  ShAttrib2f size[4];
 };
 
 VectorDoc::VectorDoc(int mode)
@@ -112,20 +130,60 @@ VectorDoc::~VectorDoc()
 {
 }
 
+ShAttrib4f
+VectorDoc::sprite_dist (
+    const ShUnclamped< ShArrayRect<ShAttrib4f> >& ftexture,
+    const ShUnclamped< ShArrayRect<ShAttrib1f> >& flag,
+    const ShUnclamped< ShArrayRect<ShAttrib4f> >& sprite1,
+    const ShUnclamped< ShArrayRect<ShAttrib4f> >& sprite2,
+    ShAttrib2f x,  // texture coordinates
+    ShAttrib2f fx  // where to get sprite info
+) {
+    ShAttrib4f s1 = sprite1(fx);
+    ShAttrib4f s2 = sprite2(fx);
+
+    s1(2,3) = s1(2,3) / maxgheight;
+
+    s2(0,1) = ShAttrib2f(s2(0)/width, s2(1)/height);
+    ShAttrib2f scale2 = ShAttrib2f(width/s2(2), height/s2(3));
+
+    ShAttrib2f tx1 = (x - s1(0,1)) * psize / s1(2,3);  //absolute coords
+    tx1 = clamp(tx1,0.0,1.0);
+    ShAttrib2f tx2 = tx1 / scale2 + s2(0,1);
+
+    ShAttrib4f L[4];
+
+    for(int i=0; i<4; i++) {
+	ShAttrib2f y = tx2 + size[i];
+    	L[i] = ftexture(y); 
+    }
+  
+    ShAttrib4f r = segdists_a(L,4,tx1);
+
+    r(0,1) /= psize;
+
+    // mask off the entirely inside and entirely outside cells
+    // (this lets us reuse their storage for adjacent boundary cells)
+    r(0,1) += 1.0e13*flag(tx2 + size[0]);
+
+    return r;
+}
+
 bool VectorDoc::init()
 {
   std::cerr << "Initializing " << name() << std::endl;
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
-  ShFont font;
-  font.loadFont("/home/zqin/vectortexture/freetype/font.txt");
+  font.loadFont("/home/zqin/dev/freetype/font.txt");
 
-  int glyphcount = font.glyphcount();
-  int width = font.width();
-  int height = font.height();
-  int elements = 4;
-  int sp = 2;
+  glyphcount = font.glyphcount();
+  width = font.width();
+  height = font.height();
+  psize = font.psize();
+  maxgwidth = font.maxgwidth();
+  maxgheight = font.maxgheight();
+  elements = 4;
 
   std::cerr << "in VectorDoc file: width " << width << " height " << height << " glyphcount ";
   std::cerr << glyphcount << std::endl;
@@ -135,11 +193,10 @@ bool VectorDoc::init()
   ShUnclamped< ShArrayRect<ShAttrib1f> > flag(width, height);
 
   // textures for sprites
-  ShArrayRect<ShAttrib4f> sprite1(sp, sp);
-  ShArrayRect<ShAttrib4f> sprite2(sp, sp);
+  ShUnclamped< ShArrayRect<ShAttrib4f> > sprite1(psize, psize);
+  ShUnclamped< ShArrayRect<ShAttrib4f> > sprite2(psize, psize);
 
   ftexture.memory(font.memory(1));
-
   flag.memory(font.memory(2));
   sprite1.memory(font.memory(3));
   sprite2.memory(font.memory(4));
@@ -170,12 +227,12 @@ bool VectorDoc::init()
   }
   */
 
-  for(int i=0; i<sp*sp*4; i++) {
+  for(int i=0; i<psize*psize*4; i++) {
 	  std::cout << font.coords(3)[i] << " ";
   }
   std::cout << std::endl;
 
-  for(int i=0; i<sp*sp*4; i++) {
+  for(int i=0; i<psize*psize*4; i++) {
 	  std::cout << font.coords(4)[i] << " ";
   }
   std::cout << std::endl;
@@ -183,7 +240,6 @@ bool VectorDoc::init()
   std::cerr << " the image width is " << font.width() << std::endl;
   std::cerr << " the image height is " << font.height() << std::endl;
 
-  ShAttrib2f size[4];
   size[0] = ShAttrib2f(-0.5/width, -0.5/height);
   size[1] = ShAttrib2f( 0.5/width, -0.5/height);
   size[2] = ShAttrib2f(-0.5/width,  0.5/height);
@@ -196,30 +252,51 @@ bool VectorDoc::init()
     // transform texture coords (should be in vertex shader really, but)
     ShAttrib2f x = m_size*tc - m_offset;
 
-    ShAttrib4f s1 = sprite1[x];
-    ShAttrib4f s2 = sprite2[x];
+    /*
+    ShAttrib4f s1 = sprite1(x);
+    ShAttrib4f s2 = sprite2(x);
 
-    ShAttrib2f goff = ShAttrib2f(s1(0)/width, s1(1)/height);
-    ShAttrib2f ooff = ShAttrib2f(s2(0)/width, s2(1)/height);
+    s1(2,3) = s1(2,3) / maxgheight;
 
-    ShAttrib2f tx1 = ((x - goff) * ShAttrib2f(2,2));
-    ShAttrib2f tx2 = tx1 / ShAttrib2f(2,2) + ooff;
+    s2(0,1) = ShAttrib2f(s2(0)/width, s2(1)/height);
+    ShAttrib2f scale2 = ShAttrib2f(width/s2(2), height/s2(3));
+
+    ShAttrib2f tx1 = (x - s1(0,1)) * psize / s1(2,3);  //absolute coords
+    tx1 = clamp(tx1,0.0,1.0);
+    ShAttrib2f tx2 = tx1 / scale2 + s2(0,1);
 
     ShAttrib4f L[4];
 
     for(int i=0; i<4; i++) {
-	//ShAttrib2f y = x + size[i];
 	ShAttrib2f y = tx2 + size[i];
     	L[i] = ftexture(y); 
     }
   
-    //ShAttrib4f r = segdists_a(L,4,x);
     ShAttrib4f r = segdists_a(L,4,tx1);
 
+    //r(0,1) *= psize;
     // mask off the entirely inside and entirely outside cells
     // (this lets us reuse their storage for adjacent boundary cells)
-    //r(0,1) += 1.0e13*flag(x + size[0]);
     r(0,1) += 1.0e13*flag(tx2 + size[0]);
+    */
+    
+    ShAttrib4f sprite_r[4];
+    sprite_r[0] = sprite_dist(
+	// these should be class member variables
+    	ftexture, flag, sprite1, sprite2, 
+	// these should be parameters
+	x,
+	x
+    );
+    sprite_r[1] = sprite_dist(
+	// these should be class member variables
+    	ftexture, flag, sprite1, sprite2, 
+	// these should be parameters
+	x,
+	x - ShAttrib2f(1.0/psize,0.0)
+    );
+
+    ShAttrib4f r = cond(sprite_r[0](0) < sprite_r[1](0),sprite_r[0],sprite_r[1]);
 
     switch (m_mode) {
       case 0: {
@@ -327,7 +404,7 @@ bool VectorDoc::init()
 
 bool VectorDoc::m_done_init = false;
 ShAttrib1f VectorDoc::m_scale = ShAttrib1f(1.0);
-ShVector2f VectorDoc::m_offset = ShVector2f(0.000976562,0.000976562);
+ShVector2f VectorDoc::m_offset = ShVector2f(0,0);
 ShAttrib1f VectorDoc::m_size = ShAttrib1f(1.0);
 ShAttrib1f VectorDoc::m_fw = ShAttrib1f(1.0);
 ShAttrib2f VectorDoc::m_thres = ShAttrib2f(0.0,0.05);
