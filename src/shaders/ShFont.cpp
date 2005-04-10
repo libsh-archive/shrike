@@ -37,6 +37,7 @@
 #include <sys/uio.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <map>
 /*
 #include "ShException.hpp"
 #include "ShError.hpp"
@@ -51,7 +52,9 @@ ShFont::ShFont()
     m_height(0), 
     m_elements(0), 
     m_memory(0),
-    m_psize(0)
+    m_psize(0),
+    m_gridsize(0),
+    m_split(2)
 {
 }
 
@@ -85,6 +88,11 @@ int ShFont::psize() const
   return m_psize;
 }
 
+int ShFont::gridsize() const
+{
+  return m_gridsize;
+}
+
 int ShFont::maxgheight() const
 {
   return m_maxgheight;
@@ -93,6 +101,11 @@ int ShFont::maxgheight() const
 int ShFont::maxgwidth() const
 {
   return m_maxgwidth;
+}
+
+int ShFont::minhadvance() const
+{
+  return m_minhadvance;
 }
 
 void ShFont::loadFont(const std::string& filename)
@@ -118,27 +131,42 @@ void ShFont::loadFont(const std::string& filename)
 
 			std::cout << m_glyphcount << " ";
 			std::cout << m_width << " " << m_height << " " ;
-			std::cout << m_maxgwidth << std::endl;
+			std::cout << m_maxgwidth << " ";
 			std::cout << m_maxgheight << std::endl;
 
 			m_elements = 4;
 
 			// buffer for edge coordinates and edge number
 			m_memory = new ShHostMemoryPtr[5];
-			m_memory[0] = new ShHostMemory(sizeof(int) * m_glyphcount * 8);
+			m_memory[0] = new ShHostMemory(sizeof(int) * m_glyphcount * 11);
 			m_memory[1] = new ShHostMemory(sizeof(float) * m_width * m_height * m_elements);
 			m_memory[2] = new ShHostMemory(sizeof(int) * m_width * m_height);
 
-			int len = 8 * m_glyphcount;
+			int len = 11 * m_glyphcount;
 			int temp;
 
-			for(int n=0; n<len; n++) {
-				read(ifile, &temp, sizeof(int));
-				std::cerr << temp << " " ;
-				coords(0)[n] = temp;
-			}
-			std::cerr << std::endl;
+			int gly=0, hadv=0, ymin;
+			m_minhadvance = m_maxgwidth;
 
+			for(int n=0; n<m_glyphcount; n++) {
+				for(int k=0; k<11; k++) {
+					read(ifile, &temp, sizeof(int));
+					std::cerr << temp << " " ;
+					coords(0)[n*11+k] = temp;
+
+					// put glyph and its horizontal advance
+					// into a map. will be used in function texture
+					if(k==0) gly = temp;
+					if(k==3) hadv = temp;
+					if(k==5) ymin = temp;
+
+					if(hadv < m_minhadvance) m_minhadvance = hadv;
+				}
+				hadvanceMap[gly] = hadv;
+				yminMap[gly] = ymin;
+			}
+		
+			std::cerr << std::endl;
 
 			len = m_width * m_height * m_elements;
 
@@ -166,71 +194,15 @@ void ShFont::loadFont(const std::string& filename)
 
 	// input sprite 
 
-	int num = 4;
-	/*
-	std::cout << "Please input grid number: " << std::endl;
-	std::cin >> num;
-	*/
+	int num = 64;
 	m_psize = num;
+	m_split = 8;
+	m_gridsize = num/m_split;
 
 	int len = num * num;
 	float * sp = new float[len * 3];
 
-	/*
-	std::cout << "Please input glyph number, offsetx and offsety" << std::endl;
-
-	for(int i=0; i<len; i++) {
-		std::cin >> sp[i*3] >> sp[i*3+1] >> sp[i*3+2];
-	}
-	*/
-	sp[0] = int('i');
-	sp[1] = 0;
-	sp[2] = 0;
-	sp[3] = 0;
-	sp[4] = 0.25;
-	sp[5] = 0;
-	sp[6] = 0;
-	sp[7] = 0.5;
-	sp[8] = 0;
-	sp[9] = int('D');
-	sp[10] = 0.75;
-	sp[11] = 0;
-	sp[12] = int('D');
-	sp[13] = 0;
-	sp[14] = 0.25;
-	sp[15] = int('D');
-	sp[16] = 0.35;
-	sp[17] = 0.25;
-	sp[18] = int('k');
-	sp[19] = 0.5;
-	sp[20] = 0.25;
-	sp[21] = int('e');
-	sp[22] = 0.75;
-	sp[23] = 0.25;
-	sp[24] = int('a');
-	sp[25] = 0;
-	sp[26] = 0.5;
-	sp[27] = int('m');
-	sp[28] = 0.25;
-	sp[29] = 0.5;
-	sp[30] = int('d');
-	sp[31] = 0.5;
-	sp[32] = 0.5;
-	sp[33] = int('d');
-	sp[34] = 0.75;
-	sp[35] = 0.5;
-	sp[36] = int('f');
-	sp[37] = 0;
-	sp[38] = 0.75;
-	sp[39] = int('h');
-	sp[40] = 0.25;
-	sp[41] = 0.75;
-	sp[42] = int('i');
-	sp[43] = 0.5;
-	sp[44] = 0.75;
-	sp[45] = int('j');
-	sp[46] = 0.75;
-	sp[47] = 0.75;
+	texture(num, sp);
 
 	// for sprite
 	m_memory[3] = new ShHostMemory(sizeof(float) * len * 4);
@@ -250,17 +222,17 @@ void ShFont::loadFont(const std::string& filename)
 
 		int j=0;
 		for(j=0; j<m_glyphcount; j++) {
-			if(coords(0)[j*8] == gly)
+			if(coords(0)[j*11] == gly)
 				break;
 		}
 
-		coords(3)[i*4+2] = coords(0)[j*8+1];
-		coords(3)[i*4+3] = coords(0)[j*8+2];
+		coords(3)[i*4+2] = coords(0)[j*11+1];
+		coords(3)[i*4+3] = coords(0)[j*11+2];
 
-		coords(4)[i*4] = coords(0)[j*8+6];
-		coords(4)[i*4+1] = coords(0)[j*8+7];
-		coords(4)[i*4+2] = coords(0)[j*8+3];
-		coords(4)[i*4+3] = coords(0)[j*8+4];
+		coords(4)[i*4] = coords(0)[j*11+9];
+		coords(4)[i*4+1] = coords(0)[j*11+10];
+		coords(4)[i*4+2] = coords(0)[j*11+6];
+		coords(4)[i*4+3] = coords(0)[j*11+7];
 	}
 
 	// debug
@@ -279,6 +251,117 @@ void ShFont::loadFont(const std::string& filename)
 		std::cout << coords(4)[i*4+3] << " ";
 	}
 	std::cout << std::endl;
+}
+
+
+// gnum : number of glyphs in a line
+// str:   string of glyphs
+// m:     starting x pos of glyph string in number of big grid
+// n:     starting y pos of glyph string in number of big grid
+// one big grid is a container for one glyph
+
+void ShFont::renderline(int gnum, int * str, float mg, float ng, float * sp) {
+	float x = mg/m_gridsize;
+	float y = ng/m_gridsize;
+	float yy;
+	int m = (int)(mg * m_split);
+	int n = (int)(ng * m_split);
+	int nn;
+
+	for(int g=0; g<gnum; g++) {
+
+		int ymin = yminMap[str[g]];
+		if(ymin != 0) {
+			yy = y + 1.0/m_split * ymin / m_maxgheight;
+			nn = (int)(yy * m_psize);
+		}
+		else {
+			yy = y;
+			nn = n;
+		}
+
+		// fill in one glyph
+		for(int i=nn; i<nn+m_split; i++) {
+			for(int j=m; j<m+m_split; j++) {
+				sp[(i*m_psize+j)*3] = str[g];
+				sp[(i*m_psize+j)*3+1] = x;
+				sp[(i*m_psize+j)*3+2] = yy;
+			}
+		}
+
+		int adv;
+		if(str[g] == int(' ')) adv = m_maxgheight/4;
+		else adv = hadvanceMap[str[g]];
+
+		// move x forward, keep y unchanged for now
+		float ratio = (float)adv / m_maxgheight;
+
+		x += 1.0/m_split * ratio;
+		m = (int)(x * m_psize);
+
+	}
+}
+
+void ShFont::texture(int num, float *sp) {
+
+	int *array = new int[m_psize];
+
+	array[0] = int('P');
+	array[1] = int('r');
+	array[2] = int('e');
+	array[3] = int('m');
+	array[4] = int('a');
+	array[5] = int('t');
+	array[6] = int('u');
+	array[7] = int('r');
+	array[8] = int('e');
+
+	renderline(9, array, 0.5, 6, sp);
+
+	array[0] = int('o');
+	array[1] = int('p');
+	array[2] = int('t');
+	array[3] = int('i');
+	array[4] = int('m');
+	array[5] = int('i');
+	array[6] = int('z');
+	array[7] = int('a');
+	array[8] = int('t');
+	array[9] = int('i');
+	array[10] = int('o');
+	array[11] = int('n');
+
+	renderline(12, array, 0.5, 4.5, sp);
+
+	array[0] = int('i');
+	array[1] = int('s');
+	array[2] = int(' ');
+	array[3] = int('t');
+	array[4] = int('h');
+	array[5] = int('e');
+	array[6] = int(' ');
+	array[7] = int('r');
+	array[8] = int('o');
+	array[9] = int('o');
+	array[10] = int('t');
+
+	renderline(11, array, 0.5, 3, sp);
+
+	array[0] = int('o');
+	array[1] = int('f');
+	array[2] = int(' ');
+	array[3] = int('a');
+	array[4] = int('l');
+	array[5] = int('l');
+	array[6] = int(' ');
+	array[7] = int('e');
+	array[8] = int('v');
+	array[9] = int('i');
+	array[10] = int('l');
+
+	renderline(11, array, 0.5, 1.5, sp);
+
+	delete[] array;
 }
 
 const float* ShFont::coords(int i) const

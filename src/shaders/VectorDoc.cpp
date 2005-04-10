@@ -75,6 +75,7 @@ private:
   int width;
   int height;
   int psize;
+  int gridsize;
   int maxgwidth;
   int maxgheight;
   int elements;
@@ -147,7 +148,7 @@ VectorDoc::sprite_dist (
     s2(0,1) = ShAttrib2f(s2(0)/width, s2(1)/height);
     ShAttrib2f scale2 = ShAttrib2f(width/s2(2), height/s2(3));
 
-    ShAttrib2f tx1 = (x - s1(0,1)) * psize / s1(2,3);  //absolute coords
+    ShAttrib2f tx1 = (x - s1(0,1)) * gridsize / s1(2,3);  //absolute coords
     tx1 = clamp(tx1,0.0,1.0);
     ShAttrib2f tx2 = tx1 / scale2 + s2(0,1);
 
@@ -156,11 +157,12 @@ VectorDoc::sprite_dist (
     for(int i=0; i<4; i++) {
 	ShAttrib2f y = tx2 + size[i];
     	L[i] = ftexture(y); 
+	L[i] = L[i] * s1(2,3,2,3) / gridsize + s1(0,1,0,1);
     }
   
-    ShAttrib4f r = segdists_a(L,4,tx1);
+    ShAttrib4f r = segdists_a(L,4,x);
 
-    r(0,1) /= psize;
+    //r(0,1) /= gridsize;
 
     // mask off the entirely inside and entirely outside cells
     // (this lets us reuse their storage for adjacent boundary cells)
@@ -181,6 +183,7 @@ bool VectorDoc::init()
   width = font.width();
   height = font.height();
   psize = font.psize();
+  gridsize = font.gridsize();
   maxgwidth = font.maxgwidth();
   maxgheight = font.maxgheight();
   elements = 4;
@@ -252,34 +255,6 @@ bool VectorDoc::init()
     // transform texture coords (should be in vertex shader really, but)
     ShAttrib2f x = m_size*tc - m_offset;
 
-    /*
-    ShAttrib4f s1 = sprite1(x);
-    ShAttrib4f s2 = sprite2(x);
-
-    s1(2,3) = s1(2,3) / maxgheight;
-
-    s2(0,1) = ShAttrib2f(s2(0)/width, s2(1)/height);
-    ShAttrib2f scale2 = ShAttrib2f(width/s2(2), height/s2(3));
-
-    ShAttrib2f tx1 = (x - s1(0,1)) * psize / s1(2,3);  //absolute coords
-    tx1 = clamp(tx1,0.0,1.0);
-    ShAttrib2f tx2 = tx1 / scale2 + s2(0,1);
-
-    ShAttrib4f L[4];
-
-    for(int i=0; i<4; i++) {
-	ShAttrib2f y = tx2 + size[i];
-    	L[i] = ftexture(y); 
-    }
-  
-    ShAttrib4f r = segdists_a(L,4,tx1);
-
-    //r(0,1) *= psize;
-    // mask off the entirely inside and entirely outside cells
-    // (this lets us reuse their storage for adjacent boundary cells)
-    r(0,1) += 1.0e13*flag(tx2 + size[0]);
-    */
-    
     ShAttrib4f sprite_r[4];
     sprite_r[0] = sprite_dist(
 	// these should be class member variables
@@ -297,6 +272,7 @@ bool VectorDoc::init()
     );
 
     ShAttrib4f r = cond(sprite_r[0](0) < sprite_r[1](0),sprite_r[0],sprite_r[1]);
+    r(2,3) = normalize(r(2,3));
 
     switch (m_mode) {
       case 0: {

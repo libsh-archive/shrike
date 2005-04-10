@@ -57,10 +57,12 @@ public:
   int width() const; ///< Determine the width of the image for line segments
   int height() const; ///< Determine the height of the image
   int elements() const; ///< Determine the depth (floats per pixel) of
-                        ///the image
-  int psize() const; ///< Determine the size of the picture user wants
+                         ///the image
+  int psize() const;     ///< Determine the size of the picture user wants
+  int gridsize() const;     ///< Determine the size of the grid
   int maxgwidth() const; ///< Determine the max height of all glyphs
   int maxgheight() const; ///< Determine the max height of all glyphs
+  int minhadvance() const; ///< Determine the min horizontal advance
   void ShFont::loadFont(const std::string&);
 
   const float* coords(int) const;
@@ -74,9 +76,17 @@ private:
   int m_width, m_height;
   int m_elements;
   int m_psize;
+  int m_gridsize;
   int m_maxgwidth;
   int m_maxgheight;
+  int m_minhadvance;
+  int m_split;  // how many psize in each gridsize
   ShHostMemoryPtr *m_memory;
+  std::map<int, int> hadvanceMap;
+  std::map<int, int> yminMap;
+
+  void texture(int, float *);
+  void renderline(int gnum, int * str, float mg, float ng, float * sp);
 };
 
 #endif
