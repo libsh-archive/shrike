@@ -177,7 +177,7 @@ bool VectorDoc::init()
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
-  font.loadFont("/home/zqin/dev/freetype/font.txt");
+  font.loadFont("/home/zqin/vectortexture/freetype/font.txt");
 
   glyphcount = font.glyphcount();
   width = font.width();

@@ -45,6 +45,7 @@
 */
 #define BUFFERSIZE 256
 #define PACK4
+#define MARGINRATIO 0.1
 
 ShFont::ShFont()
   : m_glyphcount(0), 
@@ -145,7 +146,7 @@ void ShFont::loadFont(const std::string& filename)
 			int len = 11 * m_glyphcount;
 			int temp;
 
-			int gly=0, hadv=0, ymin;
+			int gly=0, hadv=0, ymin=0, gw=0, gh=0;
 			m_minhadvance = m_maxgwidth;
 
 			for(int n=0; n<m_glyphcount; n++) {
@@ -157,12 +158,16 @@ void ShFont::loadFont(const std::string& filename)
 					// put glyph and its horizontal advance
 					// into a map. will be used in function texture
 					if(k==0) gly = temp;
+					if(k==1) gw = temp;
+					if(k==2) gh = temp;
 					if(k==3) hadv = temp;
 					if(k==5) ymin = temp;
 
 					if(hadv < m_minhadvance) m_minhadvance = hadv;
 				}
 				hadvanceMap[gly] = hadv;
+				gwidthMap[gly] = gw;
+				gheightMap[gly] = gh;
 				yminMap[gly] = ymin;
 			}
 		
@@ -256,35 +261,37 @@ void ShFont::loadFont(const std::string& filename)
 
 // gnum : number of glyphs in a line
 // str:   string of glyphs
-// m:     starting x pos of glyph string in number of big grid
-// n:     starting y pos of glyph string in number of big grid
-// one big grid is a container for one glyph
+// mg:    starting x pos of glyph string in number of big grid
+// ng:    starting y pos of glyph string in number of big grid
+// one big grid is a container for one glyph, it may have mutliple
+// small grids
 
 void ShFont::renderline(int gnum, int * str, float mg, float ng, float * sp) {
+	// x, y are the starting pos from 0-1
 	float x = mg/m_gridsize;
 	float y = ng/m_gridsize;
-	float yy;
-	int m = (int)(mg * m_split);
-	int n = (int)(ng * m_split);
-	int nn;
+	float xx, yy;
+	int mm, nn;
 
 	for(int g=0; g<gnum; g++) {
 
+		int gw = gwidthMap[str[g]];
+		int gh = gheightMap[str[g]];
 		int ymin = yminMap[str[g]];
-		if(ymin != 0) {
-			yy = y + 1.0/m_split * ymin / m_maxgheight;
-			nn = (int)(yy * m_psize);
-		}
-		else {
-			yy = y;
-			nn = n;
-		}
+
+		int yshift = ymin - gh * MARGINRATIO;
+	
+		yy = y + 1.0/m_gridsize * yshift / (m_maxgheight * (1 + MARGINRATIO * 2));
+		nn = (int)(yy * m_psize);
+
+		xx = x - 1.0/m_gridsize * gw * MARGINRATIO / (m_maxgheight * (1 + MARGINRATIO * 2));
+		mm = (int)(xx * m_psize);
 
 		// fill in one glyph
 		for(int i=nn; i<nn+m_split; i++) {
-			for(int j=m; j<m+m_split; j++) {
+			for(int j=mm; j<mm+m_split; j++) {
 				sp[(i*m_psize+j)*3] = str[g];
-				sp[(i*m_psize+j)*3+1] = x;
+				sp[(i*m_psize+j)*3+1] = xx;
 				sp[(i*m_psize+j)*3+2] = yy;
 			}
 		}
@@ -294,10 +301,9 @@ void ShFont::renderline(int gnum, int * str, float mg, float ng, float * sp) {
 		else adv = hadvanceMap[str[g]];
 
 		// move x forward, keep y unchanged for now
-		float ratio = (float)adv / m_maxgheight;
+		float ratio = (float)adv / (m_maxgheight * (1 + MARGINRATIO * 2));
 
-		x += 1.0/m_split * ratio;
-		m = (int)(x * m_psize);
+		x += 1.0/m_gridsize * ratio;
 
 	}
 }

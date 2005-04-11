@@ -84,6 +84,8 @@ private:
   ShHostMemoryPtr *m_memory;
   std::map<int, int> hadvanceMap;
   std::map<int, int> yminMap;
+  std::map<int, int> gheightMap;
+  std::map<int, int> gwidthMap;
 
   void texture(int, float *);
   void renderline(int gnum, int * str, float mg, float ng, float * sp);
