@@ -37,7 +37,7 @@
 #include <sys/uio.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <map>
+
 /*
 #include "ShException.hpp"
 #include "ShError.hpp"
@@ -46,6 +46,7 @@
 #define BUFFERSIZE 256
 #define PACK4
 #define MARGINRATIO 0.1
+#define LONG
 
 ShFont::ShFont()
   : m_glyphcount(0), 
@@ -146,7 +147,7 @@ void ShFont::loadFont(const std::string& filename)
 			int len = 11 * m_glyphcount;
 			int temp;
 
-			int gly=0, hadv=0, ymin=0, gw=0, gh=0;
+			int gly=0, hadv=0, ymin=0, gw=0, gh=0, ox=0, oy=0, wino=0, hino=0;
 			m_minhadvance = m_maxgwidth;
 
 			for(int n=0; n<m_glyphcount; n++) {
@@ -162,6 +163,10 @@ void ShFont::loadFont(const std::string& filename)
 					if(k==2) gh = temp;
 					if(k==3) hadv = temp;
 					if(k==5) ymin = temp;
+					if(k==6) wino = temp;
+					if(k==7) hino = temp;
+					if(k==9) ox = temp;
+					if(k==10) oy = temp;
 
 					if(hadv < m_minhadvance) m_minhadvance = hadv;
 				}
@@ -169,6 +174,12 @@ void ShFont::loadFont(const std::string& filename)
 				gwidthMap[gly] = gw;
 				gheightMap[gly] = gh;
 				yminMap[gly] = ymin;
+				// these maps are for kernning
+				offsetx[gly] = ox;
+				offsety[gly] = oy;
+				winoctree[gly] = wino;
+				hinoctree[gly] = hino;
+
 			}
 		
 			std::cerr << std::endl;
@@ -191,6 +202,24 @@ void ShFont::loadFont(const std::string& filename)
 			}
 			//std::cerr << std::endl;
 			
+			while(1) {
+				int left, right, kern;
+				int rtn = read(ifile, &left, sizeof(int));
+				if(rtn ==0) {
+					//std::cout << "end of kern file" << std::endl;
+					break;
+				}
+				read(ifile, &right, sizeof(int));
+				read(ifile, &kern, sizeof(int));
+				kmap[ Kernpair(left, right) ] = kern;
+			}
+			/*
+			std::cout << " size ---------------" << kmap.size() << std::endl;
+			for(std::map<Kernpair, int>::iterator i = kmap.begin(); i != kmap.end(); ++i) {
+				std::cout << "get " << i->first.first() << " " << i->first.second();
+				std::cout << " " << i->second << std::endl;
+			}
+			*/
 		}
 		close(ifile);
 		std::cerr << "file closed" << std::endl; // xxx
@@ -199,9 +228,9 @@ void ShFont::loadFont(const std::string& filename)
 
 	// input sprite 
 
-	int num = 64;
+	int num = 256;
 	m_psize = num;
-	m_split = 8;
+	m_split = 16;
 	m_gridsize = num/m_split;
 
 	int len = num * num;
@@ -241,6 +270,7 @@ void ShFont::loadFont(const std::string& filename)
 	}
 
 	// debug
+	/*
 	for(int i=0; i<len; i++) {
 		std::cout << coords(3)[i*4] << " ";
 		std::cout << coords(3)[i*4+1] << " ";
@@ -256,8 +286,49 @@ void ShFont::loadFont(const std::string& filename)
 		std::cout << coords(4)[i*4+3] << " ";
 	}
 	std::cout << std::endl;
+	*/
 }
 
+bool ShFont:: getflag(float sx, 
+		     float sy, 
+		     float ex, 
+		     float ey, 
+		     int gw, 
+		     int gh,
+		     int ox, 
+		     int oy, 
+		     int ow, 
+		     int oh) {
+
+	sx *= (float)m_maxgheight / (float)gw;
+	sy *= (float)m_maxgheight / (float)gh;
+	ex *= (float)m_maxgheight / (float)gw;
+	ey *= (float)m_maxgheight / (float)gh;
+
+	int xstart = ox + (int)(sx*ow);
+	int ystart = oy + (int)(sy*oh);
+	int xend = ox + (int)std::ceil(ex*ow);
+	int yend = oy + (int)std::ceil(ey*oh);
+
+	int flag = 0;
+	for(int k = ystart; k<=yend; k++) {
+		for(int l = xstart; l<=xend; l++) {
+
+			int xlimit = ox + ow;
+			int ylimit = oy + oh;
+
+			if( k<ylimit && l<xlimit) {
+				int index = k * m_width + l;
+				if(coords(2)[index] != 1) {
+					flag = 1;
+					break;
+				}
+			}
+		}
+		if(flag) break;
+	}
+	return flag;
+}
 
 // gnum : number of glyphs in a line
 // str:   string of glyphs
@@ -275,11 +346,17 @@ void ShFont::renderline(int gnum, int * str, float mg, float ng, float * sp) {
 
 	for(int g=0; g<gnum; g++) {
 
-		int gw = gwidthMap[str[g]];
-		int gh = gheightMap[str[g]];
-		int ymin = yminMap[str[g]];
+		int curr = str[g];  // current glyph
+		int next;           // next glyph
+		int gw = gwidthMap[curr];
+		int gh = gheightMap[curr];
+		int ymin = yminMap[curr];
+		int ox = offsetx[curr];
+		int oy = offsety[curr];
+		int ow = winoctree[curr];
+		int oh = hinoctree[curr];
 
-		int yshift = ymin - gh * MARGINRATIO;
+		float yshift = ymin - gh * MARGINRATIO;
 	
 		yy = y + 1.0/m_gridsize * yshift / (m_maxgheight * (1 + MARGINRATIO * 2));
 		nn = (int)(yy * m_psize);
@@ -287,30 +364,63 @@ void ShFont::renderline(int gnum, int * str, float mg, float ng, float * sp) {
 		xx = x - 1.0/m_gridsize * gw * MARGINRATIO / (m_maxgheight * (1 + MARGINRATIO * 2));
 		mm = (int)(xx * m_psize);
 
+		float sx = 0, sy = 0, ex, ey;
+
+		std::cout << "gw " << gw << " m_maxgheight " << m_maxgheight << std::endl;
+
 		// fill in one glyph
-		for(int i=nn; i<nn+m_split; i++) {
-			for(int j=mm; j<mm+m_split; j++) {
-				sp[(i*m_psize+j)*3] = str[g];
-				sp[(i*m_psize+j)*3+1] = xx;
-				sp[(i*m_psize+j)*3+2] = yy;
+		for(int i=nn; i<=nn+m_split; i++) {
+
+			ey = (((float)i + 1.0)/m_psize - yy) * m_gridsize;
+
+			sx = 0;
+
+			int mend = (int)((xx + (float)gw / (m_maxgheight * m_gridsize)) * m_psize);
+			std::cout << "mend " << mend << std::endl;
+			
+			//for(int j=mm; j<mm+m_split; j++) {
+			for(int j=mm; j<mend; j++) {
+
+				ex = (((float)j + 1)/m_psize - xx) * m_gridsize;
+
+
+				bool flag = getflag(sx, sy, ex, ey, gw, gh, ox, oy, ow, oh);
+
+				if(flag) {
+					sp[(i*m_psize+j)*3] = curr;
+					sp[(i*m_psize+j)*3+1] = xx;
+					sp[(i*m_psize+j)*3+2] = yy;
+				}
+
+				sx = ex;
 			}
+
+			sy = ey;
 		}
 
+		// get the kerning info between current glyph and the next
+		if(g<gnum-1)
+			next = str[g+1];
+		else next = 0;
+
+		int kernvalue = kmap[ Kernpair(curr, next) ];
+
+		// get the advance in x without kerning
 		int adv;
-		if(str[g] == int(' ')) adv = m_maxgheight/4;
-		else adv = hadvanceMap[str[g]];
+		if(curr == int(' ')) adv = m_maxgheight/4;
+		else adv = hadvanceMap[curr] + kernvalue;  // advance + kerning info
 
 		// move x forward, keep y unchanged for now
 		float ratio = (float)adv / (m_maxgheight * (1 + MARGINRATIO * 2));
 
 		x += 1.0/m_gridsize * ratio;
-
 	}
 }
 
 void ShFont::texture(int num, float *sp) {
 
 	int *array = new int[m_psize];
+	/*
 
 	array[0] = int('P');
 	array[1] = int('r');
@@ -366,6 +476,39 @@ void ShFont::texture(int num, float *sp) {
 	array[10] = int('l');
 
 	renderline(11, array, 0.5, 1.5, sp);
+	*/
+
+	array[0] = int('W');
+	/*
+	array[1] = int('e');
+	array[2] = int(' ');
+	array[3] = int('p');
+	array[4] = int('r');
+	array[5] = int('e');
+	array[6] = int('s');
+	array[7] = int('e');
+	array[8] = int('n');
+	array[9] = int('t');
+	array[10] = int(' ');
+	array[11] = int('a');
+	array[12] = int(' ');
+	array[13] = int('r');
+	array[14] = int('e');
+	array[15] = int('p');
+	array[16] = int('r');
+	array[17] = int('e');
+	array[18] = int('s');
+	array[19] = int('e');
+	array[20] = int('n');
+	array[21] = int('t');
+	array[22] = int('a');
+	array[23] = int('t');
+	array[24] = int('i');
+	array[25] = int('o');
+	array[26] = int('n');
+	*/
+
+	renderline(1, array, 0.5, 7, sp);
 
 	delete[] array;
 }

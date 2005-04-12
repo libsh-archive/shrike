@@ -29,6 +29,8 @@
 
 #include <string>
 #include <sh/sh.hpp>
+#include <map>
+
 /*
 #include "sh/ShDllExport.hpp"
 #include "ShRefCount.hpp"
@@ -37,6 +39,25 @@
 
 using namespace SH;
 //using namespace ShUtil;
+
+class Kernpair {
+	public:
+		Kernpair(int a, int b):p(a,b) { }
+
+		bool operator < ( const Kernpair &other ) const {
+			if( p.first < other.p.first )
+				return true;
+			else if( p.first > other.p.first)
+				return false;
+			else
+				return (p.second < other.p.second);
+		}
+
+		int first() const {return p.first;} 
+		int second() const {return p.second;} 
+	private:
+		std::pair<int, int> p;
+};
 
 /** An image, consisting of a rectangle of floating-point elements.
  * This class makes it easy to read PNG files and the like from
@@ -86,9 +107,15 @@ private:
   std::map<int, int> yminMap;
   std::map<int, int> gheightMap;
   std::map<int, int> gwidthMap;
+  std::map<int, int> offsetx;
+  std::map<int, int> offsety;
+  std::map<int, int> winoctree;
+  std::map<int, int> hinoctree;
 
   void texture(int, float *);
   void renderline(int gnum, int * str, float mg, float ng, float * sp);
+  std::map<Kernpair, int> kmap;
+  bool getflag(float sx, float sy, float ex, float ey, int gw, int gh, int ox, int oy, int ow, int oh);
 };
 
 #endif

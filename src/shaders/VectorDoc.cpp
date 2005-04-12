@@ -228,7 +228,6 @@ bool VectorDoc::init()
 	  }
 	  std::cout << std::endl;
   }
-  */
 
   for(int i=0; i<psize*psize*4; i++) {
 	  std::cout << font.coords(3)[i] << " ";
@@ -239,6 +238,7 @@ bool VectorDoc::init()
 	  std::cout << font.coords(4)[i] << " ";
   }
   std::cout << std::endl;
+  */
 
   std::cerr << " the image width is " << font.width() << std::endl;
   std::cerr << " the image height is " << font.height() << std::endl;
