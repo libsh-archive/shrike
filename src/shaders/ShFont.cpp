@@ -361,7 +361,8 @@ void ShFont::renderline(int gnum, int * str, float mg, float ng, float * sp) {
 		yy = y + 1.0/m_gridsize * yshift / (m_maxgheight * (1 + MARGINRATIO * 2));
 		nn = (int)(yy * m_psize);
 
-		xx = x - 1.0/m_gridsize * gw * MARGINRATIO / (m_maxgheight * (1 + MARGINRATIO * 2));
+		// 0.02 is an offset such that the glyphs wont touch each other
+		xx = x - 1.0/m_gridsize * gw * MARGINRATIO / (m_maxgheight * (1 + MARGINRATIO * 2)) + 0.03;
 		mm = (int)(xx * m_psize);
 
 		float sx = 0, sy = 0, ex, ey;
@@ -378,7 +379,6 @@ void ShFont::renderline(int gnum, int * str, float mg, float ng, float * sp) {
 			int mend = (int)((xx + (float)gw / (m_maxgheight * m_gridsize)) * m_psize);
 			std::cout << "mend " << mend << std::endl;
 			
-			//for(int j=mm; j<mm+m_split; j++) {
 			for(int j=mm; j<mend; j++) {
 
 				ex = (((float)j + 1)/m_psize - xx) * m_gridsize;
@@ -432,7 +432,7 @@ void ShFont::texture(int num, float *sp) {
 	array[7] = int('r');
 	array[8] = int('e');
 
-	renderline(9, array, 0.5, 6, sp);
+	renderline(9, array, 0.25, 6, sp);
 
 	array[0] = int('o');
 	array[1] = int('p');
@@ -447,7 +447,7 @@ void ShFont::texture(int num, float *sp) {
 	array[10] = int('o');
 	array[11] = int('n');
 
-	renderline(12, array, 0.5, 4.5, sp);
+	renderline(12, array, 0.25, 4.5, sp);
 
 	array[0] = int('i');
 	array[1] = int('s');
@@ -461,7 +461,7 @@ void ShFont::texture(int num, float *sp) {
 	array[9] = int('o');
 	array[10] = int('t');
 
-	renderline(11, array, 0.5, 3, sp);
+	renderline(11, array, 0.25, 3, sp);
 
 	array[0] = int('o');
 	array[1] = int('f');
@@ -475,11 +475,10 @@ void ShFont::texture(int num, float *sp) {
 	array[9] = int('i');
 	array[10] = int('l');
 
-	renderline(11, array, 0.5, 1.5, sp);
+	renderline(11, array, 0.25, 1.5, sp);
 	*/
 
 	array[0] = int('W');
-	/*
 	array[1] = int('e');
 	array[2] = int(' ');
 	array[3] = int('p');
@@ -506,9 +505,335 @@ void ShFont::texture(int num, float *sp) {
 	array[24] = int('i');
 	array[25] = int('o');
 	array[26] = int('n');
-	*/
+	array[27] = int(' ');
+	array[28] = int('o');
+	array[29] = int('f');
 
-	renderline(1, array, 0.5, 7, sp);
+	renderline(30, array, 0.25, 15, sp);
+
+	array[0] = int('f');
+	array[1] = int('o');
+	array[2] = int('n');
+	array[3] = int('t');
+	array[4] = int(' ');
+	array[5] = int('g');
+	array[6] = int('l');
+	array[7] = int('y');
+	array[8] = int('p');
+	array[9] = int('h');
+	array[10] = int('s');
+	array[11] = int(' ');
+	array[12] = int('s');
+	array[13] = int('u');
+	array[14] = int('i');
+	array[15] = int('t');
+	array[16] = int('a');
+	array[17] = int('b');
+	array[18] = int('l');
+	array[19] = int('e');
+	array[20] = int(' ');
+	array[21] = int('f');
+	array[22] = int('o');
+	array[23] = int('r');
+	array[24] = int(' ');
+	array[25] = int('r');
+	array[26] = int('e');
+	array[27] = int('a');
+	array[28] = int('l');
+	array[29] = int('t');
+	array[30] = int('i');
+	array[31] = int('m');
+	array[32] = int('e');
+
+	renderline(33, array, 0.25, 13.5, sp);
+
+	array[0] = int('s');
+	array[1] = int('c');
+	array[2] = int('a');
+	array[3] = int('l');
+	array[4] = int('a');
+	array[5] = int('b');
+	array[6] = int('l');
+	array[7] = int('e');
+	array[8] = int(' ');
+	array[9] = int('t');
+	array[10] = int('e');
+	array[11] = int('x');
+	array[12] = int('t');
+	array[13] = int(' ');
+	array[14] = int('r');
+	array[15] = int('e');
+	array[16] = int('n');
+	array[17] = int('d');
+	array[18] = int('e');
+	array[19] = int('r');
+	array[20] = int('i');
+	array[21] = int('n');
+	array[22] = int('g');
+	array[23] = int(' ');
+	array[24] = int('o');
+	array[25] = int('n');
+	array[26] = int(' ');
+	array[27] = int('G');
+	array[28] = int('P');
+	array[29] = int('U');
+	array[30] = int('s');
+	array[31] = int('.');
+
+	renderline(32, array, 0.25, 12, sp);
+
+	array[0] = int('C');
+	array[1] = int('o');
+	array[2] = int('n');
+	array[3] = int('t');
+	array[4] = int('o');
+	array[5] = int('u');
+	array[6] = int('r');
+	array[7] = int('s');
+	array[8] = int(' ');
+	array[9] = int('a');
+	array[10] = int('n');
+	array[11] = int('d');
+	array[12] = int(' ');
+	array[13] = int('s');
+	array[14] = int('h');
+	array[15] = int('a');
+	array[16] = int('r');
+	array[17] = int('p');
+	array[18] = int(' ');
+	array[19] = int('f');
+	array[20] = int('e');
+	array[21] = int('a');
+	array[22] = int('t');
+	array[23] = int('u');
+	array[24] = int('r');
+	array[25] = int('e');
+	array[26] = int('s');
+	array[27] = int(' ');
+	array[28] = int('c');
+	array[29] = int('a');
+	array[30] = int('n');
+
+	renderline(31, array, 0.25, 10.5, sp);
+
+	array[0] = int('b');
+	array[1] = int('e');
+	array[2] = int(' ');
+	array[3] = int('e');
+	array[4] = int('x');
+	array[5] = int('a');
+	array[6] = int('c');
+	array[7] = int('t');
+	array[8] = int('l');
+	array[9] = int('y');
+	array[10] = int(' ');
+	array[11] = int('r');
+	array[12] = int('e');
+	array[13] = int('c');
+	array[14] = int('o');
+	array[15] = int('n');
+	array[16] = int('s');
+	array[17] = int('t');
+	array[18] = int('r');
+	array[19] = int('u');
+	array[20] = int('c');
+	array[21] = int('t');
+	array[22] = int('e');
+	array[23] = int('d');
+	array[24] = int(' ');
+	array[25] = int('u');
+	array[26] = int('s');
+	array[27] = int('i');
+	array[28] = int('n');
+	array[29] = int('g');
+	array[30] = int(' ');
+	array[31] = int('a');
+
+	renderline(32, array, 0.25, 9, sp);
+
+	array[0] = int('c');
+	array[1] = int('o');
+	array[2] = int('n');
+	array[3] = int('s');
+	array[4] = int('t');
+	array[5] = int('a');
+	array[6] = int('n');
+	array[7] = int('t');
+	array[8] = int(' ');
+	array[9] = int('a');
+	array[10] = int('m');
+	array[11] = int('o');
+	array[12] = int('u');
+	array[13] = int('n');
+	array[14] = int('t');
+	array[15] = int(' ');
+	array[16] = int('o');
+	array[17] = int('f');
+	array[18] = int(' ');
+	array[19] = int('c');
+	array[20] = int('o');
+	array[21] = int('m');
+	array[22] = int('p');
+	array[23] = int('u');
+	array[24] = int('t');
+	array[25] = int('a');
+	array[26] = int('t');
+	array[27] = int('i');
+	array[28] = int('o');
+	array[29] = int('n');
+
+	renderline(30, array, 0.25, 7.5, sp);
+
+	array[0] = int('t');
+	array[1] = int('i');
+	array[2] = int('m');
+	array[3] = int('e');
+	array[4] = int(' ');
+	array[5] = int('p');
+	array[6] = int('e');
+	array[7] = int('r');
+	array[8] = int(' ');
+	array[9] = int('p');
+	array[10] = int('i');
+	array[11] = int('x');
+	array[12] = int('e');
+	array[13] = int('l');
+	array[14] = int('.');
+	array[15] = int(' ');
+	array[16] = int('A');
+	array[17] = int(' ');
+	array[18] = int('c');
+	array[19] = int('o');
+	array[20] = int('m');
+	array[21] = int('b');
+	array[22] = int('i');
+	array[23] = int('n');
+	array[24] = int('a');
+	array[25] = int('t');
+	array[26] = int('i');
+	array[27] = int('o');
+	array[28] = int('n');
+	array[29] = int(' ');
+	array[30] = int('o');
+	array[31] = int('f');
+
+	renderline(32, array, 0.25, 6, sp);
+
+	array[0] = int('t');
+	array[1] = int('e');
+	array[2] = int('x');
+	array[3] = int('t');
+	array[4] = int('u');
+	array[5] = int('r');
+	array[6] = int('e');
+	array[7] = int(' ');
+	array[8] = int('d');
+	array[9] = int('a');
+	array[10] = int('t');
+	array[11] = int('a');
+	array[12] = int(' ');
+	array[13] = int('a');
+	array[14] = int('n');
+	array[15] = int('d');
+	array[16] = int(' ');
+	array[17] = int('p');
+	array[18] = int('r');
+	array[19] = int('o');
+	array[20] = int('c');
+	array[21] = int('e');
+	array[22] = int('d');
+	array[23] = int('u');
+	array[24] = int('r');
+	array[25] = int('a');
+	array[26] = int('l');
+	array[27] = int(' ');
+	array[28] = int('c');
+	array[29] = int('o');
+	array[30] = int('m');
+	//array[31] = int('-');
+
+	renderline(31, array, 0.25, 4.5, sp);
+
+	array[0] = int('p');
+	array[1] = int('u');
+	array[2] = int('t');
+	array[3] = int('a');
+	array[4] = int('t');
+	array[5] = int('i');
+	array[6] = int('o');
+	array[7] = int('n');
+	array[8] = int(' ');
+	array[9] = int('i');
+	array[10] = int('s');
+	array[11] = int(' ');
+	array[12] = int('u');
+	array[13] = int('s');
+	array[14] = int('e');
+	array[15] = int('d');
+	array[16] = int(' ');
+	array[17] = int('t');
+	array[18] = int('o');
+	array[19] = int(' ');
+	array[20] = int('r');
+	array[21] = int('e');
+	array[22] = int('c');
+	array[23] = int('r');
+	array[24] = int('e');
+	array[25] = int('a');
+	array[26] = int('t');
+	array[27] = int(' ');
+	array[28] = int('t');
+	array[29] = int('h');
+	array[30] = int('e');
+
+	renderline(31, array, 0.25, 3, sp);
+
+	array[0] = int('s');
+	array[1] = int('i');
+	array[2] = int('g');
+	array[3] = int('n');
+	array[4] = int('e');
+	array[5] = int('d');
+	array[6] = int(' ');
+	array[7] = int('d');
+	array[8] = int('i');
+	array[9] = int('s');
+	array[10] = int('t');
+	array[11] = int('a');
+	array[12] = int('n');
+	array[13] = int('c');
+	array[14] = int('e');
+	array[15] = int(' ');
+	array[16] = int('f');
+	array[17] = int('i');
+	array[18] = int('e');
+	array[19] = int('l');
+	array[20] = int('d');
+	array[21] = int(' ');
+	array[22] = int('a');
+	array[23] = int('n');
+	array[24] = int('d');
+	array[25] = int(' ');
+	array[26] = int('i');
+	array[27] = int('t');
+	array[28] = int('\'');
+	array[29] = int('s');
+	array[30] = int(' ');
+	array[31] = int('g');
+	array[32] = int('r');
+	array[33] = int('a');
+	//array[34] = int('-');
+
+	renderline(34, array, 0.25, 1.5, sp);
+
+	array[0] = int('d');
+	array[1] = int('i');
+	array[2] = int('e');
+	array[3] = int('n');
+	array[4] = int('t');
+	array[5] = int('.');
+
+	renderline(6, array, 0.25, 0, sp);
 
 	delete[] array;
 }
