@@ -781,12 +781,13 @@ void ShFont::texture(int num, float *sp) {
 	array[24] = int('e');
 	array[25] = int('a');
 	array[26] = int('t');
-	array[27] = int(' ');
-	array[28] = int('t');
-	array[29] = int('h');
-	array[30] = int('e');
+	array[27] = int('e');
+	array[28] = int(' ');
+	array[29] = int('t');
+	array[30] = int('h');
+	array[31] = int('e');
 
-	renderline(31, array, 0.25, 3, sp);
+	renderline(32, array, 0.25, 3, sp);
 
 	array[0] = int('s');
 	array[1] = int('i');
@@ -816,15 +817,14 @@ void ShFont::texture(int num, float *sp) {
 	array[25] = int(' ');
 	array[26] = int('i');
 	array[27] = int('t');
-	array[28] = int('\'');
-	array[29] = int('s');
-	array[30] = int(' ');
-	array[31] = int('g');
-	array[32] = int('r');
-	array[33] = int('a');
+	array[28] = int('s');
+	array[29] = int(' ');
+	array[30] = int('g');
+	array[31] = int('r');
+	array[32] = int('a');
 	//array[34] = int('-');
 
-	renderline(34, array, 0.25, 1.5, sp);
+	renderline(33, array, 0.25, 1.5, sp);
 
 	array[0] = int('d');
 	array[1] = int('i');
