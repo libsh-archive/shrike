@@ -49,12 +49,12 @@ public:
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
 
-	virtual void initMipMap() = 0;
+  virtual void initMipMap() {}
 	
   ShProgram vsh, fsh;
-	ShProgram tonemapping;
+  ShProgram tonemapping;
 	
-	std::string fname;
+  std::string fname;
 
   static Mipmap instance;
 };

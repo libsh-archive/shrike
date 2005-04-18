@@ -56,8 +56,8 @@ public:
   ~Hair();
 
   bool init();
-  virtual void initHair() = 0;
-  virtual void render() = 0;
+  virtual void initHair() {}
+  virtual void render() {}
   ShAttrib1f N2(ShAttrib1f eta, ShAttrib1f cosGammai, ShAttrib1f sigmaa);
   
   ShProgram vertex() { return vsh;}
