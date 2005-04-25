@@ -25,8 +25,6 @@
 // distribution.
 //////////////////////////////////////////////////////////////////////////////
 
-#include "utilimpl.hpp"
-
 /** Compute Lambert's law.   
  * Note that input vectors do not have to be normalized, this
  * function does that.   We depend on the compiler to do domain-specific

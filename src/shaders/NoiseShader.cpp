@@ -179,9 +179,9 @@ class MarbleNoise: public NoiseShader {
         ShAttrib1f noise = noiseScale * sturbulence<1>(posm * noiseFreq, octaveAmps, useTexture);
         inband = frac(inband + noise); // add noise
 
-        ShColor3f bandColor = lerp(smoothstep(bandrange(0), bandrange(1), inband), color1, color2);
-        inband = smoothstep(bandrange(0) - width1, bandrange(0), inband) - 
-                 smoothstep(bandrange(1), bandrange(1) + width2, inband);
+        ShColor3f bandColor = lerp(deprecated_smoothstep(bandrange(0), bandrange(1), inband), color1, color2);
+        inband = deprecated_smoothstep(bandrange(0) - width1, bandrange(0), inband) - 
+                 deprecated_smoothstep(bandrange(1), bandrange(1) + width2, inband);
 
         ShOutputColor3f SH_DECL(kd) = lerp(inband, bandColor, outColor); 
         ShOutputColor3f SH_DECL(ks) = specular; 

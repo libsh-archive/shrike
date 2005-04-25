@@ -1,3 +1,16 @@
+2005-04-25  Francois Marier  <francois@serioushack.com>
+	
+	* src/utilimpl.hpp: Remove this file and move its content to the
+	core library.
+
+	* src/shaders/Checkerboard.cpp, JeweledShader.cpp: Replace "sstep"
+	with "smoothstep" since this function has been moved to the core.
+	
+	* src/shaders/VectorText.cpp, NoiseShader.cpp: Replace
+	"smoothstep" with "deprecated_smoothstep" since these shaders
+	appears to be using a cubic smoothstep function whereas the
+	"smoothstep" function defined in the book is linear.
+
 2005-03-04  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* src/ShrikeApp.cpp (ShrikeApp): Added an optional argument
@@ -12,6 +25,7 @@
 	* src/Camera.cpp (Camera): Use a far plane that's actually far.
 
 2004-11-28 Bryan Chan  <b8chan@cgl.uwaterloo.ca>
+
 	Undid the typename -> ShValueType changes since trunk uses
 	typenames again.
   

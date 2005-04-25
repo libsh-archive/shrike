@@ -110,11 +110,11 @@ bool Checkerboard::init()
       
       ShAttrib1f fuzzMax = max(fuzz(0), fuzz(1));
       
-      ShAttrib2f p = sstep(checkpos, 0.5f + fuzz * 0.5f, fuzz) +
-        (1.0  - sstep(checkpos, 0.5f * fuzz, fuzz));
+      ShAttrib2f p = smoothstep(checkpos, 0.5f + fuzz * 0.5f, fuzz) +
+        (1.0  - smoothstep(checkpos, 0.5f * fuzz, fuzz));
       
       o = lerp(p(0)*p(1) + (1.0 - p(0)) * (1.0 - p(1)), m_color2, m_color1);
-      o = lerp(sstep(fuzzMax, ShConstAttrib1f(0.3125), ShConstAttrib1f(0.375)), avgcolor, o);
+      o = lerp(smoothstep(fuzzMax, ShConstAttrib1f(0.3125), ShConstAttrib1f(0.375)), avgcolor, o);
     } else {
       o = lerp(checkpos(0)*checkpos(1) + (1.0 - checkpos(0))*(1.0 - checkpos(1)) >= 0.5,
                m_color2, m_color1);

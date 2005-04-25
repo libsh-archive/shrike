@@ -271,8 +271,8 @@ bool JeweledShader::init()
     // threshold the filgiree distance texture
     ShAttrib1f m = mat(u)(0);
     ShAttrib3f mask;
-    mask(1) = sstep(m,threshold(0),width);
-    mask(2) = sstep(m,threshold(1),width);
+    mask(1) = smoothstep(m,threshold(0),width);
+    mask(2) = smoothstep(m,threshold(1),width);
     mask(0) = ShAttrib1f(1.0) - mask(1);
     mask(1) = mask(1) - mask(2);
 
