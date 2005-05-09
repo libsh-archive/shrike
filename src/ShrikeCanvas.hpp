@@ -44,8 +44,8 @@ public:
   void setModel(ShUtil::ShObjMesh* model);
   const ShUtil::ShObjMesh* getModel() const;
   
-  void paint();
-  void reshape();
+  void paint(wxPaintEvent& event);
+  void reshape(wxSizeEvent& event);
   void motion(wxMouseEvent& event);
 
   void screenshot(const std::string& filename);

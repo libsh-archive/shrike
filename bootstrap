@@ -1,14 +1,67 @@
 #!/bin/sh
 
+rm -rf libltdl
+
+echo "You may ignore messages about updating aclocal.m4."
+
+if test "x${LIBTOOLIZE}" = "x" ; then
+    case ${MACHTYPE}
+	in *apple*darwin*)
+	    # fink tools instead of Apple's
+	    LIBTOOLIZE="/sw/bin/glibtoolize --ltdl"
+
+	    ;;
+	*)
+	    LIBTOOLIZE="libtoolize --ltdl"
+    esac
+else
+    LIBTOOLIZE="$LIBTOOLIZE --ltdl"
+fi
+export LIBTOOLIZE
+
+# Old versions of libtoolize ask for configure.in instead of configure.ac
+# XXX -- There must be a better way to do this
+LIBTOOLIZE_VERSION=`$LIBTOOLIZE --version | awk ' NR == 1 { VERSION=$NF }  END { split(VERSION, arr_ver, "."); print arr_ver[1] * 10 + arr_ver[2] }'`
+if [ $LIBTOOLIZE_VERSION -lt 15 ]; then
+    echo "Your version of libtoolize is too old, please upgrade."
+    exit 1
+fi
+
 if test "x${AUTOMAKE}" = "x" ; then
-  AUTOMAKE=automake-1.7
+    case ${MACHTYPE}
+	in *apple*darwin*)
+	    AUTOMAKE=/sw/bin/automake
+	    ;;
+	*)
+	    AUTOMAKE=automake-1.7
+    esac
 fi
 export AUTOMAKE
+
 if test "x${ACLOCAL}" = "x" ; then
-  ACLOCAL=aclocal-1.7
+    case ${MACHTYPE}
+	in *apple*darwin*)
+	    ACLOCAL="/sw/bin/aclocal -I /sw/share/aclocal"
+	    ;;
+	*)
+	    ACLOCAL=aclocal-1.7
+    esac
 fi
 export ACLOCAL
 
+# ltdl seems to require these now...
+case ${MACHTYPE}
+    in *apple*darwin*)
+	M4PRFX=/sw/share/aclocal
+	M4DEST=config
+	;;
+    *)
+	M4PRFX=/usr/share/libtool
+	M4DEST=.
+esac
+cp $M4PRFX/libtool.m4 $M4DEST
+cp $M4PRFX/ltdl.m4 $M4DEST
+
 cat config/*.m4 > acinclude.m4
 
-autoreconf -s -i
+autoreconf -s -i $*

@@ -36,8 +36,13 @@
 #include "Shader.hpp"
 #include "Globals.hpp"
 #define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
+#ifdef __APPLE__
+# include <OpenGL/gl.h>
+# include <OpenGL/glext.h>
+#else
+# include <GL/gl.h>
+# include <GL/glext.h>
+#endif
 #undef GL_GLEXT_PROTOTYPES
 #include <sh/ShObjMesh.hpp>
 

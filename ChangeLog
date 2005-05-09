@@ -1,3 +1,22 @@
+2005-05-09  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* configure.ac (GL_CHECK_GL_HEADERS): Include the GL
+	libraries. OS X build works now, but I get run-time OpenGL
+	errors. Sigh.
+
+	* config/gl.m4: Updated from latest Sh version.
+
+	* Everywhere OpenGL headers are included use the appropriate path
+	on OS X.
+
+	* bootstrap: Replace with latest bootstrap from Sh. This includes
+	lots of fixes for OS X.
+
+2005-05-08  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
+
+	* src/Makefile.am (*_CPPFLAGS): Use -I$(srcdir)/HDRImages instead
+	of -IHDRImages in order to allow out-of-source building.
+
 2005-04-25  Francois Marier  <francois@serioushack.com>
 	
 	* src/utilimpl.hpp: Remove this file and move its content to the

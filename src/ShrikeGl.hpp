@@ -2,15 +2,22 @@
 #define SH_SHRIKEGL_HPP
 
 #ifdef WIN32
-#include <windows.h>
+# include <windows.h>
 #endif
 
-#define GL_GLEXT_LEGACY
-#include <GL/gl.h>
-#include <GL/glext.h>
-#undef GL_GLEXT_LEGACY
+#ifdef __APPLE__
+# define GL_GLEXT_VERBOSE 1
+# define GL_GLEXT_PROTOTYPES 1
+# include <OpenGL/gl.h>
+# include <OpenGL/glext.h>
+#else
+# define GL_GLEXT_LEGACY
+# include <GL/gl.h>
+# include <GL/glext.h>
+# undef GL_GLEXT_LEGACY
+#endif
 
-#ifdef WIN32
+#if defined(WIN32) 
 
 extern PFNGLMULTITEXCOORD1FARBPROC glMultiTexCoord1fARB;
 extern PFNGLMULTITEXCOORD2FARBPROC glMultiTexCoord2fARB;

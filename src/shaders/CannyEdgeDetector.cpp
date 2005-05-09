@@ -30,10 +30,15 @@
 #include <fstream>
 #include "Shader.hpp"
 #include "Globals.hpp"
-#define GL_GLEXT_LEGACY
-#include <GL/gl.h>
-#include <GL/glext.h>
-#undef GL_GLEXT_LEGACY
+#ifdef __APPLE__
+# include <OpenGL/gl.h>
+# include <OpenGL/glext.h>
+#else
+# define GL_GLEXT_LEGACY
+# include <GL/gl.h>
+# include <GL/glext.h>
+# undef GL_GLEXT_LEGACY
+#endif
 #include "HDRImages/HDRImage.hpp"
 #include "HDRImages/HDRInterp.hpp"
 #include "HDRImages/Filters.hpp"

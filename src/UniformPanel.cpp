@@ -35,6 +35,11 @@
 #include "ShrikeCanvas.hpp"
 #include "ShrikeFrame.hpp"
 
+// Defined on apple
+#ifdef check
+# undef check
+#endif
+
 using namespace SH;
 
 UniformPanel::UniformPanel(wxWindow* parent)

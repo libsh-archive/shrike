@@ -133,7 +133,7 @@ ShrikeCanvas* ShrikeCanvas::instance()
   return m_instance;
 }
 
-void ShrikeCanvas::paint()
+void ShrikeCanvas::paint(wxPaintEvent& event)
 {
   wxPaintDC dc(this);
   SHRIKE_GL_CHECK_CURRENT_ERROR;
@@ -234,16 +234,13 @@ void ShrikeCanvas::render()
   }
 
   shUnbind();
-  /*
-  SHRIKE_GL_CHECK_ERROR(glDisable(GL_FRAGMENT_PROGRAM_ARB));
-  SHRIKE_GL_CHECK_ERROR(glDisable(GL_VERTEX_PROGRAM_ARB));
-  */
+
   ShPoint3f lp = Globals::lightDirW * Globals::lightLenW;
   float pos[3];
   lp.getValues(pos);
 
   SHRIKE_GL_CHECK_ERROR(glPointSize(3.0));
-  
+
   SHRIKE_GL_CHECK_ERROR(glBegin(GL_POINTS)); {
     SHRIKE_GL_CHECK_ERROR(glColor3f(1.0, 0.0, 1.0));
     SHRIKE_GL_CHECK_ERROR(glVertex3fv(pos));
@@ -418,7 +415,7 @@ void ShrikeCanvas::init()
   SHRIKE_GL_CHECK_CURRENT_ERROR;
 }
 
-void ShrikeCanvas::reshape()
+void ShrikeCanvas::reshape(wxSizeEvent& event)
 {
   if (m_init && GetContext()) {
     SetCurrent();

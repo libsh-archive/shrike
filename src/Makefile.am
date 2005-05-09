@@ -25,7 +25,6 @@ shrike_SOURCES += shaders/SimplePhong.cpp
 shrike_SOURCES += shaders/SimpleDiffuse.cpp
 shrike_SOURCES += shaders/WorleyShader.cpp
 shrike_SOURCES += shaders/TexShader.cpp
-#shrike_SOURCES += shaders/CelShader.cpp
 shrike_SOURCES += shaders/Ashikhmin.cpp
 shrike_SOURCES += shaders/Texter.cpp
 shrike_SOURCES += shaders/Text.cpp shaders/Text.hpp
@@ -93,20 +92,20 @@ shrike_SOURCES += HDRImages/HDRCubeMap.hpp
 
 AM_CXXFLAGS = `${WX_CONFIG} --cxxflags` -Wall
 AM_CPPFLAGS = `${WX_CONFIG} --cppflags`
-shrike_CPPFLAGS = -IHDRImages
+shrike_CPPFLAGS = -I$(srcdir)/HDRImages
 shrike_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
-shrike_LDADD = -lsh -lshutil
+shrike_LDADD = $(GL_LIBS) -lsh -lshutil
 
 shgenmap_SOURCES = ShGenMap.cpp
 shgenmap_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
 shgenmap_LDADD = -lsh -lshutil
 
 shHDRfunc_SOURCES = ShHDRFunc.cpp HDRImages/HDRImage.cpp HDRImages/HDRImage.hpp
-shHDRfunc_CPPFLAGS = -IHDRImages
+shHDRfunc_CPPFLAGS = -I$(srcdir)/HDRImages
 shHDRfunc_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
 shHDRfunc_LDADD = -lsh -lshutil
 
 shsparse_SOURCES = ShSparse.cpp HDRImages/HDRImage.cpp HDRImages/HDRImage.hpp
-shsparse_CPPFLAGS = -IHDRImages
+shsparse_CPPFLAGS = -I$(srcdir)/HDRImages
 shsparse_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
 shsparse_LDADD = -lsh -lshutil
