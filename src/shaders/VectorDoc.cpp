@@ -205,12 +205,12 @@ bool VectorDoc::init()
   sprite2.memory(font.memory(4));
 
   //debug info
+  /*
   for(int i=0; i<glyphcount*8; i++) {
 	  std::cout << font.coords(0)[i] << " ";
   }
   std::cout << std::endl;
 
-  /*
   for(int i=0; i<height; i++) {
 	  for(int j=0; j<width; j++) {
 		  std::cout << i << " " << j << std::endl;

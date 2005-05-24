@@ -146,6 +146,7 @@ bool VectorText::init()
   shUpdate();
 
   //debug info
+  /*
   for(int i=0; i<height; i++) {
 	  for(int j=0; j<width; j++) {
 		  int num = (int)glyph.edgenum()[i*width+j];
@@ -159,6 +160,7 @@ bool VectorText::init()
 		  }
 	  }
   }
+  */
 
   std::cerr << " the image width is " << glyph.width() << std::endl;
   std::cerr << " the image height is " << glyph.height() << std::endl;
@@ -184,6 +186,7 @@ bool VectorText::init()
   ftexture.memory(glyph.memory(0));
 
   //debug info
+  /*
   for(int i=0; i<height; i++) {
 	  for(int j=0; j<width; j++) {
 		  std::cout << i << " " << j << std::endl;
@@ -194,6 +197,7 @@ bool VectorText::init()
 		  std::cout << std::endl;
 	  }
   }
+  */
 
   std::cerr << " the image width is " << glyph.width() << std::endl;
   std::cerr << " the image height is " << glyph.height() << std::endl;
@@ -231,6 +235,7 @@ bool VectorText::init()
   flag.memory(glyph.memory(1));
 
   //debug info
+  /*
   for(int i=0; i<height; i++) {
 	  for(int j=0; j<width; j++) {
 		  std::cout << i << " " << j << std::endl;
@@ -247,6 +252,7 @@ bool VectorText::init()
 	  }
 	  std::cout << std::endl;
   }
+  */
 
   std::cerr << " the image width is " << glyph.width() << std::endl;
   std::cerr << " the image height is " << glyph.height() << std::endl;

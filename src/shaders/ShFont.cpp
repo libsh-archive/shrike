@@ -229,6 +229,7 @@ void ShFont::loadFont(const std::string& filename)
 	// input sprite 
 
 	int num = 256;
+	//int num = 128;
 	m_psize = num;
 	m_split = 16;
 	m_gridsize = num/m_split;
@@ -361,8 +362,7 @@ void ShFont::renderline(int gnum, int * str, float mg, float ng, float * sp) {
 		yy = y + 1.0/m_gridsize * yshift / (m_maxgheight * (1 + MARGINRATIO * 2));
 		nn = (int)(yy * m_psize);
 
-		// 0.02 is an offset such that the glyphs wont touch each other
-		xx = x - 1.0/m_gridsize * gw * MARGINRATIO / (m_maxgheight * (1 + MARGINRATIO * 2)) + 0.03;
+		xx = x - 1.0/m_gridsize * gw * MARGINRATIO / (m_maxgheight * (1 + MARGINRATIO * 2));
 		mm = (int)(xx * m_psize);
 
 		float sx = 0, sy = 0, ex, ey;
@@ -413,7 +413,8 @@ void ShFont::renderline(int gnum, int * str, float mg, float ng, float * sp) {
 		// move x forward, keep y unchanged for now
 		float ratio = (float)adv / (m_maxgheight * (1 + MARGINRATIO * 2));
 
-		x += 1.0/m_gridsize * ratio;
+		// 0.02 is an offset such that the glyphs wont touch each other
+		x += 1.0/m_gridsize * ratio + 0.001;
 	}
 }
 
