@@ -313,7 +313,7 @@ bool VectorText::init()
         // isotropically antialiased rendering
         ShAttrib2f fw = fwidth(x);
         ShAttrib1f w = max(fw(0),fw(1))*m_fw;
-        ShAttrib1f p = smoothstep(-w,w,r(0)+m_thres(0));
+        ShAttrib1f p = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
         o = lerp(p,m_color2,m_color1);
       } break;
       case 1: {
@@ -322,7 +322,7 @@ bool VectorText::init()
         fw(0) = dx(x) | r(2,3);
         fw(1) = dy(x) | r(2,3);
         ShAttrib1f w = length(fw)*m_fw;
-        ShAttrib1f p = smoothstep(-w,w,r(0)+m_thres(0));
+        ShAttrib1f p = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
         o = lerp(p,m_color2,m_color1);
       } break;
       case 2: {
@@ -334,8 +334,8 @@ bool VectorText::init()
         ShAttrib2f fw = fwidth(x);
         ShAttrib1f w = max(fw(0),fw(1))*m_fw;;
         ShAttrib2f p;
-        p(0) = smoothstep(-w,w,r(0)+m_thres(0));
-        p(1) = smoothstep(-w,w,-r(0)-m_thres(1));
+        p(0) = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
+        p(1) = deprecated_smoothstep(-w,w,-r(0)-m_thres(1));
         o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
       } break;
       case 4: {
@@ -345,8 +345,8 @@ bool VectorText::init()
         fw(1) = dy(x) | r(2,3);
         ShAttrib1f w = length(fw)*m_fw;
         ShAttrib2f p;
-        p(0) = smoothstep(-w,w,r(0)+m_thres(0));
-        p(1) = smoothstep(-w,w,-r(0)-m_thres(1));
+        p(0) = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
+        p(1) = deprecated_smoothstep(-w,w,-r(0)-m_thres(1));
         o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
       } break;
       case 5: {
@@ -364,8 +364,8 @@ bool VectorText::init()
         ShAttrib2f fw = fwidth(x);;
         ShAttrib1f w = max(fw(0),fw(1))*m_fw;
         ShAttrib2f p;
-        p(0) = smoothstep(-w,w,r(1)+m_thres(0));
-        p(1) = smoothstep(-w,w,-r(1)-m_thres(1));;
+        p(0) = deprecated_smoothstep(-w,w,r(1)+m_thres(0));
+        p(1) = deprecated_smoothstep(-w,w,-r(1)-m_thres(1));;
         o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
       } break;
       case 8: {
@@ -375,8 +375,8 @@ bool VectorText::init()
         fw(1) = dy(x) | r(2,3);
         ShAttrib1f w = length(fw)*m_fw;
         ShAttrib2f p;
-        p(0) = smoothstep(-w,w,r(1)+m_thres(0));
-        p(1) = smoothstep(-w,w,-r(1)-m_thres(1));
+        p(0) = deprecated_smoothstep(-w,w,r(1)+m_thres(0));
+        p(1) = deprecated_smoothstep(-w,w,-r(1)-m_thres(1));
         o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
       } break;;
       case 9: {
