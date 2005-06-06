@@ -68,7 +68,7 @@ public:
 private:
   ShObjMesh* m_model;
   ShHostMemoryPtr newmem;
-  ShTextureRect<ShColor3f> img;
+  ShTextureRect<ShColor3fub> img;
   int vp[4];
 };
 
@@ -116,7 +116,7 @@ void EdgeDetection::render()
     {
       for(int i=0 ; i<4 ; i++)
 	vp[i] = newvp[i]; // set the new size
-      newmem = new ShHostMemory((vp[2]-vp[0])*(vp[3]-vp[1])*3*sizeof(float)); // allocate memory
+      newmem = new ShHostMemory((vp[2]-vp[0])*(vp[3]-vp[1])*3*sizeof(float), SH_FLOAT); // allocate memory
       img.size(vp[2]-vp[0],vp[3]-vp[1]); // change the size
       img.memory(newmem);
     }
@@ -153,7 +153,7 @@ bool EdgeDetection::init()
   }
   for(int i=0 ; i<4 ; i++)
     vp[i] = 0;
-  newmem = new ShHostMemory(3*sizeof(float)); // the real size will be specified in render()
+  newmem = new ShHostMemory(3*sizeof(float), SH_FLOAT); // the real size will be specified in render()
   img.memory(newmem);
 		
   vsh_model = SH_BEGIN_PROGRAM("gpu:vertex") {

@@ -68,8 +68,8 @@ bool AnisotropicDiff::init()
   HDRImage image;
   std::string fileName(SHMEDIA_DIR "/hdr/hdr/memorial.hdr");
   image.loadHDR(fileName.c_str());
-  AnisDiff<ShUnclamped<ShTextureRect<ShVector4f > > > Img(image.width(), image.height());
-  ShUnclamped<ShTextureRect<ShVector4f> > Img2(image.width(), image.height());
+  AnisDiff<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
+  ShTextureRect<ShVector4f> Img2(image.width(), image.height());
   Img.internal(true);
   Img.memory(image.memory());
   Img2.internal(true);

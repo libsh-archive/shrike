@@ -61,7 +61,7 @@ public:
 
 protected:
   ShHostMemoryPtr newmem;
-  ShTextureRect<ShColor3f> newimg;
+  ShTextureRect<ShColor3fub> newimg;
 
 private:
   void renderPlane()
@@ -106,7 +106,7 @@ void CannyEdgeDetectorShader::render()
     shBind(fsh_1st);
     renderPlane();
     newmem->hostStorage()->dirty(); // needed to update the value after
-    newmem = new ShHostMemory((vp[2]-vp[0])*(vp[3]-vp[1])*3*sizeof(float)); // allocate memory
+    newmem = new ShHostMemory((vp[2]-vp[0])*(vp[3]-vp[1])*3*sizeof(float), SH_FLOAT); // allocate memory
     newimg.size(vp[2]-vp[0],vp[3]-vp[1]); // change the size
     newimg.memory(newmem);
     glReadBuffer(GL_BACK);
@@ -141,10 +141,10 @@ bool CannyEdgeDetectorShader::init()
   HDRImage image;
   std::string filename = SHMEDIA_DIR "/hdr/hdr/memorial.hdr";
   image.loadHDR(filename.c_str());
-  AnisDiff<CatmullRomInterp<ShTextureRect<ShVector4f> > > img(image.width(), image.height());
+  AnisDiff<CatmullRomInterp<ShTextureRect<ShVector4fub> > > img(image.width(), image.height());
   img.internal(true);
   img.memory(image.memory());
-  newmem = new ShHostMemory(3*sizeof(float)); // the real size will be specified in render()
+  newmem = new ShHostMemory(3*sizeof(float), SH_FLOAT); // the real size will be specified in render()
   newimg.internal(true);
   newimg.memory(newmem);
     

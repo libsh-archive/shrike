@@ -95,7 +95,7 @@ public:
     float* olddata = (float*)cursto->data();
     // create a new memory for the new texture
     m_mipmapwidth = width + width/2 + (width % 2);
-    ShHostMemoryPtr newmem = new ShHostMemory(m_mipmapwidth*height*stride*sizeof(float));
+    ShHostMemoryPtr newmem = new ShHostMemory(m_mipmapwidth*height*stride*sizeof(float), SH_FLOAT);
     float* newdata = (float*)newmem->hostStorage()->data();
     // update the new texture parameters
     m_mipmaptex.memory(newmem);

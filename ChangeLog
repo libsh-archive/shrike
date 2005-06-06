@@ -1,3 +1,9 @@
+2005-06-06  Francois Marier  <francois@serioushack.com>
+
+	* src/shaders, src/HDRImages: Remove ShUnclamped.
+	Change AttribNf textures to AttribNfub.
+	Specify the value type when constructing host memory.
+
 2005-05-09  Stefanus Du Toit  <sjdutoit@uwaterloo.ca>
 
 	* configure.ac (GL_CHECK_GL_HEADERS): Include the GL

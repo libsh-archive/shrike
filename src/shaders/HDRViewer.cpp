@@ -66,7 +66,7 @@ bool testHDR::init()
   HDRImage image;
   std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
   image.loadHDR(filename.c_str());
-  ShUnclamped<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
+  ShTextureRect<ShVector4f> Img(image.width(), image.height());
   Img.internal(true);
   Img.memory(image.memory());
 

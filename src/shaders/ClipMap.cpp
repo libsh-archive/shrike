@@ -52,7 +52,7 @@ public:
 
 private:
   bool textInit;
-  ClipMap<ShTextureRect<ShColor4f>, SIZE_IMAGE > Img;
+  ClipMap<ShTextureRect<ShColor4fub>, SIZE_IMAGE > Img;
 };
 
 ClipMapShader::ClipMapShader()
@@ -72,7 +72,7 @@ bool ClipMapShader::init()
     ShImage image;
     std::string filename = SHMEDIA_DIR "/largetextures/earth.png";
     image.loadPng(filename.c_str());
-    Img = ClipMap<ShTextureRect<ShColor4f>, SIZE_IMAGE>(image.width(), image.height());
+    Img = ClipMap<ShTextureRect<ShColor4fub>, SIZE_IMAGE>(image.width(), image.height());
     Img.internal(true);
     Img.memory(image.memory());
     textInit = true;

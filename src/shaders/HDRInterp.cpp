@@ -121,11 +121,11 @@ public:
     std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
     image.loadHDR(filename.c_str());
 
-    ShUnclamped<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
+    ShTextureRect<ShVector4f> Img(image.width(), image.height());
     Img.internal(true);
     Img.memory(image.memory());
   
-    LinInterp<ShUnclamped<ShTextureRect<ShVector4f> > > LinImg(image.width(), image.height());
+    LinInterp<ShTextureRect<ShVector4f> > LinImg(image.width(), image.height());
     LinImg.internal(true);
     LinImg.memory(image.memory());
     
@@ -164,11 +164,11 @@ public:
     std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
     image.loadHDR(filename.c_str());
 
-    ShUnclamped<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
+    ShTextureRect<ShVector4f> Img(image.width(), image.height());
     Img.internal(true);
     Img.memory(image.memory());
   
-    CatmullRomInterp<ShUnclamped<ShTextureRect<ShVector4f> > > CatmullRomImg(image.width(), image.height());
+    CatmullRomInterp<ShTextureRect<ShVector4f> > CatmullRomImg(image.width(), image.height());
     CatmullRomImg.internal(true);
     CatmullRomImg.memory(image.memory());
 
@@ -207,11 +207,11 @@ public:
     std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
     image.loadHDR(filename.c_str());
 
-    ShUnclamped<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
+    ShTextureRect<ShVector4f> Img(image.width(), image.height());
     Img.internal(true);
     Img.memory(image.memory());
   
-    CubicBSplineInterp<ShUnclamped<ShTextureRect<ShVector4f> > > BSplineImg(image.width(), image.height());
+    CubicBSplineInterp<ShTextureRect<ShVector4f> > BSplineImg(image.width(), image.height());
     BSplineImg.internal(true);
     BSplineImg.memory(image.memory());
 
@@ -249,11 +249,11 @@ public:
     std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
     image.loadHDR(filename.c_str());
 
-    ShUnclamped<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
+    ShTextureRect<ShVector4f> Img(image.width(), image.height());
     Img.internal(true);
     Img.memory(image.memory());
   
-    CardinalSplineInterp<ShUnclamped<ShTextureRect<ShVector4f> > > CardSplineImg(image.width(), image.height());
+    CardinalSplineInterp<ShTextureRect<ShVector4f> > CardSplineImg(image.width(), image.height());
     CardSplineImg.internal(true);
     CardSplineImg.memory(image.memory());
 
@@ -312,11 +312,11 @@ bool SmoothSplineInterpolation::init()
   std::string filename = SHMEDIA_DIR "/hdr/hdr/memorial.hdr";
   image.loadHDR(filename.c_str());
 
-  ShUnclamped<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
+  ShTextureRect<ShVector4f> Img(image.width(), image.height());
   Img.internal(true);
   Img.memory(image.memory());
 
-  SmoothSplineInterp<ShUnclamped<ShTextureRect<ShVector4f> > > SmoothSplineImg(image.width(), image.height());
+  SmoothSplineInterp<ShTextureRect<ShVector4f> > SmoothSplineImg(image.width(), image.height());
   SmoothSplineImg.internal(true);
   SmoothSplineImg.memory(image.memory());
   SmoothSplineImg.setCoeff(atol(lambda.c_str()));

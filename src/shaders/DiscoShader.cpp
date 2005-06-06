@@ -60,7 +60,7 @@ bool DiscoShader::init()
   ShImage test_image;
   test_image.loadPng(std::string(SHMEDIA_DIR "/envmaps/aniroom/") + imageNames[0] + ".png");
 
-  ShTextureCube<ShColor4f> cubemap(test_image.width(), test_image.height());
+  ShTextureCube<ShColor4fub> cubemap(test_image.width(), test_image.height());
   {
     for (int i = 0; i < 6; i++) {
       ShImage image;

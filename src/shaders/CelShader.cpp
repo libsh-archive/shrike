@@ -56,12 +56,12 @@ bool CelShader::init()
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
   vsh = vsh << shExtract("lightPos") << Globals::lightPos; 
 
-  ShWrapRepeat< ShTexture2D<ShColor3f> > paper(256, 256);
+  ShWrapRepeat< ShTexture2D<ShColor3fub> > paper(256, 256);
   ShImage paperImg;
   paperImg.loadPng(SHMEDIA_DIR "/textures/paper.png");
   paper.memory(paperImg.memory());
 
-  ShWrapRepeat< ShTexture2D<ShColor3f> > hatching(256, 256);
+  ShWrapRepeat< ShTexture2D<ShColor3fub> > hatching(256, 256);
   ShImage hatchingImg;
   hatchingImg.loadPng(SHMEDIA_DIR "/textures/hatching.png");
   hatching.memory(hatchingImg.memory());

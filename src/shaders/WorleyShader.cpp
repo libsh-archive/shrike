@@ -645,7 +645,7 @@ public:
 
     ShImage image;
     image.loadPng(SHMEDIA_DIR "/textures/kd.png");
-    ShTexture2D<ShColor3f> mosaicTex(image.width(), image.height());
+    ShTexture2D<ShColor3fub> mosaicTex(image.width(), image.height());
     mosaicTex.name("Mosaic Texture");
     mosaicTex.memory(image.memory());
 
@@ -653,7 +653,7 @@ public:
     ShImage test_image;
     test_image.loadPng(std::string(SHMEDIA_DIR "/envmaps/aniroom/") + imageNames[0] + ".png");
 
-    ShTextureCube<ShColor4f> cubemap(test_image.width(), test_image.height());
+    ShTextureCube<ShColor4fub> cubemap(test_image.width(), test_image.height());
     {
       for (int i = 0; i < 6; i++) {
 	ShImage image2;
@@ -668,7 +668,7 @@ public:
     DefaultGenFactory<2, float> genFactory(useTexture);
     //NullGenFactory<2, float> genFactory;
     DistSqPropFactory<2, float> distFactory;
-    Tex2DPropFactory<ShColor3f, float> tex2dFactory(mosaicTex, texScale);
+    Tex2DPropFactory<ShColor3fub, float> tex2dFactory(mosaicTex, texScale);
 
     coeff = ShConstAttrib4f(-1.0f, 1.0f, 0.0f, 0.0f);
 

@@ -248,7 +248,7 @@ public:
     int height = this->m_node->height();
     int stride = return_type::typesize;
     ShHostStoragePtr cursto = shref_dynamic_cast<ShHostStorage>(memory()->findStorage("host"));
-    ShHostMemoryPtr newmem = new ShHostMemory(width * height * stride * sizeof(float));
+    ShHostMemoryPtr newmem = new ShHostMemory(width * height * stride * sizeof(float), SH_FLOAT);
     parent_type tmptex;
     tmptex.memory(newmem);
     tmptex.size(width, height);
@@ -425,7 +425,7 @@ public:
     int height = this->m_node->height();
     int stride = return_type::typesize;
     ShHostStoragePtr cursto = shref_dynamic_cast<ShHostStorage>(memory()->findStorage("host"));
-    ShHostMemoryPtr newmem = new ShHostMemory(width * height * stride * sizeof(float));
+    ShHostMemoryPtr newmem = new ShHostMemory(width * height * stride * sizeof(float), SH_FLOAT);
     T tmptex;
     tmptex.memory(newmem);
     tmptex.size(width, height);

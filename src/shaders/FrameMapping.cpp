@@ -168,7 +168,7 @@ bool FrameMapping::init()
   w = fmap.quaternionMap.width();
   h = fmap.quaternionMap.height();
   mapImage(fmap.quaternionMap);
-  ShUnclamped< ShTextureRect<ShVector4f> > quaternionMap(w, h);
+  ShTextureRect<ShVector4f> quaternionMap(w, h);
   quaternionMap.memory(fmap.quaternionMap.memory());
 #else
   int w, h, w2, h2;
@@ -180,9 +180,9 @@ bool FrameMapping::init()
   h2 = fmap.tangentMap.height();
   mapImage(fmap.normalMap);
   mapImage(fmap.tangentMap);
-  ShUnclamped< ShTextureRect<ShVector3f> > normalMap(w, h);
-  ShUnclamped< ShTextureRect<ShVector3f> > tangentMap(w2, h2);
-	normalMap.memory(fmap.normalMap.memory());
+  ShTextureRect<ShVector3f> normalMap(w, h);
+  ShTextureRect<ShVector3f> tangentMap(w2, h2);
+  normalMap.memory(fmap.normalMap.memory());
   tangentMap.memory(fmap.tangentMap.memory());
 #endif
 #endif

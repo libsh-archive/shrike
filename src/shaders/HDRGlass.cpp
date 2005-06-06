@@ -64,7 +64,7 @@ bool HDRGlassShader::init()
   HDRImage image;
   std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
   image.loadHDR(filename.c_str());
-  CubeMap<ShUnclamped<ShTextureRect<ShVector4f> > > Img(image.width(), image.height());
+  CubeMap<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
   Img.internal(true);
   Img.memory(image.memory());
 

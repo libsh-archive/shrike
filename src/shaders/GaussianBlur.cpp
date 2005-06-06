@@ -69,7 +69,7 @@ bool GaussianBlur::init()
   std::string fileName(SHMEDIA_DIR "/hdr/hdr/memorial.hdr");
   image.loadHDR(fileName.c_str());
   int sigma = atoi(fname.c_str());
-  GaussFilter<ShUnclamped<ShTextureRect<ShVector4f> > > Blurr(image.width(), image.height(), sigma);
+  GaussFilter<ShTextureRect<ShVector4f> > Blurr(image.width(), image.height(), sigma);
   Blurr.internal(true);
   Blurr.memory(image.memory());
 

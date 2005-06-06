@@ -121,8 +121,8 @@ bool JeweledShader::init()
 #define NMATS 3
 #define LMAT 0
 #define UMAT 2
-  ShTexture2D<ShColor3f> ptex[NMATS];
-  ShTexture2D<ShColor3f> qtex[NMATS];
+  ShTexture2D<ShColor3fub> ptex[NMATS];
+  ShTexture2D<ShColor3fub> qtex[NMATS];
 
   image.loadPng(SHMEDIA_DIR "/brdfs/mystique/mystique64_0.png");
   ptex[0].size(image.width(), image.height());
@@ -156,13 +156,13 @@ bool JeweledShader::init()
 
   // Specular highlight (to be added when needed...)
   image.loadPng(SHMEDIA_DIR "/brdfs/specular.png");
-  ShTexture2D<ShColor3f> stex(image.width(), image.height());
+  ShTexture2D<ShColor3fub> stex(image.width(), image.height());
   stex.memory(image.memory());
   stex.name("Specular highlight texture");
   
   // Cube map for mirror reflection
   std::string imageNames[6] = {"left", "right", "top", "bottom", "back", "front"};
-  ShTextureCube<ShColor4f> env;
+  ShTextureCube<ShColor4fub> env;
   env.name("Environment map");
   {
     for (int i = 0; i < 6; i++) {
@@ -173,7 +173,7 @@ bool JeweledShader::init()
     }
   }
   
-  ShWrapRepeat< ShTexture2D<ShColor3f> > mat;
+  ShWrapRepeat< ShTexture2D<ShColor3fub> > mat;
 
   // Material map (threshold based...)
   image.loadPng(SHMEDIA_DIR "/textures/halftone.png");

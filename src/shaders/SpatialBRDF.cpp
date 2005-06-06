@@ -64,13 +64,13 @@ bool SpatialBRDF::init()
   HDRImage diffuseimg, specularimg;
   std::string diffusename = SHMEDIA_DIR "/hdr/hdr/" + fname + "_SBRDF_diffuse.hdr";
   diffuseimg.loadHDR(diffusename.c_str());
-  ShUnclamped<ShTextureRect<ShVector4f> > DiffImg(diffuseimg.width(), diffuseimg.height());
+  ShTextureRect<ShVector4f> DiffImg(diffuseimg.width(), diffuseimg.height());
   DiffImg.memory(diffuseimg.memory());
   DiffImg.internal(true);
 	
   std::string specularname = SHMEDIA_DIR "/hdr/hdr/" + fname + "_SBRDF_specular_128.hdr";
   specularimg.loadHDR(specularname.c_str());
-  ShUnclamped<ShTextureRect<ShVector4f> > SpecImg(specularimg.width(), specularimg.height());
+  ShTextureRect<ShVector4f> SpecImg(specularimg.width(), specularimg.height());
   SpecImg.memory(specularimg.memory());
   SpecImg.internal(true);
 	

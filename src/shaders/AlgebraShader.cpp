@@ -224,18 +224,18 @@ ShProgram satinSurface() {
   // alpha, really), pulldown menu to select BRDFs from list,
   // settings for extra specularities, etc. etc.
   image.loadPng(SHMEDIA_DIR "/brdfs/satin/satinp.png");
-  ShTexture2D<ShColor3f> ptex(image.width(), image.height());
+  ShTexture2D<ShColor3fub> ptex(image.width(), image.height());
   ptex.internal(true);
   ptex.memory(image.memory());
 
   image.loadPng(SHMEDIA_DIR "/brdfs/satin/satinq.png");
-  ShTexture2D<ShColor3f> qtex(image.width(), image.height());
+  ShTexture2D<ShColor3fub> qtex(image.width(), image.height());
   qtex.internal(true);
   qtex.memory(image.memory());
 
   // HACK, satin doesn't have specular part, turned off by default
   image.loadPng(SHMEDIA_DIR "/textures/ks.png");
-  ShTexture2D<ShColor3f> stex(image.width(), image.height());
+  ShTexture2D<ShColor3fub> stex(image.width(), image.height());
   stex.name("Satin Texture");
   stex.memory(image.memory());
 
@@ -412,7 +412,7 @@ bool AlgebraShaders::init_all()
   ShAttrib1f SH_NAMEDECL(texLightScale, "Mask Scaling Factor") = ShConstAttrib1f(5.0f);
   texLightScale.range(1.0f, 10.0f);
   image.loadPng(SHMEDIA_DIR "/mats/inv_oriental038.png");
-  ShTexture2D<ShColor3f> lighttex(image.width(), image.height());
+  ShTexture2D<ShColor3fub> lighttex(image.width(), image.height());
   lighttex.memory(image.memory());
   lightsh[i++] = ShKernelLight::texLight2D(lighttex) << texLightScale << lightAngle << lightDir << lightUp;
 
@@ -424,7 +424,7 @@ bool AlgebraShaders::init_all()
   surfmapsh[i++] = keep<ShNormal3f>("normal"); 
 
   image.loadPng(SHMEDIA_DIR "/bumpmaps/bumps_normals.png");
-  ShTexture2D<ShColor3f> normaltex(image.width(), image.height());
+  ShTexture2D<ShColor3fub> normaltex(image.width(), image.height());
   normaltex.name("Bumpmap Normals");
   normaltex.memory(image.memory());
 
@@ -449,12 +449,12 @@ bool AlgebraShaders::init_all()
   //surfsh[i++] = ShKernelSurface::phong<ShColor3f>() << kd << ks << specExp;
 
   image.loadPng(SHMEDIA_DIR "/textures/rustkd.png");
-  ShTexture2D<ShColor3f> difftex(image.width(), image.height());
+  ShTexture2D<ShColor3fub> difftex(image.width(), image.height());
   difftex.name("Diffuse texture");
   difftex.memory(image.memory());
 
   image.loadPng(SHMEDIA_DIR "/textures/rustks.png");
-  ShTexture2D<ShColor3f> spectex(image.width(), image.height());
+  ShTexture2D<ShColor3fub> spectex(image.width(), image.height());
   spectex.name("Specular texture");
   spectex.memory(image.memory());
 
@@ -474,7 +474,7 @@ bool AlgebraShaders::init_all()
   // ******************* Make postprocessing shaders
   i = 0;
   image.loadPng(SHMEDIA_DIR "/textures/halftone.png");
-  ShTexture2D<ShColor3f> halftoneTex(image.width(), image.height());
+  ShTexture2D<ShColor3fub> halftoneTex(image.width(), image.height());
   halftoneTex.name("Halftoning texture");
   halftoneTex.memory(image.memory());
 
@@ -488,7 +488,7 @@ bool AlgebraShaders::init_all()
     ShOutputTexCoord2f SH_DECL(texcoord) = posh(0,1) * invheight * htscale;
     //ShInOutTexCoord2f SH_DECL(texcoord) *= htscale; 
   } SH_END;
-  postsh[i++] = namedConnect(scaler, shHalftone<ShColor3f>(halftoneTex));
+  postsh[i++] = namedConnect(scaler, shHalftone<ShColor3fub>(halftoneTex));
   
   ShAttrib1f SH_NAMEDECL(nscale, "Scaling Factor") = ShConstAttrib1f(50.0f);
   nscale.range(1.0f, 400.0f);

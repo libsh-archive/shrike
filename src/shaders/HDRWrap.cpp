@@ -121,7 +121,7 @@ public:
     std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
     image.loadHDR(filename.c_str());
 
-    MipMap<ShWrapRepeat<ShUnclamped<ShTextureRect<ShVector4f> > > > Img(image.width(), image.height());
+    MipMap<ShWrapRepeat<ShTextureRect<ShVector4f> > > Img(image.width(), image.height());
     Img.internal(true);
     Img.memory(image.memory());
 	

@@ -122,7 +122,7 @@ public:
     std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
     image.loadHDR(filename.c_str());
 
-    MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > MipMapImg(image.width(), image.height());
+    MipMap<ShTextureRect<ShVector4f> > MipMapImg(image.width(), image.height());
     MipMapImg.internal(true);
     MipMapImg.memory(image.memory());
 
@@ -155,7 +155,7 @@ public:
     std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
     image.loadHDR(filename.c_str());
 
-    LinInterp<MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > > MipMapImg(image.width(), image.height());
+    LinInterp<MipMap<ShTextureRect<ShVector4f> > > MipMapImg(image.width(), image.height());
     MipMapImg.internal(true);
     MipMapImg.memory(image.memory());
 
@@ -188,7 +188,7 @@ public:
     std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
     image.loadHDR(filename.c_str());
 
-    CatmullRomInterp<MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > > MipMapImg(image.width(), image.height());
+    CatmullRomInterp<MipMap<ShTextureRect<ShVector4f> > > MipMapImg(image.width(), image.height());
     MipMapImg.internal(true);
     MipMapImg.memory(image.memory());
 
@@ -221,7 +221,7 @@ public:
     std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
     image.loadHDR(filename.c_str());
 
-    CubicBSplineInterp<MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > > MipMapImg(image.width(), image.height());
+    CubicBSplineInterp<MipMap<ShTextureRect<ShVector4f> > > MipMapImg(image.width(), image.height());
     MipMapImg.internal(true);
     MipMapImg.memory(image.memory());
 

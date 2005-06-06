@@ -65,7 +65,7 @@ bool HDRShinyBumpMapShader::init()
   HDRImage image;
   std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
   image.loadHDR(filename.c_str());
-  CubeMap<ShUnclamped<ShTextureRect<ShVector4f> > > Img(image.width(), image.height());
+  CubeMap<ShTextureRect<ShVector4f> > Img(image.width(), image.height());
   Img.internal(true);
   Img.memory(image.memory());
 
@@ -89,7 +89,7 @@ bool HDRShinyBumpMapShader::init()
 
   ShImage bumpimage;
   bumpimage.loadPng(SHMEDIA_DIR "/bumpmaps/bumps_normals.png");
-  ShTexture2D<ShVector3f> bump(bumpimage.width(),bumpimage.height());
+  ShTexture2D<ShVector3fub> bump(bumpimage.width(),bumpimage.height());
   bump.memory(bumpimage.memory());
 
   ShAttrib3f SH_DECL(scale) = ShAttrib3f(2.0,2.0,1.0);

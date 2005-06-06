@@ -62,10 +62,10 @@ bool SparseTexture::init()
   data.loadHDR(SHMEDIA_DIR "/sparse/sparse_data.hdr");
   map.loadHDR(SHMEDIA_DIR "/sparse/sparse_map.hdr");
 
-  ShUnclamped<ShTextureRect<ShAttrib4f> > dataTex(data.width(), data.height());
+  ShTextureRect<ShAttrib4f> dataTex(data.width(), data.height());
   dataTex.memory(data.memory());
 	
-  ShUnclamped<ShTextureRect<ShAttrib4f> > mapTex(map.width(), map.height());
+  ShTextureRect<ShAttrib4f> mapTex(map.width(), map.height());
   mapTex.memory(map.memory());
 
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {

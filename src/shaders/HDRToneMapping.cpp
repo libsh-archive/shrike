@@ -69,7 +69,7 @@ bool AshikhminToneMapShader::init()
   std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
   image.loadHDR(filename.c_str());
 
-  AshikhminToneMap<ShUnclamped<ShTextureRect<ShVector4f> > > ToneMapImg(image.width(), image.height());
+  AshikhminToneMap<ShTextureRect<ShVector4f> > ToneMapImg(image.width(), image.height());
   ToneMapImg.internal(true);
   ToneMapImg.memory(image.memory());
   
@@ -147,7 +147,7 @@ bool ReinhardToneMapShader::init()
   std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
   image.loadHDR(filename.c_str());
 	
-  ReinhardToneMap<ShUnclamped<ShTextureRect<ShVector4f> > > ToneMapImg(image.width(), image.height());
+  ReinhardToneMap<ShTextureRect<ShVector4f> > ToneMapImg(image.width(), image.height());
   ToneMapImg.internal(true);
   ToneMapImg.memory(image.memory());
 	

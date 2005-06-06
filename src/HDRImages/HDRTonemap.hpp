@@ -60,7 +60,7 @@ protected:
   {
     int filterWidth = 2*sigma+1; // the size of the filter depends on sigma
     float* horizontaldata = new float[width * height * stride];
-    ShHostMemoryPtr filter = new ShHostMemory(width * height * stride * sizeof(float)); // create the result space
+    ShHostMemoryPtr filter = new ShHostMemory(width * height * stride * sizeof(float), SH_FLOAT); // create the result space
     float* verticaldata = (float*)filter->hostStorage()->data();
     
     // compute the coefficients
@@ -101,9 +101,9 @@ protected:
    */
   ShHostMemoryPtr AnisotropicDiffFilter(float* data, int width, int height, int stride, int t) 
   {
-    ShHostMemoryPtr dist = new ShHostMemory(width * height * 2 * stride * sizeof(float));
+    ShHostMemoryPtr dist = new ShHostMemory(width * height * 2 * stride * sizeof(float), SH_FLOAT);
     float* distdata = (float*)dist->hostStorage()->data();
-    ShHostMemoryPtr filter = new ShHostMemory(width * height * stride * sizeof(float));
+    ShHostMemoryPtr filter = new ShHostMemory(width * height * stride * sizeof(float), SH_FLOAT);
     float* filterdata = (float*)filter->hostStorage()->data();
     while(t>0) {
       // compute the distance between a point and its neighbour
@@ -140,10 +140,10 @@ protected:
           u0 = 1.0/(1.0+u0*u0);
           for(int k=0 ; k<3 ; k++) {
             filterdata[(j*width+i)*stride+k] = data[(j*width+i)*stride+k] +
-                                               0.25 * (v1*distdata[(j*width+i)*2*stride+k] +
-                                                       u1*distdata[(j*width+i)*2*stride+stride+k] -
-                                                       v0*distdata[(jminus*width+i)*2*stride+k] -
-                                                       u0*distdata[(j*width+iminus)*2*stride+stride+k]);
+	      0.25 * (v1*distdata[(j*width+i)*2*stride+k] +
+		      u1*distdata[(j*width+i)*2*stride+stride+k] -
+		      v0*distdata[(jminus*width+i)*2*stride+k] -
+		      u0*distdata[(j*width+iminus)*2*stride+stride+k]);
           }
         }
       }
@@ -161,7 +161,7 @@ protected:
     int doublewidth = width;
     width /= 2;
     height /= 2;
-    ShHostMemoryPtr reduc = new ShHostMemory(width * height * stride * sizeof(float));
+    ShHostMemoryPtr reduc = new ShHostMemory(width * height * stride * sizeof(float), SH_FLOAT);
     float* reducdata = (float*)reduc->hostStorage()->data();
     
     for(int i=0 ; i<width ; i++) {
@@ -356,7 +356,7 @@ public:
     width /= 2;
     height /= 2;
     int scalingFactor = this->m_node->width()/width;
-    ShHostMemoryPtr luminance = new ShHostMemory(width * height * stride * sizeof(float));
+    ShHostMemoryPtr luminance = new ShHostMemory(width * height * stride * sizeof(float), SH_FLOAT);
     float *lum = (float*)luminance->hostStorage()->data();
     
     // the luminance of the image
