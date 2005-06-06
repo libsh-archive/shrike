@@ -51,7 +51,7 @@ public:
 
   ShProgram vsh, fsh;
 
-	std::string fname;
+  std::string fname;
 
   static GaussianBlur instance;
 };
@@ -59,7 +59,7 @@ public:
 GaussianBlur::GaussianBlur()
   : Shader("Filters: Gaussian Blur"), fname("1")
 {
-	setStringParam("standard deviation", fname);
+  setStringParam("standard deviation", fname);
 }
 
 GaussianBlur::~GaussianBlur()
@@ -68,13 +68,13 @@ GaussianBlur::~GaussianBlur()
 
 bool GaussianBlur::init()
 {
-	HDRImage image;
+  HDRImage image;
   std::string fileName(SHMEDIA_DIR "/hdr/hdr/memorial.hdr");
-	image.loadHDR(fileName.c_str());
+  image.loadHDR(fileName.c_str());
   int sigma = atoi(fname.c_str());
-	GaussFilter<ShUnclamped<ShTextureRect<ShVector4f> > > Blurr(image.width(), image.height(), sigma);
-	Blurr.internal(true);
-	Blurr.memory(image.memory());
+  GaussFilter<ShUnclamped<ShTextureRect<ShVector4f> > > Blurr(image.width(), image.height(), sigma);
+  Blurr.internal(true);
+  Blurr.memory(image.memory());
 
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
@@ -89,27 +89,27 @@ bool GaussianBlur::init()
   } SH_END;
 
   ShAttrib1f SH_DECL(level) = ShAttrib1f(0.0);
-	level.range(-10.0,10.0);
+  level.range(-10.0,10.0);
   
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputPosition4f posh;
     ShInputTexCoord2f tc;
     ShInputNormal3f normal;
  
-		ShOutputColor3f result;
+    ShOutputColor3f result;
 
     tc *=Blurr.size();
- 		ShAttrib3f RGB = pow(2, level + 2.47393) * Blurr[tc](0,1,2);
+    ShAttrib3f RGB = pow(2, level + 2.47393) * Blurr[tc](0,1,2);
 		
-		ShAttrib1f f = 0.184874;
-		ShAttrib1f e = 2.718281828;
-		RGB(0) = cond(RGB(0)>1.0, 1.0 + log2((RGB(0)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(0));
-		RGB(1) = cond(RGB(1)>1.0, 1.0 + log2((RGB(1)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(1));
-		RGB(2) = cond(RGB(2)>1.0, 1.0 + log2((RGB(2)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(2));
-		ShAttrib1f gammainv = 0.454545455; // gamma-correction = 1/2.2
-		result = 0.285714286 * pow(RGB,gammainv(0,0,0));
+    ShAttrib1f f = 0.184874;
+    ShAttrib1f e = 2.718281828;
+    RGB(0) = cond(RGB(0)>1.0, 1.0 + log2((RGB(0)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(0));
+    RGB(1) = cond(RGB(1)>1.0, 1.0 + log2((RGB(1)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(1));
+    RGB(2) = cond(RGB(2)>1.0, 1.0 + log2((RGB(2)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(2));
+    ShAttrib1f gammainv = 0.454545455; // gamma-correction = 1/2.2
+    result = 0.285714286 * pow(RGB,gammainv(0,0,0));
    
-	} SH_END;
+  } SH_END;
   return true;
 }
 

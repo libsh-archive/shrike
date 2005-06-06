@@ -38,22 +38,16 @@ class LargeTexture : public T, public ShMemoryDep {
 public:
   typedef T parent_type;
   typedef typename T::return_type return_type;
-	typedef typename T::base_type base_type;
-	typedef LargeTexture<typename T::rectangular_type, N, M> rectangular_type;
+  typedef typename T::base_type base_type;
+  typedef LargeTexture<typename T::rectangular_type, N, M> rectangular_type;
+  
+  LargeTexture() : parent_type() {}
+  LargeTexture(int width) : parent_type(width) {}
+  LargeTexture(int width, int height) : parent_type(width, height) {}
+  LargeTexture(int width, int height, int depth) : parent_type(width, height, depth) {}
 
-	LargeTexture() : parent_type()
-	{}
-
-	LargeTexture(int width) : parent_type(width)
-	{}
-
-	LargeTexture(int width, int height) : parent_type(width, height)
-	{}
-
-	LargeTexture(int width, int height, int depth) : parent_type(width, height, depth)
-	{}
-
-  void memory(ShMemoryPtr mem) {
+  void memory(ShMemoryPtr mem)
+  {
     this->m_node->memory(mem);
     this->m_node->memory()->add_dep(this);
     this->m_node->memory()->flush();
@@ -61,19 +55,20 @@ public:
 
   ShMemoryPtr memory() { return this->m_node->memory(); }
 
-  void memory_update() {
+  void memory_update()
+  {
     width = this->m_node->width() / N;
     height = this->m_node->height() / M;
     int stride = return_type::typesize;
     ShHostStoragePtr cursto =	shref_dynamic_cast<ShHostStorage>(memory()->findStorage("host"));
-		float* olddata = (float*)cursto->data();
+    float* olddata = (float*)cursto->data();
     for(int i=0 ; i<N ; i++) {
       for(int j=0 ; j<M ; j++) {
         ShHostMemoryPtr newtext = new ShHostMemory(width * height * stride * sizeof(float));
         textureTable[i][j].memory(newtext);
         textureTable[i][j].internal(true);
         textureTable[i][j].size(width, height);
-   		  float* data = (float*)newtext->hostStorage()->data();
+	float* data = (float*)newtext->hostStorage()->data();
         for(int x=0 ; x<width ; x++) {
           for(int y=0 ; y<height ; y++) {
             for(int z=0 ; z<stride ; z++) {
@@ -83,9 +78,10 @@ public:
         }
       }
     }
-	}
-	
-	return_type operator[](const ShTexCoord2f tc) const {
+  }
+  
+  return_type operator[](const ShTexCoord2f tc) const 
+  {
     ShAttrib2f pos = floor(tc / ShAttrib2f(width,height));
     ShAttrib2f u  = mad(-1.0, pos*ShAttrib2f(width,height), tc);
     return_type text;
@@ -95,9 +91,10 @@ public:
       }
     }
     return text;
-	}
-			
-	return_type operator()(const ShTexCoord2f tc) const {
+  }
+  
+  return_type operator()(const ShTexCoord2f tc) const 
+  {
     return operator[](tc*this->size());
   }
 

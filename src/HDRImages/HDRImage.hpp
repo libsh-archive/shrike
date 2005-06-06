@@ -32,48 +32,48 @@
 
 class HDRImage {
 public:
-	HDRImage();
+  HDRImage();
   HDRImage(int width, int height, int depth);
-	HDRImage(const HDRImage& other);
-	~HDRImage();
-
-	HDRImage& operator=(const HDRImage& other);
-
-	/*
-	void loadEXR(const char filename[]); // load an OpenEXR file
-	void saveEXR(const char filename[]); // save an OpenEXR file
-	*/
-	
-	void loadHDR(const char filename[]); // load a HDR file
-	void saveHDR(const char filename[]); // save a HDR file
-
+  HDRImage(const HDRImage& other);
+  ~HDRImage();
+  
+  HDRImage& operator=(const HDRImage& other);
+  
+  /*
+    void loadEXR(const char filename[]); // load an OpenEXR file
+    void saveEXR(const char filename[]); // save an OpenEXR file
+  */
+  
+  void loadHDR(const char filename[]); // load a HDR file
+  void saveHDR(const char filename[]); // save a HDR file
+  
   float operator()(int x, int y, int i) const { return m_image(x,y,i); }
   float& operator()(int x, int y, int i) { return m_image(x,y,i); }
-	
-	int width() const { return m_width; }
-	int height() const { return m_height; }
-	int elements() const { return m_elements; }
   
-	void loadPng(const std::string& filename) { m_image.loadPng(filename); }
-	
-	void savePng(const std::string& filename) { m_image.savePng(filename); }  
+  int width() const { return m_width; }
+  int height() const { return m_height; }
+  int elements() const { return m_elements; }
   
-	void savePng16(const std::string& filename) { m_image.savePng16(filename); }
-
-	SH::ShImage getNormalImage() { return m_image.getNormalImage(); }
-
+  void loadPng(const std::string& filename) { m_image.loadPng(filename); }
+  
+  void savePng(const std::string& filename) { m_image.savePng(filename); }  
+  
+  void savePng16(const std::string& filename) { m_image.savePng16(filename); }
+  
+  SH::ShImage getNormalImage() { return m_image.getNormalImage(); }
+  
   const float* data() const { return m_image.data(); }
   float* data() { return m_image.data(); }
 	
-	void dirty() { m_image.dirty(); }
-	SH::ShMemoryPtr	memory() { return m_image.memory(); }
-	SH::ShPointer<const SH::ShMemory>	memory() const { return m_image.memory(); }
-	
-	SH::ShImage image() { return m_image; }
-	
+  void dirty() { m_image.dirty(); }
+  SH::ShMemoryPtr memory() { return m_image.memory(); }
+  SH::ShPointer<const SH::ShMemory> memory() const { return m_image.memory(); }
+  
+  SH::ShImage image() { return m_image; }
+  
 private:
-	SH::ShImage m_image;
-	int m_width, m_height;
+  SH::ShImage m_image;
+  int m_width, m_height;
   int m_elements;
 };
 

@@ -115,5 +115,3 @@ bool PaletteExample::init()
 }
 
 PaletteExample PaletteExample::instance = PaletteExample();
-
-

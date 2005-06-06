@@ -43,38 +43,28 @@ public:
   typedef typename T::base_type base_type;
   typedef ClipMap<typename T::rectangular_type, ClipSize> rectangular_type;
 
-  ClipMap() : parent_type() {
-    init = false;
-  }
+  ClipMap() : parent_type() { init = false; }
+  ClipMap(int width) : parent_type(width) { init = false; }
+  ClipMap(int width, int height) : parent_type(width, height) { init = false; }
+  ClipMap(int width, int height, int depth) : parent_type(width, height, depth) { init = false; }
 
-  ClipMap(int width) : parent_type(width) {
-    init = false;
-  }
-  
-  ClipMap(int width, int height) : parent_type(width, height) {
-    init = false;
-  }
-
-  ClipMap(int width, int height, int depth) : parent_type(width, height, depth) {
-    init = false;
-  }
-
-  void setCenter(int center[2]) {
+  void setCenter(int center[2])
+  {
     NewCenter[0] = center[0];
     NewCenter[1] = center[1];
     this->m_node->memory()->flush();
   }    
 
-  void memory(ShMemoryPtr mem) {
+  void memory(ShMemoryPtr mem) 
+  {
     this->m_node->memory(mem);
     this->m_node->memory()->add_dep(this);
   }
 
-  ShMemoryPtr memory() {
-    return this->m_node->memory();
-  }
+  ShMemoryPtr memory() { return this->m_node->memory(); }
 
-  void memory_update() {
+  void memory_update()
+  {
     if(!init) {
       initClipMap();
       init = true;
@@ -198,13 +188,14 @@ public:
     } while(coffset[1] > 0);
   }
 
-  return_type operator[](const ShTexCoord2f tc) const {
+  return_type operator[](const ShTexCoord2f tc) const 
+  {
     ShAttrib2f center(oldcenter[0], oldcenter[1]);
     ShAttrib2f offset(offset[0], offset[1]);
     
     ShAttrib1f dist = SH::max(abs(tc-center)+1.0);
     ShAttrib1f level = pos(log2(dist/(0.5*ClipSize))+1.0); // get clip zones
- 	  level += pos(log2(SH::max(fwidth(tc)))); // add mip-mapping
+    level += pos(log2(SH::max(fwidth(tc)))); // add mip-mapping
     
     ShAttrib1f transition = frac(level); // blending coefficient
     level = floor(level); // base coefficient
@@ -236,7 +227,8 @@ public:
   
 private:
   // generate a mipmap texture
-  void ClipMap::generateMipMap() {
+  void ClipMap::generateMipMap() 
+  {
     width = this->m_node->width();
     height = this->m_node->height();
     oldwidth = width;
@@ -257,7 +249,8 @@ private:
   }
 
   // recursive computation of the levels 
-  void ClipMap::generateMipMapLevels(float* data, int wstart, int hstart, int wend, int hend, int wnew, int hnew) {
+  void ClipMap::generateMipMapLevels(float* data, int wstart, int hstart, int wend, int hend, int wnew, int hnew) 
+  {
     width = (wend-wstart)/2;
     height = (hend-hstart)/2;
     // do a linear interpolation to resample the image
@@ -267,9 +260,9 @@ private:
           int maxx = 2*x+1 < 2*width ? 2*x+1 : 2*width-1;
           int maxy = 2*y+1 < 2*height ? 2*y+1 : 2*height-1;
           data[((y+hnew)*mipmapwidth + x+wnew)*stride + e] =  data[((2*y+hstart)*mipmapwidth + 2*x+wstart)*stride +e] +
-                                                              data[((2*y+hstart)*mipmapwidth + maxx+wstart)*stride +e] +
-                                                              data[((maxy+hstart)*mipmapwidth + 2*x+wstart)*stride +e] +
-                                                              data[((maxy+hstart)*mipmapwidth + maxx+wstart)*stride +e];
+	    data[((2*y+hstart)*mipmapwidth + maxx+wstart)*stride +e] +
+	    data[((maxy+hstart)*mipmapwidth + 2*x+wstart)*stride +e] +
+	    data[((maxy+hstart)*mipmapwidth + maxx+wstart)*stride +e];
           data[((y+hnew)*mipmapwidth + x+wnew)*stride + e] *= 0.25; 
         }
       }
@@ -279,7 +272,8 @@ private:
   }
   
   // copy a part of a mipmap level into a clipmap level
-  void copyClipMapData(int updateWindow[2], int offset[2], int center[2], int mipmaplevel) {
+  void copyClipMapData(int updateWindow[2], int offset[2], int center[2], int mipmaplevel) 
+  {
     // compute the size of the current mipmap level
     int mipmapsize[2];
     float scalefactor = pow(0.5, (double)mipmaplevel);
@@ -332,7 +326,8 @@ private:
     }
   }
 
-  void horizontalUpdate(int difference[2], int offset[2]) {
+  void horizontalUpdate(int difference[2], int offset[2]) 
+  {
     int updateWindow[2], coffset[2], center[2];
     updateWindow[0] = abs(difference[0]);
     updateWindow[1] = ClipSize - abs(difference[1]) - abs(offset[1]);
@@ -348,7 +343,7 @@ private:
       center[0] = center[0] - ClipSize/2;
       coffset[0] += difference[0];
       if(coffset[0] < 0)
-       coffset[0] += ClipSize;
+	coffset[0] += ClipSize;
     }
     if(difference[1] >= 0) {
       center[1] = oldcenter[1] - ClipSize/2 + difference[1];
@@ -389,7 +384,8 @@ private:
     }
   }
 
-  void verticalUpdate(int difference[2], int offset[2]) {
+  void verticalUpdate(int difference[2], int offset[2]) 
+  {
     int updateWindow[2], coffset[2], center[2];
     coffset[0] = offset[0];
     coffset[1] = offset[1];
@@ -446,7 +442,8 @@ private:
     }
   }
 
-  void diagonalUpdate(int difference[2]) {
+  void diagonalUpdate(int difference[2]) 
+  {
     int updateWindow[2], coffset[2], center[2];
     updateWindow[0] = abs(difference[0]);
     updateWindow[1] = abs(difference[1]);

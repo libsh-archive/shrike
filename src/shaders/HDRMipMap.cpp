@@ -62,7 +62,7 @@ public:
 Mipmap::Mipmap(std::string type)
   : Shader(std::string("HDR: Mip-Mapping: ") + type), fname("memorial.hdr")
 {
-	setStringParam("Image Name", fname);
+  setStringParam("Image Name", fname);
 }
 
 Mipmap::~Mipmap()
@@ -82,165 +82,165 @@ bool Mipmap::init()
     opos = Globals::mvp | ipos; // Compute NDC position
     onorm = Globals::mv | inorm; // Compute view-space normal
 
-		ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
+    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
   } SH_END;
 
-	ShAttrib1f SH_DECL(level) = ShAttrib1f(0.0);
-	level.range(-10.0,10.0);
+  ShAttrib1f SH_DECL(level) = ShAttrib1f(0.0);
+  level.range(-10.0,10.0);
 
-	tonemapping = SH_BEGIN_PROGRAM("gpu:fragment") {
-		ShInputAttrib4f interp;
-		ShOutputColor3f result;
+  tonemapping = SH_BEGIN_PROGRAM("gpu:fragment") {
+    ShInputAttrib4f interp;
+    ShOutputColor3f result;
 		
-		// display the image
-		ShAttrib3f RGB = pow(2, level + 2.47393) * interp(0,1,2);
+    // display the image
+    ShAttrib3f RGB = pow(2, level + 2.47393) * interp(0,1,2);
 		
-		ShAttrib1f f = 0.184874;
-		ShAttrib1f e = 2.718281828;
-		ShAttrib1f R = cond(RGB(0)>1.0, 1.0 + log2((RGB(0)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(0));
-		ShAttrib1f G = cond(RGB(1)>1.0, 1.0 + log2((RGB(1)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(1));
-		ShAttrib1f B = cond(RGB(2)>1.0, 1.0 + log2((RGB(2)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(2));
-		ShAttrib1f gammainv = 0.454545455; // gamma-correction = 1/2.2
-		R = pow(R,gammainv);
-		G = pow(G,gammainv);
-		B = pow(B,gammainv);
+    ShAttrib1f f = 0.184874;
+    ShAttrib1f e = 2.718281828;
+    ShAttrib1f R = cond(RGB(0)>1.0, 1.0 + log2((RGB(0)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(0));
+    ShAttrib1f G = cond(RGB(1)>1.0, 1.0 + log2((RGB(1)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(1));
+    ShAttrib1f B = cond(RGB(2)>1.0, 1.0 + log2((RGB(2)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(2));
+    ShAttrib1f gammainv = 0.454545455; // gamma-correction = 1/2.2
+    R = pow(R,gammainv);
+    G = pow(G,gammainv);
+    B = pow(B,gammainv);
 		
-		result	= ShColor3f(R,G,B) * 0.285;
-	} SH_END;
+    result	= ShColor3f(R,G,B) * 0.285;
+  } SH_END;
 
-	initMipMap();
+  initMipMap();
 	
-	return true;
+  return true;
 }
 
 class SimpleMipMap: public Mipmap {
 public:
-	SimpleMipMap(): Mipmap("Mip-Mapping") {};
+  SimpleMipMap(): Mipmap("Mip-Mapping") {};
 	
-	static SimpleMipMap instance;
+  static SimpleMipMap instance;
 	
-	void initMipMap() {
-		HDRImage image;
+  void initMipMap() {
+    HDRImage image;
 
-		std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
-		image.loadHDR(filename.c_str());
+    std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
+    image.loadHDR(filename.c_str());
 
-		MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > MipMapImg(image.width(), image.height());
-		MipMapImg.internal(true);
-		MipMapImg.memory(image.memory());
+    MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > MipMapImg(image.width(), image.height());
+    MipMapImg.internal(true);
+    MipMapImg.memory(image.memory());
 
-		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
-		scale.range(0.1,10.0);
+    ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
+    scale.range(0.1,10.0);
 	
-	  fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
-	    ShInputPosition4f posh;
-	    ShInputTexCoord2f tc;
-	    ShInputNormal3f normal;
-	 		tc *= scale;
-			ShOutputAttrib4f result = MipMapImg(tc);
-		} SH_END;
+    fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
+      ShInputPosition4f posh;
+      ShInputTexCoord2f tc;
+      ShInputNormal3f normal;
+      tc *= scale;
+      ShOutputAttrib4f result = MipMapImg(tc);
+    } SH_END;
 	
-		fsh = tonemapping << fsh;
-	}
+    fsh = tonemapping << fsh;
+  }
 };
 
 SimpleMipMap SimpleMipMap::instance = SimpleMipMap();
 
 class LinMipMap: public Mipmap {
 public:
-	LinMipMap(): Mipmap("Bilinear Interpolation") {};
+  LinMipMap(): Mipmap("Bilinear Interpolation") {};
 	
-	static LinMipMap instance;
+  static LinMipMap instance;
 	
-	void initMipMap() {
-		HDRImage image;
+  void initMipMap() {
+    HDRImage image;
 
-		std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
-		image.loadHDR(filename.c_str());
+    std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
+    image.loadHDR(filename.c_str());
 
-		LinInterp<MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > > MipMapImg(image.width(), image.height());
-		MipMapImg.internal(true);
-		MipMapImg.memory(image.memory());
+    LinInterp<MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > > MipMapImg(image.width(), image.height());
+    MipMapImg.internal(true);
+    MipMapImg.memory(image.memory());
 
-		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
-		scale.range(0.1,10.0);
+    ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
+    scale.range(0.1,10.0);
 
-	  fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
-	    ShInputPosition4f posh;
-	    ShInputTexCoord2f tc;
-	    ShInputNormal3f normal;
-	 		tc *= scale;
-			ShOutputAttrib4f result = MipMapImg(tc);
-		} SH_END;
+    fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
+      ShInputPosition4f posh;
+      ShInputTexCoord2f tc;
+      ShInputNormal3f normal;
+      tc *= scale;
+      ShOutputAttrib4f result = MipMapImg(tc);
+    } SH_END;
 	
-		fsh = tonemapping << fsh;
-	}
+    fsh = tonemapping << fsh;
+  }
 };
 
 LinMipMap LinMipMap::instance = LinMipMap();
 
 class CubicMipMap: public Mipmap {
 public:
-	CubicMipMap(): Mipmap("Catmull-Rom Interpolation") {};
+  CubicMipMap(): Mipmap("Catmull-Rom Interpolation") {};
 	
-	static CubicMipMap instance;
+  static CubicMipMap instance;
 	
-	void initMipMap() {
-		HDRImage image;
+  void initMipMap() {
+    HDRImage image;
 
-		std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
-		image.loadHDR(filename.c_str());
+    std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
+    image.loadHDR(filename.c_str());
 
-		CatmullRomInterp<MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > > MipMapImg(image.width(), image.height());
-		MipMapImg.internal(true);
-		MipMapImg.memory(image.memory());
+    CatmullRomInterp<MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > > MipMapImg(image.width(), image.height());
+    MipMapImg.internal(true);
+    MipMapImg.memory(image.memory());
 
-		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
-		scale.range(0.1,10.0);
+    ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
+    scale.range(0.1,10.0);
 
-	  fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
-	    ShInputPosition4f posh;
-	    ShInputTexCoord2f tc;
-	    ShInputNormal3f normal;
-	 		tc *= scale;
-			ShOutputAttrib4f result = MipMapImg(tc);
-		} SH_END;
+    fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
+      ShInputPosition4f posh;
+      ShInputTexCoord2f tc;
+      ShInputNormal3f normal;
+      tc *= scale;
+      ShOutputAttrib4f result = MipMapImg(tc);
+    } SH_END;
 	
-		fsh = tonemapping << fsh;
-	}
+    fsh = tonemapping << fsh;
+  }
 };
 
 CubicMipMap CubicMipMap::instance = CubicMipMap();
 
 class BSplineMipMap: public Mipmap {
 public:
-	BSplineMipMap(): Mipmap("B-Spline Interpolation") {};
+  BSplineMipMap(): Mipmap("B-Spline Interpolation") {};
 	
-	static BSplineMipMap instance;
+  static BSplineMipMap instance;
 	
-	void initMipMap() {
-		HDRImage image;
+  void initMipMap() {
+    HDRImage image;
 
-		std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
-		image.loadHDR(filename.c_str());
+    std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
+    image.loadHDR(filename.c_str());
 
-		CubicBSplineInterp<MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > > MipMapImg(image.width(), image.height());
-		MipMapImg.internal(true);
-		MipMapImg.memory(image.memory());
+    CubicBSplineInterp<MipMap<ShUnclamped<ShTextureRect<ShVector4f> > > > MipMapImg(image.width(), image.height());
+    MipMapImg.internal(true);
+    MipMapImg.memory(image.memory());
 
-		ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
-		scale.range(0.1,10.0);
+    ShAttrib2f SH_DECL(scale) = ShAttrib2f(1.0,1.0);
+    scale.range(0.1,10.0);
 
-	  fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
-	    ShInputPosition4f posh;
-	    ShInputTexCoord2f tc;
-	    ShInputNormal3f normal;
-	 		tc *= scale;
-			ShOutputAttrib4f result = MipMapImg(tc);
-		} SH_END;
+    fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
+      ShInputPosition4f posh;
+      ShInputTexCoord2f tc;
+      ShInputNormal3f normal;
+      tc *= scale;
+      ShOutputAttrib4f result = MipMapImg(tc);
+    } SH_END;
 	
-		fsh = tonemapping << fsh;
-	}
+    fsh = tonemapping << fsh;
+  }
 };
 
 BSplineMipMap BSplineMipMap::instance = BSplineMipMap();

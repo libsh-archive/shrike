@@ -65,8 +65,8 @@ ShAttrib1f isRed(ShAttrib1f x, ShMatrix3x3f M)
   ShAttrib1f mx = frac( x );
   ShAttrib1f my = frac( m2*x );
 
-	ShVector3f v = ShVector3f(mx,my,ShAttrib1f(1.0));
-	v = M | v;
+  ShVector3f v = ShVector3f(mx,my,ShAttrib1f(1.0));
+  v = M | v;
 	
   return max(abs(v(0)),abs(v(1)))<0.5;
 }
@@ -91,11 +91,11 @@ bool NonPeriodic::init()
   ShAttrib1f SH_DECL(second) = 0.0;
   second.range(0.0, 1.0);
 
-	ShMatrix3x3f M = ShMatrix3x3f();
-	M[0][1]=-m;
-	M[1][0]=m;
-	M[0][2]=0.5*(m-1.0);
-	M[1][2]=-0.5*(m+1.0);
+  ShMatrix3x3f M = ShMatrix3x3f();
+  M[0][1]=-m;
+  M[1][0]=m;
+  M[0][2]=0.5*(m-1.0);
+  M[1][2]=-0.5*(m+1.0);
 	
   // This is a 1D nonperiodic tiling from Craig Kaplan.
   // It should be possible to extend this to make Penrose tiles.
@@ -106,11 +106,9 @@ bool NonPeriodic::init()
 
     tc *= scale;
     result = cond(isRed(tc(0),M) || (second && isRed(tc(1),M)),
-										color1, color2);
+		  color1, color2);
   } SH_END;
   return true;
 }
 
 NonPeriodic NonPeriodic::instance = NonPeriodic();
-
-

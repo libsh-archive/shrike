@@ -61,14 +61,14 @@ SparseTexture::~SparseTexture()
 
 bool SparseTexture::init()
 {
-	HDRImage data, map;
+  HDRImage data, map;
   data.loadHDR(SHMEDIA_DIR "/sparse/sparse_data.hdr");
   map.loadHDR(SHMEDIA_DIR "/sparse/sparse_map.hdr");
 
-	ShUnclamped<ShTextureRect<ShAttrib4f> > dataTex(data.width(), data.height());
+  ShUnclamped<ShTextureRect<ShAttrib4f> > dataTex(data.width(), data.height());
   dataTex.memory(data.memory());
 	
-	ShUnclamped<ShTextureRect<ShAttrib4f> > mapTex(map.width(), map.height());
+  ShUnclamped<ShTextureRect<ShAttrib4f> > mapTex(map.width(), map.height());
   mapTex.memory(map.memory());
 
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
@@ -84,8 +84,8 @@ bool SparseTexture::init()
 
   } SH_END;
 
-	ShAttrib1f SH_DECL(blocksize) = ShAttrib1f(16.0);
-	blocksize.range(0.0,256.0);
+  ShAttrib1f SH_DECL(blocksize) = ShAttrib1f(16.0);
+  blocksize.range(0.0,256.0);
 	
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputPosition4f posh;
@@ -94,16 +94,16 @@ bool SparseTexture::init()
      
     ShOutputColor3f result;
 	
-		tc *= mapTex.size(); // scale to get the current position on the map texture
-		ShAttrib2f u = frac(tc) * blocksize; // get the position on a single block
-		tc = floor(tc); // get position on the map texture
-		ShAttrib2f blockcoords = mapTex[tc](0,1); // get the offset to find the right block on the data texture
-		u += blockcoords; // add the offset
-		u = floor(u); // need to get integers values
+    tc *= mapTex.size(); // scale to get the current position on the map texture
+    ShAttrib2f u = frac(tc) * blocksize; // get the position on a single block
+    tc = floor(tc); // get position on the map texture
+    ShAttrib2f blockcoords = mapTex[tc](0,1); // get the offset to find the right block on the data texture
+    u += blockcoords; // add the offset
+    u = floor(u); // need to get integers values
 		
-		result = dataTex[u](0,1,2);
+    result = dataTex[u](0,1,2);
 		
-	} SH_END;
+  } SH_END;
   return true;
 }
 

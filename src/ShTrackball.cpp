@@ -108,6 +108,5 @@ ShMatrix4x4f ShTrackball::rotate(float sx, float sy, float ex, float ey) const
   return m;
   
 }
-  
 
 }

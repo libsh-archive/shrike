@@ -79,16 +79,16 @@ Hair::~Hair()
 
 ShAttrib1f Hair::N2(ShAttrib1f eta, ShAttrib1f cosGammai, ShAttrib1f sigmaa)
 {
-    ShAttrib1f cosGammat = sqrt(1+(cosGammai*cosGammai-1)/(eta*eta));
-    ShAttrib1f cos2Gammat = 2*cosGammat*cosGammat - 1.0;
-    ShAttrib1f Ntrt = (eta-1.0)/(eta+1.0);
-    Ntrt *= Ntrt;
-    Ntrt = Ntrt + (1.0-Ntrt)*pow(1.0-cosGammai,5.0)  / (pow(M_E,2.0*sigmaa(0)*(1.0+cos2Gammat)));
-    Ntrt *= Ntrt;
-    ShAttrib1f F = (rcp(eta)-1.0)/(rcp(eta)+1.0);
-    F *= F;
-    Ntrt *= F + (1.0-F)*pow(1.0-cosGammat,5.0);
-    return Ntrt;
+  ShAttrib1f cosGammat = sqrt(1+(cosGammai*cosGammai-1)/(eta*eta));
+  ShAttrib1f cos2Gammat = 2*cosGammat*cosGammat - 1.0;
+  ShAttrib1f Ntrt = (eta-1.0)/(eta+1.0);
+  Ntrt *= Ntrt;
+  Ntrt = Ntrt + (1.0-Ntrt)*pow(1.0-cosGammai,5.0)  / (pow(M_E,2.0*sigmaa(0)*(1.0+cos2Gammat)));
+  Ntrt *= Ntrt;
+  ShAttrib1f F = (rcp(eta)-1.0)/(rcp(eta)+1.0);
+  F *= F;
+  Ntrt *= F + (1.0-F)*pow(1.0-cosGammat,5.0);
+  return Ntrt;
 }
 
 
@@ -236,7 +236,8 @@ public:
   
   static HairShader instance;
     
-  void render() {
+  void render()
+{
     Shader::render();
   }
       
@@ -297,7 +298,8 @@ private:
   GLuint display_list;
 };
 
-void HairPhysics::render() {
+void HairPhysics::render()
+{
 #if (RENDER_HEAD) // render a sphere for the head
   shBind(vsh_head);
   shBind(fsh_head);
@@ -341,7 +343,8 @@ void HairPhysics::render() {
   glCallList(display_list);
 }
 
-void HairPhysics::initHair() {
+void HairPhysics::initHair()
+{
 #ifdef WIN32
   srand(13);
 #else

@@ -95,100 +95,100 @@ bool NoiseShader::init() {
 }
 
 class SimpleWoodNoise: public NoiseShader {
-  public:
-    SimpleWoodNoise(bool useTexture): NoiseShader("Noise: Simple Wood", useTexture) {}
+public:
+  SimpleWoodNoise(bool useTexture): NoiseShader("Noise: Simple Wood", useTexture) {}
 
-    void initfsh() {
-      ShColor3f SH_NAMEDECL(diffuseIn, "kd in band") = ShConstAttrib3f(0.35f, 0.177f, 0.07f);
-      ShColor3f SH_NAMEDECL(diffuseOut, "kd out of band") = ShConstAttrib3f(0.8f, 0.3f, 0.1f);
-      ShColor3f SH_NAMEDECL(specularIn, "ks in band") = ShConstAttrib3f(0.3f, 0.3f, 0.3f);
-      ShColor3f SH_NAMEDECL(specularOut, "ks out of band") = ShConstAttrib3f(1.0f, 1.0f, 1.0f);
+  void initfsh() {
+    ShColor3f SH_NAMEDECL(diffuseIn, "kd in band") = ShConstAttrib3f(0.35f, 0.177f, 0.07f);
+    ShColor3f SH_NAMEDECL(diffuseOut, "kd out of band") = ShConstAttrib3f(0.8f, 0.3f, 0.1f);
+    ShColor3f SH_NAMEDECL(specularIn, "ks in band") = ShConstAttrib3f(0.3f, 0.3f, 0.3f);
+    ShColor3f SH_NAMEDECL(specularOut, "ks out of band") = ShConstAttrib3f(1.0f, 1.0f, 1.0f);
 
-      ShProgram bander = SH_BEGIN_PROGRAM() {
-        ShInputPoint3f SH_DECL(posm);
+    ShProgram bander = SH_BEGIN_PROGRAM() {
+      ShInputPoint3f SH_DECL(posm);
 
-        posm *= bandFreq;
-        ShAttrib1f inband = sqrt(posm(0,1) | posm(0,1)); // concentric rings
-        ShAttrib1f noise = noiseScale * sperlin<1>(posm * noiseFreq, useTexture);
-        inband = frac(inband + noise); // add noise
+      posm *= bandFreq;
+      ShAttrib1f inband = sqrt(posm(0,1) | posm(0,1)); // concentric rings
+      ShAttrib1f noise = noiseScale * sperlin<1>(posm * noiseFreq, useTexture);
+      inband = frac(inband + noise); // add noise
 
-        ShOutputColor3f SH_DECL(kd) = lerp(inband, diffuseIn, diffuseOut);
-        ShOutputColor3f SH_DECL(ks) = lerp(inband, specularIn, specularOut);
-        ShOutputAttrib1f SH_DECL(specExp) = exponent;
-      } SH_END_PROGRAM;
-      fsh = fsh << bander;
-    }
+      ShOutputColor3f SH_DECL(kd) = lerp(inband, diffuseIn, diffuseOut);
+      ShOutputColor3f SH_DECL(ks) = lerp(inband, specularIn, specularOut);
+      ShOutputAttrib1f SH_DECL(specExp) = exponent;
+    } SH_END_PROGRAM;
+    fsh = fsh << bander;
+  }
 };
 
 class ComplexWoodNoise: public NoiseShader {
-  public:
-    ComplexWoodNoise(bool useTexture): NoiseShader("Noise: Complex Wood", useTexture) {}
+public:
+  ComplexWoodNoise(bool useTexture): NoiseShader("Noise: Complex Wood", useTexture) {}
 
-    void initfsh() {
-      ShColor3f SH_NAMEDECL(diffuseIn, "kd in band") = ShConstAttrib3f(0.35f, 0.177f, 0.07f);
-      ShColor3f SH_NAMEDECL(diffuseOut, "kd out of band") = ShConstAttrib3f(0.8f, 0.3f, 0.1f);
-      ShColor3f SH_NAMEDECL(specularIn, "ks in band") = ShConstAttrib3f(0.3f, 0.3f, 0.3f);
-      ShColor3f SH_NAMEDECL(specularOut, "ks out of band") = ShConstAttrib3f(1.0f, 1.0f, 1.0f);
+  void initfsh() {
+    ShColor3f SH_NAMEDECL(diffuseIn, "kd in band") = ShConstAttrib3f(0.35f, 0.177f, 0.07f);
+    ShColor3f SH_NAMEDECL(diffuseOut, "kd out of band") = ShConstAttrib3f(0.8f, 0.3f, 0.1f);
+    ShColor3f SH_NAMEDECL(specularIn, "ks in band") = ShConstAttrib3f(0.3f, 0.3f, 0.3f);
+    ShColor3f SH_NAMEDECL(specularOut, "ks out of band") = ShConstAttrib3f(1.0f, 1.0f, 1.0f);
 
-      ShAttrib3f SH_NAMEDECL(turbAmp, "Noise Octave Amplitudes") = ShConstAttrib3f(0.5f, 0.25f, 0.125f);
-      turbAmp.range(0.0f, 1.0f);
+    ShAttrib3f SH_NAMEDECL(turbAmp, "Noise Octave Amplitudes") = ShConstAttrib3f(0.5f, 0.25f, 0.125f);
+    turbAmp.range(0.0f, 1.0f);
 
-      ShAttrib1f SH_NAMEDECL(spaceNoiseFreq, "Band Spacing Noise Freq") = ShConstAttrib1f(4.0f);
-      spaceNoiseFreq.range(0.02f, 20.0f);
+    ShAttrib1f SH_NAMEDECL(spaceNoiseFreq, "Band Spacing Noise Freq") = ShConstAttrib1f(4.0f);
+    spaceNoiseFreq.range(0.02f, 20.0f);
 
-      ShAttrib1f SH_NAMEDECL(spaceNoiseScale, "Band Spacing Noise Scale") = 0.15f;
-      spaceNoiseScale.range(0.1f, 1.0f);
+    ShAttrib1f SH_NAMEDECL(spaceNoiseScale, "Band Spacing Noise Scale") = 0.15f;
+    spaceNoiseScale.range(0.1f, 1.0f);
 
-      ShProgram bander = SH_BEGIN_PROGRAM() {
-        ShInputPoint3f SH_DECL(posm);
+    ShProgram bander = SH_BEGIN_PROGRAM() {
+      ShInputPoint3f SH_DECL(posm);
 
-        posm *= bandFreq;
-        ShAttrib1f inband = sqrt(posm(0,1) | posm(0,1)); // concentric rings
-        ShAttrib1f spacenoise = spaceNoiseScale * sperlin<1>(inband * spaceNoiseFreq, useTexture);  
-        ShAttrib1f noise = noiseScale * sturbulence<1>(posm * noiseFreq, turbAmp, useTexture);
-        inband = frac(inband + noise + spacenoise); // add noise
+      posm *= bandFreq;
+      ShAttrib1f inband = sqrt(posm(0,1) | posm(0,1)); // concentric rings
+      ShAttrib1f spacenoise = spaceNoiseScale * sperlin<1>(inband * spaceNoiseFreq, useTexture);  
+      ShAttrib1f noise = noiseScale * sturbulence<1>(posm * noiseFreq, turbAmp, useTexture);
+      inband = frac(inband + noise + spacenoise); // add noise
 
-        ShOutputColor3f SH_DECL(kd) = lerp(inband, diffuseIn, diffuseOut);
-        ShOutputColor3f SH_DECL(ks) = lerp(inband, specularIn, specularOut);
-        ShOutputAttrib1f SH_DECL(specExp) = exponent;
-      } SH_END_PROGRAM;
-      fsh = fsh << bander;
-    }
+      ShOutputColor3f SH_DECL(kd) = lerp(inband, diffuseIn, diffuseOut);
+      ShOutputColor3f SH_DECL(ks) = lerp(inband, specularIn, specularOut);
+      ShOutputAttrib1f SH_DECL(specExp) = exponent;
+    } SH_END_PROGRAM;
+    fsh = fsh << bander;
+  }
 };
 
 class MarbleNoise: public NoiseShader {
-  public:
-    MarbleNoise(bool useTexture): NoiseShader("Noise: Marble", useTexture) {}
+public:
+  MarbleNoise(bool useTexture): NoiseShader("Noise: Marble", useTexture) {}
 
-    void initfsh() {
-      noiseScale = 1.0f;
-      ShColor3f SH_NAMEDECL(outColor, "Color out of band") = ShConstAttrib3f(1.0f, 0.9f, 1.0f);
-      ShColor3f SH_NAMEDECL(color1, "Color in band1") = ShConstAttrib3f(0.2f, 0.1f, 0.0f);
-      ShColor3f SH_NAMEDECL(color2, "Color in band2") = ShConstAttrib3f(0.3f, 0.4f, 0.9f);
-      ShAttrib2f SH_NAMEDECL(bandrange, "Band Rnage") = ShConstAttrib2f(0.3f, 0.4f); 
-      ShAttrib1f SH_NAMEDECL(width1, "Width of band1" ) = ShConstAttrib1f(0.3f);
-      ShAttrib1f SH_NAMEDECL(width2, "Width of band2" ) = ShConstAttrib1f(0.2f);
-      ShColor3f SH_NAMEDECL(specular, "specular") = ShConstAttrib3f(0.5f, 0.5f, 0.5f);
-      ShAttrib2f SH_NAMEDECL(octaveAmps, "Noise Octave Amplitudes") = ShConstAttrib2f(0.5f, 0.25f);
+  void initfsh() {
+    noiseScale = 1.0f;
+    ShColor3f SH_NAMEDECL(outColor, "Color out of band") = ShConstAttrib3f(1.0f, 0.9f, 1.0f);
+    ShColor3f SH_NAMEDECL(color1, "Color in band1") = ShConstAttrib3f(0.2f, 0.1f, 0.0f);
+    ShColor3f SH_NAMEDECL(color2, "Color in band2") = ShConstAttrib3f(0.3f, 0.4f, 0.9f);
+    ShAttrib2f SH_NAMEDECL(bandrange, "Band Rnage") = ShConstAttrib2f(0.3f, 0.4f); 
+    ShAttrib1f SH_NAMEDECL(width1, "Width of band1" ) = ShConstAttrib1f(0.3f);
+    ShAttrib1f SH_NAMEDECL(width2, "Width of band2" ) = ShConstAttrib1f(0.2f);
+    ShColor3f SH_NAMEDECL(specular, "specular") = ShConstAttrib3f(0.5f, 0.5f, 0.5f);
+    ShAttrib2f SH_NAMEDECL(octaveAmps, "Noise Octave Amplitudes") = ShConstAttrib2f(0.5f, 0.25f);
 
-      ShProgram bander = SH_BEGIN_PROGRAM() {
-        ShInputPoint3f SH_DECL(posm);
+    ShProgram bander = SH_BEGIN_PROGRAM() {
+      ShInputPoint3f SH_DECL(posm);
 
-        posm *= bandFreq;
-        ShAttrib1f inband = posm(0); 
-        ShAttrib1f noise = noiseScale * sturbulence<1>(posm * noiseFreq, octaveAmps, useTexture);
-        inband = frac(inband + noise); // add noise
+      posm *= bandFreq;
+      ShAttrib1f inband = posm(0); 
+      ShAttrib1f noise = noiseScale * sturbulence<1>(posm * noiseFreq, octaveAmps, useTexture);
+      inband = frac(inband + noise); // add noise
 
-        ShColor3f bandColor = lerp(deprecated_smoothstep(bandrange(0), bandrange(1), inband), color1, color2);
-        inband = deprecated_smoothstep(bandrange(0) - width1, bandrange(0), inband) - 
-                 deprecated_smoothstep(bandrange(1), bandrange(1) + width2, inband);
+      ShColor3f bandColor = lerp(deprecated_smoothstep(bandrange(0), bandrange(1), inband), color1, color2);
+      inband = deprecated_smoothstep(bandrange(0) - width1, bandrange(0), inband) - 
+      deprecated_smoothstep(bandrange(1), bandrange(1) + width2, inband);
 
-        ShOutputColor3f SH_DECL(kd) = lerp(inband, bandColor, outColor); 
-        ShOutputColor3f SH_DECL(ks) = specular; 
-        ShOutputAttrib1f SH_DECL(specExp) = exponent;
-      } SH_END_PROGRAM;
-      fsh = fsh << bander;
-    }
+      ShOutputColor3f SH_DECL(kd) = lerp(inband, bandColor, outColor); 
+      ShOutputColor3f SH_DECL(ks) = specular; 
+      ShOutputAttrib1f SH_DECL(specExp) = exponent;
+    } SH_END_PROGRAM;
+    fsh = fsh << bander;
+  }
 };
 
 SimpleWoodNoise simple_wood_noise(true);

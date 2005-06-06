@@ -33,7 +33,6 @@
 
 using namespace SH;
 
-
 LCD::LCD()
   : Shader("LCD")
 {

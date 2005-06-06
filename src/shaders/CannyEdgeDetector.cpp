@@ -67,7 +67,8 @@ protected:
   ShTextureRect<ShColor3f> newimg;
 
 private:
-  void renderPlane() {
+  void renderPlane()
+  {
     glClear(GL_COLOR_BUFFER_BIT + GL_DEPTH_BUFFER_BIT);
     glBegin(GL_QUADS); { // just render a square with the texture on it
       glTexCoord2f(0.0, 0.0);
@@ -98,8 +99,8 @@ void CannyEdgeDetectorShader::render()
 {
   int newvp[4];
   glGetIntegerv(GL_VIEWPORT, newvp);
-  if(newvp[0] != vp[0] || newvp[1] != vp[1] || newvp[2] != vp[2] || newvp[3] != vp[3]) // check if the texture size has to be changed
-  {
+  // check if the texture size has to be changed
+  if(newvp[0] != vp[0] || newvp[1] != vp[1] || newvp[2] != vp[2] || newvp[3] != vp[3]) {
     for(int i=0 ; i<4 ; i++)
       vp[i] = newvp[i]; // set the new size
     glViewport(vp[0], vp[1], vp[2], vp[3]);
@@ -140,7 +141,7 @@ bool CannyEdgeDetectorShader::init()
 {
   for(int i=0 ; i<4 ; i++)
     vp[i] =0;
-    HDRImage image;
+  HDRImage image;
   std::string filename = SHMEDIA_DIR "/hdr/hdr/memorial.hdr";
   image.loadHDR(filename.c_str());
   AnisDiff<CatmullRomInterp<ShTextureRect<ShVector4f> > > img(image.width(), image.height());
@@ -184,13 +185,13 @@ bool CannyEdgeDetectorShader::init()
     u *= newimg.size();
     ShAttrib3f lumvect(0.27,0.67,0.06); // to compute the luminance
     /*
-    ShAttrib1f Gx = lumvect | (newimg[u] - newimg[u+ShAttrib2f(1.0,1.0)]);
-    ShAttrib1f Gy = lumvect | (newimg[u+ShAttrib2f(1.0,0.0)] - newimg[u+ShAttrib2f(0.0,1.0)]);
+      ShAttrib1f Gx = lumvect | (newimg[u] - newimg[u+ShAttrib2f(1.0,1.0)]);
+      ShAttrib1f Gy = lumvect | (newimg[u+ShAttrib2f(1.0,0.0)] - newimg[u+ShAttrib2f(0.0,1.0)]);
     */
     ShAttrib1f Gx = lumvect | (2.0*newimg[u+ShAttrib2f(1.0,0.0)] + newimg[u+ShAttrib2f(1.0,1.0)] + newimg[u+ShAttrib2f(1.0,-1.0)] -
-                                2.0*newimg[u-ShAttrib2f(1.0,0.0)] - newimg[u-ShAttrib2f(1.0,1.0)] - newimg[u-ShAttrib2f(1.0,-1.0)]);            
+			       2.0*newimg[u-ShAttrib2f(1.0,0.0)] - newimg[u-ShAttrib2f(1.0,1.0)] - newimg[u-ShAttrib2f(1.0,-1.0)]);            
     ShAttrib1f Gy = lumvect | (2.0*newimg[u-ShAttrib2f(0.0,1.0)] + newimg[u-ShAttrib2f(1.0,1.0)] + newimg[u-ShAttrib2f(-1.0,1.0)] -
-                                2.0*newimg[u+ShAttrib2f(0.0,1.0)] - newimg[u+ShAttrib2f(1.0,1.0)] - newimg[u+ShAttrib2f(-1.0,1.0)]);            
+			       2.0*newimg[u+ShAttrib2f(0.0,1.0)] - newimg[u+ShAttrib2f(1.0,1.0)] - newimg[u+ShAttrib2f(-1.0,1.0)]);            
     ShAttrib1f G = sqrt(Gx*Gx + Gy*Gy);
     result = ShColor3f(Gx,Gy,G);
   } SH_END;
@@ -203,7 +204,7 @@ bool CannyEdgeDetectorShader::init()
     result = newimg[u];
     ShAttrib1f frac = abs(result(1)/result(0));
     ShAttrib1f edgeDir = cond(abs(result(0))>ShAttrib1f(0.01), 0.5*asin(2.0*frac/(frac*frac + 1.0)),
-                                                          cond(abs(result(1))<ShAttrib1f(0.01), ShAttrib1f(0.0), ShAttrib1f(M_PI/2.0)));
+			      cond(abs(result(1))<ShAttrib1f(0.01), ShAttrib1f(0.0), ShAttrib1f(M_PI/2.0)));
     edgeDir *= 180.0/M_PI;
     edgeDir = cond(result(0)*result(1)<0.0, 180.0-edgeDir, edgeDir);
     ShAttrib1f G = result(2);

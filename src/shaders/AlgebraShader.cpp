@@ -45,19 +45,19 @@ ShAttrib1f height;
 ShAttrib1f invheight;
 
 class AlgebraWrapper: public Shader {
-  public:
-    AlgebraWrapper(std::string name, int lightidx, int surfmapidx, int surfidx, int postidx) 
-      : Shader(name), lightidx(lightidx), surfmapidx(surfmapidx), surfidx(surfidx), postidx(postidx) {}
+public:
+  AlgebraWrapper(std::string name, int lightidx, int surfmapidx, int surfidx, int postidx) 
+    : Shader(name), lightidx(lightidx), surfmapidx(surfmapidx), surfidx(surfidx), postidx(postidx) {}
 
-    bool init(); 
-    void render();
+  bool init(); 
+  void render();
 
-    ShProgram vertex() { return vsh;}
-    ShProgram fragment() { return fsh;}
+  ShProgram vertex() { return vsh;}
+  ShProgram fragment() { return fsh;}
 
-  private:
-    int lightidx, surfmapidx, surfidx, postidx;
-    ShProgram vsh, fsh;
+private:
+  int lightidx, surfmapidx, surfidx, postidx;
+  ShProgram vsh, fsh;
 };
 
 class AlgebraShaders {
@@ -113,8 +113,8 @@ const char*  AlgebraShaders::surfmapName[] = {
 const char* AlgebraShaders::surfName[] = {
   0,
   "Diffuse",
-//  "Specular Surface",
-//  "Phong Surface",
+  //  "Specular Surface",
+  //  "Phong Surface",
   "Textured Phong",
   "Procedural Worley Phong",
   "Gooch",
@@ -191,32 +191,32 @@ AlgebraShaders::~AlgebraShaders()
 
 // returns a KernelSurface::phong shader with kd filled in by a worley shader
 ShProgram worleySurface() {
-    ShAttrib3f SH_NAMEDECL(color1, "Worley Color1") = ShColor3f(3.0, 0.75, 0.0);
-    color1.range(-3.0f, 3.0f);
-    ShAttrib3f SH_NAMEDECL(color2, "Worley Color2") =  ShColor3f(0.0f, 0.0f, 0.0f);
-    color2.range(-3.0f, 3.0f);
-    ShAttrib4f SH_NAMEDECL(coeff, "Worley Coefficients") = ShConstAttrib4f(2.5, -0.5f, -0.1f, 0);
-    coeff.range(-3.0f, 3.0f);
-    ShAttrib1f SH_NAMEDECL(freq, "Worley Frequency") = ShConstAttrib1f(16.0f);
-    freq.range(0.1f, 64.0f);
+  ShAttrib3f SH_NAMEDECL(color1, "Worley Color1") = ShColor3f(3.0, 0.75, 0.0);
+  color1.range(-3.0f, 3.0f);
+  ShAttrib3f SH_NAMEDECL(color2, "Worley Color2") =  ShColor3f(0.0f, 0.0f, 0.0f);
+  color2.range(-3.0f, 3.0f);
+  ShAttrib4f SH_NAMEDECL(coeff, "Worley Coefficients") = ShConstAttrib4f(2.5, -0.5f, -0.1f, 0);
+  coeff.range(-3.0f, 3.0f);
+  ShAttrib1f SH_NAMEDECL(freq, "Worley Frequency") = ShConstAttrib1f(16.0f);
+  freq.range(0.1f, 64.0f);
 
-    ShProgram worleysh = shWorley<4, 2, float>(false); // pass in coefficient
-    worleysh = (dot<ShAttrib4f>() << coeff) << worleysh; 
+  ShProgram worleysh = shWorley<4, 2, float>(false); // pass in coefficient
+  worleysh = (dot<ShAttrib4f>() << coeff) << worleysh; 
 
-    ShProgram scaler = SH_BEGIN_PROGRAM() {
-      ShInOutTexCoord2f SH_DECL(texcoord) = freq * texcoord;
-    } SH_END; 
+  ShProgram scaler = SH_BEGIN_PROGRAM() {
+    ShInOutTexCoord2f SH_DECL(texcoord) = freq * texcoord;
+  } SH_END; 
 
-    worleysh = worleysh << scaler; 
+  worleysh = worleysh << scaler; 
 
-    ShProgram clamper = SH_BEGIN_PROGRAM() {
-      ShInOutAttrib1f SH_DECL(scalar) = clamp(scalar, 0.0f, 1.0f);
-    } SH_END;
+  ShProgram clamper = SH_BEGIN_PROGRAM() {
+    ShInOutAttrib1f SH_DECL(scalar) = clamp(scalar, 0.0f, 1.0f);
+  } SH_END;
 
-    worleysh = clamper << worleysh;
+  worleysh = clamper << worleysh;
 
-    ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
-    return ShKernelSurface::phong<ShColor3f>() << colorsh << worleysh;
+  ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
+  return ShKernelSurface::phong<ShColor3f>() << colorsh << worleysh;
 }
 
 ShProgram satinSurface() {
@@ -289,66 +289,66 @@ ShProgram satinSurface() {
 }
 
 namespace {
-  /* Ashikhmin Surface Atom from Stefanus' demo...
-   * Move some of this into the utils library later */
-  template<int N>
-  ShGeneric<N, float> pow5(const ShGeneric<N, float>& f)
-  {
-    ShAttrib<N, SH_TEMP, float> t =  f * f;
-    return t * t * f;
-  }
+/* Ashikhmin Surface Atom from Stefanus' demo...
+ * Move some of this into the utils library later */
+template<int N>
+ShGeneric<N, float> pow5(const ShGeneric<N, float>& f)
+{
+  ShAttrib<N, SH_TEMP, float> t =  f * f;
+  return t * t * f;
+}
 
-  ShColor3f schlick(ShColor3f refl, ShAttrib1f kh)
-  {
-    return refl + (ShColor3f(1.0, 1.0, 1.0) - refl)*pow5(1.0f - kh);
-  }
+ShColor3f schlick(ShColor3f refl, ShAttrib1f kh)
+{
+  return refl + (ShColor3f(1.0, 1.0, 1.0) - refl)*pow5(1.0f - kh);
+}
 
-  ShColor3f ashikhmin_specular(ShAttrib1f nu, ShAttrib1f nv,
-                               ShNormal3f n, ShVector3f h,
-                               ShVector3f light, ShVector3f viewer,
-                               ShVector3f u, ShVector3f v,
-                               ShColor3f refl)
-  {
-    ShVector3f k = viewer; // either light or viewer works here
+ShColor3f ashikhmin_specular(ShAttrib1f nu, ShAttrib1f nv,
+			     ShNormal3f n, ShVector3f h,
+			     ShVector3f light, ShVector3f viewer,
+			     ShVector3f u, ShVector3f v,
+			     ShColor3f refl)
+{
+  ShVector3f k = viewer; // either light or viewer works here
 
 #define CLAMP(x) max(x, 0.01)
 
-    ShAttrib1f hn = CLAMP(h|n);
-    ShAttrib1f kn = CLAMP(k|n);
-    ShAttrib1f ln = CLAMP(light|n);
-    ShAttrib1f vn = CLAMP(viewer|n);
-    ShAttrib1f kh = CLAMP(k|h);
-    ShAttrib1f hu = (h|u);
-    ShAttrib1f hv = (h|v);
+  ShAttrib1f hn = CLAMP(h|n);
+  ShAttrib1f kn = CLAMP(k|n);
+  ShAttrib1f ln = CLAMP(light|n);
+  ShAttrib1f vn = CLAMP(viewer|n);
+  ShAttrib1f kh = CLAMP(k|h);
+  ShAttrib1f hu = (h|u);
+  ShAttrib1f hv = (h|v);
 
-    ShAttrib1f scale = sqrt((nu + 1.0f) * (nv + 1.0f))/(8.0*M_PI);
-    ShAttrib1f exponent = (nu*hu*hu + nv*hv*hv)/(1.0f - hn*hn);
-    ShAttrib1f geom = pow(hn, exponent)/(kn*max(ln, vn));
+  ShAttrib1f scale = sqrt((nu + 1.0f) * (nv + 1.0f))/(8.0*M_PI);
+  ShAttrib1f exponent = (nu*hu*hu + nv*hv*hv)/(1.0f - hn*hn);
+  ShAttrib1f geom = pow(hn, exponent)/(kn*max(ln, vn));
 
-    return scale * geom * schlick(refl, kh);
-  }
+  return scale * geom * schlick(refl, kh);
+}
 
-  ShColor3f ashikhmin_diffuse(ShNormal3f normal,
-                              ShVector3f light, ShVector3f viewer,
-                              ShColor3f spec, ShColor3f diffuse)
-  {
-    ShColor3f scale = (28.0/(23.0*M_PI))*diffuse*(ShColor3f(1.0, 1.0, 1.0) - spec);
+ShColor3f ashikhmin_diffuse(ShNormal3f normal,
+			    ShVector3f light, ShVector3f viewer,
+			    ShColor3f spec, ShColor3f diffuse)
+{
+  ShColor3f scale = (28.0/(23.0*M_PI))*diffuse*(ShColor3f(1.0, 1.0, 1.0) - spec);
 
-    ShAttrib1f v = 1.0f - pow5(1.0f - max(normal|light, 0.0)/2.0f);
-    ShAttrib1f l = 1.0f - pow5(1.0f - max(normal|viewer, 0.0)/2.0f);
+  ShAttrib1f v = 1.0f - pow5(1.0f - max(normal|light, 0.0)/2.0f);
+  ShAttrib1f l = 1.0f - pow5(1.0f - max(normal|viewer, 0.0)/2.0f);
 
-    return scale * v * l;
-  }
+  return scale * v * l;
+}
 
-  ShColor3f ashikhmin(ShAttrib1f nu, ShAttrib1f nv,
-                      ShNormal3f n, ShVector3f h,
-                      ShVector3f light, ShVector3f viewer,
-                      ShVector3f u, ShVector3f v,
-                      ShColor3f spec, ShColor3f diffuse)
-  { 
-    return ashikhmin_specular(nu, nv, n, h, light, viewer, u, v, spec)
-         + ashikhmin_diffuse(n, light, viewer, spec, diffuse);
-  }
+ShColor3f ashikhmin(ShAttrib1f nu, ShAttrib1f nv,
+		    ShNormal3f n, ShVector3f h,
+		    ShVector3f light, ShVector3f viewer,
+		    ShVector3f u, ShVector3f v,
+		    ShColor3f spec, ShColor3f diffuse)
+{ 
+  return ashikhmin_specular(nu, nv, n, h, light, viewer, u, v, spec)
+    + ashikhmin_diffuse(n, light, viewer, spec, diffuse);
+}
 }
 
 
@@ -374,10 +374,10 @@ ShProgram ashikhminSurface() {
     ShOutputColor3f SH_DECL(result);
     ShVector3f tangent2 = cross(normal, tangent);
     result = ashikhmin(nu, nv, normalize(normal), normalize(halfVec), normalize(lightVec),
-                      normalize(viewVec),
-                      tangent, tangent2, 
-                      specular, diffuse) * irrad
-            + ambient;
+		       normalize(viewVec),
+		       tangent, tangent2, 
+		       specular, diffuse) * irrad
+    + ambient;
   } SH_END_PROGRAM;
   return fsh;
 }
@@ -406,7 +406,7 @@ bool AlgebraShaders::init_all()
   ShAttrib1f SH_NAMEDECL(specExp, "Specular Exponent") = ShConstAttrib1f(48.13f);
   specExp.range(0.0f, 256.0f);
 
-// ****************** Make light shaders
+  // ****************** Make light shaders
   i = 0;
   lightsh[i++] = ShKernelLight::pointLight<ShColor3f>() << lightColor;
   lightsh[i++] = ShKernelLight::spotLight<ShColor3f>() << lightColor << falloff << lightAngle << lightDir;
@@ -422,7 +422,7 @@ bool AlgebraShaders::init_all()
   //lightsh[1] = ShKernelLight::spotLight(ShColor3f>() << lightColor << falloff << lightAngle << lightDir;
   //lightName[1] = "Spot Light";
   
-// ****************** Make bump/frame mapping shaders 
+  // ****************** Make bump/frame mapping shaders 
   i = 0;
   surfmapsh[i++] = keep<ShNormal3f>("normal"); 
 
@@ -444,7 +444,7 @@ bool AlgebraShaders::init_all()
   surfmapsh[i] = ShKernelSurfMap::vcsBump() << surfmapsh[i];
   i++;
   
-// ****************** Make surface shaders 
+  // ****************** Make surface shaders 
   i = 0;
   surfsh[i++] = ShKernelSurface::null<ShColor3f>(); 
   surfsh[i++] = ShKernelSurface::diffuse<ShColor3f>() << kd;
@@ -474,7 +474,7 @@ bool AlgebraShaders::init_all()
   surfsh[i++] =  satinSurface(); 
   surfsh[i++] = ashikhminSurface();
 
-// ******************* Make postprocessing shaders
+  // ******************* Make postprocessing shaders
   i = 0;
   image.loadPng(SHMEDIA_DIR "/textures/halftone.png");
   ShTexture2D<ShColor3f> halftoneTex(image.width(), image.height());

@@ -117,7 +117,8 @@ public:
   
   static LinearInterpolation instance;
   
-  void initInterp() {
+  void initInterp() 
+  {
     HDRImage image;
 
     std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
@@ -159,7 +160,8 @@ public:
   
   static CatmullRomInterpolation instance;
   
-  void initInterp() {
+  void initInterp()
+  {
     HDRImage image;
 
     std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
@@ -201,7 +203,8 @@ public:
   
   static BSplineInterpolation instance;
   
-  void initInterp() {
+  void initInterp()
+  {
     HDRImage image;
 
     std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
@@ -242,7 +245,8 @@ public:
   
   static CardSplineInterpolation instance;
   
-  void initInterp() {
+  void initInterp()
+  {
     HDRImage image;
 
     std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;

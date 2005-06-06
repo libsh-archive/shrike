@@ -44,17 +44,18 @@ template<typename T>
 class GaussFilter : public T {
 public:
   typedef T parent_type;
-	typedef typename T::return_type return_type;	
+  typedef typename T::return_type return_type;	
   typedef typename T::base_type base_type;
-	typedef GaussFilter<typename T::rectangular_type> rectangular_type;
-	
+  typedef GaussFilter<typename T::rectangular_type> rectangular_type;
+  
   GaussFilter(int sigma) : parent_type() { computeCoeff(sigma); }
-	GaussFilter(int width, int sigma) : parent_type(width) { computeCoeff(sigma); }
-	GaussFilter(int width, int height, int sigma) : parent_type(width, height) { computeCoeff(sigma); }
-	GaussFilter(int width, int height, int depth, int sigma) : parent_type(width, height, depth) { computeCoeff(sigma); }
-	
-	return_type operator[](const ShTexCoord2f tc) const {
-		const T *bt = this;
+  GaussFilter(int width, int sigma) : parent_type(width) { computeCoeff(sigma); }
+  GaussFilter(int width, int height, int sigma) : parent_type(width, height) { computeCoeff(sigma); }
+  GaussFilter(int width, int height, int depth, int sigma) : parent_type(width, height, depth) { computeCoeff(sigma); }
+  
+  return_type operator[](const ShTexCoord2f tc) const 
+  {
+    const T *bt = this;
     return_type result = fillcast<return_type::typesize>(ShAttrib1f(0.0)); // clear 
     for(int i=-m_filterWidth+1 ; i<m_filterWidth ; i++) { // for all the value in the filter width
       for(int j=-m_filterWidth+1 ; j<m_filterWidth ; j++) {
@@ -62,21 +63,22 @@ public:
       }
     }
     return result;
-	}
-			
-	return_type operator()(const ShTexCoord2f tc) const {
-		return operator[](tc*this->size());
-	}
+  }
+  
+  return_type operator()(const ShTexCoord2f tc) const 
+  {
+    return operator[](tc*this->size());
+  }
 
-
+  
 private:
-  void computeCoeff(int sigma) { // compute the coefficients
+  void computeCoeff(int sigma) 
+  { 
     m_filterWidth = 2*sigma+1;
     float* linearCoeff = new float[m_filterWidth];
-    if(sigma != 0)
-    {
+    if(sigma != 0) {
       for(int i=0 ; i<m_filterWidth ; i++) {
-       linearCoeff[i] = exp(-(float)i*i/(2*sigma*sigma)) / (sigma * 2.506628275); // create the coeff for 1 direction
+	linearCoeff[i] = exp(-(float)i*i/(2*sigma*sigma)) / (sigma * 2.506628275); // create the coeff for 1 direction
       }
       m_filterCoeff = new float*[m_filterWidth];
       for(int i=0 ; i<m_filterWidth ; i++) {
@@ -86,11 +88,11 @@ private:
         }
       }
     }
-    else // sigma = 0 means only 1 value is used
-    {
-       m_filterCoeff = new float*;
-       m_filterCoeff[0] = new float;
-       m_filterCoeff[0][0] = 1.0;
+    // sigma = 0 means only 1 value is used
+    else {
+      m_filterCoeff = new float*;
+      m_filterCoeff[0] = new float;
+      m_filterCoeff[0][0] = 1.0;
     }
   }
   float** m_filterCoeff; // the table with the coefficient
@@ -110,17 +112,18 @@ template<typename T>
 class AnisDiff : public T {
 public:
   typedef T parent_type;
-	typedef typename T::return_type return_type;	
+  typedef typename T::return_type return_type;	
   typedef typename T::base_type base_type;
-	typedef AnisDiff<typename T::rectangular_type> rectangular_type;
-	
-	AnisDiff() : parent_type() {}
-	AnisDiff(int width) : parent_type(width) {}
-	AnisDiff(int width, int height) : parent_type(width, height) {}
-	AnisDiff(int width, int height, int depth) : parent_type(width, height, depth) {}
-	
-	return_type operator[](const ShTexCoord2f tc) const {
-		const T *bt = this;
+  typedef AnisDiff<typename T::rectangular_type> rectangular_type;
+  
+  AnisDiff() : parent_type() {}
+  AnisDiff(int width) : parent_type(width) {}
+  AnisDiff(int width, int height) : parent_type(width, height) {}
+  AnisDiff(int width, int height, int depth) : parent_type(width, height, depth) {}
+  
+  return_type operator[](const ShTexCoord2f tc) const 
+  {
+    const T *bt = this;
     ShVector4f distance(0.27,0.67,0.06,0.0); // the distance function is a comparison between the luminances
     return_type tex = (*bt)[tc];
     return_type dist1 = (*bt)[tc+ShAttrib2f(0.0,1.0)] - tex; // distance between the point and the neighbours
@@ -132,12 +135,13 @@ public:
     ShAttrib1f v0 = pow(M_E, -0.2 * abs(distance | dist3));
     ShAttrib1f u0 = pow(M_E, -0.2 * abs(distance | dist4));
     return tex + 0.25 * (v1*dist1 + v0*dist3 + u1*dist2 + u0*dist4);
-	}
-			
-	return_type operator()(const ShTexCoord2f tc) const {
+  }
+  
+  return_type operator()(const ShTexCoord2f tc) const 
+  {
     return operator[](tc*this->size());
-	}
-
+  }
+  
 };
 
 #endif

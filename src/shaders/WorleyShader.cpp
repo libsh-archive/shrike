@@ -63,7 +63,8 @@ public:
 };
 //ShAttrib4f WorleyShader::coeff;
 
-bool WorleyShader::init() {
+bool WorleyShader::init()
+{
   std::cerr << "Initializing " << name() << std::endl;
   param.name("param"); 
   param = .5;         
@@ -98,744 +99,759 @@ bool WorleyShader::init() {
 }
 
 class GradientWorley: public WorleyShader {
-  public:
-    GradientWorley(bool useTexture): WorleyShader("Gradients", useTexture) {}
+public:
+  GradientWorley(bool useTexture): WorleyShader("Gradients", useTexture) {}
 
-    void initfsh() {
-      DefaultGenFactory<2, float> genFactory(useTexture);
-      DistSqGradientPropFactory<2, float> propFactory; 
+  void initfsh()
+  {
+    DefaultGenFactory<2, float> genFactory(useTexture);
+    DistSqGradientPropFactory<2, float> propFactory; 
 
-      ShProgram worleysh = shWorley<4>(&genFactory, &propFactory); 
-      worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    ShProgram worleysh = shWorley<4>(&genFactory, &propFactory); 
+    worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
 
-      ShAttrib1f SH_DECL(bumpScale) = ShConstAttrib1f(1.0f);
-      bumpScale.range(-10.0f, 10.0f);
+    ShAttrib1f SH_DECL(bumpScale) = ShConstAttrib1f(1.0f);
+    bumpScale.range(-10.0f, 10.0f);
 
-      color1 = ShColor3f(1.0, 0.0, 0.0);
-      color2 =  ShColor3f(0.0, 1.0, 0.0);
-      ShProgram color = SH_BEGIN_PROGRAM("gpu:fragment") {
-        ShInputAttrib4f result[3]; // result[0] holds distances, [1], [2] hold the gradient
+    color1 = ShColor3f(1.0, 0.0, 0.0);
+    color2 =  ShColor3f(0.0, 1.0, 0.0);
+    ShProgram color = SH_BEGIN_PROGRAM("gpu:fragment") {
+      ShInputAttrib4f result[3]; // result[0] holds distances, [1], [2] hold the gradient
 
-        ShInputPosition4f SH_DECL(posh);
-        ShOutputColor3f SH_NAMEDECL(resultColor, "result");
+      ShInputPosition4f SH_DECL(posh);
+      ShOutputColor3f SH_NAMEDECL(resultColor, "result");
         
-        ShAttrib2f gradient;
-        gradient(0) = dot(result[1], coeff);
-        gradient(1) = dot(result[2], coeff);
-        resultColor = bumpScale * (color1 * gradient(0) + color2 * gradient(1)); 
-      } SH_END;
+      ShAttrib2f gradient;
+      gradient(0) = dot(result[1], coeff);
+      gradient(1) = dot(result[2], coeff);
+      resultColor = bumpScale * (color1 * gradient(0) + color2 * gradient(1)); 
+    } SH_END;
 
-      fsh = color << worleysh;
-      vsh = namedAlign(vsh, fsh);
-    }
+    fsh = color << worleysh;
+    vsh = namedAlign(vsh, fsh);
+  }
 };
 
 
 class OrganicWorley: public WorleyShader {
-  public:
-    OrganicWorley(bool useTexture): WorleyShader("Organic", useTexture) {}
+public:
+  OrganicWorley(bool useTexture): WorleyShader("Organic", useTexture) {}
 
-    void initfsh() {
-      DefaultGenFactory<2, float> genFactory(useTexture);
-      DistSqGradientPropFactory<2, float> propFactory; 
+  void initfsh()
+  {
+    DefaultGenFactory<2, float> genFactory(useTexture);
+    DistSqGradientPropFactory<2, float> propFactory; 
 
-      ShProgram worleysh = shWorley<4>(&genFactory, &propFactory); 
-      worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    ShProgram worleysh = shWorley<4>(&genFactory, &propFactory); 
+    worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
 
-      ShAttrib1f SH_DECL(bumpScale) = ShConstAttrib1f(3.0f);
-      bumpScale.range(-10.0f, 10.0f);
+    ShAttrib1f SH_DECL(bumpScale) = ShConstAttrib1f(3.0f);
+    bumpScale.range(-10.0f, 10.0f);
 
-      color1 = ShColor3f(0.4, 0.0, 0.0);
-      color2 =  ShColor3f(0.2, 0.6, 0.2);
+    color1 = ShColor3f(0.4, 0.0, 0.0);
+    color2 =  ShColor3f(0.2, 0.6, 0.2);
 
-      ShConstAttrib1f ZERO(0.0f);
-      ShConstAttrib1f ONE(1.0f);
+    ShConstAttrib1f ZERO(0.0f);
+    ShConstAttrib1f ONE(1.0f);
 
-      // TODO when bump mapper kernel properly supports transformation btw
-      // coordinate spaces and handles all used auxillary vectors (hv, etc.)
-      // remove most of this code.
-      ShProgram colorAndBump = SH_BEGIN_PROGRAM() {
-        ShInputAttrib4f result[3]; // 0 holds distances, 1-2 hold gradient
-        ShInputVector3f SH_DECL(tangent) = normalize(tangent);
-        ShInputVector3f SH_DECL(tangent2) = normalize(tangent2);
-        ShInputVector3f SH_DECL(lightVec) = normalize(lightVec);
+    // TODO when bump mapper kernel properly supports transformation btw
+    // coordinate spaces and handles all used auxillary vectors (hv, etc.)
+    // remove most of this code.
+    ShProgram colorAndBump = SH_BEGIN_PROGRAM() {
+      ShInputAttrib4f result[3]; // 0 holds distances, 1-2 hold gradient
+      ShInputVector3f SH_DECL(tangent) = normalize(tangent);
+      ShInputVector3f SH_DECL(tangent2) = normalize(tangent2);
+      ShInputVector3f SH_DECL(lightVec) = normalize(lightVec);
 
-        ShInOutNormal3f SH_DECL(normal) = normalize(normal); 
-        ShOutputColor3f SH_DECL(kd);
-        ShOutputColor3f SH_DECL(ks);
-        ShOutputVector3f SH_DECL(halfVec);
+      ShInOutNormal3f SH_DECL(normal) = normalize(normal); 
+      ShOutputColor3f SH_DECL(kd);
+      ShOutputColor3f SH_DECL(ks);
+      ShOutputVector3f SH_DECL(halfVec);
 
-        ShAttrib1f dist = dot(coeff, result[0]);
-        ShAttrib2f grad;
-        grad(0) = dot(coeff, result[1]);
-        grad(1) = dot(coeff, result[2]);
+      ShAttrib1f dist = dot(coeff, result[0]);
+      ShAttrib2f grad;
+      grad(0) = dot(coeff, result[1]);
+      grad(1) = dot(coeff, result[2]);
 
-        kd = ks = lerp(clamp(dist, ZERO, ONE), color1, color2);
-        normal += bumpScale * (grad(0) * tangent + grad(1) * tangent2);
-        normal = normalize(normal);
-        halfVec = 0.5f * (normal + lightVec); 
-      } SH_END;
+      kd = ks = lerp(clamp(dist, ZERO, ONE), color1, color2);
+      normal += bumpScale * (grad(0) * tangent + grad(1) * tangent2);
+      normal = normalize(normal);
+      halfVec = 0.5f * (normal + lightVec); 
+    } SH_END;
 
-      fsh = namedConnect((colorAndBump << worleysh), fsh);
-      vsh = namedAlign(vsh, fsh);
-    }
+    fsh = namedConnect((colorAndBump << worleysh), fsh);
+    vsh = namedAlign(vsh, fsh);
+  }
 };
 
 class BlueOrbWorley: public WorleyShader {
-  public:
-    BlueOrbWorley(bool useTexture): WorleyShader("BlueOrb", useTexture) {}
+public:
+  BlueOrbWorley(bool useTexture): WorleyShader("BlueOrb", useTexture) {}
 
-    void initfsh() {
-      DefaultGenFactory<2, float> genFactory(useTexture);
-      Dist_InfGradientPropFactory<2, float> propFactory; 
-      Dist_1PropFactory<2, float> dist1Factory;
+  void initfsh()
+  {
+    DefaultGenFactory<2, float> genFactory(useTexture);
+    Dist_InfGradientPropFactory<2, float> propFactory; 
+    Dist_1PropFactory<2, float> dist1Factory;
 
-      coeff = ShConstAttrib4f(-1.0f, 1.0f, 0.0f, 0.0f);
+    coeff = ShConstAttrib4f(-1.0f, 1.0f, 0.0f, 0.0f);
 
-      ShAttrib1f SH_DECL(frequency) = ShConstAttrib1f(16.0f);
-      frequency.range(0.0f, 256.0f);
+    ShAttrib1f SH_DECL(frequency) = ShConstAttrib1f(16.0f);
+    frequency.range(0.0f, 256.0f);
 
-      ShProgram worleysh = shWorley<4>(&genFactory, &propFactory); 
-      worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    ShProgram worleysh = shWorley<4>(&genFactory, &propFactory); 
+    worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
 
-      ShAttrib4f SH_DECL(innerCoeff) = coeff; 
+    ShAttrib4f SH_DECL(innerCoeff) = coeff; 
 
-      ShAttrib1f SH_DECL(innerFreq) = ShConstAttrib1f(32.0f);
-      innerFreq.range(0.0f, 256.0f);
+    ShAttrib1f SH_DECL(innerFreq) = ShConstAttrib1f(32.0f);
+    innerFreq.range(0.0f, 256.0f);
 
-      ShProgram innersh = shWorley<4>(&genFactory, &dist1Factory);
-      innersh = innersh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(innerFreq));
+    ShProgram innersh = shWorley<4>(&genFactory, &dist1Factory);
+    innersh = innersh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(innerFreq));
 
-      worleysh = namedCombine(worleysh, innersh);
+    worleysh = namedCombine(worleysh, innersh);
 
-      ShAttrib1f SH_DECL(bumpScale) = ShConstAttrib1f(1.0f);
-      bumpScale.range(-10.0f, 10.0f);
+    ShAttrib1f SH_DECL(bumpScale) = ShConstAttrib1f(1.0f);
+    bumpScale.range(-10.0f, 10.0f);
 
-      ShColor3f SH_DECL(latticeColor) = ShColor3f(0.0f, 0.0f, 0.0f);
-      ShColor3f SH_DECL(latticeSpecular) = ShColor3f(0.5f, 0.1f, 0.1f);
+    ShColor3f SH_DECL(latticeColor) = ShColor3f(0.0f, 0.0f, 0.0f);
+    ShColor3f SH_DECL(latticeSpecular) = ShColor3f(0.5f, 0.1f, 0.1f);
 
-      color1 = ShColor3f(0.0f, 0.0f, 0.0f);
-      color2 = ShColor3f(0.25f, 0.25f, 1.0f);
-      ShColor3f SH_DECL(specular) = ShColor3f(0.3f, 0.3f, 0.3f);
+    color1 = ShColor3f(0.0f, 0.0f, 0.0f);
+    color2 = ShColor3f(0.25f, 0.25f, 1.0f);
+    ShColor3f SH_DECL(specular) = ShColor3f(0.3f, 0.3f, 0.3f);
 
-      ShAttrib1f SH_NAMEDECL(threshold, "Less Than Threshold") = ShConstAttrib1f(0.2f);
-      threshold.range(-1.0f, 1.0f);
+    ShAttrib1f SH_NAMEDECL(threshold, "Less Than Threshold") = ShConstAttrib1f(0.2f);
+    threshold.range(-1.0f, 1.0f);
 
-      ShAttrib1f SH_NAMEDECL(threshold2, "Greater Than Threshold") = ShConstAttrib1f(1.0f);
-      threshold2.range(-1.0f, 1.0f);
+    ShAttrib1f SH_NAMEDECL(threshold2, "Greater Than Threshold") = ShConstAttrib1f(1.0f);
+    threshold2.range(-1.0f, 1.0f);
 
-      ShConstAttrib1f ZERO(0.0f);
-      ShConstAttrib1f ONE(1.0f);
-      ShProgram colorAndBump = SH_BEGIN_PROGRAM() {
-        ShInputAttrib4f result[3];
-        ShInputAttrib4f innerResult;
-        ShInputVector3f SH_DECL(tangent) = normalize(tangent);
-        ShInputVector3f SH_DECL(tangent2) = normalize(tangent2);
-        ShInputVector3f SH_DECL(lightVec) = normalize(lightVec);
+    ShConstAttrib1f ZERO(0.0f);
+    ShConstAttrib1f ONE(1.0f);
+    ShProgram colorAndBump = SH_BEGIN_PROGRAM() {
+      ShInputAttrib4f result[3];
+      ShInputAttrib4f innerResult;
+      ShInputVector3f SH_DECL(tangent) = normalize(tangent);
+      ShInputVector3f SH_DECL(tangent2) = normalize(tangent2);
+      ShInputVector3f SH_DECL(lightVec) = normalize(lightVec);
 
-        ShInOutNormal3f SH_DECL(normal) = normalize(normal); 
-        ShOutputColor3f SH_DECL(kd);
-        ShOutputColor3f SH_DECL(ks);
-        ShOutputVector3f SH_DECL(halfVec);
+      ShInOutNormal3f SH_DECL(normal) = normalize(normal); 
+      ShOutputColor3f SH_DECL(kd);
+      ShOutputColor3f SH_DECL(ks);
+      ShOutputVector3f SH_DECL(halfVec);
 
 
-        // determine if we're in one of the bumps in the outer lattice work
-        ShAttrib1f dist = coeff | result[0];
-        ShAttrib1f inBump = (dist < threshold) + (dist > threshold2); 
+      // determine if we're in one of the bumps in the outer lattice work
+      ShAttrib1f dist = coeff | result[0];
+      ShAttrib1f inBump = (dist < threshold) + (dist > threshold2); 
 
-        // figure out inner colour and select kd/ks based on whether we're in the bumps 
-        ShColor3f innerColor = lerp(innerCoeff | innerResult, color1, color2);
-        kd = lerp(inBump, latticeColor, innerColor); 
-        ks = lerp(inBump, latticeSpecular, specular);
+      // figure out inner colour and select kd/ks based on whether we're in the bumps 
+      ShColor3f innerColor = lerp(innerCoeff | innerResult, color1, color2);
+      kd = lerp(inBump, latticeColor, innerColor); 
+      ks = lerp(inBump, latticeSpecular, specular);
 
-        // do the bump mapping (TODO use bump function/nibble)
-        ShAttrib2f grad;
-        grad(0) = dot(coeff, result[1]);
-        grad(1) = dot(coeff, result[2]);
+      // do the bump mapping (TODO use bump function/nibble)
+      ShAttrib2f grad;
+      grad(0) = dot(coeff, result[1]);
+      grad(1) = dot(coeff, result[2]);
 
-        normal += inBump * bumpScale * (grad(0) * tangent + grad(1) * tangent2);
-        normal = normalize(normal);
-        halfVec = 0.5f * (normal + lightVec); 
-      } SH_END;
+      normal += inBump * bumpScale * (grad(0) * tangent + grad(1) * tangent2);
+      normal = normalize(normal);
+      halfVec = 0.5f * (normal + lightVec); 
+    } SH_END;
 
-      fsh = namedConnect((colorAndBump << worleysh), fsh);
-      vsh = namedAlign(vsh, fsh);
-    }
+    fsh = namedConnect((colorAndBump << worleysh), fsh);
+    vsh = namedAlign(vsh, fsh);
+  }
 };
 
 class PolkaDotWorley: public WorleyShader {
-  public:
-    PolkaDotWorley(bool useTexture): WorleyShader("Polka Dot", useTexture) {}
+public:
+  PolkaDotWorley(bool useTexture): WorleyShader("Polka Dot", useTexture) {}
 
-    void initfsh() {
-      ShProgram worleysh = shWorley<4, 2, float>(useTexture);
-      worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
-      worleysh = (dot<ShAttrib4f>() << coeff) << worleysh;
+  void initfsh()
+  {
+    ShProgram worleysh = shWorley<4, 2, float>(useTexture);
+    worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    worleysh = (dot<ShAttrib4f>() << coeff) << worleysh;
 
-      // make polkadots by clamping the scalar result from worley
-      ShProgram polkash = SH_BEGIN_PROGRAM() {
-        ShInOutAttrib1f SH_DECL(scalar) = clamp((scalar + param - 0.75f) * 30.0f, 0.0f, 1.0f); 
-      } SH_END;
-      worleysh = polkash << worleysh;
+    // make polkadots by clamping the scalar result from worley
+    ShProgram polkash = SH_BEGIN_PROGRAM() {
+      ShInOutAttrib1f SH_DECL(scalar) = clamp((scalar + param - 0.75f) * 30.0f, 0.0f, 1.0f); 
+    } SH_END;
+    worleysh = polkash << worleysh;
 
-      color1 = ShColor3f(0.27, 0.35, 0.45);
-      color2 =  ShColor3f(1.0, 0.7, 0.0);
-      ShColor3f specularColor(0.5, 0.5, 0.5);
+    color1 = ShColor3f(0.27, 0.35, 0.45);
+    color2 =  ShColor3f(1.0, 0.7, 0.0);
+    ShColor3f specularColor(0.5, 0.5, 0.5);
 
-      ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
-      colorsh = colorsh & ( keep<ShColor3f>("ks") << specularColor); 
+    ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
+    colorsh = colorsh & ( keep<ShColor3f>("ks") << specularColor); 
 
-      fsh = fsh << colorsh << worleysh;
-      vsh = namedAlign(vsh, fsh);
-    }
+    fsh = fsh << colorsh << worleysh;
+    vsh = namedAlign(vsh, fsh);
+  }
 };
 
 class LavaWorley: public WorleyShader {
-  public:
-    LavaWorley(bool useTexture): WorleyShader("Lava", useTexture) {}
+public:
+  LavaWorley(bool useTexture): WorleyShader("Lava", useTexture) {}
 
-    void initfsh() {
-      coeff = ShConstAttrib4f(-1, 1.2, 0, 0);
-      ShAttrib4f SH_NAMEDECL(coeff2, "Worley coefficient 2") = ShConstAttrib4f(0, 1, 1, 0);
-      ShAttrib1f SH_NAMEDECL(freq2, "Worley frequency 2") = freq * 2.131313f;
+  void initfsh()
+  {
+    coeff = ShConstAttrib4f(-1, 1.2, 0, 0);
+    ShAttrib4f SH_NAMEDECL(coeff2, "Worley coefficient 2") = ShConstAttrib4f(0, 1, 1, 0);
+    ShAttrib1f SH_NAMEDECL(freq2, "Worley frequency 2") = freq * 2.131313f;
 
-      DefaultGenFactory<2, float> genFactory(useTexture);
-      DistSqPropFactory<2, float> distSqPropFactory;
-      Dist_1PropFactory<2, float> dist_1PropFactory;
+    DefaultGenFactory<2, float> genFactory(useTexture);
+    DistSqPropFactory<2, float> distSqPropFactory;
+    Dist_1PropFactory<2, float> dist_1PropFactory;
 
-      ShProgram worleysh = shWorley<4>(&genFactory, &dist_1PropFactory);
-      worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
-      worleysh = (dot<ShAttrib4f>() << coeff) << worleysh;
+    ShProgram worleysh = shWorley<4>(&genFactory, &dist_1PropFactory);
+    worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    worleysh = (dot<ShAttrib4f>() << coeff) << worleysh;
 
-      ShProgram worleysh2 = shWorley<4>(&genFactory, &distSqPropFactory);
-      worleysh2 = worleysh2 << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq2));
-      worleysh2 = (dot<ShAttrib4f>() << coeff2) << worleysh2;
+    ShProgram worleysh2 = shWorley<4>(&genFactory, &distSqPropFactory);
+    worleysh2 = worleysh2 << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq2));
+    worleysh2 = (dot<ShAttrib4f>() << coeff2) << worleysh2;
 
-      worleysh = sub<ShAttrib1f>() << namedCombine(worleysh, worleysh2);
+    worleysh = sub<ShAttrib1f>() << namedCombine(worleysh, worleysh2);
 
-      color1 = ShColor3f(0.0, 0.0, 1.0);
-      color2 =  ShColor3f(0.5, 0.0, 0.0);
-      ShColor3f specularColor(0.5, 0.5, 0.5);
+    color1 = ShColor3f(0.0, 0.0, 1.0);
+    color2 =  ShColor3f(0.5, 0.0, 0.0);
+    ShColor3f specularColor(0.5, 0.5, 0.5);
 
-      ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
-      colorsh = colorsh & ( keep<ShColor3f>("ks") << specularColor); 
+    ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
+    colorsh = colorsh & ( keep<ShColor3f>("ks") << specularColor); 
 
-      fsh = fsh << colorsh << worleysh;
-      vsh = namedAlign(vsh, fsh);
-    }
+    fsh = fsh << colorsh << worleysh;
+    vsh = namedAlign(vsh, fsh);
+  }
 };
 
 class GiraffeWorley: public WorleyShader {
-  public:
-    GiraffeWorley(bool useTexture): WorleyShader("Giraffe", useTexture) {}
+public:
+  GiraffeWorley(bool useTexture): WorleyShader("Giraffe", useTexture) {}
 
-    void initfsh() {
-      param = ShConstAttrib1f(0.75);
-      coeff = ShConstAttrib4f(-1, 1, 0, 0);
-      ShAttrib4f SH_NAMEDECL(coeff2, "Worley coefficient 2") = ShConstAttrib4f(0, -1, 1, 0);
+  void initfsh()
+  {
+    param = ShConstAttrib1f(0.75);
+    coeff = ShConstAttrib4f(-1, 1, 0, 0);
+    ShAttrib4f SH_NAMEDECL(coeff2, "Worley coefficient 2") = ShConstAttrib4f(0, -1, 1, 0);
 
-      DefaultGenFactory<2, float> genFactory(useTexture);
-      Dist_1PropFactory<2, float> dist_1PropFactory;
-      ShProgram worleysh = shWorley<4>(&genFactory, &dist_1PropFactory);
-      worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
-      worleysh = (dot<ShAttrib4f>() << coeff) << worleysh;
+    DefaultGenFactory<2, float> genFactory(useTexture);
+    Dist_1PropFactory<2, float> dist_1PropFactory;
+    ShProgram worleysh = shWorley<4>(&genFactory, &dist_1PropFactory);
+    worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    worleysh = (dot<ShAttrib4f>() << coeff) << worleysh;
 
-      ShProgram worleysh2 = shWorley<4>(&genFactory, &dist_1PropFactory);
-      worleysh2 = worleysh2 << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
-      worleysh2 = (dot<ShAttrib4f>() << coeff2) << worleysh2;
+    ShProgram worleysh2 = shWorley<4>(&genFactory, &dist_1PropFactory);
+    worleysh2 = worleysh2 << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    worleysh2 = (dot<ShAttrib4f>() << coeff2) << worleysh2;
 
-      // make patches out of the two
-      ShProgram patcher = SH_BEGIN_PROGRAM() {
-        ShInputAttrib1f SH_DECL(worleyScalar1);
-        ShInputAttrib1f SH_DECL(worleyScalar2);
-        ShOutputAttrib1f SH_DECL(result);
-        worleyScalar1 = (1.0f - worleyScalar1 - param) * 30.0f;
-        worleyScalar2 = (1.0f - worleyScalar2 - param) * 10.0f;
-        result = clamp(worleyScalar1 + worleyScalar2, 0.0f, 1.0f);
-      } SH_END;
+    // make patches out of the two
+    ShProgram patcher = SH_BEGIN_PROGRAM() {
+      ShInputAttrib1f SH_DECL(worleyScalar1);
+      ShInputAttrib1f SH_DECL(worleyScalar2);
+      ShOutputAttrib1f SH_DECL(result);
+      worleyScalar1 = (1.0f - worleyScalar1 - param) * 30.0f;
+      worleyScalar2 = (1.0f - worleyScalar2 - param) * 10.0f;
+      result = clamp(worleyScalar1 + worleyScalar2, 0.0f, 1.0f);
+    } SH_END;
 
-      worleysh = patcher << namedCombine(worleysh, worleysh2);
+    worleysh = patcher << namedCombine(worleysh, worleysh2);
 
-      color1 =  ShColor3f(1.0, 0.95, 0.8);
-      color2 = ShColor3f(0.45, 0.3, 0.0);
-      ShColor3f specularColor(0.2, 0.2, 0.2);
+    color1 =  ShColor3f(1.0, 0.95, 0.8);
+    color2 = ShColor3f(0.45, 0.3, 0.0);
+    ShColor3f specularColor(0.2, 0.2, 0.2);
 
-      ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
-      colorsh = colorsh & ( keep<ShColor3f>("ks") << specularColor); 
+    ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
+    colorsh = colorsh & ( keep<ShColor3f>("ks") << specularColor); 
 
-      fsh = fsh << colorsh << worleysh;
-      vsh = namedAlign(vsh, fsh);
-    }
+    fsh = fsh << colorsh << worleysh;
+    vsh = namedAlign(vsh, fsh);
+  }
 };
 
 class CircuitWorley: public WorleyShader {
-  public:
-    CircuitWorley(bool useTexture): WorleyShader("Circuit", useTexture) {}
+public:
+  CircuitWorley(bool useTexture): WorleyShader("Circuit", useTexture) {}
 
-    void initfsh() {
-      coeff = ShConstAttrib4f(0, 0, 0, 1);
-      ShAttrib1f SH_NAMEDECL(freq2, "Worley frequency 2") = freq * 2.131313f;
+  void initfsh()
+  {
+    coeff = ShConstAttrib4f(0, 0, 0, 1);
+    ShAttrib1f SH_NAMEDECL(freq2, "Worley frequency 2") = freq * 2.131313f;
 
-      DefaultGenFactory<2, float> genFactory(useTexture);
-      Dist_1PropFactory<2, float> dist_1PropFactory;
-      ShProgram worleysh = shWorley<4>(&genFactory, &dist_1PropFactory);
-      worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
-      worleysh = (dot<ShAttrib4f>() << coeff) << worleysh;
+    DefaultGenFactory<2, float> genFactory(useTexture);
+    Dist_1PropFactory<2, float> dist_1PropFactory;
+    ShProgram worleysh = shWorley<4>(&genFactory, &dist_1PropFactory);
+    worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    worleysh = (dot<ShAttrib4f>() << coeff) << worleysh;
 
-      ShProgram worleysh2 = shWorley<4>(&genFactory, &dist_1PropFactory);
-      worleysh2 = worleysh2 << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq2));
-      worleysh2 = (dot<ShAttrib4f>() << coeff) << worleysh2;
+    ShProgram worleysh2 = shWorley<4>(&genFactory, &dist_1PropFactory);
+    worleysh2 = worleysh2 << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq2));
+    worleysh2 = (dot<ShAttrib4f>() << coeff) << worleysh2;
 
-      color1 = ShColor3f(0.0, 0.2, 0.8);
-      color2 =  ShColor3f(0.6, 0.6, 0.7);
+    color1 = ShColor3f(0.0, 0.2, 0.8);
+    color2 =  ShColor3f(0.6, 0.6, 0.7);
 
-      // make patches out of the two
-      ShProgram colorizer = SH_BEGIN_PROGRAM() {
-        ShInputAttrib1f SH_DECL(worleyScalar1);
-        ShInputAttrib1f SH_DECL(worleyScalar2);
-        ShOutputColor3f SH_DECL(kd);
-        ShOutputColor3f SH_DECL(ks);
+    // make patches out of the two
+    ShProgram colorizer = SH_BEGIN_PROGRAM() {
+      ShInputAttrib1f SH_DECL(worleyScalar1);
+      ShInputAttrib1f SH_DECL(worleyScalar2);
+      ShOutputColor3f SH_DECL(kd);
+      ShOutputColor3f SH_DECL(ks);
 
-        worleyScalar1 = clamp((1.0f - worleyScalar1 + param) * 30.0f, 0.0f, 1.0f);
-        worleyScalar2 = 1.0f - clamp((1.0f - worleyScalar2 + param) * 30.0f, 0.0f, 1.0f);
-        kd = worleyScalar1 * color1 + worleyScalar2 * color2; 
-        ks = kd; 
-      } SH_END;
+      worleyScalar1 = clamp((1.0f - worleyScalar1 + param) * 30.0f, 0.0f, 1.0f);
+      worleyScalar2 = 1.0f - clamp((1.0f - worleyScalar2 + param) * 30.0f, 0.0f, 1.0f);
+      kd = worleyScalar1 * color1 + worleyScalar2 * color2; 
+      ks = kd; 
+    } SH_END;
 
-      worleysh = namedCombine(worleysh, worleysh2);
-      worleysh = colorizer << worleysh;
-      fsh = fsh << worleysh; 
-      vsh = namedAlign(vsh, fsh);
-    }
+    worleysh = namedCombine(worleysh, worleysh2);
+    worleysh = colorizer << worleysh;
+    fsh = fsh << worleysh; 
+    vsh = namedAlign(vsh, fsh);
+  }
 };
 
 class CrackedWorley: public WorleyShader {
-  public:
-    bool m_animate;
-    ShAttrib1f m_old, m_enable, m_time, m_speed;
+public:
+  bool m_animate;
+  ShAttrib1f m_old, m_enable, m_time, m_speed;
 
-    CrackedWorley(bool useTexture, bool animate) 
-      : WorleyShader(std::string("Cracked") + (animate ? " Animating" : ""), useTexture), 
-        m_animate(animate) {
-      m_old = m_enable = 1.0f;
-      m_enable.name("Enable Animation");
+  CrackedWorley(bool useTexture, bool animate) 
+    : WorleyShader(std::string("Cracked") + (animate ? " Animating" : ""), useTexture), 
+      m_animate(animate)
+  {
+    m_old = m_enable = 1.0f;
+    m_enable.name("Enable Animation");
 
-      m_speed = 0.1f;
-      m_speed.name("Animation Speed");
-      m_speed.range(-2.0f, 2.0f);
+    m_speed = 0.1f;
+    m_speed.name("Animation Speed");
+    m_speed.range(-2.0f, 2.0f);
 
-      m_time = 0.0f;
+    m_time = 0.0f;
+  }
+
+  void initfsh()
+  {
+    color1 = ShColor3f(3.0, 0.75, 0.0);
+    color2 =  ShColor3f(0.0f, 0.0f, 0.0f);
+
+    ShColor3f specularColor(0.5, 0.5, 0.5);
+
+    coeff = ShConstAttrib4f(2.5, -0.5f, -0.1f, 0);
+    freq = ShConstAttrib1f(16.0f);
+
+    ShProgram worleysh;
+
+    DistSqPropFactory<2, float> propFactory;
+
+    if (m_animate) {
+      LerpGenFactory<2, float> genFactory(m_time, useTexture);
+      worleysh = shWorley<4>(&genFactory, &propFactory);
+    } else {
+      DefaultGenFactory<2, float> genFactory(useTexture);
+      worleysh = shWorley<4>(&genFactory, &propFactory); 
     }
 
-    void initfsh() {
-      color1 = ShColor3f(3.0, 0.75, 0.0);
-      color2 =  ShColor3f(0.0f, 0.0f, 0.0f);
+    worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    worleysh = (dot<ShAttrib4f>() << coeff) << worleysh;
 
-      ShColor3f specularColor(0.5, 0.5, 0.5);
+    ShProgram clamper = SH_BEGIN_PROGRAM() {
+      ShInOutAttrib1f SH_DECL(scalar) = clamp(scalar, 0.0f, 1.0f);
 
-      coeff = ShConstAttrib4f(2.5, -0.5f, -0.1f, 0);
-      freq = ShConstAttrib1f(16.0f);
+      // TODO get rid of this hack... This makes m_speed and m_enable visible in the uniform panel
+      scalar += 0.0f * (m_speed + m_enable);
+    } SH_END;
+    worleysh = clamper << worleysh;
 
-      ShProgram worleysh;
+    ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
+    colorsh = colorsh & ( keep<ShColor3f>("ks") << specularColor); 
+    fsh = fsh << colorsh << worleysh;
+    vsh = namedAlign(vsh, fsh);
+  }
 
-      DistSqPropFactory<2, float> propFactory;
-
-      if (m_animate) {
-        LerpGenFactory<2, float> genFactory(m_time, useTexture);
-        worleysh = shWorley<4>(&genFactory, &propFactory);
-      } else {
-        DefaultGenFactory<2, float> genFactory(useTexture);
-        worleysh = shWorley<4>(&genFactory, &propFactory); 
-      }
-
-      worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
-      worleysh = (dot<ShAttrib4f>() << coeff) << worleysh;
-
-      ShProgram clamper = SH_BEGIN_PROGRAM() {
-        ShInOutAttrib1f SH_DECL(scalar) = clamp(scalar, 0.0f, 1.0f);
-
-        // TODO get rid of this hack... This makes m_speed and m_enable visible in the uniform panel
-        scalar += 0.0f * (m_speed + m_enable);
-      } SH_END;
-      worleysh = clamper << worleysh;
-
-      ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
-      colorsh = colorsh & ( keep<ShColor3f>("ks") << specularColor); 
-      fsh = fsh << colorsh << worleysh;
-      vsh = namedAlign(vsh, fsh);
+  void render()
+  {
+    if((m_enable != m_old).getValue(0) > 0.5f) {
+      m_time += m_speed;
+      m_old = m_enable;
     }
-
-    void render() {
-      if((m_enable != m_old).getValue(0) > 0.5f) {
-        m_time += m_speed;
-        m_old = m_enable;
-      }
-      Shader::render();
-    }
+    Shader::render();
+  }
 
 };
 
 class StoneWorley: public WorleyShader {
-  public:
-    StoneWorley(bool useTexture): WorleyShader("Stone Tile", useTexture) {}
+public:
+  StoneWorley(bool useTexture): WorleyShader("Stone Tile", useTexture) {}
 
-    void initfsh() {
-      color1 = ShColor3f(1.0, 0.5, 0.0);
+  void initfsh()
+  {
+    color1 = ShColor3f(1.0, 0.5, 0.0);
 
-      ShColor3f specularColor(0.1f, 0.1f, 0.1f);
-      ShAttrib1f SH_NAMEDECL(groutThreshold, "Grout Threshold") = ShConstAttrib1f(0.05f);
-      groutThreshold.range(-1.0f, 1.0f);
+    ShColor3f specularColor(0.1f, 0.1f, 0.1f);
+    ShAttrib1f SH_NAMEDECL(groutThreshold, "Grout Threshold") = ShConstAttrib1f(0.05f);
+    groutThreshold.range(-1.0f, 1.0f);
 
-      ShAttrib1f SH_NAMEDECL(bevelThreshold, "Bump Threshold") = ShConstAttrib1f(0.2f);
-      bevelThreshold.range(-1.0f, 1.0f);
+    ShAttrib1f SH_NAMEDECL(bevelThreshold, "Bump Threshold") = ShConstAttrib1f(0.2f);
+    bevelThreshold.range(-1.0f, 1.0f);
 
-      coeff = ShConstAttrib4f(-1.0f, 1.0f, 0.0f, 0.0f);
-      ShAttrib4f noiseCoeff = ShConstAttrib4f(1.0f, 0.0f, 0.0f, 0.0f);
+    coeff = ShConstAttrib4f(-1.0f, 1.0f, 0.0f, 0.0f);
+    ShAttrib4f noiseCoeff = ShConstAttrib4f(1.0f, 0.0f, 0.0f, 0.0f);
 
-      freq = ShConstAttrib1f(16.0f);
+    freq = ShConstAttrib1f(16.0f);
 
-      DefaultGenFactory<2, float> genFactory(useTexture);
-      //NullGenFactory<2, float> genFactory;
-      DistSqGradientPropFactory<2, float> distPropFactory;
-      CellnoisePropFactory<1, 2, float> noisePropFactory(useTexture);
-      PropertyFactory<4, 2, float> *propFactory = combine(&distPropFactory, &noisePropFactory);
+    DefaultGenFactory<2, float> genFactory(useTexture);
+    //NullGenFactory<2, float> genFactory;
+    DistSqGradientPropFactory<2, float> distPropFactory;
+    CellnoisePropFactory<1, 2, float> noisePropFactory(useTexture);
+    PropertyFactory<4, 2, float> *propFactory = combine(&distPropFactory, &noisePropFactory);
 
-      ShProgram worleysh = shWorley<4>(&genFactory, propFactory); // pass in coefficients 
-      worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    ShProgram worleysh = shWorley<4>(&genFactory, propFactory); // pass in coefficients 
+    worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
 
-      ShAttrib1f SH_DECL(noiseScale) = ShConstAttrib1f(0.1f);
-      noiseScale.range(0.0f, 1.0f);
+    ShAttrib1f SH_DECL(noiseScale) = ShConstAttrib1f(0.1f);
+    noiseScale.range(0.0f, 1.0f);
 
-      ShAttrib1f SH_DECL(noiseFreq) = ShConstAttrib1f(128.0f);
-      noiseFreq.range(0.0f, 768.0f);
+    ShAttrib1f SH_DECL(noiseFreq) = ShConstAttrib1f(128.0f);
+    noiseFreq.range(0.0f, 768.0f);
 
-      ShAttrib3f SH_DECL(noiseAmps) = ShConstAttrib3f(1.0f, 0.5f, 0.25f);
-      noiseAmps.range(0.0f, 1.0f);
+    ShAttrib3f SH_DECL(noiseAmps) = ShConstAttrib3f(1.0f, 0.5f, 0.25f);
+    noiseAmps.range(0.0f, 1.0f);
 
-      ShAttrib1f SH_DECL(bumpScale) = ShConstAttrib1f(3.0f);
-      bumpScale.range(-10.0f, 10.0f);
+    ShAttrib1f SH_DECL(bumpScale) = ShConstAttrib1f(3.0f);
+    bumpScale.range(-10.0f, 10.0f);
 
 
-      ShProgram worleyWeight = SH_BEGIN_PROGRAM() {
-        // result[0] holds the 4-nearest distances, 
-        // result[1,2] holds the gradient for 4 nearest features 
-        // result[3] holds noise property for 4 nearest features
-        ShInputAttrib4f result[4]; 
+    ShProgram worleyWeight = SH_BEGIN_PROGRAM() {
+      // result[0] holds the 4-nearest distances, 
+      // result[1,2] holds the gradient for 4 nearest features 
+      // result[3] holds noise property for 4 nearest features
+      ShInputAttrib4f result[4]; 
 
-        // change from squared euclidean to euclidean distances
-        for(int i = 0; i < 4; ++i) result[0](i) = sqrt(result[0](i));
+      // change from squared euclidean to euclidean distances
+      for(int i = 0; i < 4; ++i) result[0](i) = sqrt(result[0](i));
 
-        // calculate weighted sums of distances, gradients and noise property
-        ShOutputAttrib1f SH_DECL(worleyDist) = dot(coeff, result[0]); 
-        ShOutputAttrib2f SH_DECL(worleyGrad);
-// TODO clean up this bump hack -coeff gives the right bumps, but
-// we should really be picking coeff correctly and fixing thresholds
-// below instead
-        worleyGrad(0) = dot(-coeff, result[1]); 
-        worleyGrad(1) = dot(-coeff, result[2]);
-        ShOutputAttrib1f SH_DECL(worleyNoise) = dot(noiseCoeff, result[3]);
-      } SH_END;
+      // calculate weighted sums of distances, gradients and noise property
+      ShOutputAttrib1f SH_DECL(worleyDist) = dot(coeff, result[0]); 
+      ShOutputAttrib2f SH_DECL(worleyGrad);
+      // TODO clean up this bump hack -coeff gives the right bumps, but
+      // we should really be picking coeff correctly and fixing thresholds
+      // below instead
+      worleyGrad(0) = dot(-coeff, result[1]); 
+      worleyGrad(1) = dot(-coeff, result[2]);
+      ShOutputAttrib1f SH_DECL(worleyNoise) = dot(noiseCoeff, result[3]);
+    } SH_END;
 
-      worleysh = worleyWeight << worleysh;
+    worleysh = worleyWeight << worleysh;
 
-      ShProgram color = SH_BEGIN_PROGRAM() {
-        ShInputTexCoord2f SH_DECL(texcoord);
-        ShInputAttrib1f SH_DECL(worleyDist);
-        ShInputAttrib2f SH_DECL(worleyGrad);
-        ShInputAttrib1f SH_DECL(worleyNoise);
+    ShProgram color = SH_BEGIN_PROGRAM() {
+      ShInputTexCoord2f SH_DECL(texcoord);
+      ShInputAttrib1f SH_DECL(worleyDist);
+      ShInputAttrib2f SH_DECL(worleyGrad);
+      ShInputAttrib1f SH_DECL(worleyNoise);
 
-        ShInputVector3f SH_DECL(tangent) = normalize(tangent);
-        ShInputVector3f SH_DECL(tangent2) = normalize(tangent2);
-        ShInputVector3f SH_DECL(lightVec) = normalize(lightVec);
+      ShInputVector3f SH_DECL(tangent) = normalize(tangent);
+      ShInputVector3f SH_DECL(tangent2) = normalize(tangent2);
+      ShInputVector3f SH_DECL(lightVec) = normalize(lightVec);
 
-        ShInOutNormal3f SH_DECL(normal);
-        ShOutputColor3f SH_DECL(kd);
-        ShOutputColor3f SH_DECL(ks);
-        ShOutputVector3f SH_DECL(halfVec);
+      ShInOutNormal3f SH_DECL(normal);
+      ShOutputColor3f SH_DECL(kd);
+      ShOutputColor3f SH_DECL(ks);
+      ShOutputVector3f SH_DECL(halfVec);
 
-        // decide whether we're in grout or in the bevel near the grout
-        ShAttrib1f inGrout = worleyDist < groutThreshold;
-        ShAttrib1f inBevel = (worleyDist < (groutThreshold + bevelThreshold)) - inGrout;
+      // decide whether we're in grout or in the bevel near the grout
+      ShAttrib1f inGrout = worleyDist < groutThreshold;
+      ShAttrib1f inBevel = (worleyDist < (groutThreshold + bevelThreshold)) - inGrout;
 
-        // generate stone colors (one per tile) 
-        kd = lerp(inGrout, ShConstColor3f(1.0f, 1.0f, 1.0f), worleyNoise * color1);
-        ks = specularColor; 
+      // generate stone colors (one per tile) 
+      kd = lerp(inGrout, ShConstColor3f(1.0f, 1.0f, 1.0f), worleyNoise * color1);
+      ks = specularColor; 
 
-        // apply bump mapping
-        ShVector3f inBevelPerturb = (worleyGrad(0) * tangent + worleyGrad(1) * tangent2);
-        ShVector3f insideTilePerturb = noiseScale * sperlin<3>(texcoord * noiseFreq, noiseAmps, useTexture);
-        normal += bumpScale * (
-            lerp(inBevel, inBevelPerturb, ShConstVector3f(0.0f, 0.0f, 0.0f)) +
-            lerp(inGrout, ShConstVector3f(0.0f, 0.0f, 0.0f), insideTilePerturb)); 
-        normal = normalize(normal);
-        halfVec = 0.5f * (normal + lightVec); 
-      } SH_END;
+      // apply bump mapping
+      ShVector3f inBevelPerturb = (worleyGrad(0) * tangent + worleyGrad(1) * tangent2);
+      ShVector3f insideTilePerturb = noiseScale * sperlin<3>(texcoord * noiseFreq, noiseAmps, useTexture);
+      normal += bumpScale * (
+			     lerp(inBevel, inBevelPerturb, ShConstVector3f(0.0f, 0.0f, 0.0f)) +
+			     lerp(inGrout, ShConstVector3f(0.0f, 0.0f, 0.0f), insideTilePerturb)); 
+      normal = normalize(normal);
+      halfVec = 0.5f * (normal + lightVec); 
+    } SH_END;
 
-      fsh = namedConnect(namedConnect(worleysh, color), fsh);
-      vsh = namedAlign(vsh, fsh);
+    fsh = namedConnect(namedConnect(worleysh, color), fsh);
+    vsh = namedAlign(vsh, fsh);
       
-      delete propFactory;
-    }
+    delete propFactory;
+  }
 };
 
 class TurbulentWorley: public WorleyShader {
-  public:
-    TurbulentWorley(bool useTexture): WorleyShader("Turbulence", useTexture) {}
+public:
+  TurbulentWorley(bool useTexture): WorleyShader("Turbulence", useTexture) {}
 
-    void initfsh() {
-      ShAttrib4f SH_NAMEDECL(amps, "Octave_Amplitudes") = ShConstAttrib4f(1.0f, 0.5f, 0.25f, 0.125f);
-      amps.range(0.0f, 1.0f);
-      const int N = 4; // number of octaves
+  void initfsh()
+  {
+    ShAttrib4f SH_NAMEDECL(amps, "Octave_Amplitudes") = ShConstAttrib4f(1.0f, 0.5f, 0.25f, 0.125f);
+    amps.range(0.0f, 1.0f);
+    const int N = 4; // number of octaves
 
-      color1 = ShColor3f(1.0f, 1.0f, 1.0f);
-      color2 = ShColor3f(0.0f, 0.0f, 0.0f); 
-      ShColor3f specularColor(0.5, 0.5, 0.5);
+    color1 = ShColor3f(1.0f, 1.0f, 1.0f);
+    color2 = ShColor3f(0.0f, 0.0f, 0.0f); 
+    ShColor3f specularColor(0.5, 0.5, 0.5);
 
-      coeff = ShConstAttrib4f(0.0f, 0.5f, 0.5f, 0.0f);
-      freq = ShConstAttrib1f(16.0f);
+    coeff = ShConstAttrib4f(0.0f, 0.5f, 0.5f, 0.0f);
+    freq = ShConstAttrib1f(16.0f);
 
-      ShProgram worleysh[N];
-      for(int i = N - 1; i >= 0; --i) {
-        DefaultGenFactory<2, float> genFactory(useTexture);
-        Dist_1PropFactory<2, float> distFactory;
-        worleysh[i] = shWorley<4>(&genFactory, &distFactory); 
-        ShProgram multiplier = SH_BEGIN_PROGRAM() {
-          ShInOutTexCoord2f SH_DECL(texcoord);
-          texcoord *= freq * (float)(1 << i);
-        } SH_END;
-        worleysh[i] = worleysh[i] << multiplier; 
-      }
-      ShProgram comboWorley = worleysh[0];
-      for(int i = 1; i < N; ++i) {
-        comboWorley = namedCombine(comboWorley, worleysh[i]);
-      }
-
-      ShProgram colorizer = SH_BEGIN_PROGRAM() {
-        ShInputAttrib4f SH_DECL(result[N]);
-        ShOutputColor3f SH_DECL(kd);
-        ShOutputColor3f SH_DECL(ks);
-        ShAttrib1f weightedResult(0.0f); 
-        for(int i = 0; i < N; ++i) weightedResult = mad(dot(result[i], coeff), amps(i), weightedResult);
-        kd = lerp(weightedResult, color1, color2);
-        ks = kd;
+    ShProgram worleysh[N];
+    for(int i = N - 1; i >= 0; --i) {
+      DefaultGenFactory<2, float> genFactory(useTexture);
+      Dist_1PropFactory<2, float> distFactory;
+      worleysh[i] = shWorley<4>(&genFactory, &distFactory); 
+      ShProgram multiplier = SH_BEGIN_PROGRAM() {
+	ShInOutTexCoord2f SH_DECL(texcoord);
+	texcoord *= freq * (float)(1 << i);
       } SH_END;
-
-      fsh = fsh << colorizer << comboWorley; 
-      vsh = namedAlign(vsh, fsh);
+      worleysh[i] = worleysh[i] << multiplier; 
     }
+    ShProgram comboWorley = worleysh[0];
+    for(int i = 1; i < N; ++i) {
+      comboWorley = namedCombine(comboWorley, worleysh[i]);
+    }
+
+    ShProgram colorizer = SH_BEGIN_PROGRAM() {
+      ShInputAttrib4f SH_DECL(result[N]);
+      ShOutputColor3f SH_DECL(kd);
+      ShOutputColor3f SH_DECL(ks);
+      ShAttrib1f weightedResult(0.0f); 
+      for(int i = 0; i < N; ++i) weightedResult = mad(dot(result[i], coeff), amps(i), weightedResult);
+      kd = lerp(weightedResult, color1, color2);
+      ks = kd;
+    } SH_END;
+
+    fsh = fsh << colorizer << comboWorley; 
+    vsh = namedAlign(vsh, fsh);
+  }
 };
 
 class MosaicWorley: public WorleyShader {
-  public:
-    MosaicWorley(bool useTexture): WorleyShader("Mosaic", useTexture) {}
+public:
+  MosaicWorley(bool useTexture): WorleyShader("Mosaic", useTexture) {}
 
-    void initfsh() {
-      ShColor3f specularColor(0.5, 0.5, 0.5);
+  void initfsh()
+  {
+    ShColor3f specularColor(0.5, 0.5, 0.5);
 
-      ShImage image;
-      image.loadPng(SHMEDIA_DIR "/textures/kd.png");
-      ShTexture2D<ShColor3f> mosaicTex(image.width(), image.height());
-      mosaicTex.name("Mosaic Texture");
-      mosaicTex.memory(image.memory());
+    ShImage image;
+    image.loadPng(SHMEDIA_DIR "/textures/kd.png");
+    ShTexture2D<ShColor3f> mosaicTex(image.width(), image.height());
+    mosaicTex.name("Mosaic Texture");
+    mosaicTex.memory(image.memory());
 
-      std::string imageNames[6] = {"left", "right", "top", "bottom", "back", "front"};
-      ShImage test_image;
-      test_image.loadPng(std::string(SHMEDIA_DIR "/envmaps/aniroom/") + imageNames[0] + ".png");
+    std::string imageNames[6] = {"left", "right", "top", "bottom", "back", "front"};
+    ShImage test_image;
+    test_image.loadPng(std::string(SHMEDIA_DIR "/envmaps/aniroom/") + imageNames[0] + ".png");
 
-      ShTextureCube<ShColor4f> cubemap(test_image.width(), test_image.height());
-      {
-        for (int i = 0; i < 6; i++) {
-          ShImage image2;
-          image2.loadPng(std::string(SHMEDIA_DIR "/envmaps/aniroom/") + imageNames[i] + ".png");
-          cubemap.memory(image2.memory(), static_cast<ShCubeDirection>(i));
-        }
+    ShTextureCube<ShColor4f> cubemap(test_image.width(), test_image.height());
+    {
+      for (int i = 0; i < 6; i++) {
+	ShImage image2;
+	image2.loadPng(std::string(SHMEDIA_DIR "/envmaps/aniroom/") + imageNames[i] + ".png");
+	cubemap.memory(image2.memory(), static_cast<ShCubeDirection>(i));
       }
-
-      ShAttrib1f SH_DECL(texScale) = ShConstAttrib1f(32.0);
-      texScale.range(0.0f, image.width() / 16.0f);
-
-      DefaultGenFactory<2, float> genFactory(useTexture);
-      //NullGenFactory<2, float> genFactory;
-      DistSqPropFactory<2, float> distFactory;
-      Tex2DPropFactory<ShColor3f, float> tex2dFactory(mosaicTex, texScale);
-
-      coeff = ShConstAttrib4f(-1.0f, 1.0f, 0.0f, 0.0f);
-
-      ShAttrib4f SH_DECL(colorCoeff) = ShConstAttrib4f(3.0f, 0.0f, 0.0f, 0.0f);
-      colorCoeff.range(-4.0f, 4.0f);
-
-      ShProgram worleysh = shWorley<4>(&genFactory, combine(&distFactory, &tex2dFactory));
-      ShProgram texcoordScaler = SH_BEGIN_PROGRAM() {
-        ShInOutTexCoord2f SH_DECL(texcoord) = texcoord * (image.width() / texScale);
-      } SH_END;
-      worleysh = worleysh << texcoordScaler; 
-
-
-      ShAttrib1f theta = ShAttrib1f(1.3f);
-      theta.name("relative indices of refraction");
-      theta.range(0.0f,2.0f);
-
-      ShAttrib1f SH_NAMEDECL(threshold, "Lattice threshold") = ShAttrib1f(0.1f);
-      threshold.range(-1.0f, 1.0f);
-
-      // TODO actually get the glass shader instead of rewriting it here
-      ShProgram vshAddon = SH_BEGIN_PROGRAM("gpu:vertex") {
-        ShInOutNormal3f SH_DECL(normal);
-        ShInOutVector3f SH_DECL(viewVec);
-        ShOutputVector3f SH_DECL(reflv);
-        ShOutputVector3f SH_DECL(refrv);
-        ShOutputAttrib1f SH_DECL(fres);
-        
-        reflv = reflect(viewVec,normal); // Compute reflection vector
-        refrv = refract(viewVec,normal,theta); // Compute refraction vector
-        fres = fresnel(viewVec,normal,theta); // Compute fresnel term
-
-        // actually do reflection and refraction lookup in model space
-        reflv = Globals::mv_inverse | reflv;
-        refrv = Globals::mv_inverse | refrv;
-      } SH_END;
-      vsh = namedConnect(vsh, vshAddon, true);
-
-      ShAttrib1f SH_DECL(killThreshold) = -0.1f;
-      killThreshold.range(-16.0f, 16.0f);
-
-      ShProgram perturber = SH_BEGIN_PROGRAM("gpu:fragment") {
-        ShInputAttrib4f result[4]; // worley result - result[0] = distance and result[1-3] = RGB color
-
-        ShOutputColor3f SH_DECL(color);
-        ShInOutAttrib1f SH_DECL(fres);
-
-        // take square roots to get real euclidean distance
-        for(int i = 0; i < 4; ++i) result[0](i) = sqrt(result[0](i));
-        
-        // stain colours inside mosaic tiles and at tile edges,
-        // make it opaque and black
-        ShAttrib1f dist = dot(result[0], coeff);
-        ShAttrib1f inEdge = dist < threshold; 
-        
-        for(int i = 0; i < 3; ++i) color(i) = dot(result[i+1], colorCoeff);
-        discard((color|ShConstAttrib3f(1.0f, 1.0f, 1.0f)) < killThreshold);
-        color = lerp(inEdge, ShConstColor3f(0.0f, 0.0f, 0.0f), color); 
-        fres = lerp(inEdge, ShConstAttrib1f(1.0f), fres); 
-      } SH_END;
-      
-      fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
-        ShInputPosition4f SH_DECL(posh);
-        ShInputColor3f SH_DECL(color); // stain color on glass
-        ShInputNormal3f SH_DECL(normal);  // normal
-        ShInputVector3f SH_DECL(reflv); // Compute reflection vector
-        ShInputVector3f SH_DECL(refrv); // Compute refraction vector
-        ShInputAttrib1f SH_DECL(fres); // Compute fresnel term
-
-        ShOutputColor3f result;
-        
-        result = color * lerp(fres, cubemap(reflv)(0,1,2), cubemap(refrv)(0,1,2)); 
-      } SH_END;
-
-      fsh = namedConnect(perturber << worleysh, fsh); 
-      vsh = namedAlign(vsh, fsh);
     }
+
+    ShAttrib1f SH_DECL(texScale) = ShConstAttrib1f(32.0);
+    texScale.range(0.0f, image.width() / 16.0f);
+
+    DefaultGenFactory<2, float> genFactory(useTexture);
+    //NullGenFactory<2, float> genFactory;
+    DistSqPropFactory<2, float> distFactory;
+    Tex2DPropFactory<ShColor3f, float> tex2dFactory(mosaicTex, texScale);
+
+    coeff = ShConstAttrib4f(-1.0f, 1.0f, 0.0f, 0.0f);
+
+    ShAttrib4f SH_DECL(colorCoeff) = ShConstAttrib4f(3.0f, 0.0f, 0.0f, 0.0f);
+    colorCoeff.range(-4.0f, 4.0f);
+
+    ShProgram worleysh = shWorley<4>(&genFactory, combine(&distFactory, &tex2dFactory));
+    ShProgram texcoordScaler = SH_BEGIN_PROGRAM() {
+      ShInOutTexCoord2f SH_DECL(texcoord) = texcoord * (image.width() / texScale);
+    } SH_END;
+    worleysh = worleysh << texcoordScaler; 
+
+
+    ShAttrib1f theta = ShAttrib1f(1.3f);
+    theta.name("relative indices of refraction");
+    theta.range(0.0f,2.0f);
+
+    ShAttrib1f SH_NAMEDECL(threshold, "Lattice threshold") = ShAttrib1f(0.1f);
+    threshold.range(-1.0f, 1.0f);
+
+    // TODO actually get the glass shader instead of rewriting it here
+    ShProgram vshAddon = SH_BEGIN_PROGRAM("gpu:vertex") {
+      ShInOutNormal3f SH_DECL(normal);
+      ShInOutVector3f SH_DECL(viewVec);
+      ShOutputVector3f SH_DECL(reflv);
+      ShOutputVector3f SH_DECL(refrv);
+      ShOutputAttrib1f SH_DECL(fres);
+        
+      reflv = reflect(viewVec,normal); // Compute reflection vector
+      refrv = refract(viewVec,normal,theta); // Compute refraction vector
+      fres = fresnel(viewVec,normal,theta); // Compute fresnel term
+
+      // actually do reflection and refraction lookup in model space
+      reflv = Globals::mv_inverse | reflv;
+      refrv = Globals::mv_inverse | refrv;
+    } SH_END;
+    vsh = namedConnect(vsh, vshAddon, true);
+
+    ShAttrib1f SH_DECL(killThreshold) = -0.1f;
+    killThreshold.range(-16.0f, 16.0f);
+
+    ShProgram perturber = SH_BEGIN_PROGRAM("gpu:fragment") {
+      ShInputAttrib4f result[4]; // worley result - result[0] = distance and result[1-3] = RGB color
+
+      ShOutputColor3f SH_DECL(color);
+      ShInOutAttrib1f SH_DECL(fres);
+
+      // take square roots to get real euclidean distance
+      for(int i = 0; i < 4; ++i) result[0](i) = sqrt(result[0](i));
+        
+      // stain colours inside mosaic tiles and at tile edges,
+      // make it opaque and black
+      ShAttrib1f dist = dot(result[0], coeff);
+      ShAttrib1f inEdge = dist < threshold; 
+        
+      for(int i = 0; i < 3; ++i) color(i) = dot(result[i+1], colorCoeff);
+      discard((color|ShConstAttrib3f(1.0f, 1.0f, 1.0f)) < killThreshold);
+      color = lerp(inEdge, ShConstColor3f(0.0f, 0.0f, 0.0f), color); 
+      fres = lerp(inEdge, ShConstAttrib1f(1.0f), fres); 
+    } SH_END;
+      
+    fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
+      ShInputPosition4f SH_DECL(posh);
+      ShInputColor3f SH_DECL(color); // stain color on glass
+      ShInputNormal3f SH_DECL(normal);  // normal
+      ShInputVector3f SH_DECL(reflv); // Compute reflection vector
+      ShInputVector3f SH_DECL(refrv); // Compute refraction vector
+      ShInputAttrib1f SH_DECL(fres); // Compute fresnel term
+
+      ShOutputColor3f result;
+        
+      result = color * lerp(fres, cubemap(reflv)(0,1,2), cubemap(refrv)(0,1,2)); 
+    } SH_END;
+
+    fsh = namedConnect(perturber << worleysh, fsh); 
+    vsh = namedAlign(vsh, fsh);
+  }
 }; 
 
 class Worley3D: public WorleyShader {
-  public:
-    Worley3D(bool useTexture): WorleyShader("3D", useTexture) {}
+public:
+  Worley3D(bool useTexture): WorleyShader("3D", useTexture) {}
 
-    void initfsh() {
-      ShProgram worleysh = shWorley<1, 3, float>(useTexture);  // only keep closest neighbour
-      worleysh = worleysh << (mul<ShTexCoord3f>("texcoord", "freq", "posv") << fillcast<3>(freq));
+  void initfsh()
+  {
+    ShProgram worleysh = shWorley<1, 3, float>(useTexture);  // only keep closest neighbour
+    worleysh = worleysh << (mul<ShTexCoord3f>("texcoord", "freq", "posv") << fillcast<3>(freq));
 
-      // make polkadots by clamping the scalar result from worley
-      color1 = ShColor3f(0.27, 0.35, 0.45);
-      color2 =  ShColor3f(1.0, 0.7, 0.0);
-      ShColor3f specularColor(0.5, 0.5, 0.5);
+    // make polkadots by clamping the scalar result from worley
+    color1 = ShColor3f(0.27, 0.35, 0.45);
+    color2 =  ShColor3f(1.0, 0.7, 0.0);
+    ShColor3f specularColor(0.5, 0.5, 0.5);
 
-      ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
-      colorsh = colorsh & ( keep<ShColor3f>("ks") << specularColor); 
+    ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
+    colorsh = colorsh & ( keep<ShColor3f>("ks") << specularColor); 
 
-      fsh = fsh << colorsh << worleysh;
-      vsh = namedAlign(vsh, fsh);
-    }
+    fsh = fsh << colorsh << worleysh;
+    vsh = namedAlign(vsh, fsh);
+  }
 };
 
 // replace these with inline nibbles later on
 class Worley2D: public WorleyShader {
-  public:
-    Worley2D(bool useTexture, ShConstAttrib4f c, PropertyFactory<1, 2, float> *distFactory, std::string name)
-      : WorleyShader(std::string("2D: ") + name, useTexture),
-        m_distFactory(distFactory),
-        m_coeff(c) {
-      m_time.name("time");
-      m_time.range(0.0f, 2.0f);
+public:
+  Worley2D(bool useTexture, ShConstAttrib4f c, PropertyFactory<1, 2, float> *distFactory, std::string name)
+    : WorleyShader(std::string("2D: ") + name, useTexture),
+      m_distFactory(distFactory),
+      m_coeff(c)
+  {
+    m_time.name("time");
+    m_time.range(0.0f, 2.0f);
+  }
+  
+  ~Worley2D() { delete m_distFactory; }
+  // Lerp factory that starts with a fixed grid at time = 0 (good to see how
+  // grid jittering works)
+  struct FixedLerpFactory: GridGenFactory<2, float> {
+    FixedLerpFactory(const ShGeneric<1, float> &time, bool useTexture)
+      : m_time(time), m_useTexture(useTexture){}
+    
+  private:
+    const ShGeneric<1, float> &m_time;
+    bool m_useTexture;
+
+    void makePos(Generator<2, float> &g) const
+    {
+      ShAttrib1f lastTime = floor(m_time);
+      ShAttrib1f timeOffset = frac(m_time);
+      ShAttrib3f offsetCell;
+
+      offsetCell = fillcast<3>(g.cell);
+      offsetCell(2) = lastTime;
+      ShAttrib2f p1 = cellnoise<2>(offsetCell, m_useTexture);
+      p1 = lerp(lastTime < 0.5f, ShConstAttrib2f(0.0f, 0.0f), p1); 
+
+      offsetCell(2) += 1;
+      ShAttrib2f p2 = cellnoise<2>(offsetCell, m_useTexture);
+
+      g.pos = g.cell + lerp(timeOffset, p2, p1);
     }
+  };
 
-    ~Worley2D() {
-      delete m_distFactory;
-    }
-    // Lerp factory that starts with a fixed grid at time = 0 (good to see how
-    // grid jittering works)
-    struct FixedLerpFactory: GridGenFactory<2, float> {
-      FixedLerpFactory(const ShGeneric<1, float> &time, bool useTexture)
-        : m_time(time), m_useTexture(useTexture){}
+  void initfsh()
+  {
+    coeff = m_coeff;
+    FixedLerpFactory genFactory(m_time, useTexture);
 
-      private:
-        const ShGeneric<1, float> &m_time;
-        bool m_useTexture;
+    DistSqPropFactory<2, float> euclideanDistFactory; 
+    PropertyFactory<2, 2, float> *propFactory = combine(m_distFactory, &euclideanDistFactory); 
 
-        void makePos(Generator<2, float> &g) const {
-          ShAttrib1f lastTime = floor(m_time);
-          ShAttrib1f timeOffset = frac(m_time);
-          ShAttrib3f offsetCell;
+    ShProgram worleysh = shWorley<4>(&genFactory, propFactory); 
+    worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
 
-          offsetCell = fillcast<3>(g.cell);
-          offsetCell(2) = lastTime;
-          ShAttrib2f p1 = cellnoise<2>(offsetCell, m_useTexture);
-          p1 = lerp(lastTime < 0.5f, ShConstAttrib2f(0.0f, 0.0f), p1); 
+    // make polkadots by clamping the scalar result from worley
+    color1 =  ShColor3f(1.0, 1.0f, 1.0f); 
+    color2 = ShColor3f(0.0f, 0.0f, 0.0f);
 
-          offsetCell(2) += 1;
-          ShAttrib2f p2 = cellnoise<2>(offsetCell, m_useTexture);
+    ShAttrib1f SH_DECL(threshold) = 0.01f;
+    threshold.range(-1.0f, 1.0f);
 
-          g.pos = g.cell + lerp(timeOffset, p2, p1);
-        }
-    };
+    ShColor3f SH_DECL(featureColor) = ShConstColor3f(1.0f, 0.0f, 1.0f);
 
-    void initfsh() {
-      coeff = m_coeff;
-      FixedLerpFactory genFactory(m_time, useTexture);
+    ShProgram colorsh = SH_BEGIN_PROGRAM("gpu:fragment") {
+      ShInputAttrib4f dists; // 4-nearest worley distances
+      ShInputAttrib4f euclideanDists; // 4-nearest euclidean distances
+      ShInputPosition4f SH_DECL(posh);
+      ShOutputColor3f SH_DECL(result);
 
-      DistSqPropFactory<2, float> euclideanDistFactory; 
-      PropertyFactory<2, 2, float> *propFactory = combine(m_distFactory, &euclideanDistFactory); 
+      result = lerp(coeff | dists, color1, color2);
+      result = cond(euclideanDists(0) < threshold, featureColor, result);
+    } SH_END; 
+    colorsh = colorsh; 
 
-      ShProgram worleysh = shWorley<4>(&genFactory, propFactory); 
-      worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    fsh = colorsh << worleysh;
+    vsh = namedAlign(vsh, fsh);
+  }
 
-      // make polkadots by clamping the scalar result from worley
-      color1 =  ShColor3f(1.0, 1.0f, 1.0f); 
-      color2 = ShColor3f(0.0f, 0.0f, 0.0f);
-
-      ShAttrib1f SH_DECL(threshold) = 0.01f;
-      threshold.range(-1.0f, 1.0f);
-
-      ShColor3f SH_DECL(featureColor) = ShConstColor3f(1.0f, 0.0f, 1.0f);
-
-      ShProgram colorsh = SH_BEGIN_PROGRAM("gpu:fragment") {
-        ShInputAttrib4f dists; // 4-nearest worley distances
-        ShInputAttrib4f euclideanDists; // 4-nearest euclidean distances
-        ShInputPosition4f SH_DECL(posh);
-        ShOutputColor3f SH_DECL(result);
-
-        result = lerp(coeff | dists, color1, color2);
-        result = cond(euclideanDists(0) < threshold, featureColor, result);
-      } SH_END; 
-      colorsh = colorsh; 
-
-      fsh = colorsh << worleysh;
-      vsh = namedAlign(vsh, fsh);
-    }
-
-    static ShAttrib1f m_time;
-    PropertyFactory<1, 2, float> *m_distFactory;
-    ShConstAttrib4f m_coeff;
+  static ShAttrib1f m_time;
+  PropertyFactory<1, 2, float> *m_distFactory;
+  ShConstAttrib4f m_coeff;
 };
 ShAttrib1f Worley2D::m_time = 1.0f;
 
@@ -884,5 +900,3 @@ CrackedWorley crackedProceduralAnim(false, true);
 StoneWorley stone(true);
 MosaicWorley mosaic(true);
 MosaicWorley mosaic2(false);
-
-

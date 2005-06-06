@@ -37,10 +37,10 @@ using namespace ShUtil;
 /* hyperbolic tangent function
  * created because tanh in not yet implemented in Sh
  */
-ShAttrib1f tanh( ShAttrib1f x) {
-	return (pow(M_E, 2*x) - 1) / (pow(M_E, 2*x) + 1);
+ShAttrib1f tanh( ShAttrib1f x) 
+{
+  return (pow(M_E, 2*x) - 1) / (pow(M_E, 2*x) + 1);
 }
-	
 
 
 class BrickWall : public Shader {
@@ -106,14 +106,14 @@ bool BrickWall::init()
   ShAttrib3f SH_DECL(colorVariations) = ShAttrib3f(0.2, 0.1, 0.1);
   colorVariations.range(0.0, 1.0);
 
-	ShAttrib1f SH_DECL(noiseScale) = ShConstAttrib1f(0.1f);
-	noiseScale.range(0.0f, 1.0f);
+  ShAttrib1f SH_DECL(noiseScale) = ShConstAttrib1f(0.1f);
+  noiseScale.range(0.0f, 1.0f);
 
-	ShAttrib1f SH_DECL(noiseFreq) = ShConstAttrib1f(25.0f);
-	noiseFreq.range(0.0f, 100.0f);
+  ShAttrib1f SH_DECL(noiseFreq) = ShConstAttrib1f(25.0f);
+  noiseFreq.range(0.0f, 100.0f);
 
-	ShAttrib3f SH_DECL(noiseAmps) = ShConstAttrib3f(1.0f, 0.5f, 0.25f);	
-	noiseAmps.range(0.0f, 1.0f);
+  ShAttrib3f SH_DECL(noiseAmps) = ShConstAttrib3f(1.0f, 0.5f, 0.25f);	
+  noiseAmps.range(0.0f, 1.0f);
  
   /* Create the bricks and the mortar between them
    */
@@ -195,7 +195,7 @@ bool BrickWall::init()
          
   } SH_END;
  
- fsh = select << (((brickModifier & keep<ShNormal3f>() & keep<ShAttrib1f>()) << (bumpmap & keep<ShAttrib1f>()) << brickID) & keep<ShVector3f>() & keep<ShVector3f>());
+  fsh = select << (((brickModifier & keep<ShNormal3f>() & keep<ShAttrib1f>()) << (bumpmap & keep<ShAttrib1f>()) << brickID) & keep<ShVector3f>() & keep<ShVector3f>());
   
   return true;
 }

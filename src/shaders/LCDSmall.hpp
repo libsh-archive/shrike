@@ -45,7 +45,7 @@ public:
 };
 
 SH::ShAttrib1f lcdSmall(const SH::ShTexCoord2f& tc, SH::ShAttrib1f number,
-                   int intDigits = 3, int fracDigits = 1, bool showgrid = false, 
-                   bool handleneg = true, float w = 0.2, float h = 0.5, float t = 0.02);
+			int intDigits = 3, int fracDigits = 1, bool showgrid = false, 
+			bool handleneg = true, float w = 0.2, float h = 0.5, float t = 0.02);
 
 #endif

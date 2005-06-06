@@ -92,5 +92,3 @@ bool Pants::init()
 }
 
 Pants Pants::instance = Pants();
-
-

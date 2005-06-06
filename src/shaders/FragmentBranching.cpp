@@ -94,8 +94,6 @@ bool FragmentBranching::init()
     
   } SH_END;
 
-  
-
   return true;
 }
 

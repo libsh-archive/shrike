@@ -57,7 +57,7 @@ public:
 
   bool init();
 
-	void render();
+  void render();
   
   ShProgram vertex() { return vsh_edge;}
   ShProgram fragment() { return fsh_edge;}
@@ -66,10 +66,10 @@ public:
 
   static EdgeDetection instance;
 
-	std::string fname;
+  std::string fname;
 	
 private:
-	ShObjMesh* m_model;
+  ShObjMesh* m_model;
   ShHostMemoryPtr newmem;
   ShTextureRect<ShColor3f> img;
   int vp[4];
@@ -78,7 +78,7 @@ private:
 EdgeDetection::EdgeDetection()
   : Shader("Edge Detection: Object Detection "), fname("triceratops.obj")
 {
-	setStringParam("Object", fname);
+  setStringParam("Object", fname);
 }
 
 EdgeDetection::~EdgeDetection()
@@ -88,11 +88,11 @@ EdgeDetection::~EdgeDetection()
 void EdgeDetection::render()
 {
   int newvp[4];
-	glGetIntegerv(GL_VIEWPORT, newvp); // get the size to adapte the texture size after
-	shBind(vsh_model);
-	shBind(fsh_model); // just render white
-	glClear(GL_COLOR_BUFFER_BIT);
-	glClear(GL_DEPTH_BUFFER_BIT);
+  glGetIntegerv(GL_VIEWPORT, newvp); // get the size to adapte the texture size after
+  shBind(vsh_model);
+  shBind(fsh_model); // just render white
+  glClear(GL_COLOR_BUFFER_BIT);
+  glClear(GL_DEPTH_BUFFER_BIT);
   float values[4];
   glBegin(GL_TRIANGLES); // render the object
   for(ShObjMesh::FaceSet::iterator I = m_model->faces.begin(); I != m_model->faces.end(); ++I) {
@@ -112,43 +112,43 @@ void EdgeDetection::render()
       e = e->next;
     } while(e != (*I)->edge);
   }
-	glEnd();
+  glEnd();
   glFlush();
   newmem->hostStorage()->dirty(); // needed to update the value after
   if(newvp[0] != vp[0] || newvp[1] != vp[1] || newvp[2] != vp[2] || newvp[3] != vp[3]) // check if the texture size has to be changed
-  {
-    for(int i=0 ; i<4 ; i++)
-      vp[i] = newvp[i]; // set the new size
-    newmem = new ShHostMemory((vp[2]-vp[0])*(vp[3]-vp[1])*3*sizeof(float)); // allocate memory
-    img.size(vp[2]-vp[0],vp[3]-vp[1]); // change the size
-    img.memory(newmem);
-  }
+    {
+      for(int i=0 ; i<4 ; i++)
+	vp[i] = newvp[i]; // set the new size
+      newmem = new ShHostMemory((vp[2]-vp[0])*(vp[3]-vp[1])*3*sizeof(float)); // allocate memory
+      img.size(vp[2]-vp[0],vp[3]-vp[1]); // change the size
+      img.memory(newmem);
+    }
   glReadBuffer(GL_BACK);
-	glReadPixels(vp[0], vp[1], vp[2], vp[3], GL_RGB, GL_FLOAT, newmem->hostStorage()->data()); // read the buffer
+  glReadPixels(vp[0], vp[1], vp[2], vp[3], GL_RGB, GL_FLOAT, newmem->hostStorage()->data()); // read the buffer
   glReadBuffer(GL_FRONT);
-	shBind(vsh_edge);
-	shBind(fsh_edge); // edge detection
-	glClear(GL_COLOR_BUFFER_BIT);
-	glClear(GL_DEPTH_BUFFER_BIT); // to avoid the object(s) already rendered
+  shBind(vsh_edge);
+  shBind(fsh_edge); // edge detection
+  glClear(GL_COLOR_BUFFER_BIT);
+  glClear(GL_DEPTH_BUFFER_BIT); // to avoid the object(s) already rendered
   
-	glBegin(GL_QUADS); { // just render a squaree with the texture
-	  glTexCoord2f(0.0, 0.0);
-	  glVertex2f(-1.0, -1.0);
-	  glTexCoord2f(0.0, 1.0);
-	  glVertex2f(-1.0, 1.0);
-	  glTexCoord2f(1.0, 1.0);
-	  glVertex2f(1.0, 1.0);
-	  glTexCoord2f(1.0, 0.0);
-	  glVertex2f(1.0, -1.0);
-	}
+  glBegin(GL_QUADS); { // just render a squaree with the texture
+    glTexCoord2f(0.0, 0.0);
+    glVertex2f(-1.0, -1.0);
+    glTexCoord2f(0.0, 1.0);
+    glVertex2f(-1.0, 1.0);
+    glTexCoord2f(1.0, 1.0);
+    glVertex2f(1.0, 1.0);
+    glTexCoord2f(1.0, 0.0);
+    glVertex2f(1.0, -1.0);
+  }
   glEnd(); 
   
 }
 
 bool EdgeDetection::init()
 {
-	std::string objFile = SHMEDIA_DIR "/objs/" + fname;
-	std::ifstream infile(objFile.c_str());
+  std::string objFile = SHMEDIA_DIR "/objs/" + fname;
+  std::ifstream infile(objFile.c_str());
   if (infile) {
     m_model = new ShObjMesh(infile);
   } else {
@@ -156,14 +156,14 @@ bool EdgeDetection::init()
   }
   for(int i=0 ; i<4 ; i++)
     vp[i] = 0;
-	newmem = new ShHostMemory(3*sizeof(float)); // the real size will be specified in render()
-	img.memory(newmem);
+  newmem = new ShHostMemory(3*sizeof(float)); // the real size will be specified in render()
+  img.memory(newmem);
 		
-	vsh_model = SH_BEGIN_PROGRAM("gpu:vertex") {
+  vsh_model = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
-		ShOutputPosition4f opos;
+    ShOutputPosition4f opos;
     ShInOutTexCoord2f tc;
-		opos = Globals::mvp | ipos;
+    opos = Globals::mvp | ipos;
   } SH_END;
 	
   vsh_edge = SH_BEGIN_PROGRAM("gpu:vertex") {
@@ -171,11 +171,11 @@ bool EdgeDetection::init()
     ShInOutTexCoord2f tc;
   } SH_END;
 
-	fsh_model = SH_BEGIN_PROGRAM("gpu:fragment") {
+  fsh_model = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputPosition4f posh;
     ShInputTexCoord2f u;
-		ShOutputColor3f resut(1.0,1.0,1.0);
-	} SH_END;
+    ShOutputColor3f resut(1.0,1.0,1.0);
+  } SH_END;
 
   fsh_edge = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputPosition4f posh;
@@ -183,18 +183,18 @@ bool EdgeDetection::init()
      
     ShOutputColor3f result;
 		
-		ShAttrib2f offset1(0.001953125,0.0);
-		ShAttrib2f offset2(0.0,0.001953125);
+    ShAttrib2f offset1(0.001953125,0.0);
+    ShAttrib2f offset2(0.0,0.001953125);
 	
-		result = 8.0 * (img(u) - 0.125 *(img(u-offset1-offset2) + 
-																		 img(u-offset1) +
-																		 img(u-offset1+offset2) +
-																		 img(u+offset2) +
-																		 img(u+offset1-offset2) +
-																		 img(u-offset1) +
-																		 img(u+offset1+offset2) +
-																		 img(u-offset2)));
-	} SH_END;
+    result = 8.0 * (img(u) - 0.125 *(img(u-offset1-offset2) + 
+				     img(u-offset1) +
+				     img(u-offset1+offset2) +
+				     img(u+offset2) +
+				     img(u+offset1-offset2) +
+				     img(u-offset1) +
+				     img(u+offset1+offset2) +
+				     img(u-offset2)));
+  } SH_END;
   return true;
 }
 

@@ -35,35 +35,34 @@ using namespace ShUtil;
 
 #include "util.hpp"
 
-class BumpMapShader : public Shader
-  {
-  public:
-    BumpMapShader();
-    ~BumpMapShader();
+class BumpMapShader : public Shader {
+public:
+  BumpMapShader();
+  ~BumpMapShader();
     
-    bool init();
+  bool init();
     
-    ShProgram vertex() { return vsh; }
-    ShProgram fragment() { return fsh; }
+  ShProgram vertex() { return vsh; }
+  ShProgram fragment() { return fsh; }
 
-  public:
-    ShProgram vsh;
-    ShProgram fsh;
+public:
+  ShProgram vsh;
+  ShProgram fsh;
 
-    static BumpMapShader instance;
-  };
+  static BumpMapShader instance;
+};
 
 BumpMapShader::BumpMapShader() :
   Shader("Bump and Frame Mapping: Diffuse Bump Mapping")
-  {
-  }
+{
+}
 
 BumpMapShader::~BumpMapShader()
-  {
-  }
+{
+}
 
 bool BumpMapShader::init()
-  {
+{
   std::cerr << "Initializing " << name() << std::endl;
 
   // stock vertex shader, feed in global light, swizzle
@@ -109,6 +108,6 @@ bool BumpMapShader::init()
   } SH_END;
 
   return true;
-  }
+}
 
 BumpMapShader BumpMapShader::instance = BumpMapShader();

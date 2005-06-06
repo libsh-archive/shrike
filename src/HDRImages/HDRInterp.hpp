@@ -50,7 +50,8 @@ public:
   
   LinInterp(int width, int height, int depth) : parent_type(width, height, depth) {}
   
-  return_type operator[](const ShTexCoord2f tc) const {
+  return_type operator[](const ShTexCoord2f tc) const 
+  {
     const T *bt = this;
     ShAttrib2f ftc1 = frac(tc);
     ShAttrib2f ftc2 = ShAttrib2f(1.0,1.0)-ftc1;
@@ -68,7 +69,8 @@ public:
     return ftc2(0) * interp1 + ftc1(0) * interp2;
   }
       
-  return_type operator()(const ShTexCoord2f tc) const {
+  return_type operator()(const ShTexCoord2f tc) const 
+  {
     return operator[](tc*this->size());     
   }
 };
@@ -91,7 +93,8 @@ public:
 
   CatmullRomInterp(int width, int height, int depth) : parent_type(width, height, depth) {}
 
-  return_type operator[](const ShTexCoord2f tc) const {
+  return_type operator[](const ShTexCoord2f tc) const 
+  {
     const T *bt = this;
     ShAttrib2f fractc = frac(tc);
     ShAttrib2f u = floor(tc);
@@ -137,7 +140,8 @@ public:
                     h1(1) * (*bt)[u12(2,1)] + h2(1) * (*bt)[u12(2,3)]);
   }
       
-  return_type operator()(const ShTexCoord2f tc) const {
+  return_type operator()(const ShTexCoord2f tc) const 
+  {
     return operator[](tc*this->size());
   }
 };
@@ -160,7 +164,8 @@ public:
 
   CubicBSplineInterp(int width, int height, int depth) : parent_type(width, height, depth) {}
 
-  return_type operator[](const ShTexCoord2f tc) const {
+  return_type operator[](const ShTexCoord2f tc) const 
+  {
     const T *bt = this;
     ShAttrib2f fractc = frac(tc);
     ShAttrib2f u = floor(tc);
@@ -206,7 +211,8 @@ public:
     return 0.027777778*result; // 0.027777778 = 1/36
   }
       
-  return_type operator()(const ShTexCoord2f tc) const {
+  return_type operator()(const ShTexCoord2f tc) const 
+  {
     return operator[](tc*this->size());
   }
 };
@@ -230,7 +236,8 @@ public:
 
   CardinalSplineInterp(int width, int height, int depth) : parent_type(width, height, depth) {}
 
-  void memory(ShMemoryPtr mem) {
+  void memory(ShMemoryPtr mem) 
+  {
     this->m_node->memory(mem); // set the data
     this->m_node->memory()->add_dep(this); // create a dependency
     this->m_node->memory()->flush(); // update the data
@@ -238,7 +245,8 @@ public:
 
   ShMemoryPtr memory() { return this->m_node->memory(); }
 
-  void memory_update() {
+  void memory_update() 
+  {
     int width = this->m_node->width();
     int height = this->m_node->height();
     int stride = return_type::typesize;
@@ -327,7 +335,8 @@ public:
     // no step 6: update because the data used for the second pass are the data to output
   }
   
-  return_type operator[](const ShTexCoord2f tc) const {
+  return_type operator[](const ShTexCoord2f tc) const
+  {
     const T *bt = this;
     ShAttrib2f fractc = frac(tc);
     ShAttrib2f u = floor(tc);
@@ -373,7 +382,8 @@ public:
     return 0.027777778*result; // 0.027777778 = 1/36
   }
       
-  return_type operator()(const ShTexCoord2f tc) const {
+  return_type operator()(const ShTexCoord2f tc) const 
+  {
     return operator[](tc*this->size());
   }
 
@@ -398,19 +408,22 @@ public:
 
   SmoothSplineInterp(int width, int height, int depth) : parent_type(width, height, depth) {}
 
-  void setCoeff(float lambda) {
+  void setCoeff(float lambda)
+  {
     m_lambda = lambda;
     this->m_node->memory()->flush();
   }
 
-  void memory(ShMemoryPtr mem) {
+  void memory(ShMemoryPtr mem) 
+  {
     this->m_node->memory(mem);
     this->m_node->memory()->add_dep(this);
   }
 
   ShMemoryPtr memory() { return this->m_node->memory(); }
 
-  void memory_update() {
+  void memory_update() 
+  {
     int width = this->m_node->width();
     int height = this->m_node->height();
     int stride = return_type::typesize;
@@ -500,7 +513,8 @@ public:
     // no step 6: update because the data used for the second pass are the data to output
   }
   
-  return_type operator[](const ShTexCoord2f tc) const {
+  return_type operator[](const ShTexCoord2f tc) const 
+  {
     const T *bt = this;
     ShAttrib2f fractc = frac(tc);
     ShAttrib2f u = floor(tc);
@@ -546,7 +560,8 @@ public:
     return 0.027777778*result; // 0.027777778 = 1/36
   }
       
-  return_type operator()(const ShTexCoord2f tc) const {
+  return_type operator()(const ShTexCoord2f tc) const 
+  {
     return operator[](tc*this->size());
   }
 

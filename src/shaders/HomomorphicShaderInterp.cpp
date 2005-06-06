@@ -128,8 +128,8 @@ bool HomomorphicShaderInterp::init()
   ShAttrib1f SH_DECL(light_power) = ShAttrib1f(1.0);
   light_power.range(0.0,100.0);
 
-	ShAttrib1f SH_DECL(interpolation) = ShAttrib1f(0.0);
-	  
+  ShAttrib1f SH_DECL(interpolation) = ShAttrib1f(0.0);
+	
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
     ShInputPosition4f posh;
     ShInputVector3f light;

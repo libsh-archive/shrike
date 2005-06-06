@@ -51,15 +51,15 @@ public:
 
   ShProgram vsh, fsh;
 	
-	std::string fname;
+  std::string fname;
 
-	static AshikhminToneMapShader instance;
+  static AshikhminToneMapShader instance;
 };
 
 AshikhminToneMapShader::AshikhminToneMapShader()
   : Shader("HDR: ToneMapping: Ashikhmin"), fname("memorial.hdr")
 {
-	setStringParam("Image Name", fname);
+  setStringParam("Image Name", fname);
 }
 
 AshikhminToneMapShader::~AshikhminToneMapShader()
@@ -67,14 +67,14 @@ AshikhminToneMapShader::~AshikhminToneMapShader()
 
 bool AshikhminToneMapShader::init()
 {
-	HDRImage image;
+  HDRImage image;
 
-	std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
-	image.loadHDR(filename.c_str());
+  std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
+  image.loadHDR(filename.c_str());
 
-	AshikhminToneMap<ShUnclamped<ShTextureRect<ShVector4f> > > ToneMapImg(image.width(), image.height());
-	ToneMapImg.internal(true);
-	ToneMapImg.memory(image.memory());
+  AshikhminToneMap<ShUnclamped<ShTextureRect<ShVector4f> > > ToneMapImg(image.width(), image.height());
+  ToneMapImg.internal(true);
+  ToneMapImg.memory(image.memory());
   
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
@@ -87,30 +87,30 @@ bool AshikhminToneMapShader::init()
     opos = Globals::mvp | ipos; // Compute NDC position
     onorm = Globals::mv | inorm; // Compute view-space normal
 
-		ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
+    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
   } SH_END;
 
-	ShAttrib1f SH_DECL(level) = ShAttrib1f(0.0);
-	level.range(-10.0,10.0);
+  ShAttrib1f SH_DECL(level) = ShAttrib1f(0.0);
+  level.range(-10.0,10.0);
 
-	fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
-		ShInputPosition4f posh;
-	  ShInputTexCoord2f tc;
-	  ShInputNormal3f normal;
+  fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
+    ShInputPosition4f posh;
+    ShInputTexCoord2f tc;
+    ShInputNormal3f normal;
 
-		ShOutputColor3f result;
+    ShOutputColor3f result;
 		
-		// display the image
-		ShAttrib3f RGB = pow(2, level + 2.47393) * ToneMapImg(tc)(0,1,2);
+    // display the image
+    ShAttrib3f RGB = pow(2, level + 2.47393) * ToneMapImg(tc)(0,1,2);
 		
-		ShAttrib1f f = 0.184874;
-		ShAttrib1f e = 2.718281828;
-		RGB(0) = cond(RGB(0)>1.0, 1.0 + log2((RGB(0)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(0));
-		RGB(1) = cond(RGB(1)>1.0, 1.0 + log2((RGB(1)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(1));
-		RGB(2) = cond(RGB(2)>1.0, 1.0 + log2((RGB(2)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(2));
-		ShAttrib1f gammainv = 0.454545455; // gamma-correction = 1/2.2
-		result = 0.285714286 * pow(RGB,gammainv(0,0,0));
-	} SH_END;
+    ShAttrib1f f = 0.184874;
+    ShAttrib1f e = 2.718281828;
+    RGB(0) = cond(RGB(0)>1.0, 1.0 + log2((RGB(0)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(0));
+    RGB(1) = cond(RGB(1)>1.0, 1.0 + log2((RGB(1)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(1));
+    RGB(2) = cond(RGB(2)>1.0, 1.0 + log2((RGB(2)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(2));
+    ShAttrib1f gammainv = 0.454545455; // gamma-correction = 1/2.2
+    result = 0.285714286 * pow(RGB,gammainv(0,0,0));
+  } SH_END;
 
   return true;
 }
@@ -129,15 +129,15 @@ public:
 
   ShProgram vsh, fsh;
 	
-	std::string fname;
+  std::string fname;
 
-	static ReinhardToneMapShader instance;
+  static ReinhardToneMapShader instance;
 };
 
 ReinhardToneMapShader::ReinhardToneMapShader()
   : Shader("HDR: ToneMapping: Reinhard"), fname("memorial.hdr")
 {
-	setStringParam("Image Name", fname);
+  setStringParam("Image Name", fname);
 }
 
 ReinhardToneMapShader::~ReinhardToneMapShader()
@@ -145,14 +145,14 @@ ReinhardToneMapShader::~ReinhardToneMapShader()
 
 bool ReinhardToneMapShader::init()
 {
-	HDRImage image;
+  HDRImage image;
 
-	std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
-	image.loadHDR(filename.c_str());
+  std::string filename = SHMEDIA_DIR "/hdr/hdr/" + fname;
+  image.loadHDR(filename.c_str());
 	
-	ReinhardToneMap<ShUnclamped<ShTextureRect<ShVector4f> > > ToneMapImg(image.width(), image.height());
-	ToneMapImg.internal(true);
-	ToneMapImg.memory(image.memory());
+  ReinhardToneMap<ShUnclamped<ShTextureRect<ShVector4f> > > ToneMapImg(image.width(), image.height());
+  ToneMapImg.internal(true);
+  ToneMapImg.memory(image.memory());
 	
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {
     ShInputPosition4f ipos;
@@ -165,30 +165,30 @@ bool ReinhardToneMapShader::init()
     opos = Globals::mvp | ipos; // Compute NDC position
     onorm = Globals::mv | inorm; // Compute view-space normal
 
-		ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
+    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
   } SH_END;
 
-	ShAttrib1f SH_DECL(level) = ShAttrib1f(0.0);
-	level.range(-10.0,10.0);
+  ShAttrib1f SH_DECL(level) = ShAttrib1f(0.0);
+  level.range(-10.0,10.0);
 
-	fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
-		ShInputPosition4f posh;
-	  ShInputTexCoord2f tc;
-	  ShInputNormal3f normal;
+  fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
+    ShInputPosition4f posh;
+    ShInputTexCoord2f tc;
+    ShInputNormal3f normal;
 
-		ShOutputColor3f result;
+    ShOutputColor3f result;
 		
-		// display the image
-		ShAttrib3f RGB = pow(2, level + 2.47393) * ToneMapImg(tc)(0,1,2);
+    // display the image
+    ShAttrib3f RGB = pow(2, level + 2.47393) * ToneMapImg(tc)(0,1,2);
 		
-		ShAttrib1f f = 0.184874;
-		ShAttrib1f e = 2.718281828;
-		RGB(0) = cond(RGB(0)>1.0, 1.0 + log2((RGB(0)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(0));
-		RGB(1) = cond(RGB(1)>1.0, 1.0 + log2((RGB(1)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(1));
-		RGB(2) = cond(RGB(2)>1.0, 1.0 + log2((RGB(2)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(2));
-		ShAttrib1f gammainv = 0.454545455; // gamma-correction = 1/2.2
-		result = 0.285714286 * pow(RGB,gammainv(0,0,0));
-	} SH_END;
+    ShAttrib1f f = 0.184874;
+    ShAttrib1f e = 2.718281828;
+    RGB(0) = cond(RGB(0)>1.0, 1.0 + log2((RGB(0)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(0));
+    RGB(1) = cond(RGB(1)>1.0, 1.0 + log2((RGB(1)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(1));
+    RGB(2) = cond(RGB(2)>1.0, 1.0 + log2((RGB(2)-1.0) * f + 1.0) * rcp(f*log2(e)), RGB(2));
+    ShAttrib1f gammainv = 0.454545455; // gamma-correction = 1/2.2
+    result = 0.285714286 * pow(RGB,gammainv(0,0,0));
+  } SH_END;
 
   return true;
 }

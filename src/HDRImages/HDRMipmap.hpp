@@ -63,20 +63,23 @@ public:
     this->m_node->traits().filtering(ShTextureTraits::SH_FILTER_MIPMAP);
   }
 
-  void memory(ShMemoryPtr mem) {
+  void memory(ShMemoryPtr mem) 
+  {
     this->m_node->memory(mem); // set the data
     this->m_node->memory()->add_dep(this); // add the dependency to the update function
     this->m_node->memory()->flush(); // update the data
   }
 
-  ShMemoryPtr memory() {
+  ShMemoryPtr memory() 
+  {
     return this->m_node->memory();
   }
 
   /* test if the current texture has to used the new operations defined
    * or if it is fully supported by the hardware
    */
-  bool test_type() {
+  bool test_type() 
+  {
   // TODO: figure if this function should be moved in some backend test...
     if(this->m_node->traits().clamping() == ShTextureTraits::SH_UNCLAMPED)
       return true;
@@ -85,7 +88,8 @@ public:
 
   // create a new texture memory
   // save the original texture and all the mipmap levels on its right
-  void memory_update() {
+  void memory_update() 
+  {
     int width = this->m_node->width();
     int height = this->m_node->height();
     int stride = return_type::typesize;
@@ -138,7 +142,8 @@ public:
     } while (width > 0 && height > 0);
   }
   
-  return_type operator[](const ShTexCoord2f tc) const {
+  return_type operator[](const ShTexCoord2f tc) const 
+  {
     ShAttrib2f u = fwidth(tc); // derivatives of the tex coordinates
     ShAttrib1f level = pos(log2(max(u))); // mip-map level
     ShAttrib1f scale = pow(0.5,floor(level)); // reduction factor
@@ -156,7 +161,8 @@ public:
             transition*m_mipmaptex[u2];
   }
       
-  return_type operator()(const ShTexCoord2f tc) const {
+  return_type operator()(const ShTexCoord2f tc) const 
+  {
     ShAttrib2f u = fwidth(tc)*this->size();// derivatives of the tex coordinates
     ShAttrib1f level = pos(log2(max(u))); // mip-map level
     ShAttrib1f scale = pow(0.5,floor(level)); // reduction factor

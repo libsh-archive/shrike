@@ -112,7 +112,7 @@ ShColor3f ashikhmin(ShAttrib1f nu, ShAttrib1f nv,
                     ShColor3f spec, ShColor3f diffuse)
 {
   return ashikhmin_specular(nu, nv, n, h, light, viewer, u, v, spec)
-       + ashikhmin_diffuse(n, light, viewer, spec, diffuse);
+    + ashikhmin_diffuse(n, light, viewer, spec, diffuse);
 }
 
 bool Ashikhmin::init()
@@ -149,10 +149,7 @@ bool Ashikhmin::init()
 
     ShVector3f tan2 = cross(normal, tan1);
     color = ashikhmin(nu, nv, normalize(normal), normalize(halfvec), normalize(lightvec),
-                      normalize(viewvec),
-                      tan1, tan2,
-                      specular, diffuse)
-            + ambient;
+                      normalize(viewvec), tan1, tan2, specular, diffuse) + ambient;
 
   } SH_END_PROGRAM;
     
