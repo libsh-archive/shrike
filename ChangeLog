@@ -1,3 +1,9 @@
+2005-06-07  Francois Marier  <francois@serioushack.com>
+
+	* src/shaders/TangentArrows.cpp, EdgeDetection.cpp, EdgeGooch.cpp,
+	HairShader.cpp, Logo.cpp, src/ShrikeCanvas.cpp: Rename
+	glMultiTexCoordNARB to glMultiTexCoordN if GL_VERSION_1_4 is defined.
+
 2005-06-06  Francois Marier  <francois@serioushack.com>
 
 	* src/shaders, src/HDRImages: Remove ShUnclamped.

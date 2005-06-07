@@ -99,10 +99,18 @@ void EdgeDetection::render()
       glNormal3fv(values);
 
       e->texcoord.getValues(values);
+#ifdef GL_VERSION_1_4
+      glMultiTexCoord2fv(GL_TEXTURE0, values);
+#else
       glMultiTexCoord2fvARB(GL_TEXTURE0, values);
+#endif
 
       e->tangent.getValues(values);
+#ifdef GL_VERSION_1_4
+      glMultiTexCoord2fv(GL_TEXTURE0 + 1, values);
+#else
       glMultiTexCoord2fvARB(GL_TEXTURE0 + 1, values);
+#endif
 
       e->start->pos.getValues(values);
       glVertex3fv(values);

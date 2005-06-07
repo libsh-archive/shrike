@@ -292,10 +292,18 @@ void ShrikeCanvas::renderObject()
         SHRIKE_GL_CHECK_ERROR(glNormal3fv(values));
 
         e->texcoord.getValues(values);
+#ifdef GL_VERSION_1_4
+        SHRIKE_GL_CHECK_ERROR(glMultiTexCoord2fv(GL_TEXTURE0, values));
+#else
         SHRIKE_GL_CHECK_ERROR(glMultiTexCoord2fvARB(GL_TEXTURE0, values));
+#endif
 
         e->tangent.getValues(values);
+#ifdef GL_VERSION_1_4
+	SHRIKE_GL_CHECK_ERROR(glMultiTexCoord3fv(GL_TEXTURE0 + 1, values));
+#else
         SHRIKE_GL_CHECK_ERROR(glMultiTexCoord3fvARB(GL_TEXTURE0 + 1, values));
+#endif
 
         e->start->pos.getValues(values);
         SHRIKE_GL_CHECK_ERROR(glVertex3fv(values));

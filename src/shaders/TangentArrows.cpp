@@ -73,12 +73,19 @@ void TangentArrows::render()
         e->normal.getValues(vs); glNormal3fv(vs);
 
         float f = (i ? 1.0 : 0.0);
-        glMultiTexCoord1fvARB(GL_TEXTURE0, &f);
-
+#ifdef GL_VERSION_1_4
+        glMultiTexCoord1fv(GL_TEXTURE0, &f);
+#else
+	glMultiTexCoord1fvARB(GL_TEXTURE0, &f);
+#endif
       
         e->tangent.getValues(vs);
-        glMultiTexCoord3fvARB(GL_TEXTURE0 + 1, vs);
-        
+#ifdef GL_VERSION_1_4
+        glMultiTexCoord3fv(GL_TEXTURE0 + 1, vs);
+#else
+	glMultiTexCoord3fvARB(GL_TEXTURE0 + 1, vs);
+#endif
+
         e->start->pos.getValues(vs); glVertex3fv(vs); 
       }
       e = e->next;
@@ -157,10 +164,18 @@ void NormalArrows::render()
         e->normal.getValues(vs); glNormal3fv(vs);
 
         float f = (i ? 1.0 : 0.0);
-        glMultiTexCoord1fvARB(GL_TEXTURE0, &f);
+#ifdef GL_VERSION_1_4
+        glMultiTexCoord1fv(GL_TEXTURE0, &f);
+#else
+	glMultiTexCoord1fvARB(GL_TEXTURE0, &f);
+#endif
       
         e->tangent.getValues(vs);
-        glMultiTexCoord3fvARB(GL_TEXTURE0 + 1, vs);
+#ifdef GL_VERSION_1_4
+	glMultiTexCoord3fv(GL_TEXTURE0 + 1, vs);
+#else
+	glMultiTexCoord3fvARB(GL_TEXTURE0 + 1, vs);
+#endif
         
         e->start->pos.getValues(vs); glVertex3fv(vs); 
       }
