@@ -72,17 +72,6 @@ public:
     return this->m_node->memory();
   }
 
-  /* test if the current texture has to used the new operations defined
-   * or if it is fully supported by the hardware
-   */
-  bool test_type() 
-  {
-  // TODO: figure if this function should be moved in some backend test...
-    if(this->m_node->traits().clamping() == ShTextureTraits::SH_UNCLAMPED)
-      return true;
-    return false;
-  }
-
   // create a new texture memory
   // save the original texture and all the mipmap levels on its right
   void memory_update() 
