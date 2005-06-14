@@ -1,7 +1,7 @@
 AC_DEFUN([WX_CONFIG_WITH_WX_CONFIG], [
   AC_ARG_WITH([wxconfig], AC_HELP_STRING([--with-wxconfig=FILE],
 	      [specify the name of the wx-config program (default=wx-config)]),
-	      [wx_config_binary="${withval}"],
+	      [wx_config_binary="`basename ${withval}`"],
 	      [wx_config_binary="wx-config"])
   AC_DEFINE_UNQUOTED([WX_CONFIG_BINARY], "${wx_config_binary}", [wx-config program name])
 ])
