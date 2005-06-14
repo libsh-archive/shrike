@@ -38,56 +38,28 @@ shrike_SOURCES += Timer.hpp Timer.cpp
 shrike_SOURCES += UniformPanel.hpp UniformPanel.cpp
 shrike_SOURCES += util.hpp utilimpl.hpp util.cpp
 
-# HDRImages
-shrike_SOURCES += HDRImages\Filters.hpp
-shrike_SOURCES += HDRImages\HDRCubeMap.hpp
-shrike_SOURCES += HDRImages\HDRImage.hpp HDRImages\HDRImage.cpp
-shrike_SOURCES += HDRImages\HDRInterp.hpp
-shrike_SOURCES += HDRImages\HDRMipmap.hpp
-shrike_SOURCES += HDRImages\HDRProbe.hpp
-shrike_SOURCES += HDRImages\HDRToneMap.hpp
-shrike_SOURCES += HDRImages\LargeTexture.hpp
-
 # shaders
 shrike_SOURCES += shaders\AlgebraShader.cpp
-shrike_SOURCES += shaders\AnisotropicDiffusion.cpp
 shrike_SOURCES += shaders\Ashikhmin.cpp
 shrike_SOURCES += shaders\Banks.cpp
 shrike_SOURCES += shaders\BrickHorizon.cpp
 shrike_SOURCES += shaders\BrickWall.cpp
 shrike_SOURCES += shaders\BumpMapShader.cpp
-#shrike_SOURCES += shaders\CannyEdgeDetector.cpp
 #shrike_SOURCES += shaders\CelShader.cpp
 shrike_SOURCES += shaders\Checkerboard.cpp
-#shrike_SOURCES += shaders\ClipMap.hpp shaders\ClipMap.cpp
 shrike_SOURCES += shaders\CookTorrance.cpp
-shrike_SOURCES += shaders\CubeMap.cpp
 shrike_SOURCES += shaders\Derivatives.cpp
 shrike_SOURCES += shaders\DiffuseShader.cpp
 shrike_SOURCES += shaders\DiscoShader.cpp
-#shrike_SOURCES += shaders\EdgeDetection.cpp
-shrike_SOURCES += shaders\EdgeGooch.cpp
 shrike_SOURCES += shaders\EnvMapShader.cpp
 shrike_SOURCES += shaders\FragmentBranching.cpp
 shrike_SOURCES += shaders\FragmentLooping.cpp
-shrike_SOURCES += shaders\FrameMapping.cpp
-shrike_SOURCES += shaders\GaussianBlur.cpp
 shrike_SOURCES += shaders\GlassShader.cpp
 shrike_SOURCES += shaders\HairShader.cpp
-shrike_SOURCES += shaders\HDRGlass.cpp
-shrike_SOURCES += shaders\HDRInterp.cpp
-shrike_SOURCES += shaders\HDRLucite.cpp
-shrike_SOURCES += shaders\HDRMipMap.cpp
-shrike_SOURCES += shaders\HDRShinyBumpMap.cpp
-shrike_SOURCES += shaders\HDRToneMapping.cpp
-shrike_SOURCES += shaders\HDRViewer.cpp
-shrike_SOURCES += shaders\HDRWrap.cpp
 shrike_SOURCES += shaders\HomomorphicShader.cpp
-shrike_SOURCES += shaders\HomomorphicShaderInterp.cpp
 shrike_SOURCES += shaders\HorizonMapping.cpp
 shrike_SOURCES += shaders\JeweledShader.cpp
 shrike_SOURCES += shaders\LafortuneShader.cpp
-# shrike_SOURCES += shaders\LargeTexture.cpp
 shrike_SOURCES += shaders\LCD.hpp shaders\LCD.cpp
 shrike_SOURCES += shaders\LCDSmall.hpp shaders\LCDSmall.cpp
 shrike_SOURCES += shaders\Logo.cpp
@@ -102,8 +74,6 @@ shrike_SOURCES += shaders\SatinShader.cpp
 shrike_SOURCES += shaders\ShinyBumpMapShader.cpp
 shrike_SOURCES += shaders\SimpleDiffuse.cpp
 shrike_SOURCES += shaders\SimplePhong.cpp
-shrike_SOURCES += shaders\SparseTexture.cpp
-shrike_SOURCES += shaders\SpatialBRDF.cpp
 shrike_SOURCES += shaders\TangentArrows.cpp
 shrike_SOURCES += shaders\Tangents.cpp
 shrike_SOURCES += shaders\TexShader.cpp
@@ -153,7 +123,6 @@ install-debug: $(DEBUG_TARGETS) install-common
 clean:
 	-del $(RELEASE_TARGETS) $(DEBUG_TARGETS)
 	-del *.obj *.d
-	-del HDRImages\*.obj HDRImages\*.d
 	-del shaders\*.obj shaders\*.d
 	-del *.idb *.pdb *.ilk
 

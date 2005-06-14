@@ -26,8 +26,6 @@
 #include <iostream>
 #include "Shader.hpp"
 #include "Globals.hpp"
-#include "HDRImage.hpp"
-#include "HDRInterp.hpp"
 
 using namespace SH;
 using namespace ShUtil;

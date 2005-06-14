@@ -1,6 +1,6 @@
 # shgenmap is a tool to generate 16 bit png files to use as bumpmaps, not sure
 # if we want to keep it in this directory
-bin_PROGRAMS = shrike shgenmap shHDRfunc shsparse
+bin_PROGRAMS = shrike shgenmap
 
 AUTOMAKE_OPTIONS = subdir-objects
 EXTRA_DIST = Makefile.win32
@@ -29,18 +29,15 @@ shrike_SOURCES += shaders/Ashikhmin.cpp
 shrike_SOURCES += shaders/Texter.cpp
 shrike_SOURCES += shaders/Text.cpp shaders/Text.hpp
 shrike_SOURCES += shaders/WobbleShader.cpp
-shrike_SOURCES += shaders/FrameMapping.cpp
 shrike_SOURCES += shaders/Logo.cpp
 shrike_SOURCES += shaders/NonPeriodic.cpp
 shrike_SOURCES += shaders/NonPeriodic3D.cpp
 shrike_SOURCES += shaders/NoiseShader.cpp
-shrike_SOURCES += shaders/EdgeGooch.cpp
 shrike_SOURCES += shaders/Textures.cpp
 shrike_SOURCES += shaders/Pants.cpp
 shrike_SOURCES += shaders/EnvMapShader.cpp
 shrike_SOURCES += shaders/ShinyBumpMapShader.cpp
 shrike_SOURCES += shaders/HomomorphicShader.cpp
-shrike_SOURCES += shaders/HomomorphicShaderInterp.cpp
 shrike_SOURCES += shaders/SatinShader.cpp
 shrike_SOURCES += shaders/JeweledShader.cpp
 shrike_SOURCES += shaders/AlgebraShader.cpp
@@ -62,50 +59,14 @@ shrike_SOURCES += shaders/Tangents.cpp
 shrike_SOURCES += shaders/TangentArrows.cpp
 shrike_SOURCES += shaders/BumpMapShader.cpp
 shrike_SOURCES += shaders/FragmentBranching.cpp
-shrike_SOURCES += shaders/SparseTexture.cpp
 shrike_SOURCES += shaders/FragmentLooping.cpp
 shrike_SOURCES += shaders/PaletteExample.cpp
-shrike_SOURCES += HDRImages/HDRImage.cpp
-shrike_SOURCES += shaders/SpatialBRDF.cpp
-shrike_SOURCES += shaders/HDRViewer.cpp
-shrike_SOURCES += shaders/HDRMipMap.cpp
-shrike_SOURCES += shaders/HDRInterp.cpp
-shrike_SOURCES += shaders/HDRToneMapping.cpp
-shrike_SOURCES += shaders/HDRWrap.cpp
-shrike_SOURCES += shaders/CubeMap.cpp
-shrike_SOURCES += shaders/HDRLucite.cpp shaders/HDRGlass.cpp shaders/HDRShinyBumpMap.cpp
-shrike_SOURCES += shaders/EdgeDetection.cpp
-shrike_SOURCES += shaders/CannyEdgeDetector.cpp
-shrike_SOURCES += shaders/GaussianBlur.cpp
-shrike_SOURCES += shaders/AnisotropicDiffusion.cpp
-shrike_SOURCES += shaders/VectorText.cpp
-# Disabled large texture demo, to reduce the need for a new shmedia.
-# shrike_SOURCES += shaders/LargeTexture.cpp
-# shrike_SOURCES += shaders/ClipMap.cpp
-
-# HDR headers
-shrike_SOURCES += HDRImages/HDRImage.hpp HDRImages/Filters.hpp HDRImages/HDRInterp.hpp
-shrike_SOURCES += HDRImages/HDRMipmap.hpp HDRImages/HDRProbe.hpp HDRImages/HDRTonemap.hpp
-# shrike_SOURCES += HDRImages/LargeTexture.hpp 
-shrike_SOURCES += HDRImages/HDRCubeMap.hpp
-# shrike_SOURCES += shaders/ClipMap.hpp
 
 AM_CXXFLAGS = `${WX_CONFIG} --cxxflags` -Wall
 AM_CPPFLAGS = `${WX_CONFIG} --cppflags`
-shrike_CPPFLAGS = -I$(srcdir)/HDRImages
 shrike_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
 shrike_LDADD = $(GL_LIBS) -lsh -lshutil
 
 shgenmap_SOURCES = ShGenMap.cpp
 shgenmap_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
 shgenmap_LDADD = -lsh -lshutil
-
-shHDRfunc_SOURCES = ShHDRFunc.cpp HDRImages/HDRImage.cpp HDRImages/HDRImage.hpp
-shHDRfunc_CPPFLAGS = -I$(srcdir)/HDRImages
-shHDRfunc_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
-shHDRfunc_LDADD = -lsh -lshutil
-
-shsparse_SOURCES = ShSparse.cpp HDRImages/HDRImage.cpp HDRImages/HDRImage.hpp
-shsparse_CPPFLAGS = -I$(srcdir)/HDRImages
-shsparse_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
-shsparse_LDADD = -lsh -lshutil

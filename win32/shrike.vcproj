@@ -129,9 +129,6 @@
 				RelativePath="..\src\shaders\AlgebraShader.cpp">
 			</File>
 			<File
-				RelativePath="..\src\shaders\AnisotropicDiffusion.cpp">
-			</File>
-			<File
 				RelativePath="..\src\shaders\Ashikhmin.cpp">
 			</File>
 			<File
@@ -156,9 +153,6 @@
 				RelativePath="..\src\shaders\CookTorrance.cpp">
 			</File>
 			<File
-				RelativePath="..\src\shaders\CubeMap.cpp">
-			</File>
-			<File
 				RelativePath="..\src\shaders\Derivatives.cpp">
 			</File>
 			<File
@@ -166,9 +160,6 @@
 			</File>
 			<File
 				RelativePath="..\src\shaders\DiscoShader.cpp">
-			</File>
-			<File
-				RelativePath="..\src\shaders\EdgeGooch.cpp">
 			</File>
 			<File
 				RelativePath="..\src\shaders\EnvMapShader.cpp">
@@ -180,12 +171,6 @@
 				RelativePath="..\src\shaders\FragmentLooping.cpp">
 			</File>
 			<File
-				RelativePath="..\src\shaders\FrameMapping.cpp">
-			</File>
-			<File
-				RelativePath="..\src\shaders\GaussianBlur.cpp">
-			</File>
-			<File
 				RelativePath="..\src\shaders\GlassShader.cpp">
 			</File>
 			<File
@@ -195,37 +180,7 @@
 				RelativePath="..\src\shaders\HairShader.cpp">
 			</File>
 			<File
-				RelativePath="..\src\shaders\HDRGlass.cpp">
-			</File>
-			<File
-				RelativePath="..\src\HDRImages\HDRImage.cpp">
-			</File>
-			<File
-				RelativePath="..\src\shaders\HDRInterp.cpp">
-			</File>
-			<File
-				RelativePath="..\src\shaders\HDRLucite.cpp">
-			</File>
-			<File
-				RelativePath="..\src\shaders\HDRMipMap.cpp">
-			</File>
-			<File
-				RelativePath="..\src\shaders\HDRShinyBumpMap.cpp">
-			</File>
-			<File
-				RelativePath="..\src\shaders\HDRToneMapping.cpp">
-			</File>
-			<File
-				RelativePath="..\src\shaders\HDRViewer.cpp">
-			</File>
-			<File
-				RelativePath="..\src\shaders\HDRWrap.cpp">
-			</File>
-			<File
 				RelativePath="..\src\shaders\HomomorphicShader.cpp">
-			</File>
-			<File
-				RelativePath="..\src\shaders\HomomorphicShaderInterp.cpp">
 			</File>
 			<File
 				RelativePath="..\src\shaders\HorizonMapping.cpp">
@@ -300,12 +255,6 @@
 				RelativePath="..\src\shaders\SimplePhong.cpp">
 			</File>
 			<File
-				RelativePath="..\src\shaders\SparseTexture.cpp">
-			</File>
-			<File
-				RelativePath="..\src\shaders\SpatialBRDF.cpp">
-			</File>
-			<File
 				RelativePath="..\src\shaders\TangentArrows.cpp">
 			</File>
 			<File
@@ -350,28 +299,7 @@
 				RelativePath="..\src\Camera.hpp">
 			</File>
 			<File
-				RelativePath="..\src\HDRImages\Filters.hpp">
-			</File>
-			<File
 				RelativePath="..\src\Globals.hpp">
-			</File>
-			<File
-				RelativePath="..\src\HDRImages\HDRCubeMap.hpp">
-			</File>
-			<File
-				RelativePath="..\src\HDRImages\HDRImage.hpp">
-			</File>
-			<File
-				RelativePath="..\src\HDRImages\HDRInterp.hpp">
-			</File>
-			<File
-				RelativePath="..\src\HDRImages\HDRMipmap.hpp">
-			</File>
-			<File
-				RelativePath="..\src\HDRImages\HDRProbe.hpp">
-			</File>
-			<File
-				RelativePath="..\src\HDRImages\HDRTonemap.hpp">
 			</File>
 			<File
 				RelativePath="..\src\shaders\LCD.hpp">
