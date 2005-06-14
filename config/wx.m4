@@ -14,12 +14,20 @@ AC_DEFUN([WX_FIND_WX_CONFIG], [
 ])
 
 AC_DEFUN([WX_CONFIG_GL_LIBS], [
-  AC_MSG_CHECKING([which GL libraries were compiled with WxWindows])
-  gl_libs=`${WX_CONFIG} --gl-libs`
-  if test x"${gl_libs}" = "x" ; then	
-    AC_MSG_RESULT([none])
-    AC_MSG_ERROR([WxWindows was not built with GL librairies. You must rebuild it.])
-  else
-    AC_MSG_RESULT(${gl_libs})
-  fi
+  AC_MSG_CHECKING([whether WxWindows was compiled with OpenGL support.])
+  old_cppflags="$CPPFLAGS"
+  CPPFLAGS="`${wx_config_binary} --cppflags`"
+  AC_RUN_IFELSE(
+    AC_LANG_PROGRAM([#include <wx/setup.h>
+], [#if wxUSE_OPENGL
+  return 0;
+#else
+  return 1;
+#endif
+]),
+    AC_MSG_RESULT([yes]),
+    [AC_MSG_RESULT([no])
+     AC_MSG_ERROR([WxWindows must be recompiled with the "--with-opengl" option.])]
+  )
+  CPPFLAGS="$old_cppflags"
 ])

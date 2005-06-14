@@ -8,6 +8,7 @@ To compile shrike you will need
  - a recent glext.h, if you want the ARB backend to work. If you got
    the Sh ARB backend to install you should be fine.
  - wxwidgets, available from http://www.wxwidgets.org/
+   ("apt-get install libwxgtk2.4-dev" on Debian)
    NOTE: must be compiled with the --with-opengl option
 
 To get the compilation process going, just run
