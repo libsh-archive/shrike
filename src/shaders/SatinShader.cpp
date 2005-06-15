@@ -99,16 +99,16 @@ bool SatinShader::init()
   // factor for each, hidden uniforms (don't want user to play with
   // alpha, really), pulldown menu to select BRDFs from list,
   // settings for extra specularities, etc. etc.
-  image.loadPng(SHMEDIA_DIR "/brdfs/satin/satinp.png");
+  image.loadPng(normalize_path(SHMEDIA_DIR "/brdfs/satin/satinp.png"));
   ShTexture2D<ShColor3fub> ptex(image.width(), image.height());
   ptex.memory(image.memory());
 
-  image.loadPng(SHMEDIA_DIR "/brdfs/satin/satinq.png");
+  image.loadPng(normalize_path(SHMEDIA_DIR "/brdfs/satin/satinq.png"));
   ShTexture2D<ShColor3fub> qtex(image.width(), image.height());
   qtex.memory(image.memory());
 
   // HACK, satin doesn't have specular part, turned off by default
-  image.loadPng(SHMEDIA_DIR "/brdfs/specular.png");
+  image.loadPng(normalize_path(SHMEDIA_DIR "/brdfs/specular.png"));
   ShTexture2D<ShColor3fub> stex(image.width(), image.height());
   stex.memory(image.memory());
 

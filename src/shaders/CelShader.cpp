@@ -58,12 +58,12 @@ bool CelShader::init()
 
   ShWrapRepeat< ShTexture2D<ShColor3fub> > paper(256, 256);
   ShImage paperImg;
-  paperImg.loadPng(SHMEDIA_DIR "/textures/paper.png");
+  paperImg.loadPng(normalize_path(SHMEDIA_DIR "/textures/paper.png"));
   paper.memory(paperImg.memory());
 
   ShWrapRepeat< ShTexture2D<ShColor3fub> > hatching(256, 256);
   ShImage hatchingImg;
-  hatchingImg.loadPng(SHMEDIA_DIR "/textures/hatching.png");
+  hatchingImg.loadPng(normalize_path(SHMEDIA_DIR "/textures/hatching.png"));
   hatching.memory(hatchingImg.memory());
   
   ShColor3f SH_DECL(color1) = ShColor3f(0.0, 0.0, 0.0);

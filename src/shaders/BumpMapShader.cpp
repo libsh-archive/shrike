@@ -70,7 +70,7 @@ bool BumpMapShader::init()
   vsh = (shSwizzle("texcoord", "normal", "tangent", "lightVec", "posh") << vsh);
 
   ShImage image;
-  image.loadPng(SHMEDIA_DIR "/bumpmaps/bumps_normals.png");
+  image.loadPng(normalize_path(SHMEDIA_DIR "/bumpmaps/bumps_normals.png"));
   ShTexture2D<ShVector3fub> bump(image.width(),image.height());
   bump.memory(image.memory());
 

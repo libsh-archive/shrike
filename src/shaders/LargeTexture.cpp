@@ -63,7 +63,7 @@ bool LargeTextureShader::init()
 {
   ShImage image;
   std::string filename = SHMEDIA_DIR "/largetextures/" + fname;
-  image.loadPng(filename.c_str());
+  image.loadPng(normalize_path(filename.c_str()));
   LinInterp<LargeTexture<ShTextureRect<ShColor4f>, 4, 2 > > Img(image.width(), image.height());
   Img.internal(true);
   Img.memory(image.memory());

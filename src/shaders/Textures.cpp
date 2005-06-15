@@ -80,7 +80,7 @@ bool Textures::init()
   ShImage image;
 
   // This will load the given PNG file and allocate a memory for the image.
-  image.loadPng(SHMEDIA_DIR "/textures/abcd.png");
+  image.loadPng(normalize_path(SHMEDIA_DIR "/textures/abcd.png"));
 
   // Here we could be using...
   // ShArray: nearest-neighbour lookup, no mipmapping

@@ -1,3 +1,13 @@
+2005-06-15  Francois Marier  <francois@serioushack.com>
+
+	* src/shaders/GlassShader.cpp, ShinyBumpMapShader.cpp,
+	HorizonMapping.cpp, JeweledShader.cpp, LargeTexture.cpp,
+	Textures.cpp, Derivatives.cpp, BumpMapShader.cpp, DiscoShader.cpp,
+	CelShader.cpp, PhongShader.cpp, SatinShader.cpp, WorleyShader.cpp,
+	HomomorphicShader.cpp, LuciteShader.cpp, EnvMapShader.cpp,
+	DummyShader.cpp, AlgebraShader.cpp: Make use of normalize_path()
+	to support textures on Windows too. 
+
 2005-06-07  Francois Marier  <francois@serioushack.com>
 
 	* src/shaders/TangentArrows.cpp, EdgeDetection.cpp, EdgeGooch.cpp,

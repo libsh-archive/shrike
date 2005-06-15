@@ -64,10 +64,10 @@ bool PhongShader::init()
   exponent.range(5.0f, 500.0f);
 
   ShImage image;
-  image.loadPng(SHMEDIA_DIR "/textures/rustkd.png");
+  image.loadPng(normalize_path(SHMEDIA_DIR "/textures/rustkd.png"));
   ShTexture2D<ShColor3fub> difftex(image.width(), image.height());
   difftex.memory(image.memory());
-  image.loadPng(SHMEDIA_DIR "/textures/rustks.png");
+  image.loadPng(normalize_path(SHMEDIA_DIR "/textures/rustks.png"));
   ShTexture2D<ShColor3fub> spectex(image.width(), image.height());
   spectex.memory(image.memory());
   

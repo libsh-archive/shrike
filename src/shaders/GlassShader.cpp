@@ -60,14 +60,14 @@ bool GlassShader::init()
 
   std::string imageNames[6] = {"left", "right", "top", "bottom", "back", "front"};
   ShImage test_image;
-  test_image.loadPng(std::string(SHMEDIA_DIR "/envmaps/aniroom/") + imageNames[0] + ".png");
+  test_image.loadPng(normalize_path(std::string(SHMEDIA_DIR "/envmaps/aniroom/") + imageNames[0] + ".png"));
 
   ShTextureCube<ShColor4fub> cubemap(test_image.width(), test_image.height());
   cubemap.name("cubemap");
   {
     for (int i = 0; i < 6; i++) {
       ShImage image;
-      image.loadPng(std::string(SHMEDIA_DIR "/envmaps/aniroom/") + imageNames[i] + ".png");
+      image.loadPng(normalize_path(std::string(SHMEDIA_DIR "/envmaps/aniroom/") + imageNames[i] + ".png"));
       cubemap.memory(image.memory(), static_cast<ShCubeDirection>(i));
     }
   }
