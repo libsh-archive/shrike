@@ -36,6 +36,7 @@
 #else
 # define GL_GLEXT_LEGACY
 # include <GL/gl.h>
+# define GL_GLEXT_PROTOTYPES
 # include <GL/glext.h>
 # undef GL_GLEXT_LEGACY
 #endif
