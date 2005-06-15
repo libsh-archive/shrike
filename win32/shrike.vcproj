@@ -35,7 +35,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="opengl32.lib wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.lib comctl32.lib comdlg32.lib rpcrt4.lib advapi32.lib  wxmswd.lib libshd.lib libshutild.lib"
+				AdditionalDependencies="opengl32.lib wsock32.lib kernel32.lib user32.lib gdi32.lib shell32.lib ole32.lib comctl32.lib comdlg32.lib rpcrt4.lib advapi32.lib  wxmswd.lib libsh_debug.lib libshutil_debug.lib"
 				OutputFile="$(OutDir)/shriked.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;\dev\wxWindows-2.4.2\lib&quot;;..\..\install\lib"
@@ -99,7 +99,8 @@
 			<Tool
 				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"/>
+				Name="VCPostBuildEventTool"
+				CommandLine="postbuild.bat"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool

@@ -329,12 +329,12 @@ void HairPhysics::render()
   for(std::list<hair>::iterator i = hairs.begin() ; i!=hairs.end() ; i++) {
     glBegin(GL_LINE_STRIP);
     for(float y=0 ; y<i->size ; y=y+0.1) { // the length of the hair
-#ifdef GL_VERSION_1_4
-      glMultiTexCoord3f(GL_TEXTURE0, i->tangent[0], i->tangent[1], i->tangent[2]);
-      glMultiTexCoord4f(GL_TEXTURE0+1, y, i->surface[0], i->surface[1], i->surface[2]);
-#else
+#ifdef GL_ARB_multitexture
       glMultiTexCoord3fARB(GL_TEXTURE0, i->tangent[0], i->tangent[1], i->tangent[2]);
       glMultiTexCoord4fARB(GL_TEXTURE0+1, y, i->surface[0], i->surface[1], i->surface[2]);
+#else
+      glMultiTexCoord3f(GL_TEXTURE0, i->tangent[0], i->tangent[1], i->tangent[2]);
+      glMultiTexCoord4f(GL_TEXTURE0+1, y, i->surface[0], i->surface[1], i->surface[2]);
 #endif
       glVertex3f(i->root[0],i->root[1],i->root[2]);
     }
