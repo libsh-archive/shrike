@@ -109,16 +109,16 @@ public:
   static ShrikeFrame* instance();
   
   void showIR(SH::ShProgram program,
-              const std::string& name);
+              const wxString& name);
 
-  void showError(const std::string& message,
-                 const std::string& details = "");
+  void showError(const wxString& message,
+                 const std::string& details = ""); // TODO: Make this part unicode aware as well?
   
 private:
   void showProgram(SH::ShProgram program,
-                   const std::string& name);
+                   const wxString& name);
   void showInterface(SH::ShProgram program,
-                     const std::string& name);
+                     const wxString& name);
 
   wxTreeCtrl* initShaderList(wxWindow* parent);
 

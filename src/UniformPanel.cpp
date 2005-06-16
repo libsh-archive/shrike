@@ -200,7 +200,7 @@ class AnimCheckBox : public wxCheckBox {
 public:
   AnimCheckBox(wxWindow* parent,
                const ShVariableNodePtr& node)
-    : wxCheckBox(parent, -1, ""),
+    : wxCheckBox(parent, -1, wxT("")),
       m_node(node),
       m_slider(0)
   {
@@ -242,7 +242,7 @@ public:
   TextureButton(wxWindow* parent,
                 const ShTextureNodePtr& node,
                 const ShProgram& program)
-    : wxButton(parent, -1, "Set texture"),
+    : wxButton(parent, -1, wxT("Set texture") ),
       m_node(node),
       m_program(program)
   {
@@ -250,13 +250,16 @@ public:
 
   void clicked(wxCommandEvent& event)
   {
-    wxFileDialog* dialog = new wxFileDialog(this, "Open Texture",
-                                            SHMEDIA_DIR "/textures", "",
-                                            "PNG Images (*.png)|*.png", wxOPEN);
+    wxFileDialog* dialog = new wxFileDialog(this, wxT("Open Texture"),
+                                            SHMEDIA_DIR wxT("/textures"), wxT(""),
+                                            wxT("PNG Images (*.png)|*.png"), wxOPEN);
 
     if (dialog->ShowModal() == wxID_OK) {
       ShImage img;
-      img.loadPng(dialog->GetPath().c_str());
+      // Lame convertion from wxString to std::string:
+      std::string stdname;
+      stdname = wxConvLibc.cWX2MB(dialog->GetPath());
+      img.loadPng(stdname);
       m_node->memory(img.memory());
       if (m_node->dims() == SH_TEXTURE_1D) {
         m_node->setTexSize(img.width() * img.height());
@@ -285,18 +288,17 @@ class DepButton : public wxButton {
 public:
   DepButton(wxWindow* parent,
                 const ShVariableNodePtr& node)
-    : wxButton(parent, -1, "Show code"),
+    : wxButton(parent, -1, wxT("Show code") ),
       m_node(node)
   {
   }
 
   void clicked(wxCommandEvent& event)
   {
-
     if (!m_node->evaluator()) return;
 
     ShProgram prg(m_node->evaluator());
-    ShrikeFrame::instance()->showIR(prg, m_node->name());
+    ShrikeFrame::instance()->showIR(prg, wxConvLibc.cMB2WX(m_node->name().c_str()) );
   }
   
 private:
@@ -314,7 +316,7 @@ class ColorButton : public wxButton {
 public:
   ColorButton(wxWindow* parent,
               const ShVariableNodePtr& node)
-    : wxButton(parent, -1, "Set colour"),
+    : wxButton(parent, -1, wxT("Set colour") ),
       m_node(node)
   {
   }
@@ -380,7 +382,7 @@ void UniformPanel::addVar(const ShVariableNodePtr& var,
     cb = new AnimCheckBox(lp, var);
     lps->Add(cb, 0);
   }
-  wxStaticText* label = new wxStaticText(lp, -1, var->name().c_str());
+  wxStaticText* label = new wxStaticText(lp, -1, wxConvLibc.cMB2WX(var->name().c_str()) );
   lps->Add(label, 0, wxALIGN_CENTER);
   lp->SetSizerAndFit(lps);
   sizer->Add(lp, 0, wxEXPAND);
@@ -453,7 +455,7 @@ void UniformPanel::setShader(Shader* shader)
           break;
         }
         
-        wxStaticText* t = new wxStaticText(this, -1, label.c_str());
+        wxStaticText* t = new wxStaticText(this, -1, wxConvLibc.cMB2WX(label.c_str()));
         sizer->Add(t, 0, wxALIGN_CENTER);
 
         wxButton* button = new TextureButton(this, tex, prg);

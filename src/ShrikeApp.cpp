@@ -36,7 +36,7 @@ bool ShrikeApp::OnInit()
   std::string backend_name = "arb";
 
   if (argc > 1) {
-    backend_name = argv[1];
+    backend_name = wxConvLibc.cWX2MB(argv[1]);
   }
   
   SH::shSetBackend(backend_name);

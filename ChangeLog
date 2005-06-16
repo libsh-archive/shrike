@@ -1,3 +1,12 @@
+2005-06-16  Francois Marier  <francois@serioushack.com>
+	
+	After the 0.7.8 release:
+	
+	* src/UniformPanel.cpp, ShrikeFrame.cpp, ShrikeFrame.hpp,
+	ShrikeCanvas.cpp, ShrikeApp.cpp, ShrikeCanvas.hpp,
+	ShrikePropsDialog.cpp: Make Shrike compile with unicode-enabled
+	wxWindows libraries (issue203).  Thanks to Nicholas for the patch!
+
 2005-06-15  Francois Marier  <francois@serioushack.com>
 
 	* src/shaders/GlassShader.cpp, ShinyBumpMapShader.cpp,

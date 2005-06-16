@@ -26,6 +26,7 @@
 #include <wx/splitter.h>
 #include <wx/colordlg.h>
 #include <wx/treectrl.h>
+#include <wx/wfstream.h>
 #include <sh/ShObjMesh.hpp>
 #include "ShrikeFrame.hpp"
 #include "ShrikeCanvas.hpp"
@@ -79,50 +80,50 @@ struct ShaderTreeData : public wxTreeItemData {
 };
   
 ShrikeFrame::ShrikeFrame()
-  : wxFrame(0, -1, "Shrike", wxDefaultPosition, wxSize(600, 400)),
+  : wxFrame(0, -1, wxT("Shrike"), wxDefaultPosition, wxSize(600, 400)),
     m_shader(0), m_fullscreen(false), m_fps(false)
 {
   m_instance = this;
   CreateStatusBar();
 
-  GetStatusBar()->SetStatusText("Hold down shift to rotate the light instead of the camera.");
+  GetStatusBar()->SetStatusText(wxT("Hold down shift to rotate the light instead of the camera."));
   
   // Setup menus
 
   wxMenu* fileMenu = new wxMenu();
-  fileMenu->Append(SHRIKE_MENU_OPEN_MODEL, "&Open Model...");
+  fileMenu->Append(SHRIKE_MENU_OPEN_MODEL, wxT("&Open Model...") );
   fileMenu->AppendSeparator();
-  fileMenu->Append(SHRIKE_MENU_QUIT, "&Quit");
+  fileMenu->Append(SHRIKE_MENU_QUIT, wxT("&Quit") );
 
   m_shaderMenu = new wxMenu();
-  m_shaderMenu->Append(SHRIKE_MENU_SHADER_PROPS, "&Properties");
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_PROPS, wxT("&Properties") );
   m_shaderMenu->AppendSeparator();
-  m_shaderMenu->Append(SHRIKE_MENU_SHADER_REINIT, "Re&initialize");
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_REINIT, wxT("Re&initialize") );
   m_shaderMenu->AppendSeparator();
-  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_VSHIF, "Show &vertex interface");
-  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_FSHIF, "Show &fragment interface");
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_VSHIF, wxT("Show &vertex interface") );
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_FSHIF, wxT("Show &fragment interface") );
   m_shaderMenu->AppendSeparator();
-  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_VSH, "Show &vertex assembly");
-  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_FSH, "Show &fragment assembly");
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_VSH, wxT("Show &vertex assembly") );
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_FSH, wxT("Show &fragment assembly") );
   m_shaderMenu->AppendSeparator();
-  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_VSHIR, "Show &vertex IR");
-  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_FSHIR, "Show &fragment IR");
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_VSHIR, wxT("Show &vertex IR") );
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_SHOW_FSHIR, wxT("Show &fragment IR") );
   m_shaderMenu->AppendSeparator();
   wxMenuItem* optitem = new wxMenuItem(m_shaderMenu, SHRIKE_MENU_SHADER_OPTIMIZE,
-                                       "Turn on &optimizations", "",
+                                       wxT("Turn on &optimizations") , wxT(""),
                                        wxITEM_CHECK);
   m_shaderMenu->Append(optitem);
   optitem->Check(true);
 
   wxMenu* optmenu = new wxMenu();
-  m_shaderMenu->Append(SHRIKE_MENU_SHADER_OPTS, "Optimizations", optmenu);
+  m_shaderMenu->Append(SHRIKE_MENU_SHADER_OPTS, wxT("Optimizations"), optmenu);
 
-  char* optnames[] = {"Uniform Lifting",
-                      "Constant/Uniform Propagation",
-                      "Dead Code Removal",
-                      "Forward Substitution",
-                      "Copy Propagation",
-                      "Straightening",
+  wxChar* optnames[] = {wxT("Uniform Lifting"),
+                        wxT("Constant/Uniform Propagation"),
+                        wxT("Dead Code Removal"),
+                        wxT("Forward Substitution"),
+                        wxT("Copy Propagation"),
+                        wxT("Straightening"),
                       0};
   ShrikeId optids[] = {SHRIKE_MENU_SHADER_OPTS_LIFTING,
                        SHRIKE_MENU_SHADER_OPTS_PROPAGATION,
@@ -134,24 +135,24 @@ ShrikeFrame::ShrikeFrame()
     wxMenuItem* item = new wxMenuItem(optmenu,
                                       optids[i],
                                       optnames[i],
-                                      "",
+                                      wxT(""),
                                       wxITEM_CHECK);
     optmenu->Append(item);
     item->Check(true);
   }
 
   m_viewMenu = new wxMenu();
-  m_viewMenu->Append(SHRIKE_MENU_VIEW_RESET, "&Reset");
-  m_viewMenu->Append(SHRIKE_MENU_VIEW_BACKGROUND, "Set &background colour...");
-  m_viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FULLSCREEN, "&Fullscreen");
-  m_viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_WIREFRAME, "&Wireframe");
-  m_viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FPS, "Show framera&te");
-  m_viewMenu->Append(SHRIKE_MENU_VIEW_SCREENSHOT, "&Screenshot...");
+  m_viewMenu->Append(SHRIKE_MENU_VIEW_RESET, wxT("&Reset") );
+  m_viewMenu->Append(SHRIKE_MENU_VIEW_BACKGROUND, wxT("Set &background colour...") );
+  m_viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FULLSCREEN,_( "&Fullscreen") );
+  m_viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_WIREFRAME, wxT("&Wireframe") );
+  m_viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FPS, wxT("Show framera&te") );
+  m_viewMenu->Append(SHRIKE_MENU_VIEW_SCREENSHOT, wxT("&Screenshot...") );
 
   wxMenuBar* menuBar = new wxMenuBar();
-  menuBar->Append(fileMenu, "&File");
-  menuBar->Append(m_shaderMenu, "&Shader");
-  menuBar->Append(m_viewMenu, "&View");
+  menuBar->Append(fileMenu, wxT("&File") );
+  menuBar->Append(m_shaderMenu, wxT("&Shader") );
+  menuBar->Append(m_viewMenu, wxT("&View") );
   
   SetMenuBar(menuBar);
 
@@ -195,11 +196,11 @@ ShrikeFrame::~ShrikeFrame()
 
 void ShrikeFrame::openModel(wxCommandEvent& event)
 {
-  wxFileDialog* dialog = new wxFileDialog(this, "Open Model",
-                                          SHMEDIA_DIR "/objs", "",
-                                          "OBJ Files (*.obj)|*.obj", wxOPEN);
+  wxFileDialog* dialog = new wxFileDialog(this, wxT("Open Model"),
+                                          SHMEDIA_DIR wxT("/objs"), wxT(""),
+                                          wxT("OBJ Files (*.obj)|*.obj"), wxOPEN);
   if (dialog->ShowModal() == wxID_OK) {
-    std::ifstream infile(dialog->GetPath());
+    std::ifstream infile(dialog->GetPath().fn_str());
     if (infile) {
       ShObjMesh* model = new ShObjMesh(infile);
       m_canvas->setModel(model);
@@ -263,30 +264,30 @@ bool ShrikeFrame::setShader(Shader* shader)
     if (shader) shader->bind();
   } catch (const ShImageException& e) {
     shader->set_failed(true);
-    showError("An Image error occured trying to initialize or bind this program.\n"
-              "This probably indicates a missing or corrupt texture image.",
+    showError(wxT("An Image error occured trying to initialize or bind this program.\n")
+              wxT("This probably indicates a missing or corrupt texture image."),
               e.message());
     return false;
   } catch (const ShBackendException& e) {
     shader->set_failed(true);
-    showError("A Backend error occured trying to initialize or bind this program.\n"
-              "This probably indicates that your graphics card\n"
-              "does not have the resources required to run this program.",
+    showError(wxT("A Backend error occured trying to initialize or bind this program.\n")
+              wxT("This probably indicates that your graphics card\n")
+              wxT("does not have the resources required to run this program."),
               e.message());
     return false;
   } catch (const ShException& e) {
     shader->set_failed(true);
-    showError("An Sh error occured trying to initialize or bind this program.\n"
-              "This probably indicates an error in the shader program,\n"
-              "or an error trying to run the shader on your hardware\n"
-              "(e.g. running out of instructions). It may also be a missing\n"
-              "or corrupt texture image.",
+    showError(wxT("An Sh error occured trying to initialize or bind this program.\n")
+              wxT("This probably indicates an error in the shader program,\n")
+              wxT("or an error trying to run the shader on your hardware\n")
+              wxT("(e.g. running out of instructions). It may also be a missing\n")
+              wxT("or corrupt texture image."),
               e.message());
     return false;
   } catch (...) {
     shader->set_failed(true);
-    showError("An Unknown error occured trying to initialize or bind this program.\n"
-              "This probably indicates an error in the shader program.");
+    showError(wxT("An Unknown error occured trying to initialize or bind this program.\n")
+              wxT("This probably indicates an error in the shader program.") );
     return false;
   }
   m_canvas->setShader(shader);
@@ -296,50 +297,50 @@ bool ShrikeFrame::setShader(Shader* shader)
   return true;
 }
 
-void ShrikeFrame::showError(const std::string& message,
+void ShrikeFrame::showError(const wxString& message,
                             const std::string& details)
 {
   if (!details.empty()) {
-    wxLogWarning(details.c_str());
+    wxLogWarning(wxConvLibc.cMB2WX(details.c_str()));
   }
-  wxLogError(message.c_str());
+  wxLogError(message.GetData());
   wxLog::FlushActive();
 }
 
 void ShrikeFrame::showVsh(wxCommandEvent& event)
 {
   if (!m_shader) return;
-  showProgram(m_shader->vertex(), "Vertex");
+  showProgram(m_shader->vertex(), wxT("Vertex") );
 }
 
 void ShrikeFrame::showFsh(wxCommandEvent& event)
 {
   if (!m_shader) return;
-  showProgram(m_shader->fragment(), "Fragment");
+  showProgram(m_shader->fragment(), wxT("Fragment") );
 }
 
 void ShrikeFrame::showVshIr(wxCommandEvent& event)
 {
   if (!m_shader) return;
-  showIR(m_shader->vertex(), "Vertex");
+  showIR(m_shader->vertex(), wxT("Vertex") );
 }
 
 void ShrikeFrame::showFshIr(wxCommandEvent& event)
 {
   if (!m_shader) return;
-  showIR(m_shader->fragment(), "Fragment");
+  showIR(m_shader->fragment(), wxT("Fragment") );
 }
 
 void ShrikeFrame::showVshInterface(wxCommandEvent& event)
 {
   if (!m_shader) return;
-  showInterface(m_shader->vertex(), "Vertex");
+  showInterface(m_shader->vertex(), wxT("Vertex") );
 }
 
 void ShrikeFrame::showFshInterface(wxCommandEvent& event)
 {
   if (!m_shader) return;
-  showInterface(m_shader->fragment(), "Fragment");
+  showInterface(m_shader->fragment(), wxT("Fragment") );
 }
 
 void ShrikeFrame::reinit(wxCommandEvent& event)
@@ -370,16 +371,16 @@ void ShrikeFrame::setBackground(wxCommandEvent& event)
 }
 
 void ShrikeFrame::showProgram(ShProgram program,
-                              const std::string& name)
+                              const wxString& name)
 {
   if (!program.node()) return;
   if (!program.node()->code()) return;
 
-  std::string title = name + " Shader Code";
+  wxString title = name + wxT(" Shader Code");
   wxFrame* frame = new wxFrame(0, -1, title.c_str());
 
 
-  wxTextCtrl* control = new wxTextCtrl(frame, -1, "",
+  wxTextCtrl* control = new wxTextCtrl(frame, -1, wxT(""),
                                        wxDefaultPosition,
                                        wxDefaultSize,
                                        wxTE_MULTILINE | wxTE_READONLY);
@@ -397,34 +398,34 @@ void ShrikeFrame::showProgram(ShProgram program,
 }
 
 void ShrikeFrame::showInterface(ShProgram program,
-                                const std::string& name)
+                                const wxString& name)
 {
   if (!program.node()) return;
   if (!program.node()->code()) return;
 
-  std::string title = name + " Shader Interface";
+  wxString title = name + wxT(" Shader Interface");
   wxFrame* frame = new wxFrame(0, -1, title.c_str());
 
-  wxTextCtrl* control = new wxTextCtrl(frame, -1, "",
+  wxTextCtrl* control = new wxTextCtrl(frame, -1, wxT(""),
                                        wxDefaultPosition,
                                        wxDefaultSize,
                                        wxTE_MULTILINE | wxTE_READONLY);
   
-  control->AppendText(program.describe_interface().c_str());
+  control->AppendText(wxConvLibc.cMB2WX(program.describe_interface().c_str()));
 
   frame->Show();
 }
 
 void ShrikeFrame::showIR(ShProgram program,
-                         const std::string& name)
+                         const wxString& name)
 {
   if (!program.node()) return;
 
-  std::string title = name + " Shader Code";
+  wxString title = name + wxT(" Shader Code");
   wxFrame* frame = new wxFrame(0, -1, title.c_str());
 
 
-  wxTextCtrl* control = new wxTextCtrl(frame, -1, "",
+  wxTextCtrl* control = new wxTextCtrl(frame, -1, wxT(""),
                                        wxDefaultPosition,
                                        wxDefaultSize,
                                        wxTE_MULTILINE | wxTE_READONLY);
@@ -457,6 +458,7 @@ void ShrikeFrame::optimize(wxCommandEvent& event)
 
 void ShrikeFrame::setopts(wxCommandEvent& event)
 {
+  // Didn't wxT() those because, well, it's not like we're printing or writing this, is it?
   std::string name;
   switch (event.GetId()) {
   case SHRIKE_MENU_SHADER_OPTS_LIFTING:
@@ -545,9 +547,9 @@ ShrikeFrame* ShrikeFrame::instance()
 
 void ShrikeFrame::screenshot(wxCommandEvent& event)
 {
-  wxFileDialog* dialog = new wxFileDialog(this, "Save Screenshot",
-                                          ".", "",
-                                          "PNG Files (*.png)|*.png", wxSAVE);
+  wxFileDialog* dialog = new wxFileDialog(this, wxT("Save Screenshot"),
+                                          wxT("."), wxT(""),
+                                          wxT("PNG Files (*.png)|*.png"), wxSAVE);
   if (dialog->ShowModal() == wxID_OK) {
     m_canvas->screenshot(dialog->GetPath().c_str());
   }
@@ -565,7 +567,7 @@ wxTreeCtrl* ShrikeFrame::initShaderList(wxWindow* parent)
                                     wxTR_HAS_BUTTONS | wxTR_HIDE_ROOT | wxTR_LINES_AT_ROOT);
 #endif
 
-  wxTreeItemId root = tree->AddRoot("");
+  wxTreeItemId root = tree->AddRoot( wxT("") );
 
   std::map<std::string, wxTreeItemId> nodes;
   
@@ -596,7 +598,7 @@ wxTreeCtrl* ShrikeFrame::initShaderList(wxWindow* parent)
       ShaderTreeData* data = 0;
       if (M == nodelist.end()) data = new ShaderTreeData(shader);
       if (nodes.find(fullname) == nodes.end()) {
-        nodes[fullname] = tree->AppendItem(last, name.c_str(), -1, -1,
+        nodes[fullname] = tree->AppendItem(last, wxConvLibc.cMB2WX(name.c_str()), -1, -1,
                                            data);
       } else {
         if (data && tree->GetItemData(nodes[fullname]) == 0) {

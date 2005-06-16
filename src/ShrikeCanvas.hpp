@@ -45,8 +45,8 @@ public:
   void reshape(wxSizeEvent& event);
   void motion(wxMouseEvent& event);
 
-  void screenshot(const std::string& filename);
-  
+  void screenshot(const wxString& filename);  
+
   void resetView();
 
   void setBackground(unsigned char r, unsigned char g, unsigned char b);

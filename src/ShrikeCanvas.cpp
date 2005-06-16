@@ -354,11 +354,12 @@ void ShrikeCanvas::setupView(int nsplit, int x, int y)
   Globals::lightPos = Globals::mv | ShPoint3f(Globals::lightDirW * Globals::lightLenW);
 }
 
-void ShrikeCanvas::screenshot(const std::string& filename)
+void ShrikeCanvas::screenshot(const wxString& filename)
 {
   int mult = 4;
   ShImage final(GetClientSize().GetWidth()*mult, GetClientSize().GetHeight()*mult, 3);
   float* fd = final.data();
+  std::string stdfilename;
     
   for (int y = 0; y < mult; y++) for (int x = 0; x < mult; x++) {
     ShImage img(GetClientSize().GetWidth(), GetClientSize().GetHeight(), 3);
@@ -382,7 +383,9 @@ void ShrikeCanvas::screenshot(const std::string& filename)
      img.savePng(filename + s.str());
 #endif
   }
-  final.savePng(filename);
+  // Lame convertion from wxString to std::string:
+  stdfilename = wxConvLibc.cWX2MB(filename);
+  final.savePng(stdfilename, 0);
 
   setupView();
   render();

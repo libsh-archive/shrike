@@ -27,7 +27,7 @@
 class StdStringValidator : public wxTextValidator {
 public:
   StdStringValidator(long style, std::string& str)
-    : wxTextValidator(style, (m_wxString = new wxString(str.c_str()))),
+    : wxTextValidator(style, (m_wxString = new wxString( wxConvLibc.cMB2WX( str.c_str() ) )) ),
       m_string(str)
   {
   }
@@ -58,13 +58,13 @@ public:
   virtual bool TransferFromWindow()
   {
     if (!wxTextValidator::TransferFromWindow()) return false;
-    m_string = *m_wxString;
+    m_string = wxConvLibc.cWX2MB(*m_wxString);
     return true;
   }
 
   virtual bool TransferToWindow()
   {
-    *m_wxString = m_string.c_str();
+    *m_wxString = wxConvLibc.cMB2WX(m_string.c_str());
     return wxTextValidator::TransferToWindow();
   }
   
@@ -74,7 +74,7 @@ private:
 };
 
 ShrikePropsDialog::ShrikePropsDialog(wxWindow* parent, Shader* shader)
-  : wxDialog(parent, -1, "Shader Properties", wxDefaultPosition, wxDefaultSize,
+  : wxDialog(parent, -1, wxT("Shader Properties"), wxDefaultPosition, wxDefaultSize,
              wxDEFAULT_DIALOG_STYLE|wxDIALOG_MODAL)
 {
   Shader::StringParamList::iterator I;
@@ -84,8 +84,8 @@ ShrikePropsDialog::ShrikePropsDialog(wxWindow* parent, Shader* shader)
   SetSizer(sizer);
   
   for (I = shader->beginStringParams(); I != shader->endStringParams(); ++I) {
-    wxStaticText* label = new wxStaticText(this, -1, I->name.c_str());
-    wxTextCtrl* ctrl = new wxTextCtrl(this, -1, I->param.c_str(),
+    wxStaticText* label = new wxStaticText(this, -1, wxConvLibc.cMB2WX(I->name.c_str()));
+    wxTextCtrl* ctrl = new wxTextCtrl(this, -1, wxConvLibc.cMB2WX(I->param.c_str()),
                                       wxDefaultPosition, wxDefaultSize, 0,
                                       StdStringValidator(wxFILTER_NONE, I->param));
 
@@ -93,7 +93,7 @@ ShrikePropsDialog::ShrikePropsDialog(wxWindow* parent, Shader* shader)
     sizer->Add(ctrl);
   }
 
-  wxButton* btn_ok = new wxButton(this, wxID_OK, "O&K");
+  wxButton* btn_ok = new wxButton(this, wxID_OK, wxT("O&K") );
   sizer->Add(btn_ok);
   btn_ok->SetDefault();
   
