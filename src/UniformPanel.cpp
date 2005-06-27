@@ -266,8 +266,7 @@ public:
       } else {
         m_node->setTexSize(img.width(), img.height());
       }
-      // TODO: Replace with shUpdate when that's done.
-      shBind(m_program);
+      shUpdate();
       ShrikeCanvas::instance()->render();
     }
   }

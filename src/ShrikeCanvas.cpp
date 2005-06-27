@@ -238,9 +238,9 @@ void ShrikeCanvas::render()
 
   SHRIKE_GL_CHECK_ERROR(glPointSize(3.0));
 
-  SHRIKE_GL_CHECK_ERROR(glBegin(GL_POINTS)); {
-    SHRIKE_GL_CHECK_ERROR(glColor3f(1.0, 0.0, 1.0));
-    SHRIKE_GL_CHECK_ERROR(glVertex3fv(pos));
+  glBegin(GL_POINTS); {
+    glColor3f(1.0, 0.0, 1.0);
+    glVertex3fv(pos);
   } SHRIKE_GL_IGNORE_ERROR(glEnd()); // On ATI we get spurious errors here
 
   if (m_shader) {
@@ -256,7 +256,7 @@ void ShrikeCanvas::render()
     shBind(*m_fps_shaders);
     double width = 160.0/GetClientSize().GetWidth();
     double height = 80.0/GetClientSize().GetHeight(); 
-    SHRIKE_GL_CHECK_ERROR(glBegin(GL_QUADS)); {
+    glBegin(GL_QUADS); {
       glTexCoord2f(0.0, 0.0);
       glVertex2f(-1.0, -1.0);
       glTexCoord2f(0.0, 1.0);
@@ -283,30 +283,30 @@ void ShrikeCanvas::renderObject()
   if (m_model_dirty) {
     SHRIKE_GL_CHECK_ERROR(glNewList(m_model_list, GL_COMPILE_AND_EXECUTE));
     float values[4];
-    SHRIKE_GL_CHECK_ERROR(glBegin(GL_TRIANGLES));
+    glBegin(GL_TRIANGLES);
     for(ShObjMesh::FaceSet::iterator I = m_model->faces.begin();
         I != m_model->faces.end(); ++I) {
       ShObjEdge *e = (*I)->edge;
       do {
         e->normal.getValues(values); 
-        SHRIKE_GL_CHECK_ERROR(glNormal3fv(values));
+        glNormal3fv(values);
 
         e->texcoord.getValues(values);
 #ifdef GL_ARB_multitexture
-        SHRIKE_GL_CHECK_ERROR(glMultiTexCoord2fvARB(GL_TEXTURE0, values));
+        glMultiTexCoord2fvARB(GL_TEXTURE0, values);
 #else
-        SHRIKE_GL_CHECK_ERROR(glMultiTexCoord2fv(GL_TEXTURE0, values));
+        glMultiTexCoord2fv(GL_TEXTURE0, values);
 #endif
 
         e->tangent.getValues(values);
 #ifdef GL_ARB_multitexture
-        SHRIKE_GL_CHECK_ERROR(glMultiTexCoord3fvARB(GL_TEXTURE0 + 1, values));
+        glMultiTexCoord3fvARB(GL_TEXTURE0 + 1, values);
 #else
-        SHRIKE_GL_CHECK_ERROR(glMultiTexCoord3fv(GL_TEXTURE0 + 1, values));
+        glMultiTexCoord3fv(GL_TEXTURE0 + 1, values);
 #endif
 
         e->start->pos.getValues(values);
-        SHRIKE_GL_CHECK_ERROR(glVertex3fv(values));
+        glVertex3fv(values);
         e = e->next;
       } while(e != (*I)->edge);
     }
@@ -425,10 +425,17 @@ void ShrikeCanvas::init()
 
 void ShrikeCanvas::reshape(wxSizeEvent& event)
 {
-  if (m_init && GetContext()) {
+  wxGLCanvas::OnSize(event);
+
+  wxPaintDC dc(this);
+  int w, h;
+
+  GetClientSize(&w, &h);
+  
+  if (m_init && GetContext() && w > 0 && h > 0) {
     SetCurrent();
     SHRIKE_GL_CHECK_CURRENT_ERROR;
-    SHRIKE_GL_CHECK_ERROR(glViewport(0, 0, GetClientSize().GetWidth(), GetClientSize().GetHeight()));
+    SHRIKE_GL_CHECK_ERROR(glViewport(0, 0, w, h));
     setupView();
   }
 }

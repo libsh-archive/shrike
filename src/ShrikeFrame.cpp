@@ -164,7 +164,7 @@ ShrikeFrame::ShrikeFrame()
   ShObjMesh* model = 0;
 
   // TODO: FIXME
-  std::ifstream infile(SHMEDIA_DIR "/objs/sphere50.obj");
+  std::ifstream infile(SHMEDIA_DIR "/objs/plane1.obj");
   if (infile) {
     model = new ShObjMesh(infile);
   }
@@ -196,11 +196,12 @@ ShrikeFrame::~ShrikeFrame()
 
 void ShrikeFrame::openModel(wxCommandEvent& event)
 {
-  wxFileDialog* dialog = new wxFileDialog(this, wxT("Open Model"),
-                                          SHMEDIA_DIR wxT("/objs"), wxT(""),
-                                          wxT("OBJ Files (*.obj)|*.obj"), wxOPEN);
-  if (dialog->ShowModal() == wxID_OK) {
-    std::ifstream infile(dialog->GetPath().fn_str());
+  wxFileDialog dialog(this, wxT("Open Model"),
+                      SHMEDIA_DIR wxT("/objs"), wxT(""),
+                      wxT("OBJ Files (*.obj)|*.obj"), wxOPEN);
+
+  if (dialog.ShowModal() == wxID_OK) {
+    std::ifstream infile(dialog.GetPath().fn_str());
     if (infile) {
       ShObjMesh* model = new ShObjMesh(infile);
       m_canvas->setModel(model);

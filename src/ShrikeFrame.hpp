@@ -33,6 +33,8 @@
 #include "ShrikePropsDialog.hpp"
 
 enum ShrikeId {
+  SHRIKE_NIL, // Need this here to avoid an ID being 0, which causes
+              // problems at least on Mac OS X.
   SHRIKE_MENU_OPEN_MODEL,
   SHRIKE_MENU_QUIT,
   
