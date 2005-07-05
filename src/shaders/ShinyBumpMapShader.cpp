@@ -62,7 +62,7 @@ bool ShinyBumpMapShader::init()
   ShImage test_image;
   test_image.loadPng(normalize_path(std::string(SHMEDIA_DIR "/envmaps/aniroom/") + imageNames[0] + ".png"));
 
-  ShTextureCube<ShColor4fub> cubemap(test_image.width(), test_image.height());
+  ShTableCube<ShColor4fub> cubemap(test_image.width(), test_image.height());
   {
     for (int i = 0; i < 6; i++) {
       ShImage image;
@@ -91,7 +91,7 @@ bool ShinyBumpMapShader::init()
 
   ShImage image;
   image.loadPng(normalize_path(SHMEDIA_DIR "/bumpmaps/bumps_normals.png"));
-  ShTexture2D<ShVector3fub> bump(image.width(),image.height());
+  ShTable2D<ShVector3fub> bump(image.width(),image.height());
   bump.memory(image.memory());
 
   ShAttrib3f SH_DECL(scale) = ShAttrib3f(2.0,2.0,1.0);

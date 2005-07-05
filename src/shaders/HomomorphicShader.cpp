@@ -99,17 +99,17 @@ bool HomomorphicShader::init()
   // alpha, really), pulldown menu to select BRDFs from list,
   // settings for extra specularities, etc. etc.
   image.loadPng(normalize_path(SHMEDIA_DIR "/brdfs/garnetred/garnetred64_0.png"));
-  ShTexture2D<ShColor3fub> ptex(image.width(), image.height());
+  ShTable2D<ShColor3fub> ptex(image.width(), image.height());
   //CubicBSplineInterp<ShTexture2D<ShColor3fub> > ptex(image.width(), image.height());
   ptex.memory(image.memory());
 
   image.loadPng(normalize_path(SHMEDIA_DIR "/brdfs/garnetred/garnetred64_1.png"));
-  ShTexture2D<ShColor3fub> qtex(image.width(), image.height());
+  ShTable2D<ShColor3fub>qtex(image.width(), image.height());
   //CubicBSplineInterp<ShTexture2D<ShColor3fub> > qtex(image.width(), image.height());
   qtex.memory(image.memory());
 
   image.loadPng(normalize_path(SHMEDIA_DIR "/brdfs/specular.png"));
-  ShTexture2D<ShColor3fub> stex(image.width(), image.height());
+  ShTable2D<ShColor3fub> stex(image.width(), image.height());
   stex.memory(image.memory());
 
   // these scale factors are specific to garnet red

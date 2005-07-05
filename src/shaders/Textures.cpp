@@ -86,7 +86,7 @@ bool Textures::init()
   // ShArray: nearest-neighbour lookup, no mipmapping
   // ShTable: linear interpolation, no mipmapping
   // ShTexture: linear interpolation and mipmapping
-  ShTexture2D<ShColor3fub> texture(image.width(), image.height());
+  ShTable2D<ShColor3fub> texture(image.width(), image.height());
 
   // You can also wrap the above type in ShWrapClamp<> or ShWrapRepeat<>
   // for different edge wrapping styles. ShWrapClamp is the default.

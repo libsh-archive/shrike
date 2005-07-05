@@ -121,8 +121,8 @@ bool JeweledShader::init()
 #define NMATS 3
 #define LMAT 0
 #define UMAT 2
-  ShTexture2D<ShColor3fub> ptex[NMATS];
-  ShTexture2D<ShColor3fub> qtex[NMATS];
+  ShTable2D<ShColor3fub> ptex[NMATS];
+  ShTable2D<ShColor3fub> qtex[NMATS];
 
   image.loadPng(normalize_path(SHMEDIA_DIR "/brdfs/mystique/mystique64_0.png"));
   ptex[0].size(image.width(), image.height());
@@ -156,24 +156,24 @@ bool JeweledShader::init()
 
   // Specular highlight (to be added when needed...)
   image.loadPng(normalize_path(SHMEDIA_DIR "/brdfs/specular.png"));
-  ShTexture2D<ShColor3fub> stex(image.width(), image.height());
+  ShTable2D<ShColor3fub> stex(image.width(), image.height());
   stex.memory(image.memory());
   stex.name("Specular highlight texture");
   
   // Cube map for mirror reflection
   std::string imageNames[6] = {"left", "right", "top", "bottom", "back", "front"};
-  ShTextureCube<ShColor4fub> env;
+  ShTableCube<ShColor4fub> env;
   env.name("Environment map");
   {
     for (int i = 0; i < 6; i++) {
       ShImage image;
       image.loadPng(normalize_path(std::string(SHMEDIA_DIR "/envmaps/aniroom/") + imageNames[i] + ".png"));
-      env.memory(image.memory(), static_cast<ShCubeDirection>(i));
       env.size(image.width(), image.height());
+      env.memory(image.memory(), static_cast<ShCubeDirection>(i));
     }
   }
   
-  ShWrapRepeat< ShTexture2D<ShColor3fub> > mat;
+  ShWrapRepeat< ShTable2D<ShColor3fub> > mat;
 
   // Material map (threshold based...)
   image.loadPng(normalize_path(SHMEDIA_DIR "/textures/halftone.png"));

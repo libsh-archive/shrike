@@ -260,7 +260,7 @@ public:
       std::string stdname;
       stdname = wxConvLibc.cWX2MB(dialog->GetPath());
       img.loadPng(stdname);
-      m_node->memory(img.memory());
+      m_node->memory(img.memory(), 0);
       if (m_node->dims() == SH_TEXTURE_1D) {
         m_node->setTexSize(img.width() * img.height());
       } else {

@@ -63,13 +63,13 @@ bool HorizonMapping::init()
   horizmap1.loadPng(normalize_path(SHMEDIA_DIR "/horizonmaps/cross_horizon1.png"));
   horizmap2.loadPng(normalize_path(SHMEDIA_DIR "/horizonmaps/cross_horizon2.png"));
   
-  ShTexture2D<ShVector3fub> bump(image.width(),image.height());
+  ShTable2D<ShVector3fub> bump(image.width(),image.height());
   bump.memory(image.memory());
   bump.name("surface");
-  ShTexture2D<ShColor4fub> horizon1(horizmap1.width(), horizmap1.height());
+  ShTable2D<ShColor4fub> horizon1(horizmap1.width(), horizmap1.height());
   horizon1.memory(horizmap1.memory());
   horizon1.name("horizon maps");
-  ShTexture2D<ShColor4fub> horizon2(horizmap2.width(), horizmap2.height());
+  ShTable2D<ShColor4fub> horizon2(horizmap2.width(), horizmap2.height());
   horizon2.memory(horizmap2.memory());
   horizon2.name("horizon maps");
 
@@ -195,9 +195,9 @@ bool ViewHorizonMaps::init()
   horizmap1.loadPng(normalize_path(SHMEDIA_DIR "/horizonmaps/cross_horizon1.png"));
   horizmap2.loadPng(normalize_path(SHMEDIA_DIR "/horizonmaps/cross_horizon2.png"));
   
-  ShTexture2D<ShColor4fub> horizon1(horizmap1.width(), horizmap1.height());
+  ShTable2D<ShColor4fub> horizon1(horizmap1.width(), horizmap1.height());
   horizon1.memory(horizmap1.memory());
-  ShTexture2D<ShColor4fub> horizon2(horizmap2.width(), horizmap2.height());
+  ShTable2D<ShColor4fub> horizon2(horizmap2.width(), horizmap2.height());
   horizon2.memory(horizmap2.memory());
   
   vsh = SH_BEGIN_PROGRAM("gpu:vertex") {

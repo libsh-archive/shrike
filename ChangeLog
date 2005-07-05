@@ -1,3 +1,16 @@
+2005-07-05  Francois Marier  <francois@serioushack.com>
+
+	* src/UniformPanel.cpp: Specify the mipmap level in the memory()
+	call.
+	
+	* src/shaders/GlassShader.cpp, ShinyBumpMapShader.cpp,
+	HorizonMapping.cpp, JeweledShader.cpp, LargeTexture.cpp,
+	Textures.cpp, Derivatives.cpp, DiscoShader.cpp, BumpMapShader.cpp,
+	CelShader.cpp, PhongShader.cpp, SatinShader.cpp, WorleyShader.cpp,
+	HomomorphicShader.cpp, LuciteShader.cpp, EnvMapShader.cpp,
+	DummyShader.cpp, AlgebraShader.cpp: Switch from ShTexture* to
+	ShTable* to disable mipmapping.
+	
 2005-06-16  Francois Marier  <francois@serioushack.com>
 	
 	After the 0.7.8 release:

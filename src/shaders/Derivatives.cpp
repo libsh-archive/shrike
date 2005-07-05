@@ -67,7 +67,7 @@ bool Derivatives::init()
 
   ShImage image;
   image.loadPng(normalize_path(SHMEDIA_DIR "/textures/rgby.png"));
-  ShTexture2D<ShColor3fub> texture(image.width(), image.height());
+  ShTable2D<ShColor3fub> texture(image.width(), image.height());
   texture.memory(image.memory());
   
   fsh = SH_BEGIN_FRAGMENT_PROGRAM {

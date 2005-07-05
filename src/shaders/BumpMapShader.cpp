@@ -71,7 +71,7 @@ bool BumpMapShader::init()
 
   ShImage image;
   image.loadPng(normalize_path(SHMEDIA_DIR "/bumpmaps/bumps_normals.png"));
-  ShTexture2D<ShVector3fub> bump(image.width(),image.height());
+  ShTable2D<ShVector3fub> bump(image.width(),image.height());
   bump.memory(image.memory());
 
   ShAttrib1f SH_DECL(scale) = ShAttrib1f(1.0);

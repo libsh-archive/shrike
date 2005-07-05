@@ -645,7 +645,7 @@ public:
 
     ShImage image;
     image.loadPng(normalize_path(SHMEDIA_DIR "/textures/kd.png"));
-    ShTexture2D<ShColor3fub> mosaicTex(image.width(), image.height());
+    ShTable2D<ShColor3fub> mosaicTex(image.width(), image.height());
     mosaicTex.name("Mosaic Texture");
     mosaicTex.memory(image.memory());
 
@@ -653,7 +653,7 @@ public:
     ShImage test_image;
     test_image.loadPng(normalize_path(std::string(SHMEDIA_DIR "/envmaps/aniroom/") + imageNames[0] + ".png"));
 
-    ShTextureCube<ShColor4fub> cubemap(test_image.width(), test_image.height());
+    ShTableCube<ShColor4fub> cubemap(test_image.width(), test_image.height());
     {
       for (int i = 0; i < 6; i++) {
 	ShImage image2;

@@ -65,10 +65,10 @@ bool PhongShader::init()
 
   ShImage image;
   image.loadPng(normalize_path(SHMEDIA_DIR "/textures/rustkd.png"));
-  ShTexture2D<ShColor3fub> difftex(image.width(), image.height());
+  ShTable2D<ShColor3fub> difftex(image.width(), image.height());
   difftex.memory(image.memory());
   image.loadPng(normalize_path(SHMEDIA_DIR "/textures/rustks.png"));
-  ShTexture2D<ShColor3fub> spectex(image.width(), image.height());
+  ShTable2D<ShColor3fub> spectex(image.width(), image.height());
   spectex.memory(image.memory());
   
   ShConstColor3f lightColor(1.0f, 1.0f, 1.0f);

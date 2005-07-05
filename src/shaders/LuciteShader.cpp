@@ -62,8 +62,8 @@ bool LuciteShader::init()
   ShImage test_image;
   test_image.loadPng(normalize_path(std::string(SHMEDIA_DIR "/envmaps/aniroom/") + imageNames[0] + ".png"));
 
-  ShTextureCube<ShColor4fub> SH_DECL(cubemap) =
-    ShTextureCube<ShColor4fub>(test_image.width(), test_image.height());
+  ShTableCube<ShColor4fub> SH_DECL(cubemap) =
+    ShTableCube<ShColor4fub>(test_image.width(), test_image.height());
   {
     for (int i = 0; i < 6; i++) {
       ShImage image;

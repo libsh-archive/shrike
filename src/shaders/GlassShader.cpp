@@ -62,7 +62,7 @@ bool GlassShader::init()
   ShImage test_image;
   test_image.loadPng(normalize_path(std::string(SHMEDIA_DIR "/envmaps/aniroom/") + imageNames[0] + ".png"));
 
-  ShTextureCube<ShColor4fub> cubemap(test_image.width(), test_image.height());
+  ShTableCube<ShColor4fub> cubemap(test_image.width(), test_image.height());
   cubemap.name("cubemap");
   {
     for (int i = 0; i < 6; i++) {
