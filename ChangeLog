@@ -1,3 +1,12 @@
+2005-07-07  Francois Marier  <francois@serioushack.com>
+
+	* *.cpp, *.hpp: Change the license and copyright notices to the
+	GNU LGPL.
+
+	* COPYING: Provide a copy of the full license.
+
+	* Makefile.am: Include COPYING in the tarballs and zips.
+
 2005-07-05  Francois Marier  <francois@serioushack.com>
 
 	* src/UniformPanel.cpp: Specify the mipmap level in the memory()
