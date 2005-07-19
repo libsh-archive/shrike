@@ -29,6 +29,9 @@
 #include <iostream>
 #include "Shader.hpp"
 #include "Globals.hpp"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 using namespace SH;
 using namespace ShUtil;
@@ -122,9 +125,10 @@ bool VectorTest::init()
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
+  /*
   // a test consisting of two contours (a letter A, actually)
   const int N = 11;
-  // const int N = 22;
+  // const int N = 22;/
   ShAttrib4f L[N];
 
   // Data for a simple "A" character
@@ -142,7 +146,7 @@ bool VectorTest::init()
 
   // An Evil Hack: contract each line segment by epsilon.
   // This resolves the ambiguity over which line segment is "closer"
-  // when a shared vertex is the closest point on a line segment, and
+  // when a shared vertex is the closest point on a l/ine segment, and
   // allows the correct sign to be determined based only on the closest
   // line segment.   By splitting the vertex by contracting both 
   // vertices by the same amount, this gives a plane separating the
@@ -160,10 +164,12 @@ bool VectorTest::init()
   for (int i=0; i<N; i++) {
     L[i](2,3) = L[i](2,3) - L[i](0,1);
   }
+  *//
 
   fsh = SH_BEGIN_FRAGMENT_PROGRAM {
     ShInputTexCoord2f tc;
     ShOutputColor3f o;
+    /*
 
     // transform texture coords (should be in vertex shader really, but)
     ShAttrib2f x = (tc - m_offset) * m_size;
@@ -272,6 +278,8 @@ bool VectorTest::init()
           * cond(r(1) >= 0.0,m_vcolor2,m_vcolor1);
       } break;
     }
+  */
+	  //o = ShColor3f(0,0,0);
   } SH_END_PROGRAM;
 
   std::cerr << "Finished initialising" << std::endl;
@@ -306,4 +314,3 @@ VectorTest vtest_distance = VectorTest(11);
 VectorTest vtest_biased_pdistance = VectorTest(12);
 VectorTest vtest_grey_biased_pdistance = VectorTest(13);
 VectorTest vtest_pdistance = VectorTest(14);
-
