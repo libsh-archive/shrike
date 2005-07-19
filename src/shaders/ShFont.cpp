@@ -140,9 +140,9 @@ void ShFont::loadFont(const std::string& filename)
 
 			// buffer for edge coordinates and edge number
 			m_memory = new ShHostMemoryPtr[5];
-			m_memory[0] = new ShHostMemory(sizeof(int) * m_glyphcount * 11);
-			m_memory[1] = new ShHostMemory(sizeof(float) * m_width * m_height * m_elements);
-			m_memory[2] = new ShHostMemory(sizeof(int) * m_width * m_height);
+			m_memory[0] = new ShHostMemory(sizeof(int) * m_glyphcount * 11, SH_FLOAT);
+			m_memory[1] = new ShHostMemory(sizeof(float) * m_width * m_height * m_elements, SH_FLOAT);
+			m_memory[2] = new ShHostMemory(sizeof(int) * m_width * m_height, SH_FLOAT);
 
 			int len = 11 * m_glyphcount;
 			int temp;
@@ -240,8 +240,8 @@ void ShFont::loadFont(const std::string& filename)
 	texture(num, sp);
 
 	// for sprite
-	m_memory[3] = new ShHostMemory(sizeof(float) * len * 4);
-	m_memory[4] = new ShHostMemory(sizeof(int) * len * 4);
+	m_memory[3] = new ShHostMemory(sizeof(float) * len * 4, SH_FLOAT);
+	m_memory[4] = new ShHostMemory(sizeof(int) * len * 4, SH_FLOAT);
 
 	for(int i=0; i<len*4; i++) {
 		coords(3)[i] = 0;

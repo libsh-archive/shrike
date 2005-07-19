@@ -118,11 +118,11 @@ void ShGlyph::loadGlyph(const std::string& filename)
 			// buffer for edge coordinates and edge number
 			m_memory = new ShHostMemoryPtr[m_edges];
 			for(int i=0; i<m_edges; i++) {
-				m_memory[i] = new ShHostMemory(sizeof(float) * m_width * m_height * m_elements);
+				m_memory[i] = new ShHostMemory(sizeof(float) * m_width * m_height * m_elements, SH_FLOAT);
 			}
 			// integer array should be enough for number of edges in each cell
 			// but Sh may not work for integer texture
-			m_edgenum = new ShHostMemory(sizeof(float) * m_width * m_height);
+			m_edgenum = new ShHostMemory(sizeof(float) * m_width * m_height, SH_FLOAT);
 
 			int len = m_width * m_height;
 
@@ -167,7 +167,7 @@ void ShGlyph::loadGlyph(const std::string& filename)
 
 			// buffer for edge coordinates and edge number
 			m_memory = new ShHostMemoryPtr[1];
-			m_memory[0] = new ShHostMemory(sizeof(float) * m_width * m_height * m_elements);
+			m_memory[0] = new ShHostMemory(sizeof(float) * m_width * m_height * m_elements, SH_FLOAT);
 
 			int len = m_width * m_height * m_elements;
 
@@ -204,8 +204,8 @@ void ShGlyph::loadGlyph(const std::string& filename)
 
 			// buffer for edge coordinates and edge number
 			m_memory = new ShHostMemoryPtr[2];
-			m_memory[0] = new ShHostMemory(sizeof(float) * m_width * m_height * m_elements);
-			m_memory[1] = new ShHostMemory(sizeof(int) * m_width * m_height);
+			m_memory[0] = new ShHostMemory(sizeof(float) * m_width * m_height * m_elements, SH_FLOAT);
+			m_memory[1] = new ShHostMemory(sizeof(int) * m_width * m_height, SH_FLOAT);
 
 			int len = m_width * m_height * m_elements;
 

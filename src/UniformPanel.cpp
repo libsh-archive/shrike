@@ -255,7 +255,7 @@ public:
     if (dialog->ShowModal() == wxID_OK) {
       ShImage img;
       img.loadPng(dialog->GetPath().c_str());
-      m_node->memory(img.memory());
+      m_node->memory(img.memory(), 0);
       if (m_node->dims() == SH_TEXTURE_1D) {
         m_node->setTexSize(img.width() * img.height());
       } else {

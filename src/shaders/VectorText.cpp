@@ -131,7 +131,8 @@ bool VectorText::init()
   int elements = 4;
 
   // textures for line segment endpoints
-  ShUnclamped< ShArrayRect<ShAttrib4f> > ftexture[edges];
+  // ShUnclamped< ShArrayRect<ShAttrib4f> > ftexture[edges];
+  ShArrayRect<ShAttrib4f> ftexture[edges];
   for(int i=0; i<edges; i++) {
 	  ftexture[i].size(width, height);
     ftexture[i].memory(glyph.memory(i));
@@ -182,7 +183,8 @@ bool VectorText::init()
   int elements = 4;
 
   // textures for line segment endpoints
-  ShUnclamped< ShArrayRect<ShAttrib4f> > ftexture(width, height);
+  // ShUnclamped< ShArrayRect<ShAttrib4f> > ftexture(width, height);
+  ShArrayRect<ShAttrib4f> ftexture(width, height);
   ftexture.memory(glyph.memory(0));
 
   //debug info
@@ -229,8 +231,10 @@ bool VectorText::init()
   int elements = 4;
 
   // textures for line segment endpoints
-  ShUnclamped< ShArrayRect<ShAttrib4f> > ftexture(width, height);
-  ShUnclamped< ShArrayRect<ShAttrib1f> > flag(width, height);
+  // ShUnclamped< ShArrayRect<ShAttrib4f> > ftexture(width, height);
+  // ShUnclamped< ShArrayRect<ShAttrib1f> > flag(width, height);
+  ShArrayRect<ShAttrib4f> ftexture(width, height);
+  ShArrayRect<ShAttrib1f> flag(width, height);
   ftexture.memory(glyph.memory(0));
   flag.memory(glyph.memory(1));
 

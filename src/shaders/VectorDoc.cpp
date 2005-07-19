@@ -44,10 +44,16 @@ public:
 
   bool init();
   ShAttrib4f sprite_dist(
+	/*
   	const ShUnclamped< ShArrayRect<ShAttrib4f> >& ftexture,
   	const ShUnclamped< ShArrayRect<ShAttrib1f> >& flag,
   	const ShUnclamped< ShArrayRect<ShAttrib4f> >& sprite1,
   	const ShUnclamped< ShArrayRect<ShAttrib4f> >& sprite2,
+	*/
+  	const ShArrayRect<ShAttrib4f> & ftexture,
+  	const ShArrayRect<ShAttrib1f> & flag,
+  	const ShArrayRect<ShAttrib4f> & sprite1,
+  	const ShArrayRect<ShAttrib4f> & sprite2,
         ShAttrib2f x,
         ShAttrib2f fx
   );
@@ -133,10 +139,16 @@ VectorDoc::~VectorDoc()
 
 ShAttrib4f
 VectorDoc::sprite_dist (
+    /*
     const ShUnclamped< ShArrayRect<ShAttrib4f> >& ftexture,
     const ShUnclamped< ShArrayRect<ShAttrib1f> >& flag,
     const ShUnclamped< ShArrayRect<ShAttrib4f> >& sprite1,
     const ShUnclamped< ShArrayRect<ShAttrib4f> >& sprite2,
+    */
+    const ShArrayRect<ShAttrib4f> & ftexture,
+    const ShArrayRect<ShAttrib1f> & flag,
+    const ShArrayRect<ShAttrib4f> & sprite1,
+    const ShArrayRect<ShAttrib4f> & sprite2,
     ShAttrib2f x,  // texture coordinates
     ShAttrib2f fx  // where to get sprite info
 ) {
@@ -192,12 +204,20 @@ bool VectorDoc::init()
   std::cerr << glyphcount << std::endl;
 
   // textures for line segment endpoints and flags
+  /*
   ShUnclamped< ShArrayRect<ShAttrib4f> > ftexture(width, height);
   ShUnclamped< ShArrayRect<ShAttrib1f> > flag(width, height);
+  */
+  ShArrayRect<ShAttrib4f> ftexture(width, height);
+  ShArrayRect<ShAttrib1f> flag(width, height);
 
   // textures for sprites
+  /*
   ShUnclamped< ShArrayRect<ShAttrib4f> > sprite1(psize, psize);
   ShUnclamped< ShArrayRect<ShAttrib4f> > sprite2(psize, psize);
+  */
+  ShArrayRect<ShAttrib4f> sprite1(psize, psize);
+  ShArrayRect<ShAttrib4f> sprite2(psize, psize);
 
   ftexture.memory(font.memory(1));
   flag.memory(font.memory(2));
