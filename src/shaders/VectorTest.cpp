@@ -164,7 +164,7 @@ bool VectorTest::init()
   for (int i=0; i<N; i++) {
     L[i](2,3) = L[i](2,3) - L[i](0,1);
   }
-  *//
+  */
 
   fsh = SH_BEGIN_FRAGMENT_PROGRAM {
     ShInputTexCoord2f tc;
