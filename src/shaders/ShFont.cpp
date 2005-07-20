@@ -135,9 +135,9 @@ void ShFont::loadFont(const std::string& filename)
 
 			// buffer for edge coordinates and edge number
 			m_memory = new ShHostMemoryPtr[5];
-			m_memory[0] = new ShHostMemory(sizeof(int) * m_glyphcount * 11, SH_FLOAT);
+			m_memory[0] = new ShHostMemory(sizeof(int) * m_glyphcount * 11, SH_INT);
 			m_memory[1] = new ShHostMemory(sizeof(float) * m_width * m_height * m_elements, SH_FLOAT);
-			m_memory[2] = new ShHostMemory(sizeof(int) * m_width * m_height, SH_FLOAT);
+			m_memory[2] = new ShHostMemory(sizeof(int) * m_width * m_height, SH_INT);
 
 			int len = 11 * m_glyphcount;
 			int temp;
@@ -153,15 +153,15 @@ void ShFont::loadFont(const std::string& filename)
 
 					// put glyph and its horizontal advance
 					// into a map. will be used in function texture
-					if(k==0) gly = temp;
-					if(k==1) gw = temp;
-					if(k==2) gh = temp;
-					if(k==3) hadv = temp;
-					if(k==5) ymin = temp;
-					if(k==6) wino = temp;
-					if(k==7) hino = temp;
-					if(k==9) ox = temp;
-					if(k==10) oy = temp;
+					if(k==0) gly = temp;    // the glyph index number
+					if(k==1) gw = temp;     // the width of the glyph
+					if(k==2) gh = temp;     // the height of the glyph
+					if(k==3) hadv = temp;   // the horizontal advance
+					if(k==5) ymin = temp;   // the min y value of the glyph
+					if(k==6) wino = temp;   // the glyph width in the octree texture
+					if(k==7) hino = temp;   // the glyph height in the octree texture
+					if(k==9) ox = temp;     // the glyph x offset in the octree texture
+					if(k==10) oy = temp;    // the glyph y offset in the octree texture
 
 					if(hadv < m_minhadvance) m_minhadvance = hadv;
 				}
@@ -223,11 +223,11 @@ void ShFont::loadFont(const std::string& filename)
 
 	// input sprite 
 
-	int num = 256;
+	int num = 256;             // total num of small grids
 	//int num = 128;
 	m_psize = num;
-	m_split = 16;
-	m_gridsize = num/m_split;
+	m_split = 16;              // num of small grids in each big grid
+	m_gridsize = num/m_split;  // num of big grids
 
 	int len = num * num;
 	float * sp = new float[len * 3];
@@ -236,7 +236,7 @@ void ShFont::loadFont(const std::string& filename)
 
 	// for sprite
 	m_memory[3] = new ShHostMemory(sizeof(float) * len * 4, SH_FLOAT);
-	m_memory[4] = new ShHostMemory(sizeof(int) * len * 4, SH_FLOAT);
+	m_memory[4] = new ShHostMemory(sizeof(int) * len * 4, SH_INT);
 
 	for(int i=0; i<len*4; i++) {
 		coords(3)[i] = 0;
@@ -334,27 +334,35 @@ bool ShFont:: getflag(float sx,
 // small grids
 
 void ShFont::renderline(int gnum, int * str, float mg, float ng, float * sp) {
+
 	// x, y are the starting pos from 0-1
-	float x = mg/m_gridsize;
+	// if coordinate of the whole area that is to be covered by the texture is from 0-1,
+	// x and y are the start coordinates (from 0-1) of the string
+	
+	float x = mg/m_gridsize;   // m_gridsize: num of big grids
 	float y = ng/m_gridsize;
 	float xx, yy;
 	int mm, nn;
 
+	// for each glyph
 	for(int g=0; g<gnum; g++) {
 
-		int curr = str[g];  // current glyph
-		int next;           // next glyph
-		int gw = gwidthMap[curr];
-		int gh = gheightMap[curr];
-		int ymin = yminMap[curr];
-		int ox = offsetx[curr];
-		int oy = offsety[curr];
-		int ow = winoctree[curr];
-		int oh = hinoctree[curr];
+		int curr = str[g];             // current glyph
+		int next;                      // next glyph
+		int gw = gwidthMap[curr];      // width of the glyph
+		int gh = gheightMap[curr];     // height of the glyph
+		int ymin = yminMap[curr];      // the min y value of the glyph
+		int ox = offsetx[curr];        // the glyph offset in x direction in the octree texture
+		int oy = offsety[curr];        // the glyph offset in y direction in the octree texture
+		int ow = winoctree[curr];      // the glyph width in the octree texture
+		int oh = hinoctree[curr];      // the glyph height in the octree texture
 
-		float yshift = ymin - gh * MARGINRATIO;
+		// suppose there is a baseline, yshift is how much the glyph should be
+		// below/above the base line, yy is the y coord where glyph starts.
+		float yshift = ymin - gh * MARGINRATIO;    // remove the margin on the bottom
 	
-		yy = y + 1.0/m_gridsize * yshift / (m_maxgheight * (1 + MARGINRATIO * 2));
+		//yy = y + 1.0/m_gridsize * yshift / (m_maxgheight * (1 + MARGINRATIO * 2));
+		yy = y - 1.0/m_gridsize * (gh * MARGINRATIO - ymin) / (m_maxgheight * (1 + MARGINRATIO * 2));
 		nn = (int)(yy * m_psize);
 
 		xx = x - 1.0/m_gridsize * gw * MARGINRATIO / (m_maxgheight * (1 + MARGINRATIO * 2));
