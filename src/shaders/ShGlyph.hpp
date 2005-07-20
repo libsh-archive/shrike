@@ -29,11 +29,6 @@
 
 #include <string>
 #include <sh/sh.hpp>
-/*
-#include "sh/ShDllExport.hpp"
-#include "ShRefCount.hpp"
-#include "ShMemory.hpp"
-*/
 
 using namespace SH;
 //using namespace ShUtil;

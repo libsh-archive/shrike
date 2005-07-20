@@ -139,12 +139,6 @@ VectorDoc::~VectorDoc()
 
 ShAttrib4f
 VectorDoc::sprite_dist (
-    /*
-    const ShUnclamped< ShArrayRect<ShAttrib4f> >& ftexture,
-    const ShUnclamped< ShArrayRect<ShAttrib1f> >& flag,
-    const ShUnclamped< ShArrayRect<ShAttrib4f> >& sprite1,
-    const ShUnclamped< ShArrayRect<ShAttrib4f> >& sprite2,
-    */
     const ShArrayRect<ShAttrib4f> & ftexture,
     const ShArrayRect<ShAttrib1f> & flag,
     const ShArrayRect<ShAttrib4f> & sprite1,
@@ -189,7 +183,7 @@ bool VectorDoc::init()
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
-  font.loadFont("/home/zqin/vectortexture/freetype/font.txt");
+  font.loadFont("font.txt");
 
   glyphcount = font.glyphcount();
   width = font.width();

@@ -31,15 +31,11 @@
 #include <sh/sh.hpp>
 #include <map>
 
-/*
-#include "sh/ShDllExport.hpp"
-#include "ShRefCount.hpp"
-#include "ShMemory.hpp"
-*/
-
 using namespace SH;
 //using namespace ShUtil;
 
+// operation for comparing pairs
+// it is used in map that has elements composed of two components
 class Kernpair {
 	public:
 		Kernpair(int a, int b):p(a,b) { }
@@ -81,7 +77,7 @@ public:
                          ///the image
   int psize() const;     ///< Determine the size of the picture user wants
   int gridsize() const;     ///< Determine the size of the grid
-  int maxgwidth() const; ///< Determine the max height of all glyphs
+  int maxgwidth() const; ///< Determine the max width of all glyphs
   int maxgheight() const; ///< Determine the max height of all glyphs
   int minhadvance() const; ///< Determine the min horizontal advance
   void ShFont::loadFont(const std::string&);

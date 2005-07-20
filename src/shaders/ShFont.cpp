@@ -38,11 +38,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-/*
-#include "ShException.hpp"
-#include "ShError.hpp"
-#include "ShDebug.hpp"
-*/
 #define BUFFERSIZE 256
 #define PACK4
 #define MARGINRATIO 0.1

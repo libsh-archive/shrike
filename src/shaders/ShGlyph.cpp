@@ -105,15 +105,17 @@ void ShGlyph::loadGlyph(const std::string& filename)
 		ifile = open(filename.c_str(), O_RDONLY);
 
 		if(ifile > 0 ) {
-			read(ifile, &m_width, sizeof(int));
-			read(ifile, &m_height, sizeof(int));
-			read(ifile, &m_edges, sizeof(int));
+			// read in glyph info
+			read(ifile, &m_width, sizeof(int));   // width of glyph
+			read(ifile, &m_height, sizeof(int));  // width of height
+			read(ifile, &m_edges, sizeof(int));   // decide how may textures we need
+
 			read(ifile, &m_halfx, sizeof(float));
 			read(ifile, &m_halfy, sizeof(float));
 			std::cout << m_width << " " << m_height << " " << m_edges << " ";
 			std::cout << m_halfx << " " << m_halfy << std::endl;
 
-			m_elements = 4;
+			m_elements = 4;                       // number of max edges in each cell
 
 			// buffer for edge coordinates and edge number
 			m_memory = new ShHostMemoryPtr[m_edges];
@@ -195,12 +197,12 @@ void ShGlyph::loadGlyph(const std::string& filename)
 
 		if(ifile > 0 ) {
 		  std::cerr << "opened ok" << std::endl; // xxx
-			read(ifile, &m_width, sizeof(int));
-			read(ifile, &m_height, sizeof(int));
-			read(ifile, &m_edges, sizeof(int));
+			read(ifile, &m_width, sizeof(int));   // width of the glyph
+			read(ifile, &m_height, sizeof(int));  // height of the glyph
+			read(ifile, &m_edges, sizeof(int));   // edges (?) of the glyph
 			std::cout << m_width << " " << m_height << " " << m_edges << std::endl;
 
-			m_elements = 4;
+			m_elements = 4;                       // max number of edges in a cell
 
 			// buffer for edge coordinates and edge number
 			m_memory = new ShHostMemoryPtr[2];
