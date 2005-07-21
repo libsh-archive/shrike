@@ -49,8 +49,8 @@ ShFont::ShFont()
     m_height(0), 
     m_elements(0), 
     m_memory(0),
-    m_psize(0),
-    m_gridsize(0),
+    m_smallgrid(0),
+    m_biggrid(0),
     m_split(2)
 {
 }
@@ -82,12 +82,12 @@ int ShFont::elements() const
 
 int ShFont::psize() const
 {
-  return m_psize;
+  return m_smallgrid;
 }
 
 int ShFont::gridsize() const
 {
-  return m_gridsize;
+  return m_biggrid;
 }
 
 int ShFont::maxgheight() const
@@ -105,79 +105,105 @@ int ShFont::minhadvance() const
   return m_minhadvance;
 }
 
+// =============================================================
+// function: load the font from the file
+//
+// in this file, we read in info by steps
+// 1: info about the whole font octree texture: width, height, etc
+// 2: info about each glyph, including 11 items
+//
+// filename: the file where the font is stored
+// =============================================================
 void ShFont::loadFont(const std::string& filename)
 {
-	try {
-		m_memory = 0;
+  try {
+    m_memory = 0;
 
-		int ifile;
-		float coord;
-		int flag;
+    int ifile;
+    float coord;
+    int flag;
 
-		std::cerr << "openning the file " << filename.c_str() << std::endl; // xxx
-		ifile = open(filename.c_str(), O_RDONLY);
+    std::cerr << "openning the file " << filename.c_str() << std::endl; // xxx
+    ifile = open(filename.c_str(), O_RDONLY);
 
-		if(ifile > 0 ) {
-		  	std::cerr << "file opened" << std::endl; // xxx
+    // if the file is opened successfully, read font info
+    if(ifile > 0 ) {
+      std::cerr << "file opened" << std::endl;
 
-			read(ifile, &m_glyphcount, sizeof(int));
-			read(ifile, &m_width, sizeof(int));
-			read(ifile, &m_maxgwidth, sizeof(int));
-			read(ifile, &m_maxgheight, sizeof(int));
-			m_height = m_width;  // cause the texture is always a square
+      // FIRST, read in info about the whole font
+      // m_glyphcount: num of glyphs in the font 
+      // m_width:      width of the octree texture 
+      // m_height:     assume the octree texture is square  
+      // m_maxgwidth:  max width of the glyph, not used 
+      // m_maxheight:  max height of the glyph
 
-			std::cout << m_glyphcount << " ";
-			std::cout << m_width << " " << m_height << " " ;
-			std::cout << m_maxgwidth << " ";
-			std::cout << m_maxgheight << std::endl;
+      read(ifile, &m_glyphcount, sizeof(int));
+      read(ifile, &m_width, sizeof(int));     
+      m_height = m_width;                     
+      read(ifile, &m_maxgwidth, sizeof(int));
+      read(ifile, &m_maxgheight, sizeof(int));
 
-			m_elements = 4;
+      // debug info
+      std::cout << m_glyphcount << " ";
+      std::cout << m_width << " " << m_height << " " ;
+      std::cout << m_maxgwidth << " ";
+      std::cout << m_maxgheight << std::endl;
 
-			// buffer for edge coordinates and edge number
-			m_memory = new ShHostMemoryPtr[5];
-			m_memory[0] = new ShHostMemory(sizeof(int) * m_glyphcount * 11, SH_INT);
-			m_memory[1] = new ShHostMemory(sizeof(float) * m_width * m_height * m_elements, SH_FLOAT);
-			m_memory[2] = new ShHostMemory(sizeof(int) * m_width * m_height, SH_INT);
+      // m_elements indicate max num of edges in each cell
+      m_elements = 4;
 
-			int len = 11 * m_glyphcount;
-			int temp;
+      // buffer for edge coordinates and edge number
+      m_memory = new ShHostMemoryPtr[5];
+      // memory[0]: info about each glyph, such as width, height, etc.
+      m_memory[0] = new ShHostMemory(sizeof(int) * m_glyphcount * 11, SH_INT);
+      // memory[1]: edge info
+      m_memory[1] = new ShHostMemory(sizeof(float) * m_width * m_height * m_elements, SH_FLOAT);
+      // memory[2]: flag if a grid is totally inside or outside of glyph
+      m_memory[2] = new ShHostMemory(sizeof(int) * m_width * m_height, SH_INT);
 
-			int gly=0, hadv=0, ymin=0, gw=0, gh=0, ox=0, oy=0, wino=0, hino=0;
-			m_minhadvance = m_maxgwidth;
+      // SECOND, read in info about each glyph
+      // each glyph has 11 info
+      int len = 11 * m_glyphcount;
+      int temp;
 
-			for(int n=0; n<m_glyphcount; n++) {
-				for(int k=0; k<11; k++) {
-					read(ifile, &temp, sizeof(int));
-					std::cerr << temp << " " ;
-					coords(0)[n*11+k] = temp;
+      int gly=0, hadv=0, ymin=0, gw=0, gh=0, ox=0, oy=0, wino=0, hino=0;
+      m_minhadvance = m_maxgwidth;
 
-					// put glyph and its horizontal advance
-					// into a map. will be used in function texture
-					if(k==0) gly = temp;    // the glyph index number
-					if(k==1) gw = temp;     // the width of the glyph
-					if(k==2) gh = temp;     // the height of the glyph
-					if(k==3) hadv = temp;   // the horizontal advance
-					if(k==5) ymin = temp;   // the min y value of the glyph
-					if(k==6) wino = temp;   // the glyph width in the octree texture
-					if(k==7) hino = temp;   // the glyph height in the octree texture
-					if(k==9) ox = temp;     // the glyph x offset in the octree texture
-					if(k==10) oy = temp;    // the glyph y offset in the octree texture
+      for(int n=0; n<m_glyphcount; n++) {
+        for(int k=0; k<11; k++) {
 
-					if(hadv < m_minhadvance) m_minhadvance = hadv;
-				}
-				hadvanceMap[gly] = hadv;
-				gwidthMap[gly] = gw;
-				gheightMap[gly] = gh;
-				yminMap[gly] = ymin;
-				// these maps are for kernning
-				offsetx[gly] = ox;
-				offsety[gly] = oy;
-				winoctree[gly] = wino;
-				hinoctree[gly] = hino;
+          read(ifile, &temp, sizeof(int));
+          std::cerr << temp << " " ;
+	  // coords(0) returns pointer to memory(0)
+          coords(0)[n*11+k] = temp;
 
-			}
+          // put glyph and its horizontal advance
+          // into a map. will be used in function texture
+          if(k==0) gly = temp;    // the glyph index number
+          if(k==1) gw = temp;     // the width of the glyph
+          if(k==2) gh = temp;     // the height of the glyph
+          if(k==3) hadv = temp;   // the horizontal advance
+          if(k==5) ymin = temp;   // the min y value of the glyph
+          if(k==6) wino = temp;   // the glyph width in the octree texture
+          if(k==7) hino = temp;   // the glyph height in the octree texture
+          if(k==9) ox = temp;     // the glyph x offset in the octree texture
+          if(k==10) oy = temp;    // the glyph y offset in the octree texture
+
+          if(hadv < m_minhadvance) m_minhadvance = hadv;
+        }
+        hadvanceMap[gly] = hadv;
+        gwidthMap[gly] = gw;
+        gheightMap[gly] = gh;
+        yminMap[gly] = ymin;
+        // these maps are for kernning
+        offsetx[gly] = ox;
+        offsety[gly] = oy;
+        winoctree[gly] = wino;
+        hinoctree[gly] = hino;
+
+      }
 		
-			std::cerr << std::endl;
+      std::cerr << std::endl;
 
 			len = m_width * m_height * m_elements;
 
@@ -224,10 +250,9 @@ void ShFont::loadFont(const std::string& filename)
 	// input sprite 
 
 	int num = 256;             // total num of small grids
-	//int num = 128;
-	m_psize = num;
+	m_smallgrid = num;
 	m_split = 16;              // num of small grids in each big grid
-	m_gridsize = num/m_split;  // num of big grids
+	m_biggrid = num/m_split;   // num of big grids
 
 	int len = num * num;
 	float * sp = new float[len * 3];
@@ -285,6 +310,28 @@ void ShFont::loadFont(const std::string& filename)
 	*/
 }
 
+// =============================================================
+// function: this function should be changed in a while
+// find out if a small cell occupied by a glyph is actually empty
+// so that the next glyph can put its strokes there
+// it is not looking in the whole glyph. Each glyph is separated
+// into m_split*m_split small cells, it is looking for emptiness
+// in each small cell.
+// 
+// sx: x starts pos of the small glyph cell
+// sy: y starts pos of the small glyph cell
+// ex: x end pos of the small glyph cell
+// ey: y end pos of the small glyph cell
+// gw: real width of the glyph
+// gh: real height of the glyph
+// ox: x offset of the glyph in the octree texture
+// oy: y offset of the glyph in the octree texture
+// ow: width of the glyph in the octree texture
+// oh: height of the glyph in the octree texture
+//
+// return: 1: the cell is not empty; 0: the cell is empty
+// =============================================================
+
 bool ShFont:: getflag(float sx, 
 		     float sy, 
 		     float ex, 
@@ -296,134 +343,221 @@ bool ShFont:: getflag(float sx,
 		     int ow, 
 		     int oh) {
 
-	sx *= (float)m_maxgheight / (float)gw;
-	sy *= (float)m_maxgheight / (float)gh;
-	ex *= (float)m_maxgheight / (float)gw;
-	ey *= (float)m_maxgheight / (float)gh;
+  // the glyph needs to be converted from the real texture domain 
+  // into octree texture domain where the glyph info is stored.
+	
+  // m_maxheight/gw(gh) is the ratio of the glyph to the max height.
+  // using maxheight as a standard, the glyph can be shorter or 
+  // narrower or wider than it.  With the ratio, the glyph can be mapped 
+  // from  the real glyph size to its corresponding storage square in the 
+  // octree texture.
+  // for example, suppose we have a glyph that is shorter than the max height,
+  // then the glyph only uses a small part in a big grid(by default, we 
+  // always assume each glyph takes a whole big grid). And this ratio is
+  // how many percent is used by the smaller glyph.
 
-	int xstart = ox + (int)(sx*ow);
-	int ystart = oy + (int)(sy*oh);
-	int xend = ox + (int)std::ceil(ex*ow);
-	int yend = oy + (int)std::ceil(ey*oh);
+  // sx, sy, ex, ey are the converting ratio for start and end positons
+  // sx: the cell's x starting percentage in terms of the glyph's real width
+  // sy: the cell's y starting percentage in terms of the glyph's real height
+  // ex: the cell's x ending percentage in terms of the glyph's real width
+  // ey: the cell's y ending percentage in terms of the glyph's real height
+  sx *= (float)m_maxgheight / (float)gw;
+  sy *= (float)m_maxgheight / (float)gh;
+  ex *= (float)m_maxgheight / (float)gw;
+  ey *= (float)m_maxgheight / (float)gh;
 
-	int flag = 0;
-	for(int k = ystart; k<=yend; k++) {
-		for(int l = xstart; l<=xend; l++) {
+  // xstart: x starting pixel of the glyph in the octree texture.
+  // ystart: y starting pxiel of the glyph in the octree texture.
+  // xend:   x ending pixel of the glyph in the octree texture.
+  // yend:   y ending pixel of the glyph in the octree texture.
+  // to be conservative, we get floor for start pixel, and ceiling
+  // for end pixel.
 
-			int xlimit = ox + ow;
-			int ylimit = oy + oh;
+  int xstart = ox + (int)(sx*ow);  // this actually get the x floor int
+  int ystart = oy + (int)(sy*oh);  // this actually get the y floor int
+  int xend = ox + (int)std::ceil(ex*ow);  // this get the x ceiling int
+  int yend = oy + (int)std::ceil(ey*oh);  // this get the y ceiling int
 
-			if( k<ylimit && l<xlimit) {
-				int index = k * m_width + l;
-				if(coords(2)[index] != 1) {
-					flag = 1;
-					break;
-				}
-			}
-		}
-		if(flag) break;
-	}
-	return flag;
+  // once we have the starting and end pixels in the octree texture,
+  // we can search in the reactangle and find if the cell is empty.
+  int flag = 0;
+  for(int k = ystart; k<=yend; k++) {
+    for(int l = xstart; l<=xend; l++) {
+
+      int xlimit = ox + ow;
+      int ylimit = oy + oh;
+
+      // check only within the glyph's area
+      // make sure not to search its neighbours.
+      if( k<ylimit && l<xlimit) {
+        // m_width: the width of the octree texture
+        int index = k * m_width + l;
+        // coords(2) stores the flags
+        if(coords(2)[index] != 1) {
+          flag = 1;
+          break;
+        }
+      }
+    }
+  if(flag) break;
+  }
+  return flag;
 }
 
+// =============================================================
+// function: render a string of characters in one row
+//
 // gnum : number of glyphs in a line
 // str:   string of glyphs
 // mg:    starting x pos of glyph string in number of big grid
 // ng:    starting y pos of glyph string in number of big grid
-// one big grid is a container for one glyph, it may have mutliple
-// small grids
+//
+// by default, one big grid is a container for one glyph, it may 
+// have mutliple small grids. First, we assume all glyph takes
+// the whole big grid, then we will adjust this according to 
+// the glyph's real height and width.
+// =============================================================
 
 void ShFont::renderline(int gnum, int * str, float mg, float ng, float * sp) {
 
-	// x, y are the starting pos from 0-1
-	// if coordinate of the whole area that is to be covered by the texture is from 0-1,
-	// x and y are the start coordinates (from 0-1) of the string
+  // if coordinate of the whole area that is to be covered by 
+  // the texture is from 0-1, x and y are the exact starting 
+  // coordinates (from 0-1) of the string. It does take into 
+  // accout of the margin. 
 	
-	float x = mg/m_gridsize;   // m_gridsize: num of big grids
-	float y = ng/m_gridsize;
-	float xx, yy;
-	int mm, nn;
+  float x = mg/m_biggrid;   // m_biggrid: num of big grids
+  float y = ng/m_biggrid;
+  float xx, yy;
+  int mm, nn;
 
-	// for each glyph
-	for(int g=0; g<gnum; g++) {
+  // for each glyph
+  for(int g=0; g<gnum; g++) {
 
-		int curr = str[g];             // current glyph
-		int next;                      // next glyph
-		int gw = gwidthMap[curr];      // width of the glyph
-		int gh = gheightMap[curr];     // height of the glyph
-		int ymin = yminMap[curr];      // the min y value of the glyph
-		int ox = offsetx[curr];        // the glyph offset in x direction in the octree texture
-		int oy = offsety[curr];        // the glyph offset in y direction in the octree texture
-		int ow = winoctree[curr];      // the glyph width in the octree texture
-		int oh = hinoctree[curr];      // the glyph height in the octree texture
+    int curr = str[g];             // current glyph
+    int next;                      // next glyph
+    int gw = gwidthMap[curr];      // width of the glyph
+    int gh = gheightMap[curr];     // height of the glyph
+    int ymin = yminMap[curr];      // the min y value of the glyph, can be negative
+    int ox = offsetx[curr];        // the glyph x offset in the octree texture
+    int oy = offsety[curr];        // the glyph y offset in the octree texture
+    int ow = winoctree[curr];      // the glyph width in the octree texture
+    int oh = hinoctree[curr];      // the glyph height in the octree texture
 
-		// suppose there is a baseline, yshift is how much the glyph should be
-		// below/above the base line, yy is the y coord where glyph starts.
-		float yshift = ymin - gh * MARGINRATIO;    // remove the margin on the bottom
+    // suppose there is a baseline, yshift is how much the glyph should be
+    // below/above the base line, yy is the y coord where glyph starts.
+    float yshift = ymin - gh * MARGINRATIO;    // remove the margin on the bottom
 	
-		//yy = y + 1.0/m_gridsize * yshift / (m_maxgheight * (1 + MARGINRATIO * 2));
-		yy = y - 1.0/m_gridsize * (gh * MARGINRATIO - ymin) / (m_maxgheight * (1 + MARGINRATIO * 2));
-		nn = (int)(yy * m_psize);
+    // xx and yy are the actually starting pos of the glyph after taking
+    // into account of the margin. 
+    // yy similar to in xx, refer to following explanation for xx and mm
+    // margin move the glyph up, and min y(if negative) move the glyph down
+    // y axis goes from below to above
+    // so for margin, we need to deduct it; for ymin, we need to add it
+    // because if it is below baseline, ymin is negative already, and vice versa
+    // suppose the highest glyph+2margin occupy the whole big grid
 
-		xx = x - 1.0/m_gridsize * gw * MARGINRATIO / (m_maxgheight * (1 + MARGINRATIO * 2));
-		mm = (int)(xx * m_psize);
+    // yy: y coordinate of 0-1 where glyph starts from exactly
+    // nn: the num of small grid that the glyph starts from in y axis
+    yy = y + 1.0/m_biggrid * yshift / (m_maxgheight * (1 + MARGINRATIO * 2));
+    nn = (int)(yy * m_smallgrid);
 
-		float sx = 0, sy = 0, ex, ey;
+    // 1.0/m_biggrid is how many percent each big grid occupies 
+    // this removes the MARGINRATION part from the glyph
+    // the wider the glyph, the bigger the margin
+    // divided by the maxheight+2Margin is also a percentage thing
+    // maybe divided by other constant is ok too, as long as it is constant
+    // m_smallgrid is the total number of small grids
+		
+    // xx: x coordinate of 0-1 where glyph starts from exactly
+    // mm: the num of small grid that the glyph starts from in x axis
+    xx = x - 1.0/m_biggrid * gw * MARGINRATIO / (m_maxgheight * (1 + MARGINRATIO * 2));
+    mm = (int)(xx * m_smallgrid);
 
-		std::cout << "gw " << gw << " m_maxgheight " << m_maxgheight << std::endl;
+    // sx, sy: the starting percentage of the small grid in terms of the big grid
+    // ex, ey: the ending percentage of the small grid in terms of the big grid
+    float sx = 0, sy = 0, ex, ey;
 
-		// fill in one glyph
-		for(int i=nn; i<=nn+m_split; i++) {
+    std::cout << "gw " << gw << " m_maxgheight " << m_maxgheight << std::endl;
 
-			ey = (((float)i + 1.0)/m_psize - yy) * m_gridsize;
+    // m_split: num of small grids in one big grid
+    // m_biggrid: num of big grids
+    // fill in the rectangle the glyph is going to have
+    // in y direction, there are m_split small grids
+    // in x direction, there are mend small grids
+    // vertically, no glyph can exceed the m_split
+    // horizontaly, some glyphs are wider than the biggest height
+    for(int i=nn; i<=nn+m_split; i++) {
 
-			sx = 0;
+      // end y percentage of each small cell in the big grid
+      // since the end percentage is the beginning of the next
+      // small cell, that is why we need "+1.0"
+      // after -yy, we got the percentage of the end pos in the
+      // whole area. "*m_biggrid makes it percentage in one big
+      // grid. 
+      ey = (((float)i + 1.0)/m_smallgrid - yy) * m_biggrid;
 
-			int mend = (int)((xx + (float)gw / (m_maxgheight * m_gridsize)) * m_psize);
-			std::cout << "mend " << mend << std::endl;
+      // starting percentage of each small cell in the glyph
+      // sy is initialized out of the loop, cause it is constant 
+      // in each row.
+      // since s
+      sx = 0;
+
+      // since the glyph may be wider than the biggest height
+      // we need to recalculate the real num of small grids a glyph
+      // need horizontally. mend is where the small grids end.
+      int mend = (int)((xx + (float)gw / (m_maxgheight * m_biggrid)) * m_smallgrid);
+      std::cout << "mend " << mend << std::endl;
 			
-			for(int j=mm; j<mend; j++) {
+      for(int j=mm; j<mend; j++) {
 
-				ex = (((float)j + 1)/m_psize - xx) * m_gridsize;
+	// percentage where a small cell ends in the big grid
+	ex = (((float)j + 1)/m_smallgrid - xx) * m_biggrid;
 
 
-				bool flag = getflag(sx, sy, ex, ey, gw, gh, ox, oy, ow, oh);
+	// check if this small grid is empty
+	// this function should be changed
+	// and use the distance instead
+	bool flag = getflag(sx, sy, ex, ey, gw, gh, ox, oy, ow, oh);
 
-				if(flag) {
-					sp[(i*m_psize+j)*3] = curr;
-					sp[(i*m_psize+j)*3+1] = xx;
-					sp[(i*m_psize+j)*3+2] = yy;
-				}
-
-				sx = ex;
-			}
-
-			sy = ey;
-		}
-
-		// get the kerning info between current glyph and the next
-		if(g<gnum-1)
-			next = str[g+1];
-		else next = 0;
-
-		int kernvalue = kmap[ Kernpair(curr, next) ];
-
-		// get the advance in x without kerning
-		int adv;
-		if(curr == int(' ')) adv = m_maxgheight/4;
-		else adv = hadvanceMap[curr] + kernvalue;  // advance + kerning info
-
-		// move x forward, keep y unchanged for now
-		float ratio = (float)adv / (m_maxgheight * (1 + MARGINRATIO * 2));
-
-		// 0.02 is an offset such that the glyphs wont touch each other
-		x += 1.0/m_gridsize * ratio + 0.001;
+	// if the small grid is not empty, put in info of the current 
+	// glyph. Otherwise, leave it blank.
+	if(flag) {
+          sp[(i*m_smallgrid+j)*3] = curr;
+	  sp[(i*m_smallgrid+j)*3+1] = xx;
+	  sp[(i*m_smallgrid+j)*3+2] = yy;
 	}
+
+      sx = ex;
+      }
+
+      sy = ey;
+    }
+
+    // get the kerning info between current glyph and the next
+    if(g<gnum-1)
+      next = str[g+1];
+    else next = 0;
+
+    int kernvalue = kmap[ Kernpair(curr, next) ];
+
+    // get the advance in x without kerning
+    int adv;
+    if(curr == int(' ')) adv = m_maxgheight/4;
+    else adv = hadvanceMap[curr] + kernvalue;  // advance + kerning info
+
+    // move x forward, keep y unchanged for now
+    // since we are using the maxhieght+2magines as the consistent 
+    // denominator, we might as well use it here.
+    float ratio = (float)adv / (m_maxgheight * (1 + MARGINRATIO * 2));
+
+    // 0.02 is an offset such that the glyphs wont touch each other
+    x += 1.0/m_biggrid * ratio + 0.001;
+  }
 }
 
 void ShFont::texture(int num, float *sp) {
 
-	int *array = new int[m_psize];
+	int *array = new int[m_smallgrid];
 	/*
 
 	array[0] = int('P');
@@ -500,7 +634,7 @@ void ShFont::texture(int num, float *sp) {
 	array[15] = int('p');
 	array[16] = int('r');
 	array[17] = int('e');
-	array[18] = int('s');
+	array[18] = int('s');in y direction 
 	array[19] = int('e');
 	array[20] = int('n');
 	array[21] = int('t');
@@ -524,7 +658,7 @@ void ShFont::texture(int num, float *sp) {
 	array[6] = int('l');
 	array[7] = int('y');
 	array[8] = int('p');
-	array[9] = int('h');
+	array[9] = int('h');in y direction 
 	array[10] = int('s');
 	array[11] = int(' ');
 	array[12] = int('s');
@@ -554,7 +688,7 @@ void ShFont::texture(int num, float *sp) {
 	array[0] = int('s');
 	array[1] = int('c');
 	array[2] = int('a');
-	array[3] = int('l');
+	array[3] = int('l');in y direction 
 	array[4] = int('a');
 	array[5] = int('b');
 	array[6] = int('l');
@@ -639,7 +773,7 @@ void ShFont::texture(int num, float *sp) {
 	array[16] = int('s');
 	array[17] = int('t');
 	array[18] = int('r');
-	array[19] = int('u');
+	array[19] = int('u');in y direction 
 	array[20] = int('c');
 	array[21] = int('t');
 	array[22] = int('e');
@@ -849,7 +983,7 @@ const float* ShFont::coords(int i) const
 }
 
 float* ShFont::coords(int i)
-{
+{in y direction 
   if (!m_memory) return 0;
   return reinterpret_cast<float*>(m_memory[i]->hostStorage()->data());
 }
@@ -862,4 +996,4 @@ ShMemoryPtr ShFont::memory(int i)
 ShPointer<const ShMemory> ShFont::memory(int i) const
 {
   return m_memory[i];
-}
+}in y direction 

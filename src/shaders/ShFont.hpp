@@ -92,8 +92,8 @@ private:
   int m_glyphcount;
   int m_width, m_height;
   int m_elements;
-  int m_psize;
-  int m_gridsize;
+  int m_smallgrid;
+  int m_biggrid;
   int m_maxgwidth;
   int m_maxgheight;
   int m_minhadvance;
