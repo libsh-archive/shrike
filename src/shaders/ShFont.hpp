@@ -75,12 +75,12 @@ public:
   int height() const; ///< Determine the height of the image
   int elements() const; ///< Determine the depth (floats per pixel) of
                          ///the image
-  int psize() const;     ///< Determine the size of the picture user wants
-  int gridsize() const;     ///< Determine the size of the grid
+  int smallgrid() const;     ///< Determine the size of the picture user wants
+  int biggrid() const;     ///< Determine the size of the grid
   int maxgwidth() const; ///< Determine the max width of all glyphs
   int maxgheight() const; ///< Determine the max height of all glyphs
   int minhadvance() const; ///< Determine the min horizontal advance
-  void ShFont::loadFont(const std::string&);
+  void ShFont::loadFont(const std::string&, int, int);
 
   const float* coords(int) const;
   float* coords(int);
@@ -97,7 +97,7 @@ private:
   int m_maxgwidth;
   int m_maxgheight;
   int m_minhadvance;
-  int m_split;  // how many psize in each gridsize
+  int m_split;  // how many smallgrid in each biggrid
   ShHostMemoryPtr *m_memory;
   std::map<int, int> hadvanceMap;
   std::map<int, int> yminMap;

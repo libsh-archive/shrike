@@ -80,12 +80,12 @@ int ShFont::elements() const
   return m_elements;
 }
 
-int ShFont::psize() const
+int ShFont::smallgrid() const
 {
   return m_smallgrid;
 }
 
-int ShFont::gridsize() const
+int ShFont::biggrid() const
 {
   return m_biggrid;
 }
@@ -111,12 +111,18 @@ int ShFont::minhadvance() const
 // in this file, we read in info by steps
 // 1: info about the whole font octree texture: width, height, etc
 // 2: info about each glyph, including 11 items
+// 3: info about edges 
+// 4: info about flags
 //
-// filename: the file where the font is stored
+// filename:  the file where the font is stored
+// totalgrid: num of small grids the texture has 
+// split:     num of small grids in each big grid
 // =============================================================
-void ShFont::loadFont(const std::string& filename)
+void ShFont::loadFont(const std::string& filename, int totalgrid, int split)
 {
   try {
+    m_smallgrid = totalgrid;
+    m_split = split;
     m_memory = 0;
 
     int ifile;
@@ -244,9 +250,7 @@ void ShFont::loadFont(const std::string& filename)
 
   // input sprite 
 
-  int num = 256;             // total num of small grids
-  m_smallgrid = num;
-  m_split = 16;              // num of small grids in each big grid
+  int num = m_smallgrid;     // total num of small grids
   m_biggrid = num/m_split;   // num of big grids
 
   int len = num * num;
@@ -265,20 +269,26 @@ void ShFont::loadFont(const std::string& filename)
 
   for(int i=0; i<len; i++) {
 
+    // get the glyph index
     int gly = (int)sp[i*3];
 
+    // put the start x and y pos in m_memory(3)
     coords(3)[i*4] = sp[i*3+1];
     coords(3)[i*4+1] = sp[i*3+2];
 
+    // find where the info about this glyph is in m_memory(0)
     int j=0;
     for(j=0; j<m_glyphcount; j++) {
       if(coords(0)[j*11] == gly)
       break;
     }
 
+    // put width and height of the glyph in m_memory(3)
     coords(3)[i*4+2] = coords(0)[j*11+1];
     coords(3)[i*4+3] = coords(0)[j*11+2];
 
+    // put glyph offset and width and height in the 
+    // octree texture in m_memory(4)
     coords(4)[i*4] = coords(0)[j*11+9];
     coords(4)[i*4+1] = coords(0)[j*11+10];
     coords(4)[i*4+2] = coords(0)[j*11+6];
@@ -497,6 +507,7 @@ void ShFont::renderline(int gnum, int * str, float mg, float ng, float * sp) {
 
 	// if the small grid is not empty, put in info of the current 
 	// glyph. Otherwise, leave it blank.
+	// in sp, we have glyph index, exact x and y start pos of the glyph
 	if(flag) {
           sp[(i*m_smallgrid+j)*3] = curr;
 	  sp[(i*m_smallgrid+j)*3+1] = xx;
@@ -592,36 +603,13 @@ void ShFont::texture(int num, float *sp) {
 	renderline(11, array, 0.25, 1.5, sp);
 	*/
 
-	array[0] = int('W');
-	array[1] = int('e');
-	array[2] = int(' ');
-	array[3] = int('p');
-	array[4] = int('r');
-	array[5] = int('e');
-	array[6] = int('s');
-	array[7] = int('e');
-	array[8] = int('n');
-	array[9] = int('t');
-	array[10] = int(' ');
-	array[11] = int('a');
-	array[12] = int(' ');
-	array[13] = int('r');
-	array[14] = int('e');
-	array[15] = int('p');
-	array[16] = int('r');
-	array[17] = int('e');
-	array[18] = int('s');
-	array[19] = int('e');
-	array[20] = int('n');
-	array[21] = int('t');
-	array[22] = int('a');
-	array[23] = int('t');
-	array[24] = int('i');
-	array[25] = int('o');
-	array[26] = int('n');
-	array[27] = int(' ');
-	array[28] = int('o');
-	array[29] = int('f');
+	std::string str = "We Present a representation of";
+
+	const char * s = str.c_str();
+	int len = str.length();
+	for (int i=0; i<len; i++) {
+	  array[i] = (int)s[i];
+	}
 
 	renderline(30, array, 0.25, 15, sp);
 
