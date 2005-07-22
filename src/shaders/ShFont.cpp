@@ -191,11 +191,12 @@ void ShFont::loadFont(const std::string& filename)
 
           if(hadv < m_minhadvance) m_minhadvance = hadv;
         }
+
+	// put glyph info into maps, easy to use
         hadvanceMap[gly] = hadv;
         gwidthMap[gly] = gw;
         gheightMap[gly] = gh;
         yminMap[gly] = ymin;
-        // these maps are for kernning
         offsetx[gly] = ox;
         offsety[gly] = oy;
         winoctree[gly] = wino;
@@ -205,109 +206,84 @@ void ShFont::loadFont(const std::string& filename)
 		
       std::cerr << std::endl;
 
-			len = m_width * m_height * m_elements;
+      len = m_width * m_height * m_elements;
 
-			for(int n=0; n<len; n++) {
-				read(ifile, &coord, sizeof(float));
-				//std::cerr << coord << " " ;
-				coords(1)[n] = coord;
-			}
-			//std::cerr << std::endl;
+      // read the octree texture info into m_memory[1]
+      // each pixel in the texture has 4 elements
+      // for vertex coorinates
+      for(int n=0; n<len; n++) {
+        read(ifile, &coord, sizeof(float));
+        coords(1)[n] = coord;
+      }
 
-			len = m_width * m_height;
+      len = m_width * m_height;
 
-			for(int n=0; n<len; n++) {
-				read(ifile, &flag, sizeof(int));
-				//std::cerr << flag << " " ;
-				coords(2)[n] = flag;
-			}
-			//std::cerr << std::endl;
+      // read the flag (whether a cell is totally inside
+      // or outside) into m_memory[2]
+      for(int n=0; n<len; n++) {
+        read(ifile, &flag, sizeof(int));
+        coords(2)[n] = flag;
+      }
 			
-			while(1) {
-				int left, right, kern;
-				int rtn = read(ifile, &left, sizeof(int));
-				if(rtn ==0) {
-					//std::cout << "end of kern file" << std::endl;
-					break;
-				}
-				read(ifile, &right, sizeof(int));
-				read(ifile, &kern, sizeof(int));
-				kmap[ Kernpair(left, right) ] = kern;
-			}
-			/*
-			std::cout << " size ---------------" << kmap.size() << std::endl;
-			for(std::map<Kernpair, int>::iterator i = kmap.begin(); i != kmap.end(); ++i) {
-				std::cout << "get " << i->first.first() << " " << i->first.second();
-				std::cout << " " << i->second << std::endl;
-			}
-			*/
-		}
-		close(ifile);
-		std::cerr << "file closed" << std::endl; // xxx
+      // read kerning info and put it into kmap
+      while(1) {
+        int left, right, kern;
+        int rtn = read(ifile, &left, sizeof(int));
+        if(rtn ==0) {
+          break;
+        }
+        read(ifile, &right, sizeof(int));
+        read(ifile, &kern, sizeof(int));
+        kmap[ Kernpair(left, right) ] = kern;
+      }
+    }
+    close(ifile);
+    std::cerr << "file closed" << std::endl; // xxx
 
-	} catch(...){std::cerr << "glyph exception " << std::endl;}
+  } catch(...){std::cerr << "glyph exception " << std::endl;}
 
-	// input sprite 
+  // input sprite 
 
-	int num = 256;             // total num of small grids
-	m_smallgrid = num;
-	m_split = 16;              // num of small grids in each big grid
-	m_biggrid = num/m_split;   // num of big grids
+  int num = 256;             // total num of small grids
+  m_smallgrid = num;
+  m_split = 16;              // num of small grids in each big grid
+  m_biggrid = num/m_split;   // num of big grids
 
-	int len = num * num;
-	float * sp = new float[len * 3];
+  int len = num * num;
+  float * sp = new float[len * 3];
 
-	texture(num, sp);
+  texture(num, sp);
 
-	// for sprite
-	m_memory[3] = new ShHostMemory(sizeof(float) * len * 4, SH_FLOAT);
-	m_memory[4] = new ShHostMemory(sizeof(int) * len * 4, SH_FLOAT);
+  // for sprite
+  m_memory[3] = new ShHostMemory(sizeof(float) * len * 4, SH_FLOAT);
+  m_memory[4] = new ShHostMemory(sizeof(int) * len * 4, SH_FLOAT);
 
-	for(int i=0; i<len*4; i++) {
-		coords(3)[i] = 0;
-		coords(4)[i] = 0;
-	}
+  for(int i=0; i<len*4; i++) {
+    coords(3)[i] = 0;
+    coords(4)[i] = 0;
+  }
 
-	for(int i=0; i<len; i++) {
+  for(int i=0; i<len; i++) {
 
-		int gly = (int)sp[i*3];
+    int gly = (int)sp[i*3];
 
-		coords(3)[i*4] = sp[i*3+1];
-		coords(3)[i*4+1] = sp[i*3+2];
+    coords(3)[i*4] = sp[i*3+1];
+    coords(3)[i*4+1] = sp[i*3+2];
 
-		int j=0;
-		for(j=0; j<m_glyphcount; j++) {
-			if(coords(0)[j*11] == gly)
-				break;
-		}
+    int j=0;
+    for(j=0; j<m_glyphcount; j++) {
+      if(coords(0)[j*11] == gly)
+      break;
+    }
 
-		coords(3)[i*4+2] = coords(0)[j*11+1];
-		coords(3)[i*4+3] = coords(0)[j*11+2];
+    coords(3)[i*4+2] = coords(0)[j*11+1];
+    coords(3)[i*4+3] = coords(0)[j*11+2];
 
-		coords(4)[i*4] = coords(0)[j*11+9];
-		coords(4)[i*4+1] = coords(0)[j*11+10];
-		coords(4)[i*4+2] = coords(0)[j*11+6];
-		coords(4)[i*4+3] = coords(0)[j*11+7];
-	}
-
-	// debug
-	/*
-	for(int i=0; i<len; i++) {
-		std::cout << coords(3)[i*4] << " ";
-		std::cout << coords(3)[i*4+1] << " ";
-		std::cout << coords(3)[i*4+2] << " ";
-		std::cout << coords(3)[i*4+3] << " ";
-	}
-	std::cout << std::endl;
-
-	for(int i=0; i<len; i++) {
-		std::cout << coords(4)[i*4] << " ";
-		std::cout << coords(4)[i*4+1] << " ";
-		std::cout << coords(4)[i*4+2] << " ";
-		std::cout << coords(4)[i*4+3] << " ";
-	}
-	std::cout << std::endl;
-	*/
+    coords(4)[i*4] = coords(0)[j*11+9];
+    coords(4)[i*4+1] = coords(0)[j*11+10];
+    coords(4)[i*4+2] = coords(0)[j*11+6];
+    coords(4)[i*4+3] = coords(0)[j*11+7];
+  }
 }
 
 // =============================================================
