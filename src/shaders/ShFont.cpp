@@ -155,11 +155,11 @@ void ShFont::loadFont(const std::string& filename)
       // buffer for edge coordinates and edge number
       m_memory = new ShHostMemoryPtr[5];
       // memory[0]: info about each glyph, such as width, height, etc.
-      m_memory[0] = new ShHostMemory(sizeof(int) * m_glyphcount * 11, SH_INT);
+      m_memory[0] = new ShHostMemory(sizeof(int) * m_glyphcount * 11, SH_FLOAT);
       // memory[1]: edge info
       m_memory[1] = new ShHostMemory(sizeof(float) * m_width * m_height * m_elements, SH_FLOAT);
       // memory[2]: flag if a grid is totally inside or outside of glyph
-      m_memory[2] = new ShHostMemory(sizeof(int) * m_width * m_height, SH_INT);
+      m_memory[2] = new ShHostMemory(sizeof(int) * m_width * m_height, SH_FLOAT);
 
       // SECOND, read in info about each glyph
       // each glyph has 11 info
@@ -261,7 +261,7 @@ void ShFont::loadFont(const std::string& filename)
 
 	// for sprite
 	m_memory[3] = new ShHostMemory(sizeof(float) * len * 4, SH_FLOAT);
-	m_memory[4] = new ShHostMemory(sizeof(int) * len * 4, SH_INT);
+	m_memory[4] = new ShHostMemory(sizeof(int) * len * 4, SH_FLOAT);
 
 	for(int i=0; i<len*4; i++) {
 		coords(3)[i] = 0;
