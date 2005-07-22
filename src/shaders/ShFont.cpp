@@ -634,7 +634,7 @@ void ShFont::texture(int num, float *sp) {
 	array[15] = int('p');
 	array[16] = int('r');
 	array[17] = int('e');
-	array[18] = int('s');in y direction 
+	array[18] = int('s');
 	array[19] = int('e');
 	array[20] = int('n');
 	array[21] = int('t');
@@ -658,7 +658,7 @@ void ShFont::texture(int num, float *sp) {
 	array[6] = int('l');
 	array[7] = int('y');
 	array[8] = int('p');
-	array[9] = int('h');in y direction 
+	array[9] = int('h');
 	array[10] = int('s');
 	array[11] = int(' ');
 	array[12] = int('s');
@@ -688,7 +688,7 @@ void ShFont::texture(int num, float *sp) {
 	array[0] = int('s');
 	array[1] = int('c');
 	array[2] = int('a');
-	array[3] = int('l');in y direction 
+	array[3] = int('l');
 	array[4] = int('a');
 	array[5] = int('b');
 	array[6] = int('l');
@@ -773,7 +773,7 @@ void ShFont::texture(int num, float *sp) {
 	array[16] = int('s');
 	array[17] = int('t');
 	array[18] = int('r');
-	array[19] = int('u');in y direction 
+	array[19] = int('u');
 	array[20] = int('c');
 	array[21] = int('t');
 	array[22] = int('e');
@@ -983,7 +983,7 @@ const float* ShFont::coords(int i) const
 }
 
 float* ShFont::coords(int i)
-{in y direction 
+{
   if (!m_memory) return 0;
   return reinterpret_cast<float*>(m_memory[i]->hostStorage()->data());
 }
@@ -996,4 +996,4 @@ ShMemoryPtr ShFont::memory(int i)
 ShPointer<const ShMemory> ShFont::memory(int i) const
 {
   return m_memory[i];
-}in y direction 
+}
