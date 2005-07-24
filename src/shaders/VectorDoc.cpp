@@ -29,7 +29,7 @@
 #include <sh/shutil.hpp>
 #include <iostream>
 #include "Shader.hpp"
-#include "ShFont.hpp"
+#include "ShDoc.hpp"
 #include "Globals.hpp"
 
 using namespace SH;
@@ -43,20 +43,12 @@ public:
   ~VectorDoc();
 
   bool init();
-  ShAttrib4f sprite_dist(
-  	const ShArrayRect<ShAttrib4f> & ftexture,
-  	const ShArrayRect<ShAttrib1f> & flag,
-  	const ShArrayRect<ShAttrib4f> & sprite1,
-  	const ShArrayRect<ShAttrib4f> & sprite2,
-        ShAttrib2f x,
-        ShAttrib2f fx
-  );
-
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
 
 private:
 
+  ShDoc doc;
   ShProgram vsh, fsh;
   
   int m_mode;
@@ -69,17 +61,6 @@ private:
   static ShAttrib2f m_thres;
   static ShColor3f m_color1, m_color2;
   static ShColor3f m_vcolor1, m_vcolor2;
-
-  ShFont font;
-  int glyphcount;
-  int width;
-  int height;
-  int smallgrid;
-  int biggrid;
-  int maxgwidth;
-  int maxgheight;
-  int elements;
-  ShAttrib2f size[4];
 };
 
 VectorDoc::VectorDoc(int mode)
@@ -131,108 +112,19 @@ VectorDoc::~VectorDoc()
 {
 }
 
-ShAttrib4f
-VectorDoc::sprite_dist (
-    const ShArrayRect<ShAttrib4f> & ftexture,
-    const ShArrayRect<ShAttrib1f> & flag,
-    const ShArrayRect<ShAttrib4f> & sprite1,
-    const ShArrayRect<ShAttrib4f> & sprite2,
-    ShAttrib2f x,  // texture coordinates
-    ShAttrib2f fx  // where to get sprite info
-) {
-    ShAttrib4f s1 = sprite1(fx);
-    ShAttrib4f s2 = sprite2(fx);
-
-    // s1(2,3) has the real width and height of the glyph
-    // divided by maxheight get the ratio compared with max height
-    s1(2,3) = s1(2,3) / maxgheight;
-
-    // s2(0,1) has the offset of the glyph in octree texture
-    // division get the start pos (0-1) of the glyph in octree texture
-    s2(0,1) = ShAttrib2f(s2(0)/width, s2(1)/height);
-
-    // s2(2,3) has the width, height of the glyph in octree texture
-    // division get the percentage of the glyph size compared to the 
-    // octree texture size
-    ShAttrib2f scale2 = ShAttrib2f(width/s2(2), height/s2(3));
-
-    // convert coords from texture domean to octree domain
-    // s1(0,1) has the exact coords of the glyph in the texture
-    // tx1: if we treat the real size of glyph as from 0-1,
-    //      it gets the coords of x in terms of the glyph size
-    // *biggrid = smallgrid / m_split
-    ShAttrib2f tx1 = (x - s1(0,1)) * biggrid / s1(2,3);
-    tx1 = clamp(tx1,0.0,1.0);
-    
-    // get the corresponding coords of x in octree texture
-    ShAttrib2f tx2 = tx1 / scale2 + s2(0,1);
-
-    ShAttrib4f L[4];
-
-    // there are 4 edges with each one stored at each corner of 
-    // the cell that x falls in.  We need to compute all of the them.  
-    // And then get the shortest one.
-    for(int i=0; i<4; i++) {
-	ShAttrib2f y = tx2 + size[i];
-    	L[i] = ftexture(y); 
-	L[i] = L[i] * s1(2,3,2,3) / biggrid + s1(0,1,0,1);
-    }
-  
-    ShAttrib4f r = segdists_a(L,4,x);
-
-    // mask off the entirely inside and entirely outside cells
-    // (this lets us reuse their storage for adjacent boundary cells)
-    r(0,1) += 1.0e13*flag(tx2 + size[0]);
-
-    return r;
-}
-
 bool VectorDoc::init()
 {
   std::cerr << "Initializing " << name() << std::endl;
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
-  font.loadFont("font.txt", 256, 16);
-
-  // get info about general font, sprite
-  // and the octree texture
-  glyphcount = font.glyphcount();
-  width = font.width();
-  height = font.height();
-  smallgrid = font.smallgrid();
-  biggrid = font.biggrid();
-  maxgwidth = font.maxgwidth();
-  maxgheight = font.maxgheight();
-  elements = 4;
-
-  std::cerr << "in VectorDoc file: width " << width << " height " << height << " glyphcount ";
-  std::cerr << glyphcount << std::endl;
-
-  // octree textures for line segment endpoints and flags
-  // which indicate if a cell is totally inside or outside
-  // of a glyph
-  ShArrayRect<ShAttrib4f> ftexture(width, height);
-  ShArrayRect<ShAttrib1f> flag(width, height);
-
-  // textures for sprites
-  ShArrayRect<ShAttrib4f> sprite1(smallgrid, smallgrid);
-  ShArrayRect<ShAttrib4f> sprite2(smallgrid, smallgrid);
-
-  // copy info from class font to the array
-  // ftexture: octree texture for line segment endpoints
-  // flag:     octree texture for flags
-  // sprite1:  locations of sprites and their start x, y pos
-  // sprite2:  offset and size of glyphs in the octree texture
-  ftexture.memory(font.memory(1));
-  flag.memory(font.memory(2));
-  sprite1.memory(font.memory(3));
-  sprite2.memory(font.memory(4));
-
-  size[0] = ShAttrib2f(-0.5/width, -0.5/height);
-  size[1] = ShAttrib2f( 0.5/width, -0.5/height);
-  size[2] = ShAttrib2f(-0.5/width,  0.5/height);
-  size[3] = ShAttrib2f( 0.5/width,  0.5/height);
+  // parameter 256: num of small grids
+  // parameter 16;  num of small grids in one big grid
+  doc.initFont("font.txt", 256, 16);
+  //std::string str;
+  //str = "We Present a representation of";
+  //doc.string(30, str.c_str(), 0.25, 15);
+  //doc.stringEnd();
 
   fsh = SH_BEGIN_FRAGMENT_PROGRAM {
     ShInputTexCoord2f tc;
@@ -241,24 +133,7 @@ bool VectorDoc::init()
     // transform texture coords (should be in vertex shader really, but)
     ShAttrib2f x = m_size*tc - m_offset;
 
-    ShAttrib4f sprite_r[4];
-    sprite_r[0] = sprite_dist(
-	// these should be class member variables
-    	ftexture, flag, sprite1, sprite2, 
-	// these should be parameters
-	x,
-	x
-    );
-    sprite_r[1] = sprite_dist(
-	// these should be class member variables
-    	ftexture, flag, sprite1, sprite2, 
-	// these should be parameters
-	x,
-	x - ShAttrib2f(1.0/smallgrid,0.0)
-    );
-
-    ShAttrib4f r = cond(sprite_r[0](0) < sprite_r[1](0),sprite_r[0],sprite_r[1]);
-    r(2,3) = normalize(r(2,3));
+    ShAttrib4f r = doc.shortestDis(x);
 
     switch (m_mode) {
       case 0: {

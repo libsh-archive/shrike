@@ -81,6 +81,8 @@ public:
   int maxgheight() const; ///< Determine the max height of all glyphs
   int minhadvance() const; ///< Determine the min horizontal advance
   void ShFont::loadFont(const std::string&, int, int);
+  void ShFont::stringEnd();
+  void renderline(int gnum, const char * str, float mg, float ng);
 
   const float* coords(int) const;
   float* coords(int);
@@ -98,6 +100,8 @@ private:
   int m_maxgheight;
   int m_minhadvance;
   int m_split;  // how many smallgrid in each biggrid
+  float * sp;    // grids storing what glyph each small grid has
+                // including x, y start position
   ShHostMemoryPtr *m_memory;
   std::map<int, int> hadvanceMap;
   std::map<int, int> yminMap;
@@ -109,7 +113,6 @@ private:
   std::map<int, int> hinoctree;
 
   void texture(int, float *);
-  void renderline(int gnum, int * str, float mg, float ng, float * sp);
   std::map<Kernpair, int> kmap;
   bool getflag(float sx, float sy, float ex, float ey, int gw, int gh, int ox, int oy, int ow, int oh);
 };
