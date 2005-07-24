@@ -166,6 +166,11 @@ void ShFont::loadFont(const std::string& filename, int totalgrid, int split)
       m_memory[1] = new ShHostMemory(sizeof(float) * m_width * m_height * m_elements, SH_FLOAT);
       // memory[2]: flag if a grid is totally inside or outside of glyph
       m_memory[2] = new ShHostMemory(sizeof(int) * m_width * m_height, SH_FLOAT);
+      // memory(3): glyph index, start x, y pos
+      m_memory[3] = new ShHostMemory(sizeof(float) * m_smallgrid * m_smallgrid * 4, SH_FLOAT);
+      // memory(4): glyph offset and size in octree texture
+      m_memory[4] = new ShHostMemory(sizeof(int) * m_smallgrid * m_smallgrid * 4, SH_FLOAT);
+
 
       // SECOND, read in info about each glyph
       // each glyph has 11 info
@@ -249,21 +254,15 @@ void ShFont::loadFont(const std::string& filename, int totalgrid, int split)
   } catch(...){std::cerr << "glyph exception " << std::endl;}
 
   // the following are for input char string
-  //m_biggrid = m_smallgrid/m_split;   // num of big grids
-  //sp = new float[m_smallgrid * m_smallgrid * 3];
 
+  m_biggrid = m_smallgrid/m_split;   // num of big grids
+  sp = new float[m_smallgrid * m_smallgrid * 3];
 
-//void ShFont::stringEnd() {
-  int num = m_smallgrid;     // total num of small grids
-  m_biggrid = num/m_split;   // num of big grids
+}
 
-  int len = num * num;
-  sp = new float[len * 3];
+void ShFont::stringEnd() {
 
-  texture(num, sp);
-  len = m_smallgrid * m_smallgrid;
-  m_memory[3] = new ShHostMemory(sizeof(float) * len * 4, SH_FLOAT);
-  m_memory[4] = new ShHostMemory(sizeof(int) * len * 4, SH_FLOAT);
+  int len = m_smallgrid * m_smallgrid;
 
   for(int i=0; i<len*4; i++) {
     coords(3)[i] = 0;
@@ -297,9 +296,8 @@ void ShFont::loadFont(const std::string& filename, int totalgrid, int split)
     coords(4)[i*4+2] = coords(0)[j*11+6];
     coords(4)[i*4+3] = coords(0)[j*11+7];
   }
-  //delete[] sp;
+  delete[] sp;
 }
-void ShFont::stringEnd() {}
 
 // =============================================================
 // function: this function should be changed in a while
@@ -565,38 +563,6 @@ void ShFont::texture(int num, float *sp) {
 	renderline(11, str.c_str(), 0.25, 1.5, sp);
 	*/
 
-	str = "We Present a representation of";
-	renderline(30, str.c_str(), 0.25, 15);
-
-	str = "font glyphs suitable for realtime";
-	renderline(33, str.c_str(), 0.25, 13.5);
-
-	str = "scalable text rendering on GPUs";
-	renderline(32, str.c_str(), 0.25, 12);
-
-	str = "Contours and sharp features can";
-	renderline(31, str.c_str(), 0.25, 10.5);
-
-	str = "be exactly reconstructed using a";
-	renderline(32, str.c_str(), 0.25, 9);
-
-	str = "constant amount of computation";
-	renderline(30, str.c_str(), 0.25, 7.5);
-
-	str = "time per pixel. A combination of";
-	renderline(32, str.c_str(), 0.25, 6);
-
-	str = "texture data and procedural com";
-	renderline(31, str.c_str(), 0.25, 4.5);
-
-	str = "putation is used to recreate the";
-	renderline(32, str.c_str(), 0.25, 3);
-
-	str = "signed distance field and its gra";
-	renderline(33, str.c_str(), 0.25, 1.5);
-
-	str = "dient.";
-	renderline(6, str.c_str(), 0.25, 0);
 }
 
 const float* ShFont::coords(int i) const

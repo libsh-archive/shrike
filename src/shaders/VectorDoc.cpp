@@ -121,10 +121,43 @@ bool VectorDoc::init()
   // parameter 256: num of small grids
   // parameter 16;  num of small grids in one big grid
   doc.initFont("font.txt", 256, 16);
-  //std::string str;
-  //str = "We Present a representation of";
-  //doc.string(30, str.c_str(), 0.25, 15);
-  //doc.stringEnd();
+  
+  std::string str;
+
+  str = "We Present a representation of";
+  doc.string(32, str.c_str(), 0.25, 15);
+
+  str = "font glyphs suitable for realtime";
+  doc.string(33, str.c_str(), 0.25, 13.5);
+
+  str = "scalable text rendering on GPUs";
+  doc.string(32, str.c_str(), 0.25, 12);
+
+  str = "Contours and sharp features can";
+  doc.string(31, str.c_str(), 0.25, 10.5);
+
+  str = "be exactly reconstructed using a";
+  doc.string(32, str.c_str(), 0.25, 9);
+
+  str = "constant amount of computation";
+  doc.string(30, str.c_str(), 0.25, 7.5);
+
+  str = "time per pixel. A combination of";
+  doc.string(32, str.c_str(), 0.25, 6);
+
+  str = "texture data and procedural com";
+  doc.string(31, str.c_str(), 0.25, 4.5);
+
+  str = "putation is used to recreate the";
+  doc.string(32, str.c_str(), 0.25, 3);
+
+  str = "signed distance field and its gra";
+  doc.string(33, str.c_str(), 0.25, 1.5);
+
+  str = "dient.";
+  doc.string(6, str.c_str(), 0.25, 0);
+
+  doc.stringEnd();
 
   fsh = SH_BEGIN_FRAGMENT_PROGRAM {
     ShInputTexCoord2f tc;
