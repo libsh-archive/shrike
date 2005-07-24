@@ -545,26 +545,6 @@ void ShFont::renderline(int gnum, const char * str, float mg, float ng) {
   }
 }
 
-void ShFont::texture(int num, float *sp) {
-
-	std::string str;
-
-	/*
-	str = "Premature";
-	renderline(9, str.c_str(), 0.25, 6, sp);
-
-	str = "optimization";
-	renderline(12, str.c_str(), 0.25, 4.5, sp);
-
-	str = "is the root";
-	renderline(11, str.c_str(), 0.25, 3, sp);
-
-	str = "of all evil";
-	renderline(11, str.c_str(), 0.25, 1.5, sp);
-	*/
-
-}
-
 const float* ShFont::coords(int i) const
 {
   if (!m_memory) return 0;

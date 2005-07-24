@@ -112,7 +112,6 @@ private:
   std::map<int, int> winoctree;
   std::map<int, int> hinoctree;
 
-  void texture(int, float *);
   std::map<Kernpair, int> kmap;
   bool getflag(float sx, float sy, float ex, float ey, int gw, int gh, int ox, int oy, int ow, int oh);
 };

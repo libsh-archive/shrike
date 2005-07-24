@@ -157,6 +157,20 @@ bool VectorDoc::init()
   str = "dient.";
   doc.string(6, str.c_str(), 0.25, 0);
 
+  /*
+  str = "Premature";
+  doc.string(9, str.c_str(), 0.25, 6, sp);
+
+  str = "optimization";
+  doc.string(12, str.c_str(), 0.25, 4.5, sp);
+
+  str = "is the root";
+  doc.string(11, str.c_str(), 0.25, 3, sp);
+
+  str = "of all evil";
+  doc.string(11, str.c_str(), 0.25, 1.5, sp);
+  */
+
   doc.stringEnd();
 
   fsh = SH_BEGIN_FRAGMENT_PROGRAM {
