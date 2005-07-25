@@ -506,11 +506,12 @@ void ShFont::renderline(int gnum, const char * str, float mg, float ng) {
 	// check if this small grid is empty
 	// this function should be changed
 	// and use the distance instead
-	bool flag = getflag(sx, sy, ex, ey, gw, gh, ox, oy, ow, oh);
+	// bool flag = getflag(sx, sy, ex, ey, gw, gh, ox, oy, ow, oh);
 
 	// if the small grid is not empty, put in info of the current 
 	// glyph. Otherwise, leave it blank.
 	// in sp, we have glyph index, exact x and y start pos of the glyph
+	bool flag = 1;
 	if(flag) {
           sp[(i*m_smallgrid+j)*3] = curr;
 	  sp[(i*m_smallgrid+j)*3+1] = xx;
@@ -532,16 +533,16 @@ void ShFont::renderline(int gnum, const char * str, float mg, float ng) {
 
     // get the advance in x without kerning
     int adv;
-    if(curr == int(' ')) adv = m_maxgheight/4;
-    else adv = hadvanceMap[curr] + kernvalue;  // advance + kerning info
+    // this 4 can be changed TODO
+    if(curr == int(' ')) adv = m_maxgheight/3.345;
+    else adv = hadvanceMap[curr] + kernvalue/4.0;  // advance + kerning info
 
     // move x forward, keep y unchanged for now
-    // since we are using the maxhieght+2magines as the consistent 
-    // denominator, we might as well use it here.
+    // we are using the maxhieght+2magines as the consistent 
+    // denominator.
     float ratio = (float)adv / (m_maxgheight * (1 + MARGINRATIO * 2));
 
-    // 0.02 is an offset such that the glyphs wont touch each other
-    x += 1.0/m_biggrid * ratio + 0.001;
+    x += 1.0/m_biggrid * ratio;
   }
 }
 

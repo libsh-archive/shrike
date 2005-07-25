@@ -120,10 +120,13 @@ bool VectorDoc::init()
 
   // parameter 256: num of small grids
   // parameter 16;  num of small grids in one big grid
-  doc.initFont("font.txt", 256, 16);
+  // these parameter can generated automatically
+  // according to the ratio of glyph height and width
+  // TODO
+  doc.initFont("font.txt", 64, 4);
   
   std::string str;
-
+  
   str = "We Present a representation of";
   doc.string(32, str.c_str(), 0.25, 15);
 
@@ -151,11 +154,11 @@ bool VectorDoc::init()
   str = "putation is used to recreate the";
   doc.string(32, str.c_str(), 0.25, 3);
 
-  str = "signed distance field and its gra";
-  doc.string(33, str.c_str(), 0.25, 1.5);
+  str = "signed distance field and its";
+  doc.string(29, str.c_str(), 0.25, 1.5);
 
-  str = "dient.";
-  doc.string(6, str.c_str(), 0.25, 0);
+  str = "gradient.";
+  doc.string(9, str.c_str(), 0.25, 0);
 
   /*
   str = "Premature";
@@ -180,38 +183,24 @@ bool VectorDoc::init()
     // transform texture coords (should be in vertex shader really, but)
     ShAttrib2f x = m_size*tc - m_offset;
 
-    ShAttrib4f r = doc.shortestDis(x);
-
     switch (m_mode) {
       case 0: {
         // isotropically antialiased rendering
-        ShAttrib2f fw = fwidth(x);
-        ShAttrib1f w = max(fw(0),fw(1))*m_fw;
-        ShAttrib1f p = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
-        o = lerp(p,m_color2,m_color1);
+	o = doc.isoAntialias(x, m_color1, m_color2, m_fw, m_thres);
       } break;
       case 1: {
         // anisotropically antialiased rendering
-        ShAttrib2f fw;
-        fw(0) = dx(x) | r(2,3);
-        fw(1) = dy(x) | r(2,3);
-        ShAttrib1f w = length(fw)*m_fw;
-        ShAttrib1f p = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
-        o = lerp(p,m_color2,m_color1);
+        o = doc.anisoAntialias(x, m_color1, m_color2, m_fw, m_thres);
       } break;
       case 2: {
         // aliased rendering;
-        o = cond(r(0)+m_thres(0) > 0.0,m_color2,m_color1);
+        o = doc.Alias(x, m_color1,m_color2, m_thres);
       } break;
       case 3: {
         // isotropically antialiased outline rendering
-        ShAttrib2f fw = fwidth(x);
-        ShAttrib1f w = max(fw(0),fw(1))*m_fw;;
-        ShAttrib2f p;
-        p(0) = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
-        p(1) = deprecated_smoothstep(-w,w,-r(0)-m_thres(1));
-        o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
+	o = doc.isoAntiOutline(x, m_color1, m_color2, m_fw, m_thres);
       } break;
+	      /*
       case 4: {
         // anisotropically antialiased outline rendering;
         ShAttrib2f fw;;
@@ -281,6 +270,7 @@ bool VectorDoc::init()
         o = (abs(r(1)) * m_scale)(0,0,0) 
           * cond(r(1) >= 0.0,m_vcolor2,m_vcolor1);
       } break;
+	       */
     }
   } SH_END_PROGRAM;
   return true;
