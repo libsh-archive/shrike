@@ -65,76 +65,42 @@ public:
 		      ShColor3f m_color2,
 		      ShAttrib1f m_fw,
 		      ShAttrib2f m_thres);
+  ShColor3f anisoAntiOutline(ShAttrib2f x,
+  	              ShColor3f m_color1, 
+		      ShColor3f m_color2,
+		      ShAttrib1f m_fw,
+		      ShAttrib2f m_thres);
+  ShColor3f gradient(ShAttrib2f x,
+		       ShColor3f m_vcolor1, 
+		       ShColor3f m_vcolor2);
+  ShColor3f filterWidth(ShAttrib2f x);
+  ShColor3f isoAntiPseudoOutline(ShAttrib2f x,
+  	              ShColor3f m_color1, 
+		      ShColor3f m_color2,
+		      ShAttrib1f m_fw,
+		      ShAttrib2f m_thres);
+  ShColor3f anisoAntiPseudoOutline(ShAttrib2f x,
+  	              ShColor3f m_color1, 
+		      ShColor3f m_color2,
+		      ShAttrib1f m_fw,
+		      ShAttrib2f m_thres);
+  ShColor3f biasSignedDis1(ShAttrib2f x,
+		      ShAttrib1f m_scale,
+		      ShColor3f m_vcolor1,
+		      ShColor3f m_vcolor2);
+  ShColor3f biasSignedDis2(ShAttrib2f x,
+		      ShAttrib1f m_scale);
+  ShColor3f signedDisMap(ShAttrib2f x,
+	              ShAttrib1f m_scale,
+		      ShColor3f m_vcolor1,
+		      ShColor3f m_vcolor2);
+  ShColor3f biasSignPseudoMap(ShAttrib2f x,
+	              ShAttrib1f m_scale,
+		      ShColor3f m_vcolor1,
+		      ShColor3f m_vcolor2);
+  ShColor3f biasSignPserdoMap(ShAttrib2f x,
+	              ShAttrib1f m_scale);
     /*
-      case 3: {
-        // isotropically antialiased outline rendering
-        ShAttrib2f fw = fwidth(x);
-        ShAttrib1f w = max(fw(0),fw(1))*m_fw;;
-        ShAttrib2f p;
-        p(0) = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
-        p(1) = deprecated_smoothstep(-w,w,-r(0)-m_thres(1));
-        o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
-      } break;
-      case 4: {
-        // anisotropically antialiased outline rendering;
-        ShAttrib2f fw;;
-        fw(0) = dx(x) | r(2,3);
-        fw(1) = dy(x) | r(2,3);
-        ShAttrib1f w = length(fw)*m_fw;
-        ShAttrib2f p;
-        p(0) = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
-        p(1) = deprecated_smoothstep(-w,w,-r(0)-m_thres(1));
-        o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
-      } break;
-      case 5: {
-        // gradient visualization
-        o = 0.5 * (r(2) + 1.0) * m_vcolor1 
-          + 0.5 * (r(3) + 1.0) * m_vcolor2;;
-      } break;
-      case 6: {
-        // filter width visualization
-        ShAttrib2f fw = fwidth(x);	      
-        o = fw(0,1,0);
-      } break;
-      case 7: {
-        // isotropically antialiased pseudodistance outline rendering
-        ShAttrib2f fw = fwidth(x);;
-        ShAttrib1f w = max(fw(0),fw(1))*m_fw;
-        ShAttrib2f p;
-        p(0) = deprecated_smoothstep(-w,w,r(1)+m_thres(0));
-        p(1) = deprecated_smoothstep(-w,w,-r(1)-m_thres(1));;
-        o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
-      } break;
-      case 8: {
-        // anisotropically antialiased pseudodistance outline rendering
-        ShAttrib2f fw;
-        fw(0) = dx(x) | r(2,3);
-        fw(1) = dy(x) | r(2,3);
-        ShAttrib1f w = length(fw)*m_fw;
-        ShAttrib2f p;
-        p(0) = deprecated_smoothstep(-w,w,r(1)+m_thres(0));
-        p(1) = deprecated_smoothstep(-w,w,-r(1)-m_thres(1));
-        o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
-      } break;;
-      case 9: {
-        // biased signed distance map visualization 
-        o = (0.5 + r(0) * m_scale)(0,0,0) 
-          * cond(r(0) >= 0.0,m_vcolor2,m_vcolor1);
-      } break;
-      case 10: {
-        // biased signed distance map visualization 
-        o = (0.5 + r(0) * m_scale)(0,0,0);
-      } break;
-      case 11: {
-        // signed distance map visualization
-        o = (abs(r(0)) * m_scale)(0,0,0) 
-          * cond(r(0) >= 0.0,m_vcolor2,m_vcolor1);
-      } break;
-      case 12: {
-        // biased signed pseudodistance map visualization 
-        o = (0.5 + r(1) * m_scale)(0,0,0) 
-          * cond(r(1) >= 0.0,m_vcolor2,m_vcolor1);
-      } break;
       case 13: {
         // biased signed pseudodistance map visualization 
         o = (0.5 + r(1) * m_scale)(0,0,0);

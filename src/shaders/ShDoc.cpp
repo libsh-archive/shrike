@@ -259,3 +259,174 @@ ShColor3f ShDoc::isoAntiOutline(ShAttrib2f x,
  
   return o;
 }
+
+// =============================================================
+// function: given the coordinates, return the outline
+// m_color1: color of the glyph interior
+// m_color2: color of the glyph exterior
+// =============================================================
+ShColor3f ShDoc::anisoAntiOutline(ShAttrib2f x,
+		       ShColor3f m_color1, 
+		       ShColor3f m_color2,
+		       ShAttrib1f m_fw,
+		       ShAttrib2f m_thres) 
+{ 
+  ShAttrib4f r = shortestDis(x);
+  ShAttrib2f fw;;
+  fw(0) = dx(x) | r(2,3);
+  fw(1) = dy(x) | r(2,3);
+  ShAttrib1f w = length(fw)*m_fw;
+  ShAttrib2f p;
+  p(0) = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
+  p(1) = deprecated_smoothstep(-w,w,-r(0)-m_thres(1));
+  ShColor3f o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
+ 
+  return o;
+}
+
+// =============================================================
+// function: given the coordinates, return the gradient
+// m_color1: color of the glyph interior
+// m_color2: color of the glyph exterior
+// =============================================================
+ShColor3f ShDoc::gradient(ShAttrib2f x,
+		       ShColor3f m_vcolor1, 
+		       ShColor3f m_vcolor2) 
+{ 
+  ShAttrib4f r = shortestDis(x);
+  ShColor3f o = 0.5 * (r(2) + 1.0) * m_vcolor1 
+              + 0.5 * (r(3) + 1.0) * m_vcolor2;;
+ 
+  return o;
+}
+
+// =============================================================
+// function: given the coordinates, return the gradient
+// m_color1: color of the glyph interior
+// m_color2: color of the glyph exterior
+// =============================================================
+ShColor3f ShDoc::filterWidth(ShAttrib2f x)
+{ 
+  ShAttrib2f fw = fwidth(x);	      
+  ShColor3f o = fw(0,1,0);
+ 
+  return o;
+}
+
+// =============================================================
+// function: given the coordinates, return the gradient
+// m_color1: color of the glyph interior
+// m_color2: color of the glyph exterior
+// =============================================================
+ShColor3f ShDoc::isoAntiPseudoOutline(ShAttrib2f x,
+		ShColor3f m_color1,
+		ShColor3f m_color2,
+		ShAttrib1f m_fw,
+		ShAttrib2f m_thres)
+{
+  ShAttrib4f r = shortestDis(x);
+  ShAttrib2f fw = fwidth(x);;
+  ShAttrib1f w = max(fw(0),fw(1))*m_fw;
+  ShAttrib2f p;
+  p(0) = deprecated_smoothstep(-w,w,r(1)+m_thres(0));
+  p(1) = deprecated_smoothstep(-w,w,-r(1)-m_thres(1));;
+  ShColor3f o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
+  return o;
+}
+
+// =============================================================
+// function: given the coordinates, return the outline
+// m_color1: color of the glyph interior
+// m_color2: color of the glyph exterior
+// =============================================================
+ShColor3f ShDoc::anisoAntiPseudoOutline(ShAttrib2f x,
+		ShColor3f m_color1,
+		ShColor3f m_color2,
+		ShAttrib1f m_fw,
+		ShAttrib2f m_thres)
+{
+  ShAttrib4f r = shortestDis(x);
+  ShAttrib2f fw;
+  fw(0) = dx(x) | r(2,3);
+  fw(1) = dy(x) | r(2,3);
+  ShAttrib1f w = length(fw)*m_fw;
+  ShAttrib2f p;
+  p(0) = deprecated_smoothstep(-w,w,r(1)+m_thres(0));
+  p(1) = deprecated_smoothstep(-w,w,-r(1)-m_thres(1));
+  ShColor3f o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
+  return o;
+}
+
+// =============================================================
+// function: given the coordinates, return the outline
+// m_color1: color of the glyph interior
+// m_color2: color of the glyph exterior
+// =============================================================
+ShColor3f ShDoc::biasSignedDis1(ShAttrib2f x,
+		ShAttrib1f m_scale,
+		ShColor3f m_vcolor1,
+		ShColor3f m_vcolor2)
+{
+  ShAttrib4f r = shortestDis(x);
+  ShColor3f o = (0.5 + r(0) * m_scale)(0,0,0) 
+              * cond(r(0) >= 0.0,m_vcolor2,m_vcolor1);
+  return o;
+}
+
+// =============================================================
+// function: given the coordinates, return the outline
+// m_color1: color of the glyph interior
+// m_color2: color of the glyph exterior
+// =============================================================
+ShColor3f ShDoc::biasSignedDis2(ShAttrib2f x,
+		ShAttrib1f m_scale)
+{
+  ShAttrib4f r = shortestDis(x);
+  ShColor3f o = (0.5 + r(0) * m_scale)(0,0,0);
+  return o;
+}
+
+// =============================================================
+// function: given the coordinates, return the outline
+// m_color1: color of the glyph interior
+// m_color2: color of the glyph exterior
+// =============================================================
+ShColor3f ShDoc::signedDisMap(ShAttrib2f x,
+		              ShAttrib1f m_scale,
+			      ShColor3f m_vcolor1,
+			      ShColor3f m_vcolor2)
+{
+  ShAttrib4f r = shortestDis(x);
+  ShColor3f o = (abs(r(0)) * m_scale)(0,0,0) 
+          * cond(r(0) >= 0.0,m_vcolor2,m_vcolor1);
+  return o;
+}
+
+// =============================================================
+// function: given the coordinates, return the outline
+// m_color1: color of the glyph interior
+// m_color2: color of the glyph exterior
+// =============================================================
+ShColor3f ShDoc::biasSignPseudoMap(ShAttrib2f x,
+		              ShAttrib1f m_scale,
+			      ShColor3f m_vcolor1,
+			      ShColor3f m_vcolor2)
+{
+  ShAttrib4f r = shortestDis(x);
+  ShColor3f o = (0.5 + r(1) * m_scale)(0,0,0) 
+              * cond(r(1) >= 0.0,m_vcolor2,m_vcolor1);
+  return o;
+}
+
+// =============================================================
+// function: given the coordinates, return the outline
+// m_color1: color of the glyph interior
+// m_color2: color of the glyph exterior
+// =============================================================
+ShColor3f ShDoc::biasSignPserdoMap(ShAttrib2f x,
+		              ShAttrib1f m_scale)
+{
+  ShAttrib4f r = shortestDis(x);
+  ShColor3f o = (0.5 + r(1) * m_scale)(0,0,0);
+  return o;
+}
