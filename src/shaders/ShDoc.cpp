@@ -430,3 +430,4 @@ ShColor3f ShDoc::biasSignPserdoMap(ShAttrib2f x,
   ShColor3f o = (0.5 + r(1) * m_scale)(0,0,0);
   return o;
 }
+>>>>>>> .r2836

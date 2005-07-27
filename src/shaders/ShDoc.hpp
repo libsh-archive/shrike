@@ -100,7 +100,7 @@ public:
 		      ShColor3f m_vcolor2);
   ShColor3f biasSignPserdoMap(ShAttrib2f x,
 	              ShAttrib1f m_scale);
-    /*
+  /*
       case 13: {
         // biased signed pseudodistance map visualization 
         o = (0.5 + r(1) * m_scale)(0,0,0);

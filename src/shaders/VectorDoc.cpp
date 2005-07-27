@@ -198,12 +198,13 @@ bool VectorDoc::init()
       } break;
       case 3: {
         // isotropically antialiased outline rendering
-	o = doc.isoAntiOutline(x, m_color1, m_color2, m_fw, m_thres);
+        o = doc.isoAntiOutline(x, m_color1, m_color2, m_fw, m_thres);
       } break;
       case 4: {
         // anisotropically antialiased outline rendering;
 	o = doc.anisoAntiOutline(x, m_color1, m_color2, m_fw, m_thres);
       } break;
+	      /*
       case 5: {
         // gradient visualization
 	o = doc.gradient(x, m_vcolor1, m_vcolor2);
