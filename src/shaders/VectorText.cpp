@@ -121,7 +121,7 @@ bool VectorText::init()
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
   ShGlyph glyph;
-  glyph.loadGlyph("/home/zqin/vectortexture/freetype/d.txt");
+  glyph.loadGlyph("g.txt");
 
   int width = glyph.width();
   int height = glyph.height();
@@ -223,7 +223,7 @@ bool VectorText::init()
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
   ShGlyph glyph;
-  glyph.loadGlyph("/home/zqin/vectortexture/freetype/g.txt");
+  glyph.loadGlyph("g.txt");
 
   int width = glyph.width();
   int height = glyph.height();

@@ -123,7 +123,8 @@ bool ShDoc::initFont(std::string filename, int small, int split)
   std::cerr << "in VectorDoc file: width " << width << " height " << height << " glyphcount ";
   std::cerr << glyphcount << std::endl;
 
-  ftexture = ShArrayRect<ShAttrib4f>(width, height);
+  // ftexture = ShArrayRect<ShAttrib4f>(width, height);
+  ftexture.size(width, height);
   flag.size(width, height);
   sprite1.size(smallgrid, smallgrid);
   sprite2.size(smallgrid, smallgrid);
@@ -137,6 +138,15 @@ bool ShDoc::initFont(std::string filename, int small, int split)
   flag.memory(font.memory(2));
   sprite1.memory(font.memory(3));
   sprite2.memory(font.memory(4));
+
+  /*
+  for(int i=0; i<height; i++) {
+	  for(int j=0; j<width; j++) {
+		  std::cout << font.coords(2)[i*width+j] << " ";
+	  }
+	  std::cout << std::endl;
+  }
+  */
 
   size[0] = ShAttrib2f(-0.5/width, -0.5/height);
   size[1] = ShAttrib2f( 0.5/width, -0.5/height);
@@ -430,4 +440,19 @@ ShColor3f ShDoc::biasSignPserdoMap(ShAttrib2f x,
   ShColor3f o = (0.5 + r(1) * m_scale)(0,0,0);
   return o;
 }
->>>>>>> .r2836
+
+// =============================================================
+// function: given the coordinates, return the outline
+// m_color1: color of the glyph interior
+// m_color2: color of the glyph exterior
+// =============================================================
+ShColor3f ShDoc::pseudoDis(ShAttrib2f x,
+		           ShAttrib1f m_scale,
+			   ShColor3f m_vcolor1,
+			   ShColor3f m_vcolor2)
+{
+  ShAttrib4f r = shortestDis(x);
+  ShColor3f o = (abs(r(1)) * m_scale)(0,0,0) 
+          * cond(r(1) >= 0.0,m_vcolor2,m_vcolor1);
+  return o;
+}

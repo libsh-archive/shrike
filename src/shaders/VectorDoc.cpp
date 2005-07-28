@@ -127,10 +127,35 @@ bool VectorDoc::init()
   
   std::string str;
   
+  str = "How doth the little crocodile";
+  doc.string(29, str.c_str(), 0.25, 12.5);
+
+  str = "Improve his shining tail";
+  doc.string(24, str.c_str(), 0.25, 11);
+
+  str = "And pour the waters of the Nile";
+  doc.string(31, str.c_str(), 0.25, 9.5);
+
+  str = "On every golden scale";
+  doc.string(22, str.c_str(), 0.25, 8);
+
+  str = "How cheerfully he seems to grin";
+  doc.string(31, str.c_str(), 0.25, 6.5);
+
+  str = "How neatly spreads his claws";
+  doc.string(28, str.c_str(), 0.25, 5);
+
+  str = "And welcomes little fishes in";
+  doc.string(29, str.c_str(), 0.25, 3.5);
+
+  str = "With gently smiling jaws";
+  doc.string(25, str.c_str(), 0.25, 2);
+
+  /*
   str = "We Present a representation of";
   doc.string(32, str.c_str(), 0.25, 15);
 
-  str = "font glyphs suitable for realtime";
+  str = "Cont glyphs suitable for realtime";
   doc.string(33, str.c_str(), 0.25, 13.5);
 
   str = "scalable text rendering on GPUs";
@@ -159,6 +184,7 @@ bool VectorDoc::init()
 
   str = "gradient.";
   doc.string(9, str.c_str(), 0.25, 0);
+  */
 
   /*
   str = "Premature";
@@ -204,7 +230,6 @@ bool VectorDoc::init()
         // anisotropically antialiased outline rendering;
 	o = doc.anisoAntiOutline(x, m_color1, m_color2, m_fw, m_thres);
       } break;
-	      /*
       case 5: {
         // gradient visualization
 	o = doc.gradient(x, m_vcolor1, m_vcolor2);
@@ -241,13 +266,10 @@ bool VectorDoc::init()
         // biased signed pseudodistance map visualization 
 	o = doc.biasSignPserdoMap(x, m_scale);
       } break;
-	      /*
       default: {
         // pseudodistance visualization
-        o = (abs(r(1)) * m_scale)(0,0,0) 
-          * cond(r(1) >= 0.0,m_vcolor2,m_vcolor1);
+        o = doc.pseudoDis(x, m_scale, m_vcolor1, m_color2);
       } break;
-	       */
     }
   } SH_END_PROGRAM;
   return true;
