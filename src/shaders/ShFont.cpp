@@ -160,16 +160,30 @@ void ShFont::loadFont(const std::string& filename, int totalgrid, int split)
 
       // buffer for edge coordinates and edge number
       m_memory = new ShHostMemoryPtr[5];
+
       // memory[0]: info about each glyph, such as width, height, etc.
-      m_memory[0] = new ShHostMemory(sizeof(int) * m_glyphcount * 11, SH_FLOAT);
+      int length = m_glyphcount * 11;
+      m_memory[0] = new ShHostMemory(sizeof(int) * length, SH_FLOAT);
+      for(int i=0; i<length; i++) coords(0)[i] = 0;
+
       // memory[1]: edge info
-      m_memory[1] = new ShHostMemory(sizeof(float) * m_width * m_height * m_elements, SH_FLOAT);
+      length = m_width * m_height * m_elements;
+      m_memory[1] = new ShHostMemory(sizeof(float) * length, SH_FLOAT);
+      for(int i=0; i<length; i++) coords(1)[i] = 0;
+
       // memory[2]: flag if a grid is totally inside or outside of glyph
-      m_memory[2] = new ShHostMemory(sizeof(int) * m_width * m_height, SH_FLOAT);
+      length = m_width * m_height;
+      m_memory[2] = new ShHostMemory(sizeof(int) * length, SH_FLOAT);
+      for(int i=0; i<length; i++) coords(2)[i] = 0;
+
       // memory(3): glyph index, start x, y pos
-      m_memory[3] = new ShHostMemory(sizeof(float) * m_smallgrid * m_smallgrid * 4, SH_FLOAT);
+      length = m_smallgrid * m_smallgrid * 4;
+      m_memory[3] = new ShHostMemory(sizeof(float) * length, SH_FLOAT);
+      for(int i=0; i<length; i++) coords(3)[i] = 0;
+
       // memory(4): glyph offset and size in octree texture
-      m_memory[4] = new ShHostMemory(sizeof(int) * m_smallgrid * m_smallgrid * 4, SH_FLOAT);
+      m_memory[4] = new ShHostMemory(sizeof(int) * length, SH_FLOAT);
+      for(int i=0; i<length; i++) coords(4)[i] = 0;
 
 
       // SECOND, read in info about each glyph
@@ -422,7 +436,7 @@ void ShFont::renderline(int gnum, const char * str, float mg, float ng) {
   // for each glyph
   for(int g=0; g<gnum; g++) {
 
-    int curr = int(str[g]);             // current glyph
+    int curr = int(str[g]);        // current glyph
     int next;                      // next glyph
     int gw = gwidthMap[curr];      // width of the glyph
     int gh = gheightMap[curr];     // height of the glyph
@@ -434,7 +448,9 @@ void ShFont::renderline(int gnum, const char * str, float mg, float ng) {
 
     // suppose there is a baseline, yshift is how much the glyph should be
     // below/above the base line, yy is the y coord where glyph starts.
-    float yshift = ymin - gh * MARGINRATIO;    // remove the margin on the bottom
+
+    // float yshift = ymin - gh * MARGINRATIO;    // remove the margin on the bottom
+    float yshift = ymin;
 	
     // xx and yy are the actually starting pos of the glyph after taking
     // into account of the margin. 
@@ -447,7 +463,9 @@ void ShFont::renderline(int gnum, const char * str, float mg, float ng) {
 
     // yy: y coordinate of 0-1 where glyph starts from exactly
     // nn: the num of small grid that the glyph starts from in y axis
-    yy = y + 1.0/m_biggrid * yshift / (m_maxgheight * (1 + MARGINRATIO * 2));
+    
+    // yy = y + 1.0/m_biggrid * yshift / (m_maxgheight * (1 + MARGINRATIO * 2));
+    yy = y + 1.0/m_biggrid * yshift / m_maxgheight;
     nn = (int)(yy * m_smallgrid);
 
     // 1.0/m_biggrid is how many percent each big grid occupies 
@@ -459,7 +477,9 @@ void ShFont::renderline(int gnum, const char * str, float mg, float ng) {
 		
     // xx: x coordinate of 0-1 where glyph starts from exactly
     // mm: the num of small grid that the glyph starts from in x axis
-    xx = x - 1.0/m_biggrid * gw * MARGINRATIO / (m_maxgheight * (1 + MARGINRATIO * 2));
+
+    // xx = x - 1.0/m_biggrid * gw * MARGINRATIO / (m_maxgheight * (1 + MARGINRATIO * 2));
+    xx = x;
     mm = (int)(xx * m_smallgrid);
 
     // sx, sy: the starting percentage of the small grid in terms of the big grid
@@ -534,13 +554,16 @@ void ShFont::renderline(int gnum, const char * str, float mg, float ng) {
     // get the advance in x without kerning
     int adv;
     // this 4 can be changed TODO
-    if(curr == int(' ')) adv = m_maxgheight/3.345;
+    if(curr == int(' ')) adv = m_maxgheight/4;
+
     else adv = hadvanceMap[curr] + kernvalue/4.0;  // advance + kerning info
 
     // move x forward, keep y unchanged for now
     // we are using the maxhieght+2magines as the consistent 
     // denominator.
-    float ratio = (float)adv / (m_maxgheight * (1 + MARGINRATIO * 2));
+
+    // float ratio = (float)adv / (m_maxgheight * (1 + MARGINRATIO * 2));
+    float ratio = (float)adv / m_maxgheight;
 
     x += 1.0/m_biggrid * ratio;
   }

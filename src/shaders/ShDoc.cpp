@@ -30,6 +30,7 @@
 #include <iostream>
 #include "ShDoc.hpp"
 #include "dist_util.hpp"
+#define MARGINRATIO 0.05
 
 using namespace SH;
 using namespace ShUtil;
@@ -65,7 +66,10 @@ ShDoc::sprite_dist (
     // s2(2,3) has the width, height of the glyph in octree texture
     // division get the percentage of the glyph size compared to the 
     // octree texture size
-    ShAttrib2f scale2 = ShAttrib2f(width/s2(2), height/s2(3));
+    ShAttrib2f shift = (s2(2,3) / (1 + MARGINRATIO)) * MARGINRATIO / 4;
+    s2(2,3) -= shift * 2; // the margin part shouldn't be there
+    ShAttrib2f scale2 = ShAttrib2f(s2(2)/width, s2(3)/height);
+    shift = ShAttrib2f((shift(0))/width, (shift(1))/height);
 
     // convert coords from texture domean to octree domain
     // s1(0,1) has the exact coords of the glyph in the texture
@@ -76,7 +80,8 @@ ShDoc::sprite_dist (
     tx1 = clamp(tx1,0.0,1.0);
     
     // get the corresponding coords of x in octree texture
-    ShAttrib2f tx2 = tx1 / scale2 + s2(0,1);
+    ShAttrib2f tx2 = tx1 * scale2 + s2(0,1) + shift;
+    // ShAttrib2f tx2 = tx1 * scale2 + s2(0,1);
 
     ShAttrib4f L[4];
 

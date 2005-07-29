@@ -123,19 +123,23 @@ bool VectorDoc::init()
   // these parameter can generated automatically
   // according to the ratio of glyph height and width
   // TODO
+
+  /*
+  doc.initFont("font.txt", 8, 4);
+  
+  std::string str;
+  
+  str = "h";
+  doc.string(str.length(), str.c_str(), 0, 0);
+  */
+
   doc.initFont("font.txt", 64, 4);
-  // doc.initFont("font.txt", 8, 4);
   
   std::string str;
 
-  str = "h";
-  doc.string(str.length(), str.c_str(), 0.25, 1);
+  str = "s";
+  doc.string(str.length(), str.c_str(), 0.25, 0.5);
 
-  /*
-  str = "l";
-  doc.string(str.length(), str.c_str(), 0.25, 0);
-  */
- 
   str = "How doth the little crocodile";
   doc.string(str.length(), str.c_str(), 0.25, 12.5);
 
