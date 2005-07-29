@@ -128,12 +128,12 @@ bool VectorDoc::init()
   
   std::string str;
 
-  /*
-  str = "llllll";
-  doc.string(6, str.c_str(), 0.25, 1);
+  str = "h";
+  doc.string(str.length(), str.c_str(), 0.25, 1);
 
+  /*
   str = "l";
-  doc.string(1, str.c_str(), 0.25, 0);
+  doc.string(str.length(), str.c_str(), 0.25, 0);
   */
  
   str = "How doth the little crocodile";
