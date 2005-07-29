@@ -124,32 +124,41 @@ bool VectorDoc::init()
   // according to the ratio of glyph height and width
   // TODO
   doc.initFont("font.txt", 64, 4);
+  // doc.initFont("font.txt", 8, 4);
   
   std::string str;
-  
+
+  /*
+  str = "llllll";
+  doc.string(6, str.c_str(), 0.25, 1);
+
+  str = "l";
+  doc.string(1, str.c_str(), 0.25, 0);
+  */
+ 
   str = "How doth the little crocodile";
-  doc.string(29, str.c_str(), 0.25, 12.5);
+  doc.string(str.length(), str.c_str(), 0.25, 12.5);
 
   str = "Improve his shining tail";
-  doc.string(24, str.c_str(), 0.25, 11);
+  doc.string(str.length(), str.c_str(), 0.25, 11);
 
   str = "And pour the waters of the Nile";
-  doc.string(31, str.c_str(), 0.25, 9.5);
+  doc.string(str.length(), str.c_str(), 0.25, 9.5);
 
   str = "On every golden scale";
-  doc.string(22, str.c_str(), 0.25, 8);
+  doc.string(str.length(), str.c_str(), 0.25, 8);
 
   str = "How cheerfully he seems to grin";
-  doc.string(31, str.c_str(), 0.25, 6.5);
+  doc.string(str.length(), str.c_str(), 0.25, 6.5);
 
   str = "How neatly spreads his claws";
-  doc.string(28, str.c_str(), 0.25, 5);
+  doc.string(str.length(), str.c_str(), 0.25, 5);
 
   str = "And welcomes little fishes in";
-  doc.string(29, str.c_str(), 0.25, 3.5);
+  doc.string(str.length(), str.c_str(), 0.25, 3.5);
 
   str = "With gently smiling jaws";
-  doc.string(25, str.c_str(), 0.25, 2);
+  doc.string(str.length(), str.c_str(), 0.25, 2);
 
   /*
   str = "We Present a representation of";

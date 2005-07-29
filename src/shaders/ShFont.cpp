@@ -40,7 +40,7 @@
 
 #define BUFFERSIZE 256
 #define PACK4
-#define MARGINRATIO 0.1
+#define MARGINRATIO 0.05
 #define LONG
 
 ShFont::ShFont()
