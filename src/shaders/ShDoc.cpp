@@ -182,14 +182,14 @@ ShAttrib4f ShDoc::shortestDis(ShAttrib2f x) {
 
   sprite_r[0] = sprite_dist(x, x);  // current cell
   sprite_r[1] = sprite_dist(x, x - ShAttrib2f(1.0/smallgrid,0.0)); //previous cell
-  sprite_r[2] = sprite_dist(x, x - ShAttrib2f(2.0/smallgrid,0.0)); //previous cell
+  // sprite_r[2] = sprite_dist(x, x - ShAttrib2f(2.0/smallgrid,0.0)); //previous cell
 
   // sometimes one glyph will cross two small grids,
   // so in each one small grid, have to check one
   // from the previous grid, and one from current 
   // grid
   ShAttrib4f r = cond(sprite_r[0](0) < sprite_r[1](0),sprite_r[0],sprite_r[1]);
-  r = cond(r(0) < sprite_r[2](0),r,sprite_r[2]);
+  // r = cond(r(0) < sprite_r[2](0),r,sprite_r[2]);
   r(2,3) = normalize(r(2,3));
 
   return r;

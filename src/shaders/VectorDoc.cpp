@@ -137,32 +137,32 @@ bool VectorDoc::init()
   
   std::string str;
 
-  str = "s";
-  doc.string(str.length(), str.c_str(), 0.25, 0.5);
+  str = "How doth the little crocodile";
+  doc.string(str.length(), str.c_str(), 0.25, 17);
 
   str = "How doth the little crocodile";
-  doc.string(str.length(), str.c_str(), 0.25, 12.5);
+  doc.string(str.length(), str.c_str(), 0.25, 15);
 
   str = "Improve his shining tail";
-  doc.string(str.length(), str.c_str(), 0.25, 11);
+  doc.string(str.length(), str.c_str(), 0.25, 13.5);
 
   str = "And pour the waters of the Nile";
-  doc.string(str.length(), str.c_str(), 0.25, 9.5);
+  doc.string(str.length(), str.c_str(), 0.25, 12);
 
   str = "On every golden scale";
-  doc.string(str.length(), str.c_str(), 0.25, 8);
+  doc.string(str.length(), str.c_str(), 0.25, 10.5);
 
   str = "How cheerfully he seems to grin";
-  doc.string(str.length(), str.c_str(), 0.25, 6.5);
+  doc.string(str.length(), str.c_str(), 0.25, 8.5);
 
   str = "How neatly spreads his claws";
-  doc.string(str.length(), str.c_str(), 0.25, 5);
+  doc.string(str.length(), str.c_str(), 0.25, 7);
 
   str = "And welcomes little fishes in";
-  doc.string(str.length(), str.c_str(), 0.25, 3.5);
+  doc.string(str.length(), str.c_str(), 0.25, 5.5);
 
   str = "With gently smiling jaws";
-  doc.string(str.length(), str.c_str(), 0.25, 2);
+  doc.string(str.length(), str.c_str(), 0.25, 4);
 
   /*
   str = "We Present a representation of";
