@@ -69,7 +69,7 @@ bool PhongShader::init()
   
   ShConstColor3f lightColor(1.0f, 1.0f, 1.0f);
   fsh = ShKernelSurface::phong<ShColor3f>();
-  fsh = fsh << namedCombine(access(difftex), access(spectex));
+  fsh = fsh << namedCombine(shAccess(difftex), shAccess(spectex));
   fsh = fsh << shExtract("specExp") << exponent;
   fsh = fsh << shExtract("irrad") << lightColor;
   return true;

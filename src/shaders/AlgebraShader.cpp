@@ -194,7 +194,7 @@ ShProgram worleySurface() {
   freq.range(0.1f, 64.0f);
 
   ShProgram worleysh = shWorley<4, 2, float>(false); // pass in coefficient
-  worleysh = (dot<ShAttrib4f>() << coeff) << worleysh; 
+  worleysh = (shDot<ShAttrib4f>() << coeff) << worleysh; 
 
   ShProgram scaler = SH_BEGIN_PROGRAM() {
     ShInOutTexCoord2f SH_DECL(texcoord) = freq * texcoord;
@@ -208,7 +208,7 @@ ShProgram worleySurface() {
 
   worleysh = clamper << worleysh;
 
-  ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
+  ShProgram colorsh = shLerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
   return ShKernelSurface::phong<ShColor3f>() << colorsh << worleysh;
 }
 
@@ -454,7 +454,7 @@ bool AlgebraShaders::init_all()
   spectex.name("Specular texture");
   spectex.memory(image.memory());
 
-  surfsh[i] = ShKernelSurface::phong<ShColor3f>() << ( access(difftex) & access(spectex) );
+  surfsh[i] = ShKernelSurface::phong<ShColor3f>() << ( shAccess(difftex) & shAccess(spectex) );
   surfsh[i] = surfsh[i] << shExtract("specExp") << specExp;
   i++;
 

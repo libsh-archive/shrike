@@ -1,3 +1,9 @@
+2005-08-04  Francois Marier  <francois@serioushack.com>
+
+	* src/shaders/AlgebraShader.cpp, Text.cpp, PhongShader.cpp,
+	NoiseShader.cpp, WorleyShader.cpp: Update the nibbles to the new
+	names.
+
 2005-07-07  Francois Marier  <francois@serioushack.com>
 
 	* *.cpp, *.hpp: Change the license and copyright notices to the

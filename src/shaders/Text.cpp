@@ -25,17 +25,17 @@ ShTexCoord2f posn;
 
 ShProgram u(const ShProgram& a, const ShProgram& b)
 {
-  return max<ShAttrib1f>() << (a & b);
+  return shMax<ShAttrib1f>() << (a & b);
 }
 
 ShProgram i(const ShProgram& a, const ShProgram& b)
 {
-  return min<ShAttrib1f>() << (a & b);
+  return shMin<ShAttrib1f>() << (a & b);
 }
 
 ShProgram s(const ShProgram& a, const ShProgram& b)
 {
-  return i(a, sub<ShAttrib1f>() << ShConstAttrib1f(1.0) << b);
+  return i(a, shSub<ShAttrib1f>() << ShConstAttrib1f(1.0) << b);
 }
 
 ShProgram rect(float x, float y,

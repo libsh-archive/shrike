@@ -78,7 +78,7 @@ bool NoiseShader::init() {
 
   vsh = ShKernelLib::shVsh(Globals::mv, Globals::mvp) << shExtract("lightPos") << Globals::lightPos; 
   vsh = shSwizzle("normal", "halfVec", "lightVec", "posh") << vsh;
-  vsh = namedCombine(transform<ShPoint3f>(bandTrans, "posm") << cast<ShPosition4f, ShPoint3f>("posm"), vsh);
+  vsh = namedCombine(shTransform<ShPoint3f>(bandTrans, "posm") << shCast<ShPosition4f, ShPoint3f>("posm"), vsh);
 
   fsh = ShKernelSurface::phong<ShColor3f>(); 
   fsh = fsh << shExtract("irrad") << ShConstAttrib3f(1.0f, 1.0f, 1.0f);

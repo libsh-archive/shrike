@@ -101,7 +101,7 @@ public:
     DistSqGradientPropFactory<2, float> propFactory; 
 
     ShProgram worleysh = shWorley<4>(&genFactory, &propFactory); 
-    worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    worleysh = worleysh << (shMul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
 
     ShAttrib1f SH_DECL(bumpScale) = ShConstAttrib1f(1.0f);
     bumpScale.range(-10.0f, 10.0f);
@@ -136,7 +136,7 @@ public:
     DistSqGradientPropFactory<2, float> propFactory; 
 
     ShProgram worleysh = shWorley<4>(&genFactory, &propFactory); 
-    worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    worleysh = worleysh << (shMul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
 
     ShAttrib1f SH_DECL(bumpScale) = ShConstAttrib1f(3.0f);
     bumpScale.range(-10.0f, 10.0f);
@@ -193,7 +193,7 @@ public:
     frequency.range(0.0f, 256.0f);
 
     ShProgram worleysh = shWorley<4>(&genFactory, &propFactory); 
-    worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    worleysh = worleysh << (shMul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
 
     ShAttrib4f SH_DECL(innerCoeff) = coeff; 
 
@@ -201,7 +201,7 @@ public:
     innerFreq.range(0.0f, 256.0f);
 
     ShProgram innersh = shWorley<4>(&genFactory, &dist1Factory);
-    innersh = innersh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(innerFreq));
+    innersh = innersh << (shMul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(innerFreq));
 
     worleysh = namedCombine(worleysh, innersh);
 
@@ -267,8 +267,8 @@ public:
   void initfsh()
   {
     ShProgram worleysh = shWorley<4, 2, float>(useTexture);
-    worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
-    worleysh = (dot<ShAttrib4f>() << coeff) << worleysh;
+    worleysh = worleysh << (shMul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    worleysh = (shDot<ShAttrib4f>() << coeff) << worleysh;
 
     // make polkadots by clamping the scalar result from worley
     ShProgram polkash = SH_BEGIN_PROGRAM() {
@@ -280,7 +280,7 @@ public:
     color2 =  ShColor3f(1.0, 0.7, 0.0);
     ShColor3f specularColor(0.5, 0.5, 0.5);
 
-    ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
+    ShProgram colorsh = shLerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
     colorsh = colorsh & ( keep<ShColor3f>("ks") << specularColor); 
 
     fsh = fsh << colorsh << worleysh;
@@ -303,20 +303,20 @@ public:
     Dist_1PropFactory<2, float> dist_1PropFactory;
 
     ShProgram worleysh = shWorley<4>(&genFactory, &dist_1PropFactory);
-    worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
-    worleysh = (dot<ShAttrib4f>() << coeff) << worleysh;
+    worleysh = worleysh << (shMul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    worleysh = (shDot<ShAttrib4f>() << coeff) << worleysh;
 
     ShProgram worleysh2 = shWorley<4>(&genFactory, &distSqPropFactory);
-    worleysh2 = worleysh2 << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq2));
-    worleysh2 = (dot<ShAttrib4f>() << coeff2) << worleysh2;
+    worleysh2 = worleysh2 << (shMul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq2));
+    worleysh2 = (shDot<ShAttrib4f>() << coeff2) << worleysh2;
 
-    worleysh = sub<ShAttrib1f>() << namedCombine(worleysh, worleysh2);
+    worleysh = shSub<ShAttrib1f>() << namedCombine(worleysh, worleysh2);
 
     color1 = ShColor3f(0.0, 0.0, 1.0);
     color2 =  ShColor3f(0.5, 0.0, 0.0);
     ShColor3f specularColor(0.5, 0.5, 0.5);
 
-    ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
+    ShProgram colorsh = shLerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
     colorsh = colorsh & ( keep<ShColor3f>("ks") << specularColor); 
 
     fsh = fsh << colorsh << worleysh;
@@ -337,12 +337,12 @@ public:
     DefaultGenFactory<2, float> genFactory(useTexture);
     Dist_1PropFactory<2, float> dist_1PropFactory;
     ShProgram worleysh = shWorley<4>(&genFactory, &dist_1PropFactory);
-    worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
-    worleysh = (dot<ShAttrib4f>() << coeff) << worleysh;
+    worleysh = worleysh << (shMul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    worleysh = (shDot<ShAttrib4f>() << coeff) << worleysh;
 
     ShProgram worleysh2 = shWorley<4>(&genFactory, &dist_1PropFactory);
-    worleysh2 = worleysh2 << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
-    worleysh2 = (dot<ShAttrib4f>() << coeff2) << worleysh2;
+    worleysh2 = worleysh2 << (shMul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    worleysh2 = (shDot<ShAttrib4f>() << coeff2) << worleysh2;
 
     // make patches out of the two
     ShProgram patcher = SH_BEGIN_PROGRAM() {
@@ -360,7 +360,7 @@ public:
     color2 = ShColor3f(0.45, 0.3, 0.0);
     ShColor3f specularColor(0.2, 0.2, 0.2);
 
-    ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
+    ShProgram colorsh = shLerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
     colorsh = colorsh & ( keep<ShColor3f>("ks") << specularColor); 
 
     fsh = fsh << colorsh << worleysh;
@@ -380,12 +380,12 @@ public:
     DefaultGenFactory<2, float> genFactory(useTexture);
     Dist_1PropFactory<2, float> dist_1PropFactory;
     ShProgram worleysh = shWorley<4>(&genFactory, &dist_1PropFactory);
-    worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
-    worleysh = (dot<ShAttrib4f>() << coeff) << worleysh;
+    worleysh = worleysh << (shMul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    worleysh = (shDot<ShAttrib4f>() << coeff) << worleysh;
 
     ShProgram worleysh2 = shWorley<4>(&genFactory, &dist_1PropFactory);
-    worleysh2 = worleysh2 << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq2));
-    worleysh2 = (dot<ShAttrib4f>() << coeff) << worleysh2;
+    worleysh2 = worleysh2 << (shMul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq2));
+    worleysh2 = (shDot<ShAttrib4f>() << coeff) << worleysh2;
 
     color1 = ShColor3f(0.0, 0.2, 0.8);
     color2 =  ShColor3f(0.6, 0.6, 0.7);
@@ -451,8 +451,8 @@ public:
       worleysh = shWorley<4>(&genFactory, &propFactory); 
     }
 
-    worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
-    worleysh = (dot<ShAttrib4f>() << coeff) << worleysh;
+    worleysh = worleysh << (shMul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    worleysh = (shDot<ShAttrib4f>() << coeff) << worleysh;
 
     ShProgram clamper = SH_BEGIN_PROGRAM() {
       ShInOutAttrib1f SH_DECL(scalar) = clamp(scalar, 0.0f, 1.0f);
@@ -462,7 +462,7 @@ public:
     } SH_END;
     worleysh = clamper << worleysh;
 
-    ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
+    ShProgram colorsh = shLerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
     colorsh = colorsh & ( keep<ShColor3f>("ks") << specularColor); 
     fsh = fsh << colorsh << worleysh;
     vsh = namedAlign(vsh, fsh);
@@ -506,7 +506,7 @@ public:
     PropertyFactory<4, 2, float> *propFactory = combine(&distPropFactory, &noisePropFactory);
 
     ShProgram worleysh = shWorley<4>(&genFactory, propFactory); // pass in coefficients 
-    worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    worleysh = worleysh << (shMul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
 
     ShAttrib1f SH_DECL(noiseScale) = ShConstAttrib1f(0.1f);
     noiseScale.range(0.0f, 1.0f);
@@ -751,14 +751,14 @@ public:
   void initfsh()
   {
     ShProgram worleysh = shWorley<1, 3, float>(useTexture);  // only keep closest neighbour
-    worleysh = worleysh << (mul<ShTexCoord3f>("texcoord", "freq", "posv") << fillcast<3>(freq));
+    worleysh = worleysh << (shMul<ShTexCoord3f>("texcoord", "freq", "posv") << fillcast<3>(freq));
 
     // make polkadots by clamping the scalar result from worley
     color1 = ShColor3f(0.27, 0.35, 0.45);
     color2 =  ShColor3f(1.0, 0.7, 0.0);
     ShColor3f specularColor(0.5, 0.5, 0.5);
 
-    ShProgram colorsh = lerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
+    ShProgram colorsh = shLerp<ShColor3f, ShAttrib1f>("kd") << color1 << color2;  // kd is a lerp based on the worley scalar
     colorsh = colorsh & ( keep<ShColor3f>("ks") << specularColor); 
 
     fsh = fsh << colorsh << worleysh;
@@ -816,7 +816,7 @@ public:
     PropertyFactory<2, 2, float> *propFactory = combine(m_distFactory, &euclideanDistFactory); 
 
     ShProgram worleysh = shWorley<4>(&genFactory, propFactory); 
-    worleysh = worleysh << (mul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
+    worleysh = worleysh << (shMul<ShTexCoord2f>("texcoord", "freq", "texcoord") << fillcast<2>(freq));
 
     // make polkadots by clamping the scalar result from worley
     color1 =  ShColor3f(1.0, 1.0f, 1.0f); 
