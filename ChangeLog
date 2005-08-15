@@ -1,3 +1,8 @@
+2005-08-15  Francois Marier  <francois@serioushack.com>
+
+	* src/ShrikeCanvas.cpp (reshape): Remove unnecessary local
+	variable that was causing assertion errors on Windows.
+
 2005-08-04  Francois Marier  <francois@serioushack.com>
 
 	* src/shaders/AlgebraShader.cpp, Text.cpp, PhongShader.cpp,

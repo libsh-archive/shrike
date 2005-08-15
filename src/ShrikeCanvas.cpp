@@ -423,7 +423,6 @@ void ShrikeCanvas::reshape(wxSizeEvent& event)
 {
   wxGLCanvas::OnSize(event);
 
-  wxPaintDC dc(this);
   int w, h;
 
   GetClientSize(&w, &h);
