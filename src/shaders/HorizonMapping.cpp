@@ -55,9 +55,9 @@ bool HorizonMapping::init()
 {
   // load the image and put them in different textures
   ShImage image, horizmap1, horizmap2, dirmap1, dirmap2;
-  image.loadPng(normalize_path(SHMEDIA_DIR "/horizonmaps/cross.png"));
-  horizmap1.loadPng(normalize_path(SHMEDIA_DIR "/horizonmaps/cross_horizon1.png"));
-  horizmap2.loadPng(normalize_path(SHMEDIA_DIR "/horizonmaps/cross_horizon2.png"));
+  image.load_PNG(normalize_path(SHMEDIA_DIR "/horizonmaps/cross.png"));
+  horizmap1.load_PNG(normalize_path(SHMEDIA_DIR "/horizonmaps/cross_horizon1.png"));
+  horizmap2.load_PNG(normalize_path(SHMEDIA_DIR "/horizonmaps/cross_horizon2.png"));
   
   ShTable2D<ShVector3fub> bump(image.width(),image.height());
   bump.memory(image.memory());
@@ -188,8 +188,8 @@ ViewHorizonMaps::~ViewHorizonMaps()
 bool ViewHorizonMaps::init()
 {
   ShImage horizmap1, horizmap2;
-  horizmap1.loadPng(normalize_path(SHMEDIA_DIR "/horizonmaps/cross_horizon1.png"));
-  horizmap2.loadPng(normalize_path(SHMEDIA_DIR "/horizonmaps/cross_horizon2.png"));
+  horizmap1.load_PNG(normalize_path(SHMEDIA_DIR "/horizonmaps/cross_horizon1.png"));
+  horizmap2.load_PNG(normalize_path(SHMEDIA_DIR "/horizonmaps/cross_horizon2.png"));
   
   ShTable2D<ShColor4fub> horizon1(horizmap1.width(), horizmap1.height());
   horizon1.memory(horizmap1.memory());

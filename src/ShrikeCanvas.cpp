@@ -376,12 +376,12 @@ void ShrikeCanvas::screenshot(const wxString& filename)
 #if 0
      std::ostringstream s;
      s << "_" << x << "_" << y;
-     img.savePng(filename + s.str());
+     img.save_PNG(filename + s.str());
 #endif
   }
   // Lame convertion from wxString to std::string:
   stdfilename = wxConvLibc.cWX2MB(filename);
-  final.savePng(stdfilename, 0);
+  final.save_PNG(stdfilename, 0);
 
   setupView();
   render();

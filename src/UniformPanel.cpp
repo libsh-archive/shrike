@@ -255,7 +255,7 @@ public:
       // Lame convertion from wxString to std::string:
       std::string stdname;
       stdname = wxConvLibc.cWX2MB(dialog->GetPath());
-      img.loadPng(stdname);
+      img.load_PNG(stdname);
       m_node->memory(img.memory(), 0);
       if (m_node->dims() == SH_TEXTURE_1D) {
         m_node->setTexSize(img.width() * img.height());

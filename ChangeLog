@@ -1,3 +1,13 @@
+2005-09-09  Francois Marier  <francois@serioushack.com>
+
+	* src/UniformPanel.cpp, ShrikeCanvas.cpp, ShGenMap.cpp,
+	src/shaders/DiscoShader.cpp, PhongShader.cpp, WorleyShader.cpp,
+	Textures.cpp, EnvMapShader.cpp, ShinyBumpMapShader.cpp,
+	SatinShader.cpp, HomomorphicShader.cpp, JeweledShader.cpp,
+	AlgebraShader.cpp, GlassShader.cpp, LuciteShader.cpp,
+	HorizonMapping.cpp, Derivatives.cpp, BumpMapShader.cpp: Rename
+	loadPng and savePng to load_PNG and save_PNG.
+
 2005-08-15  Francois Marier  <francois@serioushack.com>
 
 	* src/ShrikeCanvas.cpp (reshape): Remove unnecessary local

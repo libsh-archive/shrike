@@ -42,19 +42,19 @@ int main(int argc, char** argv)
     string outFileName = inFileName.substr(0,inFileName.size() - 4) + 
       ".normal.png";
     SH::ShImage inputImage;
-    inputImage.loadPng(inFileName);
-    (inputImage.getNormalImage()).savePng16(outFileName);
+    inputImage.load_PNG(inFileName);
+    (inputImage.getNormalImage()).save_PNG16(outFileName);
   }
   else if (type == "q") {
     string inFileName(argv[2]);
     SH::ShImage inputImage, inputImage2;
     string outFileName = inFileName.substr(0,inFileName.size() - 4) + 
       ".quaternion.png";
-    inputImage.loadPng(inFileName);
+    inputImage.load_PNG(inFileName);
     SH::ShImage normalImage = inputImage.getNormalImage();
     SH::ShImage normalImage2;
     if (argc > 3) {
-      inputImage2.loadPng(string(argv[3]));
+      inputImage2.load_PNG(string(argv[3]));
       normalImage2 = inputImage2.getNormalImage();
     }
     int w = inputImage.width();
@@ -110,7 +110,7 @@ int main(int argc, char** argv)
         }
       }
     }
-    outputImage.savePng16(outFileName);
+    outputImage.save_PNG16(outFileName);
   }
   else if (type == "h") {
     string inFileName(argv[2]);
@@ -118,7 +118,7 @@ int main(int argc, char** argv)
     string outFileName2 = inFileName.substr(0,inFileName.size() - 4) +  "_horizon2.png";
 		
     SH::ShImage inputImage;
-    inputImage.loadPng(inFileName);
+    inputImage.load_PNG(inFileName);
     SH::ShImage outputImage1(inputImage.width(), inputImage.height(), 4);
     SH::ShImage outputImage2(inputImage.width(), inputImage.height(), 4);
 
@@ -212,8 +212,8 @@ int main(int argc, char** argv)
       }
     }
 		
-    outputImage1.savePng(outFileName1);
-    outputImage2.savePng(outFileName2);
+    outputImage1.save_PNG(outFileName1);
+    outputImage2.save_PNG(outFileName2);
   }
   return 0;
 }
