@@ -1,3 +1,8 @@
+2005-09-15  Francois Marier  <francois@serioushack.com>
+
+	* src/shaders/NoiseShader.cpp: replace deprecated_smoothstep()
+	with cubicstep().
+
 2005-09-09  Francois Marier  <francois@serioushack.com>
 
 	* src/UniformPanel.cpp, ShrikeCanvas.cpp, ShGenMap.cpp,
