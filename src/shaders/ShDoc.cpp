@@ -237,6 +237,88 @@ ShColor3f ShDoc::anisoAntialias(ShAttrib2f x,
   return o;
 }
 
+
+// =============================================================
+// function: given the coordinates, find the anisoantiliased color
+// m_color1: color of the glyph interior
+// m_color2: color of the glyph exterior
+// =============================================================
+ShColor3f ShDoc::anisoAntialiasPhong(
+			      ShNormal3f nv,
+			      ShVector3f hv,
+			      ShVector3f lv,
+			      ShPoint3f pv,
+			      ShAttrib1f phongexp,
+		              ShAttrib2f x,
+		              ShColor3f m_color1, 
+			      ShColor3f m_color2,
+			      ShAttrib1f m_fw,
+			      ShAttrib2f m_thres) 
+{ 
+  ShConstColor3f lightColor(1.0f, 1.0f, 1.0f);
+
+  ShImage image;
+  // image.loadPng(normalize_path("/home/zqin/sh/myshrike/src/tomisto3.png"));
+  // image.loadPng(normalize_path("/home/zqin/sh/shmedia/textures/woodkd.png"));
+  ShTable2D<ShColor3fub> dstex(image.width(), image.height());
+  dstex.memory(image.memory());
+  // ShColor3f kdb = dstex(x);
+  // ShColor3f ksb = kdb;
+
+  // for background
+  ShConstColor3f kdb(0, 0, 0);
+  ShConstColor3f ksb(1, 1, 1);
+
+  // for foreground
+  // ShConstColor3f kdf(1, 0.84314, 0);
+  ShConstColor3f kdf(1, 0.7569, 0.1451);
+  ShConstColor3f ksf(1, 0.7569, 0.1451);
+
+  ShColor3f irrad = lightColor;
+  ShColor3f o;
+
+  ShAttrib4f r = shortestDis(x);
+  ShAttrib2f fw;
+  fw(0) = dx(x) | r(2,3);
+  fw(1) = dy(x) | r(2,3);
+  ShAttrib1f w = length(fw)*m_fw;
+  ShAttrib1f p = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
+
+  ShAttrib2f th;
+  th(0) = -0.01;
+  th(1) = 0.01;
+  ShAttrib1f ww = 0.1;
+  ShAttrib2f a = 20 * smoothstep(r(0)*r(1), th(0), ww) * smoothstep(-r(0)*r(1), -th(1), ww) * r(2,3);
+  ShNormal3f ns = ShNormal3f(0,0,1);
+  ns(0,1) = ns(0,1) + a;
+  ns = normalize(ns);
+  
+  ShVector3f y = ShVector3f(0,1,0);
+  ShVector3f ps = pv;
+  ps(1) = 0;
+  ps = normalize(ps);
+
+  ShVector3f tgt0 = cross(y, ps);
+  ShVector3f tgt1 = cross(nv, tgt0);
+
+  ShNormal3f np = ns(0) * tgt0 + ns(1) * tgt1 + ns(2)*nv;
+  np = normalize(np);
+
+  // irrad *= pos( nv | lv);
+  // ShAttrib1f t = pow(pos(nv|hv), phongexp);
+  ShAttrib1f t = pow(pos(np|hv), phongexp);
+
+  // background color
+  m_color2 = irrad * (kdb + ksb * t);
+
+  // foreground color
+  m_color1 = irrad * (kdf + ksf * t);
+
+  o = lerp(p(0),m_color2,m_color1);
+ 
+  return o;
+}
+
 // =============================================================
 // function: given the coordinates, find the aliased color
 // m_color1: color of the glyph interior

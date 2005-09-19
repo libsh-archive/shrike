@@ -57,6 +57,7 @@ private:
   static ShAttrib1f m_scale;
   static ShVector2f m_offset;
   static ShAttrib1f m_fw;
+  static ShAttrib1f m_phongexp;
 
   static ShAttrib2f m_thres;
   static ShColor3f m_color1, m_color2;
@@ -66,20 +67,21 @@ private:
 VectorDoc::VectorDoc(int mode)
   : Shader(std::string("Vector Graphics: Vector Document") + 
 	  ((mode == 0) ? ": Isotropically Antialiased" : 
-	  ((mode == 1) ? ": Anisotropically Antialiased" : 
-	  ((mode == 2) ? ": Aliased" : 
-	  ((mode == 3) ? ": Isotropically Antialiased Outline" : 
-	  ((mode == 4) ? ": Anisotropically Antialiased Outline" : 
-	  ((mode == 5) ? ": Gradient" : 
-	  ((mode == 6) ? ": Filter Width" : 
-	  ((mode == 7) ? ": Pseudodistance Isotropically Antialiased Outline" : 
-	  ((mode == 8) ? ": Pseudodistance Anisotropically Antialiased Outline" : 
-	  ((mode == 9) ? ": Biased Signed Distance" : 
-	  ((mode == 10) ? ": Greyscale Biased Signed Distance" : 
-	  ((mode == 11) ? ": Signed Distance" : 
-	  ((mode == 12) ? ": Biased Signed Pseudodistance" : 
-	  ((mode == 13) ? ": Greyscale Biased Signed Pseudodistance" : 
-	                  ": Pseudodistance"))))))))))))))),
+	  ((mode == 1) ? ": Phong" : 
+	  ((mode == 2) ? ": Anisotropically Antialiased" : 
+	  ((mode == 3) ? ": Aliased" : 
+	  ((mode == 4) ? ": Isotropically Antialiased Outline" : 
+	  ((mode == 5) ? ": Anisotropically Antialiased Outline" : 
+	  ((mode == 6) ? ": Gradient" : 
+	  ((mode == 7) ? ": Filter Width" : 
+	  ((mode == 8) ? ": Pseudodistance Isotropically Antialiased Outline" : 
+	  ((mode == 9) ? ": Pseudodistance Anisotropically Antialiased Outline" : 
+	  ((mode == 10) ? ": Biased Signed Distance" : 
+	  ((mode == 11) ? ": Greyscale Biased Signed Distance" : 
+	  ((mode == 12) ? ": Signed Distance" : 
+	  ((mode == 13) ? ": Biased Signed Pseudodistance" : 
+	  ((mode == 14) ? ": Greyscale Biased Signed Pseudodistance" : 
+	                  ": Pseudodistance")))))))))))))))),
     m_mode(mode)
 {
   if (!m_done_init) {
@@ -104,6 +106,9 @@ VectorDoc::VectorDoc(int mode)
     m_vcolor1.name("vcolor1");
     m_vcolor2.name("vcolor2");
 
+    // m_phongexp.name("phongexp");
+    // m_phongexp.range(5.0, 500.0);
+
     m_done_init = true;
   }
 }
@@ -115,8 +120,37 @@ VectorDoc::~VectorDoc()
 bool VectorDoc::init()
 {
   std::cerr << "Initializing " << name() << std::endl;
+  /*
+  // vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
+  // vsh = shSwizzle("texcoord", "posh") << vsh;
+
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
-  vsh = shSwizzle("texcoord", "posh") << vsh;
+  vsh = vsh << shExtract("lightPos") << Globals::lightPos;
+  vsh = shSwizzle("normal", "halfVec", "lightVec", "posh", "texcoord") << vsh;
+
+  ShColor3f SH_DECL(specular) = ShColor3f(0.5, 1.0, 1.0);
+  ShColor3f SH_DECL(diffuse) = ShColor3f(1.0, 0.0, 0.0);
+  ShAttrib1f SH_DECL(exponent) = ShAttrib1f(35.0);
+  exponent.range(5.0f, 500.0f);
+
+  ShImage image;
+  // image.loadPng(normalize_path(SHMEDIA_DIR "/textures/rustkd.png"));
+  image.loadPng(normalize_path("/home/zqin/sh/shmedia/textures/paper.png"));
+  ShTable2D<ShColor3fub> difftex(image.width(), image.height());
+  difftex.memory(image.memory());
+  // image.loadPng(normalize_path(SHMEDIA_DIR "/textures/rustks.png"));
+  image.loadPng(normalize_path("/home/zqin/sh/shmedia/textures/paper.png"));
+  ShTable2D<ShColor3fub> spectex(image.width(), image.height());
+  spectex.memory(image.memory());
+   
+  fsh = ShKernelSurface::phong<ShColor3f>();
+  fsh = fsh << namedCombine(access(difftex), access(spectex));
+  // fsh = fsh << shExtract("kd") << specular;
+  // fsh = fsh << shExtract("ks") << diffuse;
+  fsh = fsh << shExtract("specExp") << exponent;
+  fsh = fsh << shExtract("irrad") << lightColor;
+  */
+
 
   // parameter 256: num of small grids
   // parameter 16;  num of small grids in one big grid
@@ -125,78 +159,72 @@ bool VectorDoc::init()
   // TODO
 
   /*
-  doc.initFont("font.txt", 8, 4);
-  
-  std::string str;
-  
-  str = "h";
-  doc.string(str.length(), str.c_str(), 0, 0);
-  */
-
   doc.initFont("font.txt", 64, 4);
   
   std::string str;
+  
+  str = "the princess bride";
+  doc.string(str.length(), str.c_str(), 0.25, 4);
+  */
 
-  str = "How doth the little crocodile";
-  doc.string(str.length(), str.c_str(), 0.25, 17);
+  doc.initFont("font.txt", 8, 4);
+  
+  std::string str;
 
+  // str = "How doth the little crocodile";
+  // doc.string(str.length(), str.c_str(), 0.25, 17);
+
+  /*  with texture
   str = "How doth the little crocodile";
-  doc.string(str.length(), str.c_str(), 0.25, 15);
+  doc.string(str.length(), str.c_str(), 3, 20);
 
   str = "Improve his shining tail";
-  doc.string(str.length(), str.c_str(), 0.25, 13.5);
+  doc.string(str.length(), str.c_str(), 3, 18.5);
 
   str = "And pour the waters of the Nile";
-  doc.string(str.length(), str.c_str(), 0.25, 12);
+  doc.string(str.length(), str.c_str(), 3, 17);
 
   str = "On every golden scale";
-  doc.string(str.length(), str.c_str(), 0.25, 10.5);
+  doc.string(str.length(), str.c_str(), 3, 15.5);
 
   str = "How cheerfully he seems to grin";
-  doc.string(str.length(), str.c_str(), 0.25, 8.5);
+  doc.string(str.length(), str.c_str(), 3, 13.5);
 
   str = "How neatly spreads his claws";
-  doc.string(str.length(), str.c_str(), 0.25, 7);
+  doc.string(str.length(), str.c_str(), 3, 12);
 
   str = "And welcomes little fishes in";
-  doc.string(str.length(), str.c_str(), 0.25, 5.5);
+  doc.string(str.length(), str.c_str(), 3, 10.5);
 
   str = "With gently smiling jaws";
-  doc.string(str.length(), str.c_str(), 0.25, 4);
+  doc.string(str.length(), str.c_str(), 3, 9);
+  */
 
   /*
-  str = "We Present a representation of";
-  doc.string(32, str.c_str(), 0.25, 15);
+  // without texture
+  str = "How doth the little crocodile";
+  doc.string(str.length(), str.c_str(), 1, 15);
 
-  str = "Cont glyphs suitable for realtime";
-  doc.string(33, str.c_str(), 0.25, 13.5);
+  str = "Improve his shining tail";
+  doc.string(str.length(), str.c_str(), 1, 13.5);
 
-  str = "scalable text rendering on GPUs";
-  doc.string(32, str.c_str(), 0.25, 12);
+  str = "And pour the waters of the Nile";
+  doc.string(str.length(), str.c_str(), 1, 12);
 
-  str = "Contours and sharp features can";
-  doc.string(31, str.c_str(), 0.25, 10.5);
+  str = "On every golden scale";
+  doc.string(str.length(), str.c_str(), 1, 10.5);
 
-  str = "be exactly reconstructed using a";
-  doc.string(32, str.c_str(), 0.25, 9);
+  str = "How cheerfully he seems to grin";
+  doc.string(str.length(), str.c_str(), 1, 8.5);
 
-  str = "constant amount of computation";
-  doc.string(30, str.c_str(), 0.25, 7.5);
+  str = "How neatly spreads his claws";
+  doc.string(str.length(), str.c_str(), 1, 7);
 
-  str = "time per pixel. A combination of";
-  doc.string(32, str.c_str(), 0.25, 6);
+  str = "And welcomes little fishes in";
+  doc.string(str.length(), str.c_str(), 1, 5.5);
 
-  str = "texture data and procedural com";
-  doc.string(31, str.c_str(), 0.25, 4.5);
-
-  str = "putation is used to recreate the";
-  doc.string(32, str.c_str(), 0.25, 3);
-
-  str = "signed distance field and its";
-  doc.string(29, str.c_str(), 0.25, 1.5);
-
-  str = "gradient.";
-  doc.string(9, str.c_str(), 0.25, 0);
+  str = "With gently smiling jaws";
+  doc.string(str.length(), str.c_str(), 1, 4);
   */
 
   /*
@@ -213,10 +241,97 @@ bool VectorDoc::init()
   doc.string(11, str.c_str(), 0.25, 1.5, sp);
   */
 
+  /*
+  str = "mimi";
+  doc.string(str.length(), str.c_str(), 2, 1);
+  */
+  str = "v";
+  doc.string(str.length(), str.c_str(), 0, 0);
+
+  /*
+  str = "the armada";
+  doc.string(str.length(), str.c_str(), 22, 15);
+
+  str = "the farm";
+  doc.string(str.length(), str.c_str(), 29, 16);
+
+  str = "fishermen's";
+  doc.string(str.length(), str.c_str(), 19.5, 21);
+
+  str = "village";
+  doc.string(str.length(), str.c_str(), 19.5, 20);
+
+  str = "ambush";
+  doc.string(str.length(), str.c_str(), 7, 20);
+
+  str = "fire";
+  doc.string(str.length(), str.c_str(), 0.25, 14);
+
+  str = "swamp";
+  doc.string(str.length(), str.c_str(), 0.25, 13);
+
+  str = "cliffs of";
+  doc.string(str.length(), str.c_str(), 8, 10.5);
+
+  str = "insanity";
+  doc.string(str.length(), str.c_str(), 8, 9.5);
+
+  str = "lotharon's";
+  doc.string(str.length(), str.c_str(), 23, 9);
+
+  str = "castle";
+  doc.string(str.length(), str.c_str(), 23, 8);
+
+  str = "pursuit ship";
+  doc.string(str.length(), str.c_str(), 14, 9.5);
+
+  str = "zoo of";
+  doc.string(str.length(), str.c_str(), 30, 5);
+
+  str = "earth";
+  doc.string(str.length(), str.c_str(), 30, 4);
+
+  str = "the four white";
+  doc.string(str.length(), str.c_str(), 10, 5);
+
+  str = "horses";
+  doc.string(str.length(), str.c_str(), 10, 4);
+  */
+
   doc.stringEnd();
+
+
+  vsh = SH_BEGIN_VERTEX_PROGRAM {
+    ShInOutTexCoord2f u;
+    ShInputNormal3f nm;
+    ShInputPosition4f pm;
+
+    ShOutputNormal3f nv;
+    ShOutputVector3f hv;
+    ShOutputVector3f lv;
+    ShOutputPosition4f pd;
+
+    ShOutputPoint3f pv = (Globals::mv|pm)(0,1,2);
+
+    nv = normalize(Globals::mv | nm);
+    
+    ShVector3f vv = normalize(-pv);
+    lv = normalize(Globals::lightPos - pv);
+    hv = normalize(lv + vv);
+
+    pd = (Globals::mvp | pm);
+
+  } SH_END_PROGRAM;
+
 
   fsh = SH_BEGIN_FRAGMENT_PROGRAM {
     ShInputTexCoord2f tc;
+    ShInputNormal3f nv;
+    ShInputVector3f hv;
+    ShInputVector3f lv;
+    ShInputPosition4f pd;
+    ShInputPoint3f pv;
+
     ShOutputColor3f o;
 
     // transform texture coords (should be in vertex shader really, but)
@@ -228,54 +343,59 @@ bool VectorDoc::init()
 	o = doc.isoAntialias(x, m_color1, m_color2, m_fw, m_thres);
       } break;
       case 1: {
+        // phong
+        o = doc.anisoAntialiasPhong(nv, hv, lv, pv, m_phongexp,
+			x, m_color1, m_color2, m_fw, m_thres);
+      } break;
+      case 2: {
         // anisotropically antialiased rendering
         o = doc.anisoAntialias(x, m_color1, m_color2, m_fw, m_thres);
       } break;
-      case 2: {
+      case 3: {
         // aliased rendering;
         o = doc.Alias(x, m_color1,m_color2, m_thres);
       } break;
-      case 3: {
+      case 4: {
         // isotropically antialiased outline rendering
         o = doc.isoAntiOutline(x, m_color1, m_color2, m_fw, m_thres);
       } break;
-      case 4: {
+      case 5: {
         // anisotropically antialiased outline rendering;
 	o = doc.anisoAntiOutline(x, m_color1, m_color2, m_fw, m_thres);
       } break;
-      case 5: {
+      case 6: {
         // gradient visualization
 	o = doc.gradient(x, m_vcolor1, m_vcolor2);
       } break;
-      case 6: {
+      case 7: {
         // filter width visualization
 	o = doc.filterWidth(x);
       } break;
-      case 7: {
+      case 8: {
         // isotropically antialiased pseudodistance outline rendering
 	o = doc.isoAntiPseudoOutline(x, m_color1, m_color2, m_fw, m_thres);
       } break;
-      case 8: {
+      case 9: {
         // anisotropically antialiased pseudodistance outline rendering
 	o = doc.anisoAntiPseudoOutline(x, m_color1, m_color2, m_fw, m_thres);
       } break;;
-      case 9: {
+      case 10: {
         // biased signed distance map visualization 
         o = doc.biasSignedDis1(x, m_scale, m_vcolor1, m_vcolor2);
       } break;
-      case 10: {
+      case 11: {
         // biased signed distance map visualization 
 	o = doc.biasSignedDis2(x, m_scale);
       } break;
-      case 11: {
+      case 12: {
         // signed distance map visualization
 	o = doc.signedDisMap(x, m_scale, m_vcolor2, m_vcolor2);
       } break;
-      case 12: {
+      case 13: {
         // biased signed pseudodistance map visualization 
 	o = doc.biasSignPseudoMap(x, m_scale, m_vcolor1, m_vcolor2);
       } break;
-      case 13: {
+      case 14: {
         // biased signed pseudodistance map visualization 
 	o = doc.biasSignPserdoMap(x, m_scale);
       } break;
@@ -285,12 +405,14 @@ bool VectorDoc::init()
       } break;
     }
   } SH_END_PROGRAM;
+
   return true;
 }
 
 bool VectorDoc::m_done_init = false;
 ShAttrib1f VectorDoc::m_scale = ShAttrib1f(1.0);
-ShVector2f VectorDoc::m_offset = ShVector2f(0,0);
+// ShVector2f VectorDoc::m_offset = ShVector2f(0,0);
+ShVector2f VectorDoc::m_offset = ShVector2f(-1.01,-0.88);
 ShAttrib1f VectorDoc::m_size = ShAttrib1f(1.0);
 ShAttrib1f VectorDoc::m_fw = ShAttrib1f(1.0);
 ShAttrib2f VectorDoc::m_thres = ShAttrib2f(0.0,0.05);
@@ -298,6 +420,7 @@ ShColor3f VectorDoc::m_color1 = ShColor3f(0.0, 0.0, 0.0);
 ShColor3f VectorDoc::m_color2 = ShColor3f(1.0, 1.0, 1.0);
 ShColor3f VectorDoc::m_vcolor1 = ShColor3f(1.0, 0.0, 1.0);
 ShColor3f VectorDoc::m_vcolor2 = ShColor3f(1.0, 1.0, 0.0);
+ShAttrib1f VectorDoc::m_phongexp = ShAttrib1f(15.0);
 
 VectorDoc vd_iaa = VectorDoc(0);
 VectorDoc vd_aaa = VectorDoc(1);

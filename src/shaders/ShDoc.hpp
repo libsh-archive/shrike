@@ -56,6 +56,17 @@ public:
 		      ShColor3f m_color2,
 		      ShAttrib1f m_fw,
 		      ShAttrib2f m_thres);
+  ShColor3f ShDoc::anisoAntialiasPhong(
+		      ShNormal3f nv,
+		      ShVector3f hv,
+		      ShVector3f lv,
+		      ShPoint3f pv,
+		      ShAttrib1f phongexp,
+	              ShAttrib2f x,
+	              ShColor3f m_color1, 
+		      ShColor3f m_color2,
+		      ShAttrib1f m_fw,
+		      ShAttrib2f m_thres);
   ShColor3f Alias(ShAttrib2f x,
   		      ShColor3f m_color1, 
 		      ShColor3f m_color2,
