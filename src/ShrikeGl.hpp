@@ -39,7 +39,7 @@
 # undef GL_GLEXT_LEGACY
 #endif
 
-#if defined(WIN32) 
+#if defined(WIN32)
 
 extern PFNGLMULTITEXCOORD1FARBPROC glMultiTexCoord1fARB;
 extern PFNGLMULTITEXCOORD2FARBPROC glMultiTexCoord2fARB;

@@ -19,7 +19,6 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "ShrikeGl.hpp"
 
-
 #ifdef WIN32
 #define GET_WGL_PROCEDURE(x, T) do { x = reinterpret_cast<PFN ## T ## PROC>(wglGetProcAddress(#x)); } while(0)
 #else
@@ -30,36 +29,28 @@ void shrikeGlInit()
 {
 #ifdef WIN32
   if (!glMultiTexCoord1fARB) {
-    GET_WGL_PROCEDURE(glMultiTexCoord1fARB,
-		      GLMULTITEXCOORD1FARB);
+    GET_WGL_PROCEDURE(glMultiTexCoord1fARB, GLMULTITEXCOORD1FARB);
   }
   if (!glMultiTexCoord2fARB) {
-    GET_WGL_PROCEDURE(glMultiTexCoord2fARB,
-		      GLMULTITEXCOORD2FARB);
+    GET_WGL_PROCEDURE(glMultiTexCoord2fARB, GLMULTITEXCOORD2FARB);
   }
   if (!glMultiTexCoord3fARB) {
-    GET_WGL_PROCEDURE(glMultiTexCoord3fARB,
-		      GLMULTITEXCOORD3FARB);
+    GET_WGL_PROCEDURE(glMultiTexCoord3fARB, GLMULTITEXCOORD3FARB);
   }
   if (!glMultiTexCoord4fARB) {
-    GET_WGL_PROCEDURE(glMultiTexCoord4fARB,
-		      GLMULTITEXCOORD4FARB);
+    GET_WGL_PROCEDURE(glMultiTexCoord4fARB, GLMULTITEXCOORD4FARB);
   }
   if (!glMultiTexCoord1fvARB) {
-    GET_WGL_PROCEDURE(glMultiTexCoord1fvARB,
-		      GLMULTITEXCOORD1FVARB);
+    GET_WGL_PROCEDURE(glMultiTexCoord1fvARB, GLMULTITEXCOORD1FVARB);
   }
   if (!glMultiTexCoord2fvARB) {
-    GET_WGL_PROCEDURE(glMultiTexCoord2fvARB,
-		      GLMULTITEXCOORD2FVARB);
+    GET_WGL_PROCEDURE(glMultiTexCoord2fvARB, GLMULTITEXCOORD2FVARB);
   }
   if (!glMultiTexCoord3fvARB) {
-    GET_WGL_PROCEDURE(glMultiTexCoord3fvARB,
-		      GLMULTITEXCOORD3FVARB);
+    GET_WGL_PROCEDURE(glMultiTexCoord3fvARB, GLMULTITEXCOORD3FVARB);
   }
   if (!glMultiTexCoord4fvARB) {
-    GET_WGL_PROCEDURE(glMultiTexCoord4fvARB,
-		      GLMULTITEXCOORD4FVARB);
+    GET_WGL_PROCEDURE(glMultiTexCoord4fvARB, GLMULTITEXCOORD4FVARB);
   }
 #endif
 }
