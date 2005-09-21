@@ -1,3 +1,10 @@
+2005-09-21  Francois Marier  <francois@serioushack.com>
+
+	* src/shaders/NoiseShader.cpp: Rename cubicstep() to smoothstep().
+
+	* src/shaders/Checkerboard.cpp, JeweledShader.cpp: Rename
+	smoothstep() to linstep().
+
 2005-09-15  Francois Marier  <francois@serioushack.com>
 
 	* src/shaders/NoiseShader.cpp: replace deprecated_smoothstep()
