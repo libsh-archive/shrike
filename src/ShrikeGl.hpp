@@ -22,21 +22,23 @@
 
 #ifdef WIN32
 # include <windows.h>
-#endif
+# define GL_GLEXT_LEGACY
+# include <GL/gl.h>
+# include <GL/glext.h>
+# undef GL_GLEXT_LEGACY
 
-#ifdef __APPLE__
+#elif defined(__APPLE__)
 # define GL_GLEXT_VERBOSE 1
 # define GL_GLEXT_PROTOTYPES 1
 # include <OpenGL/gl.h>
 # include <OpenGL/glext.h>
-#else
-# define GL_GLEXT_LEGACY
+
+#else // UNIX
+# define GL_GLEXT_VERBOSE 1
+# define GL_GLEXT_PROTOTYPES 1
 # include <GL/gl.h>
-# ifndef WIN32
-#  define GL_GLEXT_PROTOTYPES
-# endif
 # include <GL/glext.h>
-# undef GL_GLEXT_LEGACY
+# include <GL/glx.h>
 #endif
 
 #if defined(WIN32)
