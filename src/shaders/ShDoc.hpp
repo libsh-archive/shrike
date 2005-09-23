@@ -43,6 +43,7 @@ public:
   ~ShDoc();
 
   bool initFont(std::string, int, int);
+  void string(int gnum, const int * gly, float mg, float ng);
   void string(int gnum, const char * str, float mg, float ng);
   void stringEnd();
   ShAttrib4f shortestDis(ShAttrib2f x);
@@ -62,6 +63,7 @@ public:
 		      ShVector3f lv,
 		      ShPoint3f pv,
 		      ShAttrib1f phongexp,
+		      ShAttrib3f th,
 	              ShAttrib2f x,
 	              ShColor3f m_color1, 
 		      ShColor3f m_color2,

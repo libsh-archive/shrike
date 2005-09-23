@@ -82,6 +82,7 @@ public:
   int minhadvance() const; ///< Determine the min horizontal advance
   void ShFont::loadFont(const std::string&, int, int);
   void ShFont::stringEnd();
+  void renderline(int gnum, const int * gly, float mg, float ng);
   void renderline(int gnum, const char * str, float mg, float ng);
 
   const float* coords(int) const;

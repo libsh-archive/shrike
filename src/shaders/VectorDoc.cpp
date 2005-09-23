@@ -58,6 +58,7 @@ private:
   static ShVector2f m_offset;
   static ShAttrib1f m_fw;
   static ShAttrib1f m_phongexp;
+  static ShAttrib3f m_th;
 
   static ShAttrib2f m_thres;
   static ShColor3f m_color1, m_color2;
@@ -96,7 +97,7 @@ VectorDoc::VectorDoc(int mode)
     m_offset.range(-10.0, 10.0);
 
     m_size.name("size");
-    m_size.range(0.0, 1000.0);
+    m_size.range(0.0, 10.0);
 
     m_thres.name("threshold");
     m_thres.range(-1.0, 1.0);
@@ -105,6 +106,9 @@ VectorDoc::VectorDoc(int mode)
     m_color2.name("color2");
     m_vcolor1.name("vcolor1");
     m_vcolor2.name("vcolor2");
+
+    m_th.name("wedge");
+    m_th.range(0.0001, 0.01);
 
     // m_phongexp.name("phongexp");
     // m_phongexp.range(5.0, 500.0);
@@ -167,7 +171,7 @@ bool VectorDoc::init()
   doc.string(str.length(), str.c_str(), 0.25, 4);
   */
 
-  doc.initFont("font.txt", 8, 4);
+  doc.initFont("font.txt", 16, 4);
   
   std::string str;
 
@@ -239,14 +243,22 @@ bool VectorDoc::init()
 
   str = "of all evil";
   doc.string(11, str.c_str(), 0.25, 1.5, sp);
+
+  str = "ABC";
+  doc.string(str.length(), str.c_str(), 3, 2);
+  
+  int t = 68;
+  doc.string(1, &t, 1.0f, 2.0f);
   */
 
-  /*
-  str = "mimi";
-  doc.string(str.length(), str.c_str(), 2, 1);
-  */
-  str = "v";
-  doc.string(str.length(), str.c_str(), 0, 0);
+  int gly[4];
+  for(int i=0; i<4; i++) 
+  	//gly[i] = 19977;
+  	gly[i] = 33457;
+  doc.string(1, gly, 2.0f, 2.0f);
+  doc.string(1, gly, 2.0f, 3.0f);
+  doc.string(1, gly, 2.0f, 4.0f);
+  doc.string(1, gly, 2.0f, 5.0f);
 
   /*
   str = "the armada";
@@ -344,7 +356,7 @@ bool VectorDoc::init()
       } break;
       case 1: {
         // phong
-        o = doc.anisoAntialiasPhong(nv, hv, lv, pv, m_phongexp,
+        o = doc.anisoAntialiasPhong(nv, hv, lv, pv, m_phongexp, m_th,
 			x, m_color1, m_color2, m_fw, m_thres);
       } break;
       case 2: {
@@ -420,7 +432,8 @@ ShColor3f VectorDoc::m_color1 = ShColor3f(0.0, 0.0, 0.0);
 ShColor3f VectorDoc::m_color2 = ShColor3f(1.0, 1.0, 1.0);
 ShColor3f VectorDoc::m_vcolor1 = ShColor3f(1.0, 0.0, 1.0);
 ShColor3f VectorDoc::m_vcolor2 = ShColor3f(1.0, 1.0, 0.0);
-ShAttrib1f VectorDoc::m_phongexp = ShAttrib1f(15.0);
+ShAttrib1f VectorDoc::m_phongexp = ShAttrib1f(10.0);
+ShAttrib3f VectorDoc::m_th = ShAttrib3f(0.002, 0.002, 0.001);
 
 VectorDoc vd_iaa = VectorDoc(0);
 VectorDoc vd_aaa = VectorDoc(1);

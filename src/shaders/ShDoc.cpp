@@ -30,7 +30,7 @@
 #include <iostream>
 #include "ShDoc.hpp"
 #include "dist_util.hpp"
-#define MARGINRATIO 0.05
+#define MARGINRATIO 0.1
 
 using namespace SH;
 using namespace ShUtil;
@@ -161,6 +161,10 @@ bool ShDoc::initFont(std::string filename, int small, int split)
   return true;
 }
 
+void ShDoc::string(int gnum, const int * gly, float mg, float ng) {
+  font.renderline(gnum, gly, mg, ng);
+}
+
 void ShDoc::string(int gnum, const char * str, float mg, float ng) {
   font.renderline(gnum, str, mg, ng);
 }
@@ -249,6 +253,7 @@ ShColor3f ShDoc::anisoAntialiasPhong(
 			      ShVector3f lv,
 			      ShPoint3f pv,
 			      ShAttrib1f phongexp,
+			      ShAttrib3f th,
 		              ShAttrib2f x,
 		              ShColor3f m_color1, 
 			      ShColor3f m_color2,
@@ -269,12 +274,15 @@ ShColor3f ShDoc::anisoAntialiasPhong(
   ShConstColor3f kdb(0, 0, 0);
   ShConstColor3f ksb(1, 1, 1);
 
+  hv = normalize(hv);
+  lv = normalize(lv);
+  nv = normalize(nv);
+
   // for foreground
   // ShConstColor3f kdf(1, 0.84314, 0);
   ShConstColor3f kdf(1, 0.7569, 0.1451);
   ShConstColor3f ksf(1, 0.7569, 0.1451);
 
-  ShColor3f irrad = lightColor;
   ShColor3f o;
 
   ShAttrib4f r = shortestDis(x);
@@ -284,12 +292,16 @@ ShColor3f ShDoc::anisoAntialiasPhong(
   ShAttrib1f w = length(fw)*m_fw;
   ShAttrib1f p = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
 
-  ShAttrib2f th;
-  th(0) = -0.01;
-  th(1) = 0.01;
-  ShAttrib1f ww = 0.1;
-  ShAttrib2f a = 20 * smoothstep(r(0)*r(1), th(0), ww) * smoothstep(-r(0)*r(1), -th(1), ww) * r(2,3);
+  // ShAttrib3f th;
+  th(0) = -0.002;  // width of the wedge inside glyph
+  th(1) =  0.002; // width of the wedge outside glyph
+  th(2) = 0.002;    // width of the transition area
+
+  ShAttrib2f a = smoothstep(r(0), th(0), th(2)) * smoothstep(-r(0), -th(1), th(2)) * r(2,3);
+
+  // normal in surface space
   ShNormal3f ns = ShNormal3f(0,0,1);
+  // normal tilted by a(filtered gradient vector)
   ns(0,1) = ns(0,1) + a;
   ns = normalize(ns);
   
@@ -304,17 +316,20 @@ ShColor3f ShDoc::anisoAntialiasPhong(
   ShNormal3f np = ns(0) * tgt0 + ns(1) * tgt1 + ns(2)*nv;
   np = normalize(np);
 
-  // irrad *= pos( nv | lv);
+  // ShColor1f irrad = pos( nv | lv);
   // ShAttrib1f t = pow(pos(nv|hv), phongexp);
+  ShColor1f irrad = pos( np | lv);
   ShAttrib1f t = pow(pos(np|hv), phongexp);
 
   // background color
-  m_color2 = irrad * (kdb + ksb * t);
+  m_color2 = lightColor * (irrad * kdb + ksb * t);
+  // m_color2 = lightColor * irrad * kdb;
 
   // foreground color
-  m_color1 = irrad * (kdf + ksf * t);
+  m_color1 = lightColor * (irrad * kdf + ksf * t);
+  // m_color1 = lightColor * irrad * kdf;
 
-  o = lerp(p(0),m_color2,m_color1);
+  o = lerp(p,m_color2,m_color1);
  
   return o;
 }
