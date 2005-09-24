@@ -411,9 +411,9 @@ ShColor3f ShDoc::anisoAntialiasPhongEmboss(
   ShAttrib1f p = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
 
   // ShAttrib3f th;
-  th(0) = -0.0002;  // width of the wedge inside glyph
-  th(1) =  0.0002; // width of the wedge outside glyph
-  th(2) = 0.0002;    // width of the transition area
+  th(0) = -0.00025;  // width of the wedge inside glyph
+  th(1) =  0.00025; // width of the wedge outside glyph
+  th(2) = 0.00025;    // width of the transition area
 
   ShAttrib2f a = smoothstep(r(0), th(0), th(2)) * smoothstep(-r(0), -th(1), th(2)) * r(2,3);
 

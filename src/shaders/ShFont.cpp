@@ -439,18 +439,14 @@ void ShFont::renderline(int gnum, const int * gly, float mg, float ng) {
     int curr = gly[g];        // current glyph
     int next;                      // next glyph
     int gw = gwidthMap[curr];      // width of the glyph
-    int gh = gheightMap[curr];     // height of the glyph
+    int gh = gheightMap[curr];      // height of the glyph
     int ymin = yminMap[curr];      // the min y value of the glyph, can be negative
-    int ox = offsetx[curr];        // the glyph x offset in the octree texture
-    int oy = offsety[curr];        // the glyph y offset in the octree texture
-    int ow = winoctree[curr];      // the glyph width in the octree texture
-    int oh = hinoctree[curr];      // the glyph height in the octree texture
 
     // suppose there is a baseline, yshift is how much the glyph should be
     // below/above the base line, yy is the y coord where glyph starts.
 
-    // float yshift = ymin - gh * MARGINRATIO;    // remove the margin on the bottom
-    float yshift = ymin;
+    float yshift = ymin - gh * MARGINRATIO;    // remove the margin at the bottom
+    // float yshift = ymin;
 	
     // xx and yy are the actually starting pos of the glyph after taking
     // into account of the margin. 
@@ -464,8 +460,7 @@ void ShFont::renderline(int gnum, const int * gly, float mg, float ng) {
     // yy: y coordinate of 0-1 where glyph starts from exactly
     // nn: the num of small grid that the glyph starts from in y axis
     
-    // yy = y + 1.0/m_biggrid * yshift / (m_maxgheight * (1 + MARGINRATIO * 2));
-    yy = y + 1.0/m_biggrid * yshift / m_maxgheight;
+    yy = y + 1.0/m_biggrid * yshift / (m_maxgheight * (1 + MARGINRATIO * 2));
     nn = (int)(yy * m_smallgrid);
 
     // 1.0/m_biggrid is how many percent each big grid occupies 
@@ -478,8 +473,8 @@ void ShFont::renderline(int gnum, const int * gly, float mg, float ng) {
     // xx: x coordinate of 0-1 where glyph starts from exactly
     // mm: the num of small grid that the glyph starts from in x axis
 
-    // xx = x - 1.0/m_biggrid * gw * MARGINRATIO / (m_maxgheight * (1 + MARGINRATIO * 2));
-    xx = x;
+    xx = x - 1.0/m_biggrid * gw * MARGINRATIO / (m_maxgheight * (1 + MARGINRATIO * 2));
+    // xx = x;
     mm = (int)(xx * m_smallgrid);
 
     // sx, sy: the starting percentage of the small grid in terms of the big grid
@@ -548,7 +543,7 @@ void ShFont::renderline(int gnum, const int * gly, float mg, float ng) {
     if(g<gnum-1)
       next = gly[g+1];
     else next = 0;
-
+    
     int kernvalue = kmap[ Kernpair(curr, next) ];
 
     // get the advance in x without kerning
@@ -556,16 +551,14 @@ void ShFont::renderline(int gnum, const int * gly, float mg, float ng) {
     // this 4 can be changed TODO
     if(curr == int(' ')) adv = m_maxgheight/4;
 
-    else adv = hadvanceMap[curr];// + kernvalue/4.0;  // advance + kerning info
+    else adv = hadvanceMap[curr] + kernvalue;  // advance + kerning info
 
     // move x forward, keep y unchanged for now
     // we are using the maxhieght+2magines as the consistent 
     // denominator.
 
-    // float ratio = (float)adv / (m_maxgheight * (1 + MARGINRATIO * 2));
-    float ratio = (float)adv / m_maxgheight;
+    x = x + 1.0/m_biggrid * adv / (m_maxgheight * (1 + MARGINRATIO * 2));
 
-    x += 1.0/m_biggrid * ratio;
   }
 }
 
@@ -585,150 +578,11 @@ void ShFont::renderline(int gnum, const int * gly, float mg, float ng) {
 
 void ShFont::renderline(int gnum, const char * str, float mg, float ng) {
 
-  // if coordinate of the whole area that is to be covered by 
-  // the texture is from 0-1, x and y are the exact starting 
-  // coordinates (from 0-1) of the string. It does take into 
-  // accout of the margin. 
-	
-  float x = mg/m_biggrid;   // m_biggrid: num of big grids
-  float y = ng/m_biggrid;
-  float xx, yy;
-  int mm, nn;
-
-  // for each glyph
-  for(int g=0; g<gnum; g++) {
-
-    int curr = int(str[g]);        // current glyph
-    int next;                      // next glyph
-    int gw = gwidthMap[curr];      // width of the glyph
-    int gh = gheightMap[curr];     // height of the glyph
-    int ymin = yminMap[curr];      // the min y value of the glyph, can be negative
-    int ox = offsetx[curr];        // the glyph x offset in the octree texture
-    int oy = offsety[curr];        // the glyph y offset in the octree texture
-    int ow = winoctree[curr];      // the glyph width in the octree texture
-    int oh = hinoctree[curr];      // the glyph height in the octree texture
-
-    // suppose there is a baseline, yshift is how much the glyph should be
-    // below/above the base line, yy is the y coord where glyph starts.
-
-    // float yshift = ymin - gh * MARGINRATIO;    // remove the margin on the bottom
-    float yshift = ymin;
-	
-    // xx and yy are the actually starting pos of the glyph after taking
-    // into account of the margin. 
-    // yy similar to in xx, refer to following explanation for xx and mm
-    // margin move the glyph up, and min y(if negative) move the glyph down
-    // y axis goes from below to above
-    // so for margin, we need to deduct it; for ymin, we need to add it
-    // because if it is below baseline, ymin is negative already, and vice versa
-    // suppose the highest glyph+2margin occupy the whole big grid
-
-    // yy: y coordinate of 0-1 where glyph starts from exactly
-    // nn: the num of small grid that the glyph starts from in y axis
-    
-    // yy = y + 1.0/m_biggrid * yshift / (m_maxgheight * (1 + MARGINRATIO * 2));
-    yy = y + 1.0/m_biggrid * yshift / m_maxgheight;
-    nn = (int)(yy * m_smallgrid);
-
-    // 1.0/m_biggrid is how many percent each big grid occupies 
-    // this removes the MARGINRATION part from the glyph
-    // the wider the glyph, the bigger the margin
-    // divided by the maxheight+2Margin is also a percentage thing
-    // maybe divided by other constant is ok too, as long as it is constant
-    // m_smallgrid is the total number of small grids
-		
-    // xx: x coordinate of 0-1 where glyph starts from exactly
-    // mm: the num of small grid that the glyph starts from in x axis
-
-    // xx = x - 1.0/m_biggrid * gw * MARGINRATIO / (m_maxgheight * (1 + MARGINRATIO * 2));
-    xx = x;
-    mm = (int)(xx * m_smallgrid);
-
-    // sx, sy: the starting percentage of the small grid in terms of the big grid
-    // ex, ey: the ending percentage of the small grid in terms of the big grid
-    float sx = 0, sy = 0, ex, ey;
-
-    std::cout << "gw " << gw << " m_maxgheight " << m_maxgheight << std::endl;
-
-    // m_split: num of small grids in one big grid
-    // m_biggrid: num of big grids
-    // fill in the rectangle the glyph is going to have
-    // in y direction, there are m_split small grids
-    // in x direction, there are mend small grids
-    // vertically, no glyph can exceed the m_split
-    // horizontaly, some glyphs are wider than the biggest height
-    for(int i=nn; i<=nn+m_split; i++) {
-
-      // end y percentage of each small cell in the big grid
-      // since the end percentage is the beginning of the next
-      // small cell, that is why we need "+1.0"
-      // after -yy, we got the percentage of the end pos in the
-      // whole area. "*m_biggrid makes it percentage in one big
-      // grid. 
-      ey = (((float)i + 1.0)/m_smallgrid - yy) * m_biggrid;
-
-      // starting percentage of each small cell in the glyph
-      // sy is initialized out of the loop, cause it is constant 
-      // in each row.
-      // since s
-      sx = 0;
-
-      // since the glyph may be wider than the biggest height
-      // we need to recalculate the real num of small grids a glyph
-      // need horizontally. mend is where the small grids end.
-      int mend = (int)((xx + (float)gw / (m_maxgheight * m_biggrid)) * m_smallgrid);
-      std::cout << "mend " << mend << std::endl;
-			
-      for(int j=mm; j<mend; j++) {
-
-	// percentage where a small cell ends in the big grid
-	ex = (((float)j + 1)/m_smallgrid - xx) * m_biggrid;
-
-
-	// check if this small grid is empty
-	// this function should be changed
-	// and use the distance instead
-	// bool flag = getflag(sx, sy, ex, ey, gw, gh, ox, oy, ow, oh);
-
-	// if the small grid is not empty, put in info of the current 
-	// glyph. Otherwise, leave it blank.
-	// in sp, we have glyph index, exact x and y start pos of the glyph
-	bool flag = 1;
-	if(flag) {
-          sp[(i*m_smallgrid+j)*3] = curr;
-	  sp[(i*m_smallgrid+j)*3+1] = xx;
-	  sp[(i*m_smallgrid+j)*3+2] = yy;
+	int gly[gnum];
+	for(int i=0; i<gnum; i++) {
+		gly[i] = int(str[i]);
 	}
-
-      sx = ex;
-      }
-
-      sy = ey;
-    }
-
-    // get the kerning info between current glyph and the next
-    if(g<gnum-1)
-      next = int(str[g+1]);
-    else next = 0;
-
-    int kernvalue = kmap[ Kernpair(curr, next) ];
-
-    // get the advance in x without kerning
-    int adv;
-    // this 4 can be changed TODO
-    if(curr == int(' ')) adv = m_maxgheight/4;
-
-    else adv = hadvanceMap[curr];// + kernvalue/4.0;  // advance + kerning info
-
-    // move x forward, keep y unchanged for now
-    // we are using the maxhieght+2magines as the consistent 
-    // denominator.
-
-    // float ratio = (float)adv / (m_maxgheight * (1 + MARGINRATIO * 2));
-    float ratio = (float)adv / m_maxgheight;
-
-    x += 1.0/m_biggrid * ratio;
-  }
+	renderline(gnum, gly, mg, ng);
 }
 
 const float* ShFont::coords(int i) const
