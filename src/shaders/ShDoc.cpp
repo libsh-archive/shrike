@@ -52,6 +52,7 @@ ShDoc::sprite_dist (
     ShAttrib2f x,  // texture coordinates
     ShAttrib2f fx  // where to get sprite info
 ) {
+	/*
     ShAttrib4f s1 = sprite1(fx);
     ShAttrib4f s2 = sprite2(fx);
 
@@ -82,6 +83,55 @@ ShDoc::sprite_dist (
     // get the corresponding coords of x in octree texture
     ShAttrib2f tx2 = tx1 * scale2 + s2(0,1) + shift;
     // ShAttrib2f tx2 = tx1 * scale2 + s2(0,1);
+
+    ShAttrib4f L[4];
+
+    // there are 4 edges with each one stored at each corner of 
+    // the cell that x falls in.  We need to compute all of the 
+    // them.  And then get the shortest one.
+    // when computing distance, have to convert edge coords back
+    // to real uv coords, because of distortion
+    // these conversion can definitly be moved to preprocessing
+    // part TODO
+    for(int i=0; i<4; i++) {
+	ShAttrib2f y = tx2 + size[i];
+    	L[i] = ftexture(y); 
+	L[i] = L[i] * s1(2,3,2,3) / biggrid + s1(0,1,0,1);
+    }
+  
+    ShAttrib4f r = segdists_a(L,4,x);
+
+    // mask off the entirely inside and entirely outside cells
+    // (this lets us reuse their storage for adjacent boundary cells)
+    r(0,1) += 1.0e13*flag(tx2 + size[0]);
+    */
+
+    ShAttrib4f s1 = sprite1(fx);
+    ShAttrib4f s2 = sprite2(fx);
+
+    // s1(2,3) has the real width and height of the glyph
+    // divided by maxheight get the ratio compared with max height
+    s1(2,3) = s1(2,3) / maxgheight;
+
+    // s2(0,1) has the offset of the glyph in octree texture
+    // division get the start pos (0-1) of the glyph in octree texture
+    s2(0,1) = ShAttrib2f(s2(0)/width, s2(1)/height);
+
+    // s2(2,3) has the width, height of the glyph in octree texture
+    // division get the percentage of the glyph size compared to the 
+    // octree texture size
+    ShAttrib2f scale2 = ShAttrib2f(s2(2)/width, s2(3)/height);
+
+    // convert coords from texture domean to octree domain
+    // s1(0,1) has the exact coords of the glyph in the texture
+    // tx1: if we treat the real size of glyph as from 0-1,
+    //      it gets the percent of x in terms of the glyph size
+    // *biggrid = smallgrid / m_split
+    ShAttrib2f tx1 = (x - s1(0,1)) * biggrid / s1(2,3);
+    tx1 = clamp(tx1,0.0,1.0);
+    
+    // get the corresponding coords of x in octree texture
+    ShAttrib2f tx2 = tx1 * scale2 + s2(0,1);
 
     ShAttrib4f L[4];
 

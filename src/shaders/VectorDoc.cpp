@@ -184,6 +184,7 @@ bool VectorDoc::init()
   doc.string(str.length(), str.c_str(), 0.25, 4);
   */
 
+  // doc.initFont("font.txt", 128, 4);
   doc.initFont("font.txt", 128, 4);
   
   std::string str;
@@ -191,7 +192,6 @@ bool VectorDoc::init()
   // str = "How doth the little crocodile";
   // doc.string(str.length(), str.c_str(), 0.25, 17);
 
-  /*  with texture
   str = "How doth the little crocodile";
   doc.string(str.length(), str.c_str(), 3, 20);
 
@@ -215,8 +215,8 @@ bool VectorDoc::init()
 
   str = "With gently smiling jaws";
   doc.string(str.length(), str.c_str(), 3, 9);
-  */
 
+  /*
   // without texture
   str = "How doth the little crocodile";
   doc.string(str.length(), str.c_str(), 1, 15);
@@ -241,6 +241,7 @@ bool VectorDoc::init()
 
   str = "With gently smiling jaws";
   doc.string(str.length(), str.c_str(), 1, 4);
+  */
 
   /*
   str = "Premature";
@@ -330,8 +331,15 @@ bool VectorDoc::init()
   doc.string(str.length(), str.c_str(), 10, 4);
   */
 
+  /*
   str = "I3D 2006";
-  doc.string(str.length(), str.c_str(), 10, 2);
+  doc.string(str.length(), str.c_str(), 2, 2);
+  */
+
+  /*
+  str = "A";
+  doc.string(str.length(), str.c_str(), 0, 0);
+  */
 
   doc.stringEnd();
 
