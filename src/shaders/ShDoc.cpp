@@ -271,6 +271,74 @@ ShColor3f ShDoc::anisoAntialiasPhong(
   // ShColor3f ksb = kdb;
 
   // for background
+  ShConstColor3f kdb(0.5, 0.5, 0.5);
+  ShConstColor3f ksb(1, 1, 1);
+
+  hv = normalize(hv);
+  lv = normalize(lv);
+  nv = normalize(nv);
+
+  // for foreground
+  // ShConstColor3f kdf(1, 0.84314, 0);
+  // ShConstColor3f kdf(1, 0.7569, 0.1451);
+  // ShConstColor3f ksf(1, 0.7569, 0.1451);
+  ShConstColor3f kdf(0, 0, 0);
+  ShConstColor3f ksf(0, 0, 0);
+
+  ShColor3f o;
+
+  ShAttrib4f r = shortestDis(x);
+  ShAttrib2f fw;
+  fw(0) = dx(x) | r(2,3);
+  fw(1) = dy(x) | r(2,3);
+  ShAttrib1f w = length(fw)*m_fw;
+  ShAttrib1f p = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
+
+  ShColor1f irrad = pos( nv | lv);
+  ShAttrib1f t = pow(pos(nv|hv), phongexp);
+
+  // background color
+  m_color2 = lightColor * (irrad * kdb + ksb * t);
+  // m_color2 = lightColor * irrad * kdb;
+
+  // foreground color
+  m_color1 = lightColor * (irrad * kdf + ksf * t);
+  // m_color1 = lightColor * irrad * kdf;
+
+  o = lerp(p,m_color2,m_color1);
+ 
+  return o;
+}
+
+// =============================================================
+// function: given the coordinates, find the anisoantiliased color
+// m_color1: color of the glyph interior
+// m_color2: color of the glyph exterior
+// =============================================================
+ShColor3f ShDoc::anisoAntialiasPhongEmboss(
+			      ShNormal3f nv,
+			      ShVector3f hv,
+			      ShVector3f lv,
+			      ShPoint3f pv,
+			      ShAttrib1f phongexp,
+			      ShAttrib3f th,
+		              ShAttrib2f x,
+		              ShColor3f m_color1, 
+			      ShColor3f m_color2,
+			      ShAttrib1f m_fw,
+			      ShAttrib2f m_thres) 
+{ 
+  ShConstColor3f lightColor(1.0f, 1.0f, 1.0f);
+
+  ShImage image;
+  // image.loadPng(normalize_path("/home/zqin/sh/myshrike/src/tomisto3.png"));
+  // image.loadPng(normalize_path("/home/zqin/sh/shmedia/textures/woodkd.png"));
+  ShTable2D<ShColor3fub> dstex(image.width(), image.height());
+  dstex.memory(image.memory());
+  // ShColor3f kdb = dstex(x);
+  // ShColor3f ksb = kdb;
+
+  // for background
   ShConstColor3f kdb(0, 0, 0);
   ShConstColor3f ksb(1, 1, 1);
 
@@ -293,9 +361,9 @@ ShColor3f ShDoc::anisoAntialiasPhong(
   ShAttrib1f p = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
 
   // ShAttrib3f th;
-  th(0) = -0.002;  // width of the wedge inside glyph
-  th(1) =  0.002; // width of the wedge outside glyph
-  th(2) = 0.002;    // width of the transition area
+  th(0) = -0.0002;  // width of the wedge inside glyph
+  th(1) =  0.0002; // width of the wedge outside glyph
+  th(2) = 0.0002;    // width of the transition area
 
   ShAttrib2f a = smoothstep(r(0), th(0), th(2)) * smoothstep(-r(0), -th(1), th(2)) * r(2,3);
 
@@ -316,8 +384,6 @@ ShColor3f ShDoc::anisoAntialiasPhong(
   ShNormal3f np = ns(0) * tgt0 + ns(1) * tgt1 + ns(2)*nv;
   np = normalize(np);
 
-  // ShColor1f irrad = pos( nv | lv);
-  // ShAttrib1f t = pow(pos(nv|hv), phongexp);
   ShColor1f irrad = pos( np | lv);
   ShAttrib1f t = pow(pos(np|hv), phongexp);
 

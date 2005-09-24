@@ -59,6 +59,9 @@ private:
   static ShAttrib1f m_fw;
   static ShAttrib1f m_phongexp;
   static ShAttrib3f m_th;
+  static ShAttrib2f m_time;
+  static ShAttrib1f m_start;
+  static ShAttrib1f m_deltax;
 
   static ShAttrib2f m_thres;
   static ShColor3f m_color1, m_color2;
@@ -69,20 +72,21 @@ VectorDoc::VectorDoc(int mode)
   : Shader(std::string("Vector Graphics: Vector Document") + 
 	  ((mode == 0) ? ": Isotropically Antialiased" : 
 	  ((mode == 1) ? ": Phong" : 
-	  ((mode == 2) ? ": Anisotropically Antialiased" : 
-	  ((mode == 3) ? ": Aliased" : 
-	  ((mode == 4) ? ": Isotropically Antialiased Outline" : 
-	  ((mode == 5) ? ": Anisotropically Antialiased Outline" : 
-	  ((mode == 6) ? ": Gradient" : 
-	  ((mode == 7) ? ": Filter Width" : 
-	  ((mode == 8) ? ": Pseudodistance Isotropically Antialiased Outline" : 
-	  ((mode == 9) ? ": Pseudodistance Anisotropically Antialiased Outline" : 
-	  ((mode == 10) ? ": Biased Signed Distance" : 
-	  ((mode == 11) ? ": Greyscale Biased Signed Distance" : 
-	  ((mode == 12) ? ": Signed Distance" : 
-	  ((mode == 13) ? ": Biased Signed Pseudodistance" : 
-	  ((mode == 14) ? ": Greyscale Biased Signed Pseudodistance" : 
-	                  ": Pseudodistance")))))))))))))))),
+	  ((mode == 2) ? ": PhongEmbossing" : 
+	  ((mode == 3) ? ": Anisotropically Antialiased" : 
+	  ((mode == 4) ? ": Aliased" : 
+	  ((mode == 5) ? ": Isotropically Antialiased Outline" : 
+	  ((mode == 6) ? ": Anisotropically Antialiased Outline" : 
+	  ((mode == 7) ? ": Gradient" : 
+	  ((mode == 8) ? ": Filter Width" : 
+	  ((mode == 9) ? ": Pseudodistance Isotropically Antialiased Outline" : 
+	  ((mode == 10) ? ": Pseudodistance Anisotropically Antialiased Outline" : 
+	  ((mode == 11) ? ": Biased Signed Distance" : 
+	  ((mode == 12) ? ": Greyscale Biased Signed Distance" : 
+	  ((mode == 13) ? ": Signed Distance" : 
+	  ((mode == 14) ? ": Biased Signed Pseudodistance" : 
+	  ((mode == 15) ? ": Greyscale Biased Signed Pseudodistance" : 
+	                  ": Pseudodistance"))))))))))))))))),
     m_mode(mode)
 {
   if (!m_done_init) {
@@ -109,6 +113,15 @@ VectorDoc::VectorDoc(int mode)
 
     m_th.name("wedge");
     m_th.range(0.0001, 0.01);
+
+    m_time.name("time");
+    m_time.range(0, 10);
+
+    m_start.name("startpos");
+    m_start.range(-10, 10);
+
+    m_deltax.name("deltax");
+    m_deltax.range(0, 1);
 
     // m_phongexp.name("phongexp");
     // m_phongexp.range(5.0, 500.0);
@@ -171,7 +184,7 @@ bool VectorDoc::init()
   doc.string(str.length(), str.c_str(), 0.25, 4);
   */
 
-  doc.initFont("font.txt", 16, 4);
+  doc.initFont("font.txt", 128, 4);
   
   std::string str;
 
@@ -204,7 +217,6 @@ bool VectorDoc::init()
   doc.string(str.length(), str.c_str(), 3, 9);
   */
 
-  /*
   // without texture
   str = "How doth the little crocodile";
   doc.string(str.length(), str.c_str(), 1, 15);
@@ -229,7 +241,6 @@ bool VectorDoc::init()
 
   str = "With gently smiling jaws";
   doc.string(str.length(), str.c_str(), 1, 4);
-  */
 
   /*
   str = "Premature";
@@ -251,21 +262,30 @@ bool VectorDoc::init()
   doc.string(1, &t, 1.0f, 2.0f);
   */
 
-  int gly[4];
-  for(int i=0; i<4; i++) 
-  	//gly[i] = 19977;
-  	gly[i] = 33457;
-  doc.string(1, gly, 2.0f, 2.0f);
-  doc.string(1, gly, 2.0f, 3.0f);
-  doc.string(1, gly, 2.0f, 4.0f);
-  doc.string(1, gly, 2.0f, 5.0f);
+  /*
+  int gly[8];
 
+  gly[0] = 19977;
+  gly[1] = 33457;
+  gly[2] = 20016;
+  gly[3] = 30011;
+  gly[4] = 30021;
+  gly[5] = 20010;
+  gly[6] = 20015;
+  // gly[7] = 33459;
+  gly[7] = 64;
+
+  doc.string(1, &gly[7], 2.0f, 2.0f);
+  // doc.string(1, &gly[3], 3.0f, 2.0f);
+  // doc.string(1, &gly[4], 3.0f, 2.0f);
+  */
+  
   /*
   str = "the armada";
   doc.string(str.length(), str.c_str(), 22, 15);
 
   str = "the farm";
-  doc.string(str.length(), str.c_str(), 29, 16);
+  doc.string(str.length(), str.c_str(), 28, 16);
 
   str = "fishermen's";
   doc.string(str.length(), str.c_str(), 19.5, 21);
@@ -298,10 +318,10 @@ bool VectorDoc::init()
   doc.string(str.length(), str.c_str(), 14, 9.5);
 
   str = "zoo of";
-  doc.string(str.length(), str.c_str(), 30, 5);
+  doc.string(str.length(), str.c_str(), 29, 5);
 
   str = "earth";
-  doc.string(str.length(), str.c_str(), 30, 4);
+  doc.string(str.length(), str.c_str(), 29, 4);
 
   str = "the four white";
   doc.string(str.length(), str.c_str(), 10, 5);
@@ -309,6 +329,9 @@ bool VectorDoc::init()
   str = "horses";
   doc.string(str.length(), str.c_str(), 10, 4);
   */
+
+  str = "I3D 2006";
+  doc.string(str.length(), str.c_str(), 10, 2);
 
   doc.stringEnd();
 
@@ -335,6 +358,43 @@ bool VectorDoc::init()
 
   } SH_END_PROGRAM;
 
+  /*
+  // for flying flag
+  vsh = SH_BEGIN_VERTEX_PROGRAM {
+    ShInOutTexCoord2f u;
+    ShInputNormal3f nm;
+    ShInputPosition4f pm;
+
+    ShOutputNormal3f nv;
+    ShOutputVector3f hv;
+    ShOutputVector3f lv;
+    ShOutputPosition4f pd;
+
+    ShAttrib2f param = ShAttrib2f(1.0, 3.0);
+
+    // set the position of the vectices
+    pm(2) = sin(param(1) * pm(0) - m_time(1)) * smoothstep(pm(0), m_start , param(0));
+
+    // set the tangent of the vertices
+   
+    // nm(0) = m_deltax;
+    // nm(2) = param(1) * cos(param(1) * pm(0) - m_time(1));
+    // nm = normalize(nm);
+  
+
+    ShOutputPoint3f pv = (Globals::mv|pm)(0,1,2);
+
+    nv = normalize(Globals::mv | nm);
+    
+    ShVector3f vv = normalize(-pv);
+    lv = normalize(Globals::lightPos - pv);
+    hv = normalize(lv + vv);
+
+    pd = (Globals::mvp | pm);
+
+  } SH_END_PROGRAM;
+  */
+
 
   fsh = SH_BEGIN_FRAGMENT_PROGRAM {
     ShInputTexCoord2f tc;
@@ -360,54 +420,59 @@ bool VectorDoc::init()
 			x, m_color1, m_color2, m_fw, m_thres);
       } break;
       case 2: {
+        // phong embossing
+        o = doc.anisoAntialiasPhongEmboss(nv, hv, lv, pv, m_phongexp, m_th,
+			x, m_color1, m_color2, m_fw, m_thres);
+      } break;
+      case 3: {
         // anisotropically antialiased rendering
         o = doc.anisoAntialias(x, m_color1, m_color2, m_fw, m_thres);
       } break;
-      case 3: {
+      case 4: {
         // aliased rendering;
         o = doc.Alias(x, m_color1,m_color2, m_thres);
       } break;
-      case 4: {
+      case 5: {
         // isotropically antialiased outline rendering
         o = doc.isoAntiOutline(x, m_color1, m_color2, m_fw, m_thres);
       } break;
-      case 5: {
+      case 6: {
         // anisotropically antialiased outline rendering;
 	o = doc.anisoAntiOutline(x, m_color1, m_color2, m_fw, m_thres);
       } break;
-      case 6: {
+      case 7: {
         // gradient visualization
 	o = doc.gradient(x, m_vcolor1, m_vcolor2);
       } break;
-      case 7: {
+      case 8: {
         // filter width visualization
 	o = doc.filterWidth(x);
       } break;
-      case 8: {
+      case 9: {
         // isotropically antialiased pseudodistance outline rendering
 	o = doc.isoAntiPseudoOutline(x, m_color1, m_color2, m_fw, m_thres);
       } break;
-      case 9: {
+      case 10: {
         // anisotropically antialiased pseudodistance outline rendering
 	o = doc.anisoAntiPseudoOutline(x, m_color1, m_color2, m_fw, m_thres);
       } break;;
-      case 10: {
+      case 11: {
         // biased signed distance map visualization 
         o = doc.biasSignedDis1(x, m_scale, m_vcolor1, m_vcolor2);
       } break;
-      case 11: {
+      case 12: {
         // biased signed distance map visualization 
 	o = doc.biasSignedDis2(x, m_scale);
       } break;
-      case 12: {
+      case 13: {
         // signed distance map visualization
 	o = doc.signedDisMap(x, m_scale, m_vcolor2, m_vcolor2);
       } break;
-      case 13: {
+      case 14: {
         // biased signed pseudodistance map visualization 
 	o = doc.biasSignPseudoMap(x, m_scale, m_vcolor1, m_vcolor2);
       } break;
-      case 14: {
+      case 15: {
         // biased signed pseudodistance map visualization 
 	o = doc.biasSignPserdoMap(x, m_scale);
       } break;
@@ -434,6 +499,9 @@ ShColor3f VectorDoc::m_vcolor1 = ShColor3f(1.0, 0.0, 1.0);
 ShColor3f VectorDoc::m_vcolor2 = ShColor3f(1.0, 1.0, 0.0);
 ShAttrib1f VectorDoc::m_phongexp = ShAttrib1f(10.0);
 ShAttrib3f VectorDoc::m_th = ShAttrib3f(0.002, 0.002, 0.001);
+ShAttrib2f VectorDoc::m_time = ShAttrib2f(1.0, 0.0);
+ShAttrib1f VectorDoc::m_start = ShAttrib1f(0.0);
+ShAttrib1f VectorDoc::m_deltax = ShAttrib1f(1.0);
 
 VectorDoc vd_iaa = VectorDoc(0);
 VectorDoc vd_aaa = VectorDoc(1);
