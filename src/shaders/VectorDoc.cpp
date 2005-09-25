@@ -98,10 +98,10 @@ VectorDoc::VectorDoc(int mode)
     m_fw.range(0.0, 10.0);
 
     m_offset.name("offset");
-    m_offset.range(-5.0, 5.0);
+    m_offset.range(-2.0, 2.0);
 
     m_size.name("size");
-    m_size.range(0.0, 10.0);
+    m_size.range(0.0, 5.0);
 
     m_thres.name("threshold");
     m_thres.range(-1.0, 1.0);
@@ -185,7 +185,7 @@ bool VectorDoc::init()
   */
 
   // doc.initFont("font.txt", 128, 4);
-  doc.initFont("font.txt", 256, 8);
+  doc.initFont("font.txt", 128, 4);
   
   std::string str;
 
@@ -334,13 +334,32 @@ bool VectorDoc::init()
     ShOutputVector3f hv;
     ShOutputVector3f lv;
     ShOutputPosition4f pd;
+    ShOutputPoint3f pv;
 
-    ShAttrib2f param = ShAttrib2f(1.0, 3.0);
+    ShAttrib2f param = ShAttrib2f(3.0, 1.0);
 
     // set the position of the vectices
-    pm(2) = sin(param(1) * pm(0) - m_time(1)) * smoothstep(pm(0), m_start , param(0));
+    pm(2) = sin(param(1) * pm(0) - m_time(1)) * 
+	    deprecated_smoothstep(ShAttrib1f(0.0), param(0), (pm(0) - m_start));
 
-    ShOutputPoint3f pv = (Globals::mv|pm)(0,1,2);
+    // tangent
+    ShOutputVector3f tgt0 = ShVector3f(0,1,0);
+    ShOutputVector3f tgt1;
+    tgt1(1) = 0;
+    tgt1(0) = m_deltax;
+    tgt1(2) = sin(param(1) * (pm(0) + m_deltax) - m_time(1)) 
+	    * deprecated_smoothstep(ShAttrib1f(0.0), param(0), (pm(0)+m_deltax - m_start)) - pm(2);
+    tgt1 = normalize(tgt1);
+
+    ShNormal3f nk = cross(tgt1, tgt0);
+    nm = (pm(0) > m_start) * nk + (1 - (pm(0) > m_start)) * nm;
+
+    tgt0 = normalize(Globals::mv | tgt0);
+    tgt1 = normalize(Globals::mv | tgt1);
+    // tangent end
+
+
+    pv = (Globals::mv|pm)(0,1,2);
 
     nv = normalize(Globals::mv | nm);
     
@@ -349,22 +368,6 @@ bool VectorDoc::init()
     hv = normalize(lv + vv);
 
     pd = (Globals::mvp | pm);
-
-    // tangent
-    ShVector3f y = ShVector3f(0,1,0);
-    ShVector3f ps;
-    ps(1) = 0;
-    ps(0) = m_deltax;
-    ps(2) = sin(param(1) * (pm(0) + m_deltax) - m_time(1)) 
-	    * smoothstep((pm(0)+m_deltax), m_start , param(0)) - pm(2);
-    ps = normalize(ps);
-
-    ShOutputVector3f tgt0 = cross(y, ps);
-    ShOutputVector3f tgt1 = cross(nm, tgt0);
-
-    tgt0 = normalize(Globals::mv | tgt0);
-    tgt1 = normalize(Globals::mv | tgt1);
-    // tangent end
 
   } SH_END_PROGRAM;
 
@@ -476,7 +479,7 @@ ShAttrib1f VectorDoc::m_phongexp = ShAttrib1f(10.0);
 ShAttrib3f VectorDoc::m_th = ShAttrib3f(0.002, 0.002, 0.001);
 ShAttrib2f VectorDoc::m_time = ShAttrib2f(1.0, 0.0);
 ShAttrib1f VectorDoc::m_start = ShAttrib1f(0.0);
-ShAttrib1f VectorDoc::m_deltax = ShAttrib1f(0.01);
+ShAttrib1f VectorDoc::m_deltax = ShAttrib1f(0.0001);
 
 VectorDoc vd_iaa = VectorDoc(0);
 VectorDoc vd_aaa = VectorDoc(1);
