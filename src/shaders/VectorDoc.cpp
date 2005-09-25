@@ -98,7 +98,7 @@ VectorDoc::VectorDoc(int mode)
     m_fw.range(0.0, 10.0);
 
     m_offset.name("offset");
-    m_offset.range(-10.0, 10.0);
+    m_offset.range(-5.0, 5.0);
 
     m_size.name("size");
     m_size.range(0.0, 10.0);
@@ -185,39 +185,11 @@ bool VectorDoc::init()
   */
 
   // doc.initFont("font.txt", 128, 4);
-  doc.initFont("font.txt", 128, 4);
+  doc.initFont("font.txt", 256, 8);
   
   std::string str;
 
-  // str = "How doth the little crocodile";
-  // doc.string(str.length(), str.c_str(), 0.25, 17);
-
-  str = "How doth the little crocodile";
-  doc.string(str.length(), str.c_str(), 3, 20);
-
-  str = "Improve his shining tail";
-  doc.string(str.length(), str.c_str(), 3, 18.5);
-
-  str = "And pour the waters of the Nile";
-  doc.string(str.length(), str.c_str(), 3, 17);
-
-  str = "On every golden scale";
-  doc.string(str.length(), str.c_str(), 3, 15.5);
-
-  str = "How cheerfully he seems to grin";
-  doc.string(str.length(), str.c_str(), 3, 13.5);
-
-  str = "How neatly spreads his claws";
-  doc.string(str.length(), str.c_str(), 3, 12);
-
-  str = "And welcomes little fishes in";
-  doc.string(str.length(), str.c_str(), 3, 10.5);
-
-  str = "With gently smiling jaws";
-  doc.string(str.length(), str.c_str(), 3, 9);
-
   /*
-  // without texture
   str = "How doth the little crocodile";
   doc.string(str.length(), str.c_str(), 1, 15);
 
@@ -244,26 +216,6 @@ bool VectorDoc::init()
   */
 
   /*
-  str = "Premature";
-  doc.string(9, str.c_str(), 0.25, 6, sp);
-
-  str = "optimization";
-  doc.string(12, str.c_str(), 0.25, 4.5, sp);
-
-  str = "is the root";
-  doc.string(11, str.c_str(), 0.25, 3, sp);
-
-  str = "of all evil";
-  doc.string(11, str.c_str(), 0.25, 1.5, sp);
-
-  str = "ABC";
-  doc.string(str.length(), str.c_str(), 3, 2);
-  
-  int t = 68;
-  doc.string(1, &t, 1.0f, 2.0f);
-  */
-
-  /*
   int gly[8];
 
   gly[0] = 19977;
@@ -276,9 +228,7 @@ bool VectorDoc::init()
   // gly[7] = 33459;
   gly[7] = 64;
 
-  doc.string(1, &gly[7], 2.0f, 2.0f);
-  // doc.string(1, &gly[3], 3.0f, 2.0f);
-  // doc.string(1, &gly[4], 3.0f, 2.0f);
+  doc.string(1, &gly[1], 2.0f, 2.0f);
   */
   
   /*
@@ -304,13 +254,13 @@ bool VectorDoc::init()
   doc.string(str.length(), str.c_str(), 0.25, 13);
 
   str = "cliffs of";
-  doc.string(str.length(), str.c_str(), 8, 10.5);
+  doc.string(str.length(), str.c_str(), 8, 11);
 
   str = "insanity";
   doc.string(str.length(), str.c_str(), 8, 9.5);
 
   str = "lotharon's";
-  doc.string(str.length(), str.c_str(), 23, 9);
+  doc.string(str.length(), str.c_str(), 23, 9.5);
 
   str = "castle";
   doc.string(str.length(), str.c_str(), 23, 8);
@@ -331,19 +281,13 @@ bool VectorDoc::init()
   doc.string(str.length(), str.c_str(), 10, 4);
   */
 
-  /*
-  str = "I3D 2006";
+  str = "i3D 2006";
   doc.string(str.length(), str.c_str(), 2, 2);
-  */
-
-  /*
-  str = "A";
-  doc.string(str.length(), str.c_str(), 0, 0);
-  */
 
   doc.stringEnd();
 
 
+  /*
   vsh = SH_BEGIN_VERTEX_PROGRAM {
     ShInOutTexCoord2f u;
     ShInputNormal3f nm;
@@ -364,9 +308,22 @@ bool VectorDoc::init()
 
     pd = (Globals::mvp | pm);
 
-  } SH_END_PROGRAM;
+    // tangent
+    ShVector3f y = ShVector3f(0,1,0);
+    ShVector3f ps = pm(0,1,2);
+    ps(1) = 0;
+    ps = normalize(ps);
 
-  /*
+    ShOutputVector3f tgt0 = cross(y, ps);
+    ShOutputVector3f tgt1 = cross(nm, tgt0);
+
+    tgt0 = normalize(Globals::mv | tgt0);
+    tgt1 = normalize(Globals::mv | tgt1);
+    // tangent end
+  
+  } SH_END_PROGRAM;
+  */
+
   // for flying flag
   vsh = SH_BEGIN_VERTEX_PROGRAM {
     ShInOutTexCoord2f u;
@@ -383,13 +340,6 @@ bool VectorDoc::init()
     // set the position of the vectices
     pm(2) = sin(param(1) * pm(0) - m_time(1)) * smoothstep(pm(0), m_start , param(0));
 
-    // set the tangent of the vertices
-   
-    // nm(0) = m_deltax;
-    // nm(2) = param(1) * cos(param(1) * pm(0) - m_time(1));
-    // nm = normalize(nm);
-  
-
     ShOutputPoint3f pv = (Globals::mv|pm)(0,1,2);
 
     nv = normalize(Globals::mv | nm);
@@ -400,8 +350,23 @@ bool VectorDoc::init()
 
     pd = (Globals::mvp | pm);
 
+    // tangent
+    ShVector3f y = ShVector3f(0,1,0);
+    ShVector3f ps;
+    ps(1) = 0;
+    ps(0) = m_deltax;
+    ps(2) = sin(param(1) * (pm(0) + m_deltax) - m_time(1)) 
+	    * smoothstep((pm(0)+m_deltax), m_start , param(0)) - pm(2);
+    ps = normalize(ps);
+
+    ShOutputVector3f tgt0 = cross(y, ps);
+    ShOutputVector3f tgt1 = cross(nm, tgt0);
+
+    tgt0 = normalize(Globals::mv | tgt0);
+    tgt1 = normalize(Globals::mv | tgt1);
+    // tangent end
+
   } SH_END_PROGRAM;
-  */
 
 
   fsh = SH_BEGIN_FRAGMENT_PROGRAM {
@@ -411,6 +376,8 @@ bool VectorDoc::init()
     ShInputVector3f lv;
     ShInputPosition4f pd;
     ShInputPoint3f pv;
+    ShInputVector3f tgt0;
+    ShInputVector3f tgt1;
 
     ShOutputColor3f o;
 
@@ -429,7 +396,7 @@ bool VectorDoc::init()
       } break;
       case 2: {
         // phong embossing
-        o = doc.anisoAntialiasPhongEmboss(nv, hv, lv, pv, m_phongexp, m_th,
+        o = doc.anisoAntialiasPhongEmboss(nv, hv, lv, pv, tgt0, tgt1, m_phongexp, m_th,
 			x, m_color1, m_color2, m_fw, m_thres);
       } break;
       case 3: {
@@ -509,7 +476,7 @@ ShAttrib1f VectorDoc::m_phongexp = ShAttrib1f(10.0);
 ShAttrib3f VectorDoc::m_th = ShAttrib3f(0.002, 0.002, 0.001);
 ShAttrib2f VectorDoc::m_time = ShAttrib2f(1.0, 0.0);
 ShAttrib1f VectorDoc::m_start = ShAttrib1f(0.0);
-ShAttrib1f VectorDoc::m_deltax = ShAttrib1f(1.0);
+ShAttrib1f VectorDoc::m_deltax = ShAttrib1f(0.01);
 
 VectorDoc vd_iaa = VectorDoc(0);
 VectorDoc vd_aaa = VectorDoc(1);

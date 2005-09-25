@@ -74,6 +74,8 @@ public:
 		      ShVector3f hv,
 		      ShVector3f lv,
 		      ShPoint3f pv,
+		      ShVector3f tgt0,
+		      ShVector3f tgt1,
 		      ShAttrib1f phongexp,
 		      ShAttrib3f th,
 	              ShAttrib2f x,

@@ -80,7 +80,7 @@ void Camera::glModelView()
 
 void Camera::glProjection(float aspect)
 {
-  proj = perspective(45, aspect, 1, 3000);
+  proj = perspective(45, aspect, 0.001, 3000);
   float values[16];
   for (int i = 0; i < 16; i++) proj[i%4](i/4).getValues(&values[i]);
   glMultMatrixf(values);

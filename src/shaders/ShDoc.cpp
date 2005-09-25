@@ -370,6 +370,8 @@ ShColor3f ShDoc::anisoAntialiasPhongEmboss(
 			      ShVector3f hv,
 			      ShVector3f lv,
 			      ShPoint3f pv,
+			      ShVector3f tgt0,
+			      ShVector3f tgt1,
 			      ShAttrib1f phongexp,
 			      ShAttrib3f th,
 		              ShAttrib2f x,
@@ -411,9 +413,9 @@ ShColor3f ShDoc::anisoAntialiasPhongEmboss(
   ShAttrib1f p = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
 
   // ShAttrib3f th;
-  th(0) = -0.00025;  // width of the wedge inside glyph
-  th(1) =  0.00025; // width of the wedge outside glyph
-  th(2) = 0.00025;    // width of the transition area
+  th(0) = -0.0005;  // width of the wedge inside glyph
+  th(1) =  0.0005; // width of the wedge outside glyph
+  th(2) = 0.0005;    // width of the transition area
 
   ShAttrib2f a = smoothstep(r(0), th(0), th(2)) * smoothstep(-r(0), -th(1), th(2)) * r(2,3);
 
@@ -423,14 +425,6 @@ ShColor3f ShDoc::anisoAntialiasPhongEmboss(
   ns(0,1) = ns(0,1) + a;
   ns = normalize(ns);
   
-  ShVector3f y = ShVector3f(0,1,0);
-  ShVector3f ps = pv;
-  ps(1) = 0;
-  ps = normalize(ps);
-
-  ShVector3f tgt0 = cross(y, ps);
-  ShVector3f tgt1 = cross(nv, tgt0);
-
   ShNormal3f np = ns(0) * tgt0 + ns(1) * tgt1 + ns(2)*nv;
   np = normalize(np);
 

@@ -551,7 +551,7 @@ void ShFont::renderline(int gnum, const int * gly, float mg, float ng) {
     // this 4 can be changed TODO
     if(curr == int(' ')) adv = m_maxgheight/4;
 
-    else adv = hadvanceMap[curr] + kernvalue;  // advance + kerning info
+    else adv = hadvanceMap[curr];// + kernvalue;  // advance + kerning info
 
     // move x forward, keep y unchanged for now
     // we are using the maxhieght+2magines as the consistent 
