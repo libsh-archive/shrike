@@ -122,7 +122,7 @@ bool BrickHorizon::init()
     tc(1) -= floor(tc(1));
     tc(0) -= floor(tc(0));
 		
-    id = min(abs(tc(0)) > 2*mortarsize(0), abs(tc(1)) > 2*mortarsize(1)); // limits of a brick
+    id = SH::min(abs(tc(0)) > 2*mortarsize(0), abs(tc(1)) > 2*mortarsize(1)); // limits of a brick
 		
   } SH_END;
 
@@ -212,20 +212,20 @@ bool BrickHorizon::init()
     ShAttrib1f horizon1 = hole, horizon2 = hole, horizon3 = hole, horizon4 = hole,
     horizon5 = hole, horizon6 = hole, horizon7 = hole, horizon8 = hole;
 		
-    horizonLoc = min(tc(0)<2*mortarsize(0),tc(1)>2*mortarsize(1));
+    horizonLoc = SH::min(tc(0)<2*mortarsize(0),tc(1)>2*mortarsize(1));
     horizon1 = cond(horizonLoc, tc(0)/sqrt(tc(0)*tc(0)+brickHeight*brickHeight), horizon1);
 		
     ShAttrib2f tc2 = ShAttrib2f(2*mortarsize(0)-tc(0),1.0+2*mortarsize(1)-tc(1));
     horizon3 = cond(horizonLoc, tc2(0)/sqrt(tc2(0)*tc2(0)+brickHeight2), horizon3);
 
-    horizonLoc = max(tc(0)<2*mortarsize(0), min(tc(0)>2*mortarsize(0), tc(1)<2*mortarsize(1)));
+    horizonLoc = SH::max(tc(0)<2*mortarsize(0), SH::min(tc(0)>2*mortarsize(0), tc(1)<2*mortarsize(1)));
     horizon2 = cond(horizonLoc, tc(1)/sqrt(tc(1)*tc(1)+brickHeight2), horizon2);
-    horizonLoc = min(tc(1)<2*mortarsize(1), min(tc(0)>offset, tc(0)<offset+2*mortarsize(0)));
+    horizonLoc = SH::min(tc(1)<2*mortarsize(1), SH::min(tc(0)>offset, tc(0)<offset+2*mortarsize(0)));
     horizon2 = cond(horizonLoc, tc2(1)/sqrt(tc2(1)*tc2(1)+brickHeight2), horizon2);
 		
     horizon4 = cond(tc(0)<2*mortarsize(0), tc2(1)/sqrt(tc2(1)*tc2(1)+brickHeight2), horizon4);
     tc2[1] = 2*mortarsize(1)-tc(1);
-    horizonLoc = min(tc(1)<2*mortarsize(1),tc(0)>2*mortarsize(0));
+    horizonLoc = SH::min(tc(1)<2*mortarsize(1),tc(0)>2*mortarsize(0));
     horizon4 = cond(horizonLoc, tc2(1)/sqrt(tc2(1)*tc2(1)+brickHeight2), horizon4);
 	
 		
@@ -233,32 +233,32 @@ bool BrickHorizon::init()
     // part5
     ShAttrib1f diag;
     diag = 2*tc(0)*tc(0);
-    horizonLoc = min(tc(0)<2*mortarsize(0), tc(1)>2*mortarsize(1));
+    horizonLoc = SH::min(tc(0)<2*mortarsize(0), tc(1)>2*mortarsize(1));
     horizon5 = cond(horizonLoc, sqrt(diag)/sqrt(diag+brickHeight2), horizon5);
     horizon8 = horizon5; // same orientation for the 8th part
     diag = 2*tc(1)*tc(1);
     horizonLoc = tc(1)<2*mortarsize(1);
     horizon5 = cond(horizonLoc, sqrt(diag)/sqrt(diag+brickHeight2), horizon5);
     horizon6 = horizon5; // same orientation for the 6th part
-    horizonLoc = min(tc(0)<2*mortarsize(0), min(tc(1)>=2*mortarsize(1), tc(1)<=tc(0)+2*mortarsize(1)));
+    horizonLoc = SH::min(tc(0)<2*mortarsize(0), SH::min(tc(1)>=2*mortarsize(1), tc(1)<=tc(0)+2*mortarsize(1)));
     horizon5 = cond(horizonLoc, sqrt(diag)/sqrt(diag+brickHeight2), horizon5);
     diag = tc(0)-1.0+offset;	
     diag *= 2*diag;
-    horizonLoc = min(tc(1)<2*mortarsize(1), min(tc(0)>=1.0-offset+tc(1), tc(0)<=1.0-offset+tc(1)+2*mortarsize(0)));
+    horizonLoc = SH::min(tc(1)<2*mortarsize(1), SH::min(tc(0)>=1.0-offset+tc(1), tc(0)<=1.0-offset+tc(1)+2*mortarsize(0)));
     horizon5 = cond(horizonLoc, sqrt(diag)/sqrt(diag+brickHeight2), horizon5);
 
     // part 6
     diag = 2*mortarsize(0)-tc(0);
     diag *= 2*diag;
-    horizonLoc = min(tc(0)<2*mortarsize(0), tc(1)>2*mortarsize(1));
+    horizonLoc = SH::min(tc(0)<2*mortarsize(0), tc(1)>2*mortarsize(1));
     horizon6 = cond(horizonLoc, sqrt(diag)/sqrt(diag+brickHeight2), horizon6);
     horizon7 = horizon6; // same orientation for the 7th part
     diag = 2*tc(1)*tc(1);
-    horizonLoc = min(tc(0)<2*mortarsize(0), min(tc(1)>=2*mortarsize(1), tc(1)<=-tc(0)+2*mortarsize(0)+2*mortarsize(1)));
+    horizonLoc = SH::min(tc(0)<2*mortarsize(0), SH::min(tc(1)>=2*mortarsize(1), tc(1)<=-tc(0)+2*mortarsize(0)+2*mortarsize(1)));
     horizon6 = cond(horizonLoc, sqrt(diag)/sqrt(diag+brickHeight2), horizon6);
     diag = 1.0+2*mortarsize(0)-tc(0)-offset;
     diag *= 2*diag;
-    horizonLoc = min(tc(1)<2*mortarsize(1), min(tc(0)>=1.0-offset-tc(1), tc(0)<=1.0-offset-tc(1)+2*mortarsize(0)));
+    horizonLoc = SH::min(tc(1)<2*mortarsize(1), SH::min(tc(0)>=1.0-offset-tc(1), tc(0)<=1.0-offset-tc(1)+2*mortarsize(0)));
     horizon6 = cond(horizonLoc, sqrt(diag)/sqrt(diag+brickHeight2), horizon6);
 		
     // part 7
@@ -268,15 +268,15 @@ bool BrickHorizon::init()
     horizon7 = cond(horizonLoc, sqrt(diag)/sqrt(diag+brickHeight2), horizon7);
     diag = 1.0+2*mortarsize(0)-tc(0);
     diag *= 2*diag;
-    horizonLoc = min(tc(1)<2*mortarsize(1), min(tc(0)>1.0-2*mortarsize(1)+tc(1),tc(0)<1.0+2*mortarsize(0)-2*mortarsize(1)+tc(1)));
+    horizonLoc = SH::min(tc(1)<2*mortarsize(1), SH::min(tc(0)>1.0-2*mortarsize(1)+tc(1),tc(0)<1.0+2*mortarsize(0)-2*mortarsize(1)+tc(1)));
     horizon7 = cond(horizonLoc, sqrt(diag)/sqrt(diag+brickHeight2), horizon7);
     diag = 2*mortarsize(0)-tc(0);
     diag *= 2*diag;
-    horizonLoc = min(tc(1)<2*mortarsize(1), tc(0)<tc(1)+2*mortarsize(0)-2*mortarsize(1));
+    horizonLoc = SH::min(tc(1)<2*mortarsize(1), tc(0)<tc(1)+2*mortarsize(0)-2*mortarsize(1));
     horizon7 = cond(horizonLoc, sqrt(diag)/sqrt(diag+brickHeight2), horizon7);
     diag = 1.0-tc(1)+2*mortarsize(1);
     diag *= 2*diag;
-    horizonLoc = min(tc(0)<2*mortarsize(0), tc(1)>=1.0+tc(0)-2*mortarsize(0));
+    horizonLoc = SH::min(tc(0)<2*mortarsize(0), tc(1)>=1.0+tc(0)-2*mortarsize(0));
     horizon7 = cond(horizonLoc, sqrt(diag)/sqrt(diag+brickHeight2), horizon7);
 		
     // part 8
@@ -285,23 +285,23 @@ bool BrickHorizon::init()
     horizonLoc = tc(1)<2*mortarsize(1);
     horizon8 = cond(horizonLoc, sqrt(diag)/sqrt(diag+brickHeight2), horizon8);
     diag = 2*tc(0)*tc(0);
-    horizonLoc = min(tc(1)<2*mortarsize(1), min(tc(0)>=2*mortarsize(1)-tc(1), tc(0)<=2*mortarsize(0)+2*mortarsize(1)-tc(1)));
+    horizonLoc = SH::min(tc(1)<2*mortarsize(1), SH::min(tc(0)>=2*mortarsize(1)-tc(1), tc(0)<=2*mortarsize(0)+2*mortarsize(1)-tc(1)));
     horizon8 = cond(horizonLoc, sqrt(diag)/sqrt(diag+brickHeight2), horizon8);
     diag = 1.0-tc(1)+2*mortarsize(1);
     diag *= 2*diag;
-    horizonLoc = min(tc(0)<2*mortarsize(0), tc(1)>=1.0-tc(0));
+    horizonLoc = SH::min(tc(0)<2*mortarsize(0), tc(1)>=1.0-tc(0));
     horizon8 = cond(horizonLoc, sqrt(diag)/sqrt(diag+brickHeight2), horizon8);
 		
     // define the basis functions
     ShAttrib1f null = 0.0;
-    ShAttrib1f b1 = cond( min(-lt, b), bb, null);
-    ShAttrib1f b2 = cond( min(ls, -b), bb, null);
-    ShAttrib1f b3 = cond( min(lt, b), bb, null);
-    ShAttrib1f b4 = cond( min(-ls, -b), bb, null);
-    ShAttrib1f b5 = cond( min(-lt, ls), bb2, null);
-    ShAttrib1f b6 = cond( min(lt, ls), bb2, null);
-    ShAttrib1f b7 = cond( min(lt, -ls), bb2, null);
-    ShAttrib1f b8 = cond( min(-lt, -ls), bb2, null);
+    ShAttrib1f b1 = cond(SH::min(-lt, b), bb, null);
+    ShAttrib1f b2 = cond(SH::min(ls, -b), bb, null);
+    ShAttrib1f b3 = cond(SH::min(lt, b), bb, null);
+    ShAttrib1f b4 = cond(SH::min(-ls, -b), bb, null);
+    ShAttrib1f b5 = cond(SH::min(-lt, ls), bb2, null);
+    ShAttrib1f b6 = cond(SH::min(lt, ls), bb2, null);
+    ShAttrib1f b7 = cond(SH::min(lt, -ls), bb2, null);
+    ShAttrib1f b8 = cond(SH::min(-lt, -ls), bb2, null);
 
     // the interpolated horizon value
     ShAttrib1f cosHorizon = b1*horizon1 + b2*horizon2 + b3*horizon3 + b4*horizon4 +

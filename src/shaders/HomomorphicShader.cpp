@@ -94,17 +94,17 @@ bool HomomorphicShader::init()
   // factor for each, hidden uniforms (don't want user to play with
   // alpha, really), pulldown menu to select BRDFs from list,
   // settings for extra specularities, etc. etc.
-  image.load_PNG(normalize_path(SHMEDIA_DIR "/brdfs/garnetred/garnetred64_0.png"));
+  load_PNG(image, normalize_path(SHMEDIA_DIR "/brdfs/garnetred/garnetred64_0.png"));
   ShTable2D<ShColor3fub> ptex(image.width(), image.height());
   //CubicBSplineInterp<ShTexture2D<ShColor3fub> > ptex(image.width(), image.height());
   ptex.memory(image.memory());
 
-  image.load_PNG(normalize_path(SHMEDIA_DIR "/brdfs/garnetred/garnetred64_1.png"));
+  load_PNG(image, normalize_path(SHMEDIA_DIR "/brdfs/garnetred/garnetred64_1.png"));
   ShTable2D<ShColor3fub>qtex(image.width(), image.height());
   //CubicBSplineInterp<ShTexture2D<ShColor3fub> > qtex(image.width(), image.height());
   qtex.memory(image.memory());
 
-  image.load_PNG(normalize_path(SHMEDIA_DIR "/brdfs/specular.png"));
+  load_PNG(image, normalize_path(SHMEDIA_DIR "/brdfs/specular.png"));
   ShTable2D<ShColor3fub> stex(image.width(), image.height());
   stex.memory(image.memory());
 

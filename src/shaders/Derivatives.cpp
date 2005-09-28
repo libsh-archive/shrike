@@ -62,7 +62,7 @@ bool Derivatives::init()
   scale_y.range(0.0, 10.0);
 
   ShImage image;
-  image.load_PNG(normalize_path(SHMEDIA_DIR "/textures/rgby.png"));
+  load_PNG(image, normalize_path(SHMEDIA_DIR "/textures/rgby.png"));
   ShTable2D<ShColor3fub> texture(image.width(), image.height());
   texture.memory(image.memory());
   

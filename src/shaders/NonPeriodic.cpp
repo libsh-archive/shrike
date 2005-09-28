@@ -61,7 +61,7 @@ ShAttrib1f isRed(ShAttrib1f x, ShMatrix3x3f M)
   ShVector3f v = ShVector3f(mx,my,ShAttrib1f(1.0));
   v = M | v;
 	
-  return max(abs(v(0)),abs(v(1)))<0.5;
+  return SH::max(abs(v(0)),abs(v(1)))<0.5;
 }
 
 bool NonPeriodic::init()

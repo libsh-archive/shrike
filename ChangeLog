@@ -1,3 +1,17 @@
+2005-09-28  Francois Marier  <francois@serioushack.com>
+
+	* src/UniformPanel.cpp, ShGenMap.cpp, ShrikeCanvas.cpp,
+	shaders/NonPeriodic3D.cpp, GlassShader.cpp,
+	ShinyBumpMapShader.cpp, HorizonMapping.cpp, JeweledShader.cpp,
+	Textures.cpp, Derivatives.cpp, DiscoShader.cpp, BumpMapShader.cpp,
+	PhongShader.cpp, BrickHorizon.cpp, SatinShader.cpp,
+	WorleyShader.cpp, NonPeriodic.cpp, BrickWall.cpp, Ashikhmin.cpp,
+	HomomorphicShader.cpp, Checkerboard.cpp, LuciteShader.cpp,
+	EnvMapShader.cpp, AlgebraShader.cpp, CookTorrance.cpp: 
+	Replace calls to ShImage::load_PNG and ShImage::save_PNG to the
+	free functions in ShUtil.
+	Resolve ambiguity with the max/min function and ShAttrib1f.
+
 2005-09-21  Francois Marier  <francois@serioushack.com>
 
 	* src/ShrikeGl.hpp: Fix the OpenGL includes to be easier to

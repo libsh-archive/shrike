@@ -22,6 +22,7 @@
 #include <string>
 #include <cmath>
 #include <sh/sh.hpp>
+#include <sh/shutil.hpp>
 
 using namespace std;
 
@@ -42,19 +43,19 @@ int main(int argc, char** argv)
     string outFileName = inFileName.substr(0,inFileName.size() - 4) + 
       ".normal.png";
     SH::ShImage inputImage;
-    inputImage.load_PNG(inFileName);
-    (inputImage.getNormalImage()).save_PNG16(outFileName);
+    ShUtil::load_PNG(inputImage, inFileName);
+    ShUtil::save_PNG16((inputImage.getNormalImage()), outFileName);
   }
   else if (type == "q") {
     string inFileName(argv[2]);
     SH::ShImage inputImage, inputImage2;
     string outFileName = inFileName.substr(0,inFileName.size() - 4) + 
       ".quaternion.png";
-    inputImage.load_PNG(inFileName);
+    ShUtil::load_PNG(inputImage, inFileName);
     SH::ShImage normalImage = inputImage.getNormalImage();
     SH::ShImage normalImage2;
     if (argc > 3) {
-      inputImage2.load_PNG(string(argv[3]));
+      ShUtil::load_PNG(inputImage2, string(argv[3]));
       normalImage2 = inputImage2.getNormalImage();
     }
     int w = inputImage.width();
@@ -110,7 +111,7 @@ int main(int argc, char** argv)
         }
       }
     }
-    outputImage.save_PNG16(outFileName);
+    ShUtil::save_PNG16(outputImage, outFileName);
   }
   else if (type == "h") {
     string inFileName(argv[2]);
@@ -118,7 +119,7 @@ int main(int argc, char** argv)
     string outFileName2 = inFileName.substr(0,inFileName.size() - 4) +  "_horizon2.png";
 		
     SH::ShImage inputImage;
-    inputImage.load_PNG(inFileName);
+    ShUtil::load_PNG(inputImage, inFileName);
     SH::ShImage outputImage1(inputImage.width(), inputImage.height(), 4);
     SH::ShImage outputImage2(inputImage.width(), inputImage.height(), 4);
 
@@ -212,8 +213,8 @@ int main(int argc, char** argv)
       }
     }
 		
-    outputImage1.save_PNG(outFileName1);
-    outputImage2.save_PNG(outFileName2);
+    ShUtil::save_PNG(outputImage1, outFileName1);
+    ShUtil::save_PNG(outputImage2, outFileName2);
   }
   return 0;
 }

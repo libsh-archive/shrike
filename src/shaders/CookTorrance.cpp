@@ -112,7 +112,7 @@ bool CookTorranceBeckmann::init()
     ShAttrib1f normalDotEye = pos(normal | eye);
     ShAttrib1f normalDotLight = pos(normal | light);
     ShAttrib1f X = 2.0 * pos(normal | half) / pos(eye | half);
-    ShAttrib1f G = sat(min(X * normalDotLight, X * normalDotEye));
+    ShAttrib1f G = sat(SH::min(X * normalDotLight, X * normalDotEye));
 
     ShAttrib1f CT = (D*F*G) / (normalDotLight * normalDotEye * M_PI); // Compute Cook-Torrance lighting
     
@@ -213,7 +213,7 @@ bool CookTorranceBlinn::init()
     ShAttrib1f normalDotEye = pos(normal | eye);
     ShAttrib1f normalDotLight = pos(normal | light);
     ShAttrib1f X = 2.0 * normalDotHalf / pos(eye | half);
-    ShAttrib1f G = sat(min(X * normalDotLight, X * normalDotEye));
+    ShAttrib1f G = sat(SH::min(X * normalDotLight, X * normalDotEye));
 
     ShAttrib1f CT = (D*F*G) / (normalDotLight * normalDotEye * M_PI); // Compute Cook-Torrance lighting
     

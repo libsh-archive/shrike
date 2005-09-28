@@ -122,7 +122,7 @@ bool BrickWall::init()
     tc(1) -= floor(tc(1)+0.5);
     tc(0) -= floor(tc(0)+0.5);
 
-    id = min(abs(tc(0)) < 0.5-mortarsize(0), abs(tc(1)) > mortarsize(1)); // limits of a brick
+    id = SH::min(abs(tc(0)) < 0.5-mortarsize(0), abs(tc(1)) > mortarsize(1)); // limits of a brick
 
   } SH_END;
 
@@ -140,8 +140,8 @@ bool BrickWall::init()
     norm = mad(0.35, TilePerturb, norm);
 
     // set the limits of edges
-    ShAttrib1f verticalLimits = min(abs(tc(0)) < 0.5-mortarsize(0)+0.01, abs(tc(0)) > 0.5-mortarsize(0)-0.01);
-    ShAttrib1f horizontalLimits = min(abs(tc(1)) > mortarsize(1)-0.01, abs(tc(1)) < mortarsize(1)+0.01);
+    ShAttrib1f verticalLimits = SH::min(abs(tc(0)) < 0.5-mortarsize(0)+0.01, abs(tc(0)) > 0.5-mortarsize(0)-0.01);
+    ShAttrib1f horizontalLimits = SH::min(abs(tc(1)) > mortarsize(1)-0.01, abs(tc(1)) < mortarsize(1)+0.01);
     // change the normals with a tanh function
     ShVector3f normDeformation = ShVector3f(tc(0)/abs(tc(0)) * 0.5 * (tanh(10*abs(tc(0))-0.5-mortarsize(0))+1), ShAttrib1f(0.0), ShAttrib1f(0.0));
     norm = cond( min(verticalLimits, abs(tc(1))>mortarsize(1)), norm + normDeformation, norm);

@@ -26,7 +26,6 @@
 using namespace SH;
 using namespace ShUtil;
 
-
 class HorizonMapping : public Shader {
 public:
   HorizonMapping();
@@ -55,9 +54,9 @@ bool HorizonMapping::init()
 {
   // load the image and put them in different textures
   ShImage image, horizmap1, horizmap2, dirmap1, dirmap2;
-  image.load_PNG(normalize_path(SHMEDIA_DIR "/horizonmaps/cross.png"));
-  horizmap1.load_PNG(normalize_path(SHMEDIA_DIR "/horizonmaps/cross_horizon1.png"));
-  horizmap2.load_PNG(normalize_path(SHMEDIA_DIR "/horizonmaps/cross_horizon2.png"));
+  load_PNG(image, normalize_path(SHMEDIA_DIR "/horizonmaps/cross.png"));
+  load_PNG(horizmap1, normalize_path(SHMEDIA_DIR "/horizonmaps/cross_horizon1.png"));
+  load_PNG(horizmap2, normalize_path(SHMEDIA_DIR "/horizonmaps/cross_horizon2.png"));
   
   ShTable2D<ShVector3fub> bump(image.width(),image.height());
   bump.memory(image.memory());
@@ -133,14 +132,14 @@ bool HorizonMapping::init()
     ShAttrib1f null = 0.0;
 		
     // define the basis functions
-    ShAttrib1f b1 = cond( min(-lt, b), bb, null);
-    ShAttrib1f b2 = cond( min(ls, -b), bb, null);
-    ShAttrib1f b3 = cond( min(lt, b), bb, null);
-    ShAttrib1f b4 = cond( min(-ls, -b), bb, null);
-    ShAttrib1f b5 = cond( min(-lt, ls), bb2, null);
-    ShAttrib1f b6 = cond( min(lt, ls), bb2, null);
-    ShAttrib1f b7 = cond( min(lt, -ls), bb2, null);
-    ShAttrib1f b8 = cond( min(-lt, -ls), bb2, null);
+    ShAttrib1f b1 = cond(SH::min(-lt, b), bb, null);
+    ShAttrib1f b2 = cond(SH::min(ls, -b), bb, null);
+    ShAttrib1f b3 = cond(SH::min(lt, b), bb, null);
+    ShAttrib1f b4 = cond(SH::min(-ls, -b), bb, null);
+    ShAttrib1f b5 = cond(SH::min(-lt, ls), bb2, null);
+    ShAttrib1f b6 = cond(SH::min(lt, ls), bb2, null);
+    ShAttrib1f b7 = cond(SH::min(lt, -ls), bb2, null);
+    ShAttrib1f b8 = cond(SH::min(-lt, -ls), bb2, null);
 
     // the interpolated horizon value
     ShAttrib1f cosHorizon = b1*horizon1(u)(0) + b2*horizon1(u)(1) + b3*horizon1(u)(2) + b4*horizon1(u)(3) +
@@ -188,8 +187,8 @@ ViewHorizonMaps::~ViewHorizonMaps()
 bool ViewHorizonMaps::init()
 {
   ShImage horizmap1, horizmap2;
-  horizmap1.load_PNG(normalize_path(SHMEDIA_DIR "/horizonmaps/cross_horizon1.png"));
-  horizmap2.load_PNG(normalize_path(SHMEDIA_DIR "/horizonmaps/cross_horizon2.png"));
+  load_PNG(horizmap1, normalize_path(SHMEDIA_DIR "/horizonmaps/cross_horizon1.png"));
+  load_PNG(horizmap2, normalize_path(SHMEDIA_DIR "/horizonmaps/cross_horizon2.png"));
   
   ShTable2D<ShColor4fub> horizon1(horizmap1.width(), horizmap1.height());
   horizon1.memory(horizmap1.memory());

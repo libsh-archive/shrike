@@ -101,7 +101,7 @@ bool Checkerboard::init()
       ShAttrib2f fw = fwidth(tc);
       ShAttrib2f fuzz = fw * m_frequency * 2.0;
       
-      ShAttrib1f fuzzMax = max(fuzz(0), fuzz(1));
+      ShAttrib1f fuzzMax = SH::max(fuzz(0), fuzz(1));
       
       ShAttrib2f p = linstep(checkpos, 0.5f + fuzz * 0.5f, fuzz) +
         (1.0  - linstep(checkpos, 0.5f * fuzz, fuzz));

@@ -81,7 +81,7 @@ ShColor3f ashikhmin_specular(ShAttrib1f nu, ShAttrib1f nv,
   
   ShAttrib1f scale = sqrt((nu + 1.0f) * (nv + 1.0f))/(8.0*M_PI);
   ShAttrib1f exponent = (nu*hu*hu + nv*hv*hv)/(1.0f - hn*hn);
-  ShAttrib1f geom = pow(hn, exponent)/(kn*max(ln, vn));
+  ShAttrib1f geom = pow(hn, exponent)/(kn*SH::max(ln, vn));
 
   return scale * geom * schlick(refl, kh);
 }

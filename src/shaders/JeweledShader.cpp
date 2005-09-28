@@ -120,38 +120,38 @@ bool JeweledShader::init()
   ShTable2D<ShColor3fub> ptex[NMATS];
   ShTable2D<ShColor3fub> qtex[NMATS];
 
-  image.load_PNG(normalize_path(SHMEDIA_DIR "/brdfs/mystique/mystique64_0.png"));
+  load_PNG(image, normalize_path(SHMEDIA_DIR "/brdfs/mystique/mystique64_0.png"));
   ptex[0].size(image.width(), image.height());
   ptex[0].memory(image.memory());
   ptex[0].name("Mystique p texture");
 
-  image.load_PNG(normalize_path(SHMEDIA_DIR "/brdfs/mystique/mystique64_1.png"));
+  load_PNG(image, normalize_path(SHMEDIA_DIR "/brdfs/mystique/mystique64_1.png"));
   qtex[0].size(image.width(), image.height());
   qtex[0].memory(image.memory());
   qtex[0].name("Mystique q texture");
 
-  image.load_PNG(normalize_path(SHMEDIA_DIR "/brdfs/satin/satinp.png"));
+  load_PNG(image, normalize_path(SHMEDIA_DIR "/brdfs/satin/satinp.png"));
   ptex[1].size(image.width(), image.height());
   ptex[1].memory(image.memory());
   ptex[1].name("Satin p texture");
 
-  image.load_PNG(normalize_path(SHMEDIA_DIR "/brdfs/satin/satinq.png"));
+  load_PNG(image, normalize_path(SHMEDIA_DIR "/brdfs/satin/satinq.png"));
   qtex[1].size(image.width(), image.height());
   qtex[1].memory(image.memory());
   qtex[1].name("Satin q texture");
 
-  image.load_PNG(normalize_path(SHMEDIA_DIR "/brdfs/garnetred/garnetred64_0.png"));
+  load_PNG(image, normalize_path(SHMEDIA_DIR "/brdfs/garnetred/garnetred64_0.png"));
   ptex[2].size(image.width(), image.height());
   ptex[2].memory(image.memory());
   ptex[2].name("Garnet red p texture");
 
-  image.load_PNG(normalize_path(SHMEDIA_DIR "/brdfs/garnetred/garnetred64_1.png"));
+  load_PNG(image, normalize_path(SHMEDIA_DIR "/brdfs/garnetred/garnetred64_1.png"));
   qtex[2].size(image.width(), image.height());
   qtex[2].memory(image.memory());
   qtex[2].name("Garnet red q texture");
 
   // Specular highlight (to be added when needed...)
-  image.load_PNG(normalize_path(SHMEDIA_DIR "/brdfs/specular.png"));
+  load_PNG(image, normalize_path(SHMEDIA_DIR "/brdfs/specular.png"));
   ShTable2D<ShColor3fub> stex(image.width(), image.height());
   stex.memory(image.memory());
   stex.name("Specular highlight texture");
@@ -163,7 +163,7 @@ bool JeweledShader::init()
   {
     for (int i = 0; i < 6; i++) {
       ShImage image;
-      image.load_PNG(normalize_path(std::string(SHMEDIA_DIR "/envmaps/aniroom/") + imageNames[i] + ".png"));
+      load_PNG(image, normalize_path(std::string(SHMEDIA_DIR "/envmaps/aniroom/") + imageNames[i] + ".png"));
       env.size(image.width(), image.height());
       env.memory(image.memory(), static_cast<ShCubeDirection>(i));
     }
@@ -172,7 +172,7 @@ bool JeweledShader::init()
   ShWrapRepeat< ShTable2D<ShColor3fub> > mat;
 
   // Material map (threshold based...)
-  image.load_PNG(normalize_path(SHMEDIA_DIR "/textures/halftone.png"));
+  load_PNG(image, normalize_path(SHMEDIA_DIR "/textures/halftone.png"));
   mat.size(image.width(), image.height());
   mat.memory(image.memory());
   mat.name("Filgiree distance map");

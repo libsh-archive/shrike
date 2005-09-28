@@ -18,6 +18,7 @@
 // MA  02110-1301, USA
 //////////////////////////////////////////////////////////////////////////////
 #include "UniformPanel.hpp"
+#include <sh/shutil.hpp>
 #include <sh/ShProgram.hpp>
 #include <iostream>
 #include <cmath>
@@ -255,7 +256,7 @@ public:
       // Lame convertion from wxString to std::string:
       std::string stdname;
       stdname = wxConvLibc.cWX2MB(dialog->GetPath());
-      img.load_PNG(stdname);
+      ShUtil::load_PNG(img, stdname);
       m_node->memory(img.memory(), 0);
       if (m_node->dims() == SH_TEXTURE_1D) {
         m_node->setTexSize(img.width() * img.height());

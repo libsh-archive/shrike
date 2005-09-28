@@ -80,12 +80,12 @@ void testPlane(const ShVector3f& body, const ShAttrib4f& plane, const ShPoint3f&
   ShAttrib1f my_d = -(body | pt);
 
  
-  ShAttrib1f ignore = max(max(p(1)<-0.5, p(1)>1.5), max(p(2)<-0.5, p(2)>1.5));
-  ignore = max(ignore, min(my_d>(dmin-1e-7), my_d<(dmax+1e-7)));
-  ignore = max(ignore, t > best);
+  ShAttrib1f ignore = SH::max(SH::max(p(1)<-0.5, p(1)>1.5), SH::max(p(2)<-0.5, p(2)>1.5));
+  ignore = SH::max(ignore, SH::min(my_d>(dmin-1e-7), my_d<(dmax+1e-7)));
+  ignore = SH::max(ignore, t > best);
 
   // Darken edges
-  ShAttrib1f diff = min(frac(p(1)+0.5), frac(p(2)+0.5));
+  ShAttrib1f diff = SH::min(frac(p(1)+0.5), frac(p(2)+0.5));
   col = min(diff/edgewidth, 1.0) * col;
   
   C = cond(ignore, C, col);
