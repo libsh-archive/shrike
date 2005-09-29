@@ -1,3 +1,10 @@
+2005-09-29  Francois Marier  <francois@serioushack.com>
+
+	* src/UniformPanel.cpp (setShader): Use all_uniforms instead of
+	uniforms in order to get all the dependent ones too.
+	(addVar): No longer needed to iterate through the evaluator's
+	uniforms since all_uniforms already contains them.
+
 2005-09-28  Francois Marier  <francois@serioushack.com>
 
 	* src/UniformPanel.cpp, ShGenMap.cpp, ShrikeCanvas.cpp,

@@ -360,13 +360,6 @@ void UniformPanel::addVar(const ShVariableNodePtr& var,
 
   m_vars.push_back(var);
   
-  if (var->evaluator()) {
-    for (ShProgramNode::VarList::iterator I = var->evaluator()->uniforms.begin();
-         I != var->evaluator()->uniforms.end(); ++I) {
-      addVar(*I, sizer);
-    }
-  }
-  
   if (var->kind() != SH_TEMP) return;
   if (var->internal()) return;
   if (!var->has_name()) return;
@@ -420,7 +413,8 @@ void UniformPanel::setShader(Shader* shader)
   if (shader) {
     int p = 0;
     for (ShProgram prg = shader->vertex(); p < 2; prg = shader->fragment(), p++) {
-      for (ShProgramNode::VarList::iterator I = prg.node()->uniforms.begin(); I != prg.node()->uniforms.end(); ++I) {
+      for (ShProgramNode::VarList::const_iterator I = prg.node()->all_uniforms_begin(); 
+           I != prg.node()->all_uniforms_end(); ++I) {
         addVar(*I, sizer);
       }
       for (ShProgramNode::PaletteList::iterator I = prg.node()->palettes.begin(); I != prg.node()->palettes.end(); ++I) {
