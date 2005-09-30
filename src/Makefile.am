@@ -3,7 +3,6 @@
 bin_PROGRAMS = shrike shgenmap
 
 AUTOMAKE_OPTIONS = subdir-objects
-EXTRA_DIST = Makefile.win32
 
 shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 ShrikeFrame.hpp ShrikeFrame.cpp \

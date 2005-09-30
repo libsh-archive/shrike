@@ -1,7 +1,6 @@
 AUTOMAKE_OPTIONS = 1.7 foreign
 SUBDIRS = src
-EXTRA_DIST = Makefile.win32 win32.mk win32/postbuild.bat win32/shrike.sln \
-	win32/shrike.vcproj COPYING
+EXTRA_DIST = win32/postbuild.bat win32/shrike.sln win32/shrike.vcproj COPYING
 
 dist-zip: distdir
 	zip -rq $(distdir).zip $(distdir)
