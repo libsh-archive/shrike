@@ -1,3 +1,7 @@
+2005-09-30  Francois Marier  <francois@serioushack.com>
+
+	* src/UniformPanel.cpp (setShader): Rename the all_uniforms_* methods to *_all_parameters.
+
 2005-09-29  Francois Marier  <francois@serioushack.com>
 
 	* src/UniformPanel.cpp (setShader): Use all_uniforms instead of

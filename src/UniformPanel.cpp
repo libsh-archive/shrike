@@ -413,14 +413,14 @@ void UniformPanel::setShader(Shader* shader)
   if (shader) {
     int p = 0;
     for (ShProgram prg = shader->vertex(); p < 2; prg = shader->fragment(), p++) {
-      for (ShProgramNode::VarList::const_iterator I = prg.node()->all_uniforms_begin(); 
-           I != prg.node()->all_uniforms_end(); ++I) {
+      for (ShProgramNode::VarList::const_iterator I = prg.begin_all_parameters(); 
+           I != prg.end_all_parameters(); ++I) {
         addVar(*I, sizer);
       }
-      for (ShProgramNode::PaletteList::iterator I = prg.node()->palettes.begin(); I != prg.node()->palettes.end(); ++I) {
+      for (ShProgramNode::PaletteList::const_iterator I = prg.begin_palettes(); I != prg.end_palettes(); ++I) {
         for (unsigned i = 0; i < (*I)->palette_length(); i++) addVar((*I)->get_node(i), sizer);
       }
-      for (ShProgramNode::TexList::iterator I = prg.node()->textures.begin(); I != prg.node()->textures.end(); ++I) {
+      for (ShProgramNode::TexList::const_iterator I = prg.begin_textures(); I != prg.end_textures(); ++I) {
         ShTextureNodePtr tex = *I;
         if (tex->dims() == SH_TEXTURE_3D || tex->dims() == SH_TEXTURE_CUBE) continue;
 
