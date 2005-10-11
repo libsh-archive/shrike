@@ -388,7 +388,7 @@ void ShrikeFrame::showProgram(ShProgram program,
 #else
   std::ostringstream s;
   program.node()->code()->print(s);
-  control->AppendText(s.str().c_str());
+  control->AppendText(wxString(s.str().c_str(), *wxConvCurrent));
 #endif
 
   frame->Show();
@@ -433,7 +433,7 @@ void ShrikeFrame::showIR(ShProgram program,
 #else
   std::ostringstream s;
   program.node()->ctrlGraph->print(s, 0);
-  control->AppendText(s.str().c_str());
+  control->AppendText(wxString(s.str().c_str(), *wxConvCurrent));
 #endif
 
   frame->Show();
