@@ -336,13 +336,18 @@ bool VectorDoc::init()
     ShOutputPosition4f pd;
     ShOutputPoint3f pv;
 
+    // param(0): 
+    // param(1): frequency of the sin func
     ShAttrib2f param = ShAttrib2f(3.0, 1.0);
 
     // set the position of the vectices
+    // m_time(1): (xiang wei, state?)
+    // pm(2): z value
+    // smoothstep: the fluctuation won't affect the banner post
     pm(2) = sin(param(1) * pm(0) - m_time(1)) * 
 	    deprecated_smoothstep(ShAttrib1f(0.0), param(0), (pm(0) - m_start));
 
-    // tangent
+    // tangent on the surface
     ShOutputVector3f tgt0 = ShVector3f(0,1,0);
     ShOutputVector3f tgt1;
     tgt1(1) = 0;
@@ -351,7 +356,9 @@ bool VectorDoc::init()
 	    * deprecated_smoothstep(ShAttrib1f(0.0), param(0), (pm(0)+m_deltax - m_start)) - pm(2);
     tgt1 = normalize(tgt1);
 
+    // normal on the surface
     ShNormal3f nk = cross(tgt1, tgt0);
+    // don't change the normal of the banner post
     nm = (pm(0) > m_start) * nk + (1 - (pm(0) > m_start)) * nm;
 
     tgt0 = normalize(Globals::mv | tgt0);

@@ -170,7 +170,7 @@ private:
   int maxgwidth;
   int maxgheight;
   int elements;
-  ShAttrib2f size[4];
+  ShAttrib2h size[4];
 };
 
 #endif

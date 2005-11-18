@@ -38,6 +38,7 @@ segdists (
     int N,           // number of line segments
     ShPoint2f X      //< test point
 ); 
+
 ShAttrib4f //< signed distance, signed value (dist from line), gradient vector
 segdists_d (
     ShAttrib4f L[],  //< line segments (0,1 point 0, 2,3 vector to point 1)
@@ -60,6 +61,7 @@ segdists_a (
     int N,           // number of line segments
     ShPoint2f X      //< test point
 ); 
+
 ShAttrib4f //< signed distance, signed value (dist from line), gradient vector
 segdists_da (
     ShAttrib4f L[],  //< line segments (0,1 point 0, 2,3 vector to point 1)

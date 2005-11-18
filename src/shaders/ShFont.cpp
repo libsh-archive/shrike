@@ -300,15 +300,23 @@ void ShFont::stringEnd() {
     }
 
     // put width and height of the glyph in m_memory(3)
-    coords(3)[i*4+2] = coords(0)[j*11+1];
-    coords(3)[i*4+3] = coords(0)[j*11+2];
+    // divided by maxheight get the ratio compared with max height
+    coords(3)[i*4+2] = coords(0)[j*11+1]/m_maxgheight;
+    coords(3)[i*4+3] = coords(0)[j*11+2]/m_maxgheight;
 
     // put glyph offset and width and height in the 
     // octree texture in m_memory(4)
-    coords(4)[i*4] = coords(0)[j*11+9];
-    coords(4)[i*4+1] = coords(0)[j*11+10];
-    coords(4)[i*4+2] = coords(0)[j*11+6];
-    coords(4)[i*4+3] = coords(0)[j*11+7];
+
+    // coords(4)[0,1] has the offset of the glyph in octree texture
+    // division get the start pos (0-1) of the glyph in octree texture
+    coords(4)[i*4] = coords(0)[j*11+9]/m_width;
+    coords(4)[i*4+1] = coords(0)[j*11+10]/m_height;
+
+    // coords(4)[2,3] has the width, height of the glyph in octree texture
+    // division get the percentage of the glyph size compared to the 
+    // octree texture size
+    coords(4)[i*4+2] = coords(0)[j*11+6]/m_width;
+    coords(4)[i*4+3] = coords(0)[j*11+7]/m_height;
   }
   delete[] sp;
 }

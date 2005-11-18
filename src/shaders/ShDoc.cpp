@@ -52,86 +52,25 @@ ShDoc::sprite_dist (
     ShAttrib2f x,  // texture coordinates
     ShAttrib2f fx  // where to get sprite info
 ) {
-	/*
+
+    // s1(2,3) has the ratio of the real width and 
+    // height of the glyph compared with max height
     ShAttrib4f s1 = sprite1(fx);
+    // s2(0,1) has the offset of the glyph in octree texture
+    // s2(2,3) has the width, height of the glyph in octree texture
     ShAttrib4f s2 = sprite2(fx);
 
-    // s1(2,3) has the real width and height of the glyph
-    // divided by maxheight get the ratio compared with max height
-    s1(2,3) = s1(2,3) / maxgheight;
 
-    // s2(0,1) has the offset of the glyph in octree texture
-    // division get the start pos (0-1) of the glyph in octree texture
-    s2(0,1) = ShAttrib2f(s2(0)/width, s2(1)/height);
-
-    // s2(2,3) has the width, height of the glyph in octree texture
-    // division get the percentage of the glyph size compared to the 
-    // octree texture size
-    ShAttrib2f shift = (s2(2,3) / (1 + MARGINRATIO)) * MARGINRATIO / 4;
-    s2(2,3) -= shift * 2; // the margin part shouldn't be there
-    ShAttrib2f scale2 = ShAttrib2f(s2(2)/width, s2(3)/height);
-    shift = ShAttrib2f((shift(0))/width, (shift(1))/height);
-
-    // convert coords from texture domean to octree domain
+    // convert coords from texture domain to octree domain
     // s1(0,1) has the exact coords of the glyph in the texture
     // tx1: if we treat the real size of glyph as from 0-1,
     //      it gets the percent of x in terms of the glyph size
-    // *biggrid = smallgrid / m_split
+    // (*biggrid): get percentage in biggrid
     ShAttrib2f tx1 = (x - s1(0,1)) * biggrid / s1(2,3);
     tx1 = clamp(tx1,0.0,1.0);
     
     // get the corresponding coords of x in octree texture
-    ShAttrib2f tx2 = tx1 * scale2 + s2(0,1) + shift;
-    // ShAttrib2f tx2 = tx1 * scale2 + s2(0,1);
-
-    ShAttrib4f L[4];
-
-    // there are 4 edges with each one stored at each corner of 
-    // the cell that x falls in.  We need to compute all of the 
-    // them.  And then get the shortest one.
-    // when computing distance, have to convert edge coords back
-    // to real uv coords, because of distortion
-    // these conversion can definitly be moved to preprocessing
-    // part TODO
-    for(int i=0; i<4; i++) {
-	ShAttrib2f y = tx2 + size[i];
-    	L[i] = ftexture(y); 
-	L[i] = L[i] * s1(2,3,2,3) / biggrid + s1(0,1,0,1);
-    }
-  
-    ShAttrib4f r = segdists_a(L,4,x);
-
-    // mask off the entirely inside and entirely outside cells
-    // (this lets us reuse their storage for adjacent boundary cells)
-    r(0,1) += 1.0e13*flag(tx2 + size[0]);
-    */
-
-    ShAttrib4f s1 = sprite1(fx);
-    ShAttrib4f s2 = sprite2(fx);
-
-    // s1(2,3) has the real width and height of the glyph
-    // divided by maxheight get the ratio compared with max height
-    s1(2,3) = s1(2,3) / maxgheight;
-
-    // s2(0,1) has the offset of the glyph in octree texture
-    // division get the start pos (0-1) of the glyph in octree texture
-    s2(0,1) = ShAttrib2f(s2(0)/width, s2(1)/height);
-
-    // s2(2,3) has the width, height of the glyph in octree texture
-    // division get the percentage of the glyph size compared to the 
-    // octree texture size
-    ShAttrib2f scale2 = ShAttrib2f(s2(2)/width, s2(3)/height);
-
-    // convert coords from texture domean to octree domain
-    // s1(0,1) has the exact coords of the glyph in the texture
-    // tx1: if we treat the real size of glyph as from 0-1,
-    //      it gets the percent of x in terms of the glyph size
-    // *biggrid = smallgrid / m_split
-    ShAttrib2f tx1 = (x - s1(0,1)) * biggrid / s1(2,3);
-    tx1 = clamp(tx1,0.0,1.0);
-    
-    // get the corresponding coords of x in octree texture
-    ShAttrib2f tx2 = tx1 * scale2 + s2(0,1);
+    ShAttrib2f tx2 = tx1 * s2(2,3) + s2(0,1);
 
     ShAttrib4f L[4];
 
@@ -156,6 +95,7 @@ ShDoc::sprite_dist (
 
     return r;
 }
+
 
 bool ShDoc::initFont(std::string filename, int small, int split)
 {
@@ -203,10 +143,10 @@ bool ShDoc::initFont(std::string filename, int small, int split)
   }
   */
 
-  size[0] = ShAttrib2f(-0.5/width, -0.5/height);
-  size[1] = ShAttrib2f( 0.5/width, -0.5/height);
-  size[2] = ShAttrib2f(-0.5/width,  0.5/height);
-  size[3] = ShAttrib2f( 0.5/width,  0.5/height);
+  size[0] = ShAttrib2h(-0.5/width, -0.5/height);
+  size[1] = ShAttrib2h( 0.5/width, -0.5/height);
+  size[2] = ShAttrib2h(-0.5/width,  0.5/height);
+  size[3] = ShAttrib2h( 0.5/width,  0.5/height);
 
   return true;
 }
@@ -236,14 +176,12 @@ ShAttrib4f ShDoc::shortestDis(ShAttrib2f x) {
 
   sprite_r[0] = sprite_dist(x, x);  // current cell
   sprite_r[1] = sprite_dist(x, x - ShAttrib2f(1.0/smallgrid,0.0)); //previous cell
-  // sprite_r[2] = sprite_dist(x, x - ShAttrib2f(2.0/smallgrid,0.0)); //previous cell
 
   // sometimes one glyph will cross two small grids,
   // so in each one small grid, have to check one
   // from the previous grid, and one from current 
   // grid
   ShAttrib4f r = cond(sprite_r[0](0) < sprite_r[1](0),sprite_r[0],sprite_r[1]);
-  // r = cond(r(0) < sprite_r[2](0),r,sprite_r[2]);
   r(2,3) = normalize(r(2,3));
 
   return r;
@@ -312,6 +250,7 @@ ShColor3f ShDoc::anisoAntialiasPhong(
 { 
   ShConstColor3f lightColor(1.0f, 1.0f, 1.0f);
 
+  /*
   ShImage image;
   // image.loadPng(normalize_path("/home/zqin/sh/myshrike/src/tomisto3.png"));
   // image.loadPng(normalize_path("/home/zqin/sh/shmedia/textures/woodkd.png"));
@@ -319,6 +258,7 @@ ShColor3f ShDoc::anisoAntialiasPhong(
   dstex.memory(image.memory());
   // ShColor3f kdb = dstex(x);
   // ShColor3f ksb = kdb;
+  */
 
   // for background
   ShConstColor3f kdb(0.5, 0.5, 0.5);
@@ -382,6 +322,7 @@ ShColor3f ShDoc::anisoAntialiasPhongEmboss(
 { 
   ShConstColor3f lightColor(1.0f, 1.0f, 1.0f);
 
+  /*
   ShImage image;
   // image.loadPng(normalize_path("/home/zqin/sh/myshrike/src/tomisto3.png"));
   // image.loadPng(normalize_path("/home/zqin/sh/shmedia/textures/woodkd.png"));
@@ -389,6 +330,7 @@ ShColor3f ShDoc::anisoAntialiasPhongEmboss(
   dstex.memory(image.memory());
   // ShColor3f kdb = dstex(x);
   // ShColor3f ksb = kdb;
+  */
 
   // for background
   ShConstColor3f kdb(0, 0, 0);
