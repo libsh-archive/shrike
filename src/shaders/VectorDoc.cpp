@@ -115,7 +115,7 @@ VectorDoc::VectorDoc(int mode)
     m_th.range(0.0001, 0.01);
 
     m_time.name("time");
-    m_time.range(0, 10);
+    m_time.range(0, 2*3.14159);
 
     m_start.name("startpos");
     m_start.range(-10, 10);
@@ -186,7 +186,6 @@ bool VectorDoc::init()
 
   // doc.initFont("font.txt", 128, 4);
   doc.initFont("font.txt", 128, 4);
-  
   std::string str;
 
   /*
@@ -286,8 +285,8 @@ bool VectorDoc::init()
 
   doc.stringEnd();
 
-
   /*
+
   vsh = SH_BEGIN_VERTEX_PROGRAM {
     ShInOutTexCoord2f u;
     ShInputNormal3f nm;
@@ -345,7 +344,7 @@ bool VectorDoc::init()
     // pm(2): z value
     // smoothstep: the fluctuation won't affect the banner post
     pm(2) = sin(param(1) * pm(0) - m_time(1)) * 
-	    deprecated_smoothstep(ShAttrib1f(0.0), param(0), (pm(0) - m_start));
+	    smoothstep(ShAttrib1f(0.0), param(0), (pm(0) - m_start));
 
     // tangent on the surface
     ShOutputVector3f tgt0 = ShVector3f(0,1,0);
@@ -353,7 +352,7 @@ bool VectorDoc::init()
     tgt1(1) = 0;
     tgt1(0) = m_deltax;
     tgt1(2) = sin(param(1) * (pm(0) + m_deltax) - m_time(1)) 
-	    * deprecated_smoothstep(ShAttrib1f(0.0), param(0), (pm(0)+m_deltax - m_start)) - pm(2);
+	    * smoothstep(ShAttrib1f(0.0), param(0), (pm(0)+m_deltax - m_start)) - pm(2);
     tgt1 = normalize(tgt1);
 
     // normal on the surface

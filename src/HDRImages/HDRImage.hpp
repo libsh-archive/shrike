@@ -29,6 +29,9 @@
 
 #include <string>
 #include <sh/sh.hpp>
+#include <sh/shutil.hpp>
+
+using namespace ShUtil;
 
 class HDRImage {
 public:
@@ -54,11 +57,11 @@ public:
 	int height() const { return m_height; }
 	int elements() const { return m_elements; }
   
-	void loadPng(const std::string& filename) { m_image.loadPng(filename); }
+	void loadPng(const std::string& filename) { load_PNG(m_image, filename); }
 	
-	void savePng(const std::string& filename) { m_image.savePng(filename); }  
+	void savePng(const std::string& filename) { save_PNG(m_image, filename); }  
   
-	void savePng16(const std::string& filename) { m_image.savePng16(filename); }
+	void savePng16(const std::string& filename) { save_PNG16(m_image, filename); }
 
 	SH::ShImage getNormalImage() { return m_image.getNormalImage(); }
 

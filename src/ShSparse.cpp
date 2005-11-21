@@ -56,7 +56,7 @@ int main(int argc, char** argv)
  		string dataFileName = inFileName.substr(0,inFileName.size() - 4) + "_data.hdr";
   	ShImage inputImage;
 		HDRImage map, data;
-  	inputImage.loadPng(inFileName);
+  	load_PNG(inputImage, inFileName);
 		int elements = inputImage.elements();
 
 		// compute the number of blocks

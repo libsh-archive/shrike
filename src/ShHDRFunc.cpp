@@ -29,9 +29,11 @@
 #include <string>
 #include <math.h>
 #include <sh/sh.hpp>
+#include <sh/shutil.hpp>
 #include "HDRImage.hpp"
 
 using namespace SH;
+using namespace ShUtil;
 using namespace std;
 
 HDRImage image, diffuse, specular;
@@ -234,7 +236,7 @@ int main(int argc, char **argv) {
         }
       }
     }
-    panoramic.savePng(outFileName);
+    save_PNG(panoramic, outFileName);
   }
   return 0;
 }

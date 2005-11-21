@@ -27,14 +27,13 @@
 #include <sstream>
 
 #include <sh/sh.hpp>
+#include <sh/shutil.hpp>
 #include "ShrikeGl.hpp"
-//#include <wx/wx.h>
 #include <wx/glcanvas.h>
 #include "ShrikeCanvas.hpp"
 #include "ShrikeFrame.hpp"
 #include "Globals.hpp"
 #include "ShTrackball.hpp"
-#include <sh/sh.hpp>
 #include "Timer.hpp"
 #include "shaders/LCDSmall.hpp"
 
@@ -388,7 +387,7 @@ void ShrikeCanvas::screenshot(const std::string& filename)
      img.savePng(filename + s.str());
 #endif
   }
-  final.savePng(filename);
+  save_PNG(final,filename);
 
   setupView();
   render();

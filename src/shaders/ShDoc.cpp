@@ -201,8 +201,8 @@ ShColor3f ShDoc::isoAntialias(ShAttrib2f x,
   ShAttrib4f r = shortestDis(x);
 
   ShAttrib2f fw = fwidth(x);
-  ShAttrib1f w = max(fw(0),fw(1))*m_fw;
-  ShAttrib1f p = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
+  ShAttrib1f w = SH::max(fw(0),fw(1))*m_fw;
+  ShAttrib1f p = smoothstep(-w,w,r(0)+m_thres(0));
   ShColor3f o = lerp(p,m_color2,m_color1);
   return o;
 }
@@ -223,7 +223,7 @@ ShColor3f ShDoc::anisoAntialias(ShAttrib2f x,
   fw(0) = dx(x) | r(2,3);
   fw(1) = dy(x) | r(2,3);
   ShAttrib1f w = length(fw)*m_fw;
-  ShAttrib1f p = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
+  ShAttrib1f p = smoothstep(-w,w,r(0)+m_thres(0));
   ShColor3f o = lerp(p,m_color2,m_color1);
  
   return o;
@@ -282,7 +282,7 @@ ShColor3f ShDoc::anisoAntialiasPhong(
   fw(0) = dx(x) | r(2,3);
   fw(1) = dy(x) | r(2,3);
   ShAttrib1f w = length(fw)*m_fw;
-  ShAttrib1f p = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
+  ShAttrib1f p = smoothstep(-w,w,r(0)+m_thres(0));
 
   ShColor1f irrad = pos( nv | lv);
   ShAttrib1f t = pow(pos(nv|hv), phongexp);
@@ -352,14 +352,15 @@ ShColor3f ShDoc::anisoAntialiasPhongEmboss(
   fw(0) = dx(x) | r(2,3);
   fw(1) = dy(x) | r(2,3);
   ShAttrib1f w = length(fw)*m_fw;
-  ShAttrib1f p = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
+  ShAttrib1f p = smoothstep(-w,w,r(0)+m_thres(0));
 
   // ShAttrib3f th;
   th(0) = -0.00025;  // width of the wedge inside glyph
   th(1) =  0.00025; // width of the wedge outside glyph
   th(2) = 0.00025;    // width of the transition area
 
-  ShAttrib2f a = smoothstep(r(0), th(0), th(2)) * smoothstep(-r(0), -th(1), th(2)) * r(2,3);
+  // ShAttrib2f a = smoothstep(r(0), th(0), th(2)) * smoothstep(-r(0), -th(1), th(2)) * r(2,3);
+  ShAttrib2f a = smoothstep(th(0), th(0)+th(2), r(0)) * smoothstep(-th(1),th(2)-th(1), -r(0)) * r(2,3);
 
   // normal in surface space
   ShNormal3f ns = ShNormal3f(0,0,1);
@@ -415,10 +416,10 @@ ShColor3f ShDoc::isoAntiOutline(ShAttrib2f x,
 { 
   ShAttrib4f r = shortestDis(x);
   ShAttrib2f fw = fwidth(x);
-  ShAttrib1f w = max(fw(0),fw(1))*m_fw;;
+  ShAttrib1f w = SH::max(fw(0),fw(1))*m_fw;;
   ShAttrib2f p;
-  p(0) = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
-  p(1) = deprecated_smoothstep(-w,w,-r(0)-m_thres(1));
+  p(0) = smoothstep(-w,w,r(0)+m_thres(0));
+  p(1) = smoothstep(-w,w,-r(0)-m_thres(1));
   ShColor3f o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
  
   return o;
@@ -441,8 +442,8 @@ ShColor3f ShDoc::anisoAntiOutline(ShAttrib2f x,
   fw(1) = dy(x) | r(2,3);
   ShAttrib1f w = length(fw)*m_fw;
   ShAttrib2f p;
-  p(0) = deprecated_smoothstep(-w,w,r(0)+m_thres(0));
-  p(1) = deprecated_smoothstep(-w,w,-r(0)-m_thres(1));
+  p(0) = smoothstep(-w,w,r(0)+m_thres(0));
+  p(1) = smoothstep(-w,w,-r(0)-m_thres(1));
   ShColor3f o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
  
   return o;
@@ -490,10 +491,10 @@ ShColor3f ShDoc::isoAntiPseudoOutline(ShAttrib2f x,
 {
   ShAttrib4f r = shortestDis(x);
   ShAttrib2f fw = fwidth(x);;
-  ShAttrib1f w = max(fw(0),fw(1))*m_fw;
+  ShAttrib1f w = SH::max(fw(0),fw(1))*m_fw;
   ShAttrib2f p;
-  p(0) = deprecated_smoothstep(-w,w,r(1)+m_thres(0));
-  p(1) = deprecated_smoothstep(-w,w,-r(1)-m_thres(1));;
+  p(0) = smoothstep(-w,w,r(1)+m_thres(0));
+  p(1) = smoothstep(-w,w,-r(1)-m_thres(1));;
   ShColor3f o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
   return o;
 }
@@ -515,8 +516,8 @@ ShColor3f ShDoc::anisoAntiPseudoOutline(ShAttrib2f x,
   fw(1) = dy(x) | r(2,3);
   ShAttrib1f w = length(fw)*m_fw;
   ShAttrib2f p;
-  p(0) = deprecated_smoothstep(-w,w,r(1)+m_thres(0));
-  p(1) = deprecated_smoothstep(-w,w,-r(1)-m_thres(1));
+  p(0) = smoothstep(-w,w,r(1)+m_thres(0));
+  p(1) = smoothstep(-w,w,-r(1)-m_thres(1));
   ShColor3f o = lerp((1-p(0))*(1-p(1)),m_color1,m_color2);
   return o;
 }

@@ -25,7 +25,8 @@
 // distribution.
 //////////////////////////////////////////////////////////////////////////////
 #include "UniformPanel.hpp"
-#include <sh/ShProgram.hpp>
+#include <sh/sh.hpp>
+#include <sh/shutil.hpp>
 #include <iostream>
 #include <cmath>
 #include <utility>
@@ -36,6 +37,7 @@
 #include "ShrikeFrame.hpp"
 
 using namespace SH;
+using namespace ShUtil;
 
 UniformPanel::UniformPanel(wxWindow* parent)
   : wxScrolledWindow(parent, -1),
@@ -254,7 +256,7 @@ public:
 
     if (dialog->ShowModal() == wxID_OK) {
       ShImage img;
-      img.loadPng(dialog->GetPath().c_str());
+      load_PNG(img, dialog->GetPath().c_str());
       m_node->memory(img.memory(), 0);
       if (m_node->dims() == SH_TEXTURE_1D) {
         m_node->setTexSize(img.width() * img.height());
