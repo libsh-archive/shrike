@@ -146,7 +146,7 @@ bool Logo::init()
   if (infile) {
     m_model = new ShObjMesh(infile);
   } else {
-    return false;
+    throw ShException("failed to open "SHMEDIA_DIR "/objs/s.obj");
   }
   
   vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );

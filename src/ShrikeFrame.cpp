@@ -164,6 +164,34 @@ ShrikeFrame::ShrikeFrame()
   if (infile) {
     model = new ShObjMesh(infile);
   }
+  else {
+    showError(
+      wxT("The shmedia package was not found. This package contains models and textures \n"
+          "required by many shaders. You may still run Shrike but it is recommended \n"
+          "you install the shmedia package first.\n"
+          "\n"
+	        "The package can be found at http://libsh.org/ in the downloads section.\n"
+          "\n"
+	        "Shrike expected the package in "SHMEDIA_DIR),
+      "failed to open " SHMEDIA_DIR "/objs/plane1.obj"
+      );
+    model = new ShObjMesh();
+    model->clear();
+    std::ostringstream oss;
+    oss << "v 1.0 1.0 0.0" << std::endl;
+    oss << "v 1.0 -1.0 0.0" << std::endl;
+    oss << "v -1.0 -1.0 0.0" << std::endl;
+    oss << "v -1.0 1.0 0.0" << std::endl;
+    oss << "vt 1.0 0.0" << std::endl;
+    oss << "vt 1.0 1.0" << std::endl;
+    oss << "vt 0.0 1.0" << std::endl;
+    oss << "vt 0.0 0.0" << std::endl;
+    oss << "vn 0.0 0.0 1.0" << std::endl;
+    oss << "f 1/1/1 2/2/1 3/3/1" << std::endl;
+    oss << "f 1/1/1 3/3/1 4/4/1" << std::endl;
+    std::istringstream iss(oss.str());
+    model->readObj(iss);
+  }
 
 #if 0 // switch this on for fixed size separate preview window
   // TODO implement this properly in the GUI
