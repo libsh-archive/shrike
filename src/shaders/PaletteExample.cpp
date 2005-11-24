@@ -29,7 +29,7 @@ using namespace ShUtil;
 
 class PaletteExample : public Shader {
 public:
-  PaletteExample();
+  PaletteExample(const Globals&);
   ~PaletteExample();
 
   bool init();
@@ -40,12 +40,10 @@ public:
   ShProgram vsh, fsh;
 
   ShPalette<ShColor3f> colors;
-
-  static PaletteExample instance;
 };
 
-PaletteExample::PaletteExample()
-  : Shader("Palette Example"),
+PaletteExample::PaletteExample(const Globals& globals)
+  : Shader("Palette Example", globals),
     colors(5)
 {
   colors[0] = ShColor3f(1.0, 0.0, 0.0);
@@ -81,11 +79,11 @@ bool PaletteExample::init()
     ShOutputVector3f lightv; // direction to light
     ShOutputColor3f color;
 
-    opos = Globals::mvp | ipos; // Compute NDC position
-    onorm = Globals::mv | inorm; // Compute view-space normal
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    onorm = m_globals.mv | inorm; // Compute view-space normal
 
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
-    lightv = normalize(Globals::lightPos - posv); // Compute light direction
+    ShPoint3f posv = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
+    lightv = normalize(m_globals.lightPos - posv); // Compute light direction
 
     color = colors[color_selector];
   } SH_END;
@@ -107,4 +105,15 @@ bool PaletteExample::init()
   return true;
 }
 
-PaletteExample PaletteExample::instance = PaletteExample();
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new PaletteExample(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<PaletteExample> instance = 
+       StaticLinkedShader<PaletteExample>();
+#endif

@@ -24,7 +24,7 @@
 
 class LCDSmall : public Shader {
 public:
-  LCDSmall();
+  LCDSmall(const Globals &);
   ~LCDSmall();
 
   bool init();
@@ -33,8 +33,6 @@ public:
   SH::ShProgram fragment() { return fsh;}
 
   SH::ShProgram vsh, fsh;
-
-  static LCDSmall instance;
 };
 
 SH::ShAttrib1f lcdSmall(const SH::ShTexCoord2f& tc, SH::ShAttrib1f number,

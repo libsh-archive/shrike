@@ -18,39 +18,36 @@
 // MA  02110-1301, USA
 //////////////////////////////////////////////////////////////////////////////
 
-#include <wx/wx.h>
+//#include <wx/wx.h>
 #include <sh/sh.hpp>
 #include <sh/shutil.hpp>
 #include "ShrikeGl.hpp"
 #include <iostream>
 #include "Shader.hpp"
 #include "Globals.hpp"
-#include "ShrikeCanvas.hpp"
 
 using namespace SH;
 using namespace ShUtil;
 
 class TangentArrows : public Shader {
 public:
-  TangentArrows()
-    : Shader("Debugging: Tangent Arrows")
+  TangentArrows(const Globals& globals)
+    : Shader("Debugging: Tangent Arrows", globals)
   {}
   
   ~TangentArrows() {}
 
   bool init();
 
-  void render();
+  bool render(const ShObjMesh&);
   
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
   
   ShProgram vsh, fsh;
-
-  static TangentArrows instance;
 };
 
-void TangentArrows::render()
+bool TangentArrows::render(const ShObjMesh& mesh)
 {
 
   glPushAttrib(GL_LINE_BIT);
@@ -59,9 +56,8 @@ void TangentArrows::render()
   
   float vs[4];
   glBegin(GL_LINES);
-  const ShUtil::ShObjMesh& m_obj = *ShrikeCanvas::instance()->getModel();
-  for(ShObjMesh::FaceSet::const_iterator I = m_obj.faces.begin();
-      I != m_obj.faces.end(); ++I) {
+  for(ShObjMesh::FaceSet::const_iterator I = mesh.faces.begin();
+      I != mesh.faces.end(); ++I) {
     ShObjMesh::Edge* e = (*I)->edge;
     do {
       
@@ -89,6 +85,8 @@ void TangentArrows::render()
   }
   glEnd();
   glPopAttrib();
+
+  return true;
 }
 
 bool TangentArrows::init()
@@ -107,7 +105,7 @@ bool TangentArrows::init()
     ShOutputColor3f ocol; // Color of result
     
     ipos(0,1,2) += tc * scale * tangent;
-    opos = Globals::mvp | ipos; // Compute NDC position
+    opos = m_globals.mvp | ipos; // Compute NDC position
     ocol = lerp(tc, color2, color1);
   } SH_END;
   
@@ -118,30 +116,27 @@ bool TangentArrows::init()
 }
 
 
-TangentArrows TangentArrows::instance = TangentArrows();
 
 
 class NormalArrows : public Shader {
 public:
-  NormalArrows()
-    : Shader("Debugging: Normal Arrows")
+  NormalArrows(const Globals& globals)
+    : Shader("Debugging: Normal Arrows", globals)
   {}
   
   ~NormalArrows() {}
 
   bool init();
 
-  void render();
+  bool render(const ShObjMesh&);
   
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
   
   ShProgram vsh, fsh;
-
-  static NormalArrows instance;
 };
 
-void NormalArrows::render()
+bool NormalArrows::render(const ShObjMesh& mesh)
 {
 
   glPushAttrib(GL_LINE_BIT);
@@ -150,9 +145,8 @@ void NormalArrows::render()
   
   float vs[4];
   glBegin(GL_LINES);
-  const ShUtil::ShObjMesh& m_obj = *ShrikeCanvas::instance()->getModel();
-  for(ShObjMesh::FaceSet::const_iterator I = m_obj.faces.begin();
-      I != m_obj.faces.end(); ++I) {
+  for(ShObjMesh::FaceSet::const_iterator I = mesh.faces.begin();
+      I != mesh.faces.end(); ++I) {
     ShObjMesh::Edge* e = (*I)->edge;
     do {
       
@@ -180,6 +174,8 @@ void NormalArrows::render()
   }
   glEnd();
   glPopAttrib();
+
+  return true;
 }
 
 bool NormalArrows::init()
@@ -198,7 +194,7 @@ bool NormalArrows::init()
     ShOutputColor3f ocol; // Color of result
     
     ipos(0,1,2) += tc * scale * inorm;
-    opos = Globals::mvp | ipos; // Compute NDC position
+    opos = m_globals.mvp | ipos; // Compute NDC position
     ocol = lerp(tc, color2, color1);
   } SH_END;
   
@@ -209,5 +205,18 @@ bool NormalArrows::init()
 }
 
 
-NormalArrows NormalArrows::instance = NormalArrows();
-
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new TangentArrows(globals));
+    list.push_back(new NormalArrows(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<TangentArrows> instance = 
+       StaticLinkedShader<TangentArrows>();
+static StaticLinkedShader<NormalArrows> instance2 = 
+       StaticLinkedShader<NormalArrows>();
+#endif

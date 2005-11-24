@@ -30,7 +30,7 @@ class ShinyBumpMapShader : public Shader {
 public:
   ShProgram vsh, fsh;
 
-  ShinyBumpMapShader();
+  ShinyBumpMapShader(const Globals&);
   ~ShinyBumpMapShader();
 
   bool init();
@@ -39,8 +39,8 @@ public:
   ShProgram fragment() { return fsh;}
 };
 
-ShinyBumpMapShader::ShinyBumpMapShader()
-  : Shader("Bump and Frame Mapping: Shiny Bump Mapping")
+ShinyBumpMapShader::ShinyBumpMapShader(const Globals& globals)
+  : Shader("Bump and Frame Mapping: Shiny Bump Mapping", globals)
 {
 }
 
@@ -76,10 +76,10 @@ bool ShinyBumpMapShader::init()
     ShOutputVector3f otan; // view-space tangent
     ShOutputVector3f viewv;  // view vector
 
-    opos = Globals::mvp | ipos; // Compute NDC position
-    onorm = Globals::mv | inorm; // Compute view-space normal
-    otan = Globals::mv | itan; // Compute view-space tangent
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    onorm = m_globals.mv | inorm; // Compute view-space normal
+    otan = m_globals.mv | itan; // Compute view-space tangent
+    ShPoint3f posv = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
     viewv = -ShVector3f(posv); // Compute view vector
   } SH_END;
 
@@ -110,7 +110,7 @@ bool ShinyBumpMapShader::init()
     ShVector3f r = reflect(v,bn); // Compute reflection vector
 
     // actually do reflection lookup in model space
-    r = Globals::mv_inverse | r;
+    r = m_globals.mv_inverse | r;
 
     result = cubemap(r)(0,1,2); 
   } SH_END;
@@ -119,4 +119,15 @@ bool ShinyBumpMapShader::init()
 }
 
 
-ShinyBumpMapShader the_shinybumpmap_shader;
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new ShinyBumpMapShader(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<ShinyBumpMapShader> instance = 
+       StaticLinkedShader<ShinyBumpMapShader>();
+#endif

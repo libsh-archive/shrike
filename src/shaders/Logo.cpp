@@ -35,14 +35,14 @@ using namespace ShUtil;
 
 class Logo : public Shader {
 public:
-  Logo();
+  Logo(const Globals&);
   ~Logo();
 
   bool init();
 
   void bind();
   
-  void render();
+  bool render(const ShObjMesh&);
   
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh_h;}
@@ -58,12 +58,10 @@ private:
 
   ShProgramSet* m_shadow_set;
   ShProgramSet* m_object_set;
-  
-  static Logo* instance;
 };
 
-Logo::Logo()
-  : Shader("Vector Graphics: Sh Logo"),
+Logo::Logo(const Globals& globals)
+  : Shader("Vector Graphics: Sh Logo", globals),
     m_shadow_set(0),
     m_object_set(0)
 {
@@ -85,7 +83,7 @@ void Logo::bind()
 {
 }
 
-void Logo::render()
+bool Logo::render(const ShObjMesh&)
 {
   shBind(*m_shadow_set);
 
@@ -135,6 +133,7 @@ void Logo::render()
   }
   glEnd();
 
+  return true;
 }
 
 bool Logo::init()
@@ -149,9 +148,9 @@ bool Logo::init()
     throw ShException("failed to open "SHMEDIA_DIR "/objs/s.obj");
   }
   
-  vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
+  vsh = ShKernelLib::shVsh( m_globals.mv, m_globals.mvp );
   vsh = shSwizzle("texcoord", "normal", "lightVec", "posh") << vsh;
-  vsh = vsh << shExtract("lightPos") << Globals::lightPos;
+  vsh = vsh << shExtract("lightPos") << m_globals.lightPos;
 
   ShProgram warper = SH_BEGIN_PROGRAM() {
     ShPoint3f SH_DECL(l);
@@ -160,7 +159,7 @@ bool Logo::init()
     ShInputTexCoord2f SH_DECL(i);
     ShOutputTexCoord2f SH_DECL(o);
 
-    ShPoint3f SH_DECL(lightPos) = Globals::lightDirW * Globals::lightLenW;
+    ShPoint3f SH_DECL(lightPos) = m_globals.lightDirW * m_globals.lightLenW;
     
     a(0) = (lightPos(1)*saw(0) - lightPos(0)*saw(1)) /(lightPos(1) - saw(1));
     a(1) = (lightPos(1)*saw(2) - lightPos(2)*saw(1)) /(lightPos(1) - saw(1));
@@ -216,4 +215,15 @@ bool Logo::init()
   return true;
 }
 
-Logo* Logo::instance = new Logo();
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new Logo(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<Logo> instance = 
+       StaticLinkedShader<Logo>();
+#endif

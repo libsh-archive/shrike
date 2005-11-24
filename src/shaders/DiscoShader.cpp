@@ -28,7 +28,7 @@ using namespace ShUtil;
 
 class DiscoShader : public Shader {
 public:
-  DiscoShader();
+  DiscoShader(const Globals &);
   ~DiscoShader();
 
   bool init();
@@ -39,8 +39,8 @@ public:
   ShProgram vsh, fsh;
 };
 
-DiscoShader::DiscoShader()
-  : Shader("Animation: Cellnoise Disco Shader")
+DiscoShader::DiscoShader(const Globals &globals)
+  : Shader("Animation: Cellnoise Disco Shader", globals)
 {
 }
 
@@ -65,8 +65,8 @@ bool DiscoShader::init()
     }
   }
 
-  vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
-  vsh = vsh << shExtract("lightPos") << Globals::lightPos; 
+  vsh = ShKernelLib::shVsh( m_globals.mv, m_globals.mvp );
+  vsh = vsh << shExtract("lightPos") << m_globals.lightPos; 
   vsh = shSwizzle("texcoord", "viewVec", "normal", "halfVec", "lightVec", "posh") << vsh;
 
   // find reflected vector for cube mapping later
@@ -74,7 +74,7 @@ bool DiscoShader::init()
     ShInputVector3f SH_DECL(viewVec);
     ShOutputVector3f SH_DECL(reflectVec);
     ShInOutNormal3f SH_DECL(normal);
-    reflectVec = Globals::mv_inverse | ShVector3f(2.0f * dot(normal, viewVec) * normal - viewVec); 
+    reflectVec = m_globals.mv_inverse | ShVector3f(2.0f * dot(normal, viewVec) * normal - viewVec); 
   } SH_END;
   vsh = namedConnect(vsh, reflector, true); 
 
@@ -132,5 +132,15 @@ bool DiscoShader::init()
   return true;
 }
 
-
-DiscoShader the_disco_shader;
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new DiscoShader(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<DiscoShader> instance = 
+       StaticLinkedShader<DiscoShader>();
+#endif

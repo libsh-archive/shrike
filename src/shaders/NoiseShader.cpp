@@ -28,8 +28,10 @@ using namespace ShUtil;
 
 class NoiseShader : public Shader {
 public:
-  NoiseShader(std::string name, bool tex)
-    : Shader(name + (tex ? " (Texture Hash)" : " (Procedural Hash)")), useTexture(tex) {}
+  NoiseShader(std::string name, bool tex, const Globals& globals)
+    : Shader(name + (tex ? " (Texture Hash)" : " (Procedural Hash)"), globals), 
+      useTexture(tex) {}
+
   virtual ~NoiseShader() {}
 
   ShProgram vertex() { return vsh;}
@@ -72,7 +74,7 @@ bool NoiseShader::init() {
   exponent = 48.0f;
   exponent.range(1.0f, 256.0f);
 
-  vsh = ShKernelLib::shVsh(Globals::mv, Globals::mvp) << shExtract("lightPos") << Globals::lightPos; 
+  vsh = ShKernelLib::shVsh(m_globals.mv, m_globals.mvp) << shExtract("lightPos") << m_globals.lightPos; 
   vsh = shSwizzle("normal", "halfVec", "lightVec", "posh") << vsh;
   vsh = namedCombine(shTransform<ShPoint3f>(bandTrans, "posm") << shCast<ShPosition4f, ShPoint3f>("posm"), vsh);
 
@@ -85,7 +87,8 @@ bool NoiseShader::init() {
 
 class SimpleWoodNoise: public NoiseShader {
 public:
-  SimpleWoodNoise(bool useTexture): NoiseShader("Noise: Simple Wood", useTexture) {}
+  SimpleWoodNoise(bool useTexture, const Globals& globals)
+    : NoiseShader("Noise: Simple Wood", useTexture, globals) {}
 
   void initfsh() {
     ShColor3f SH_NAMEDECL(diffuseIn, "kd in band") = ShConstAttrib3f(0.35f, 0.177f, 0.07f);
@@ -111,7 +114,8 @@ public:
 
 class ComplexWoodNoise: public NoiseShader {
 public:
-  ComplexWoodNoise(bool useTexture): NoiseShader("Noise: Complex Wood", useTexture) {}
+  ComplexWoodNoise(bool useTexture, const Globals& globals)
+    : NoiseShader("Noise: Complex Wood", useTexture, globals) {}
 
   void initfsh() {
     ShColor3f SH_NAMEDECL(diffuseIn, "kd in band") = ShConstAttrib3f(0.35f, 0.177f, 0.07f);
@@ -147,7 +151,8 @@ public:
 
 class MarbleNoise: public NoiseShader {
 public:
-  MarbleNoise(bool useTexture): NoiseShader("Noise: Marble", useTexture) {}
+  MarbleNoise(bool useTexture, const Globals& globals)
+    : NoiseShader("Noise: Marble", useTexture, globals) {}
 
   void initfsh() {
     noiseScale = 1.0f;
@@ -180,6 +185,23 @@ public:
   }
 };
 
-SimpleWoodNoise simple_wood_noise(true);
-ComplexWoodNoise complex_wood_noise(true);
-MarbleNoise marble_noise(true);
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new SimpleWoodNoise(true, globals));
+    list.push_back(new ComplexWoodNoise(true, globals));
+    list.push_back(new MarbleNoise(true, globals));
+    return list;
+  }
+}
+#else
+struct Creator {
+  Creator() {
+    GetShaders().push_back(new SimpleWoodNoise(true, GetGlobals()));
+    GetShaders().push_back(new ComplexWoodNoise(true, GetGlobals()));
+    GetShaders().push_back(new MarbleNoise(true, GetGlobals()));
+  }
+};
+static Creator creator = Creator();
+#endif

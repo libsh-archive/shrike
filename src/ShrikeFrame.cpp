@@ -27,6 +27,7 @@
 #include "ShrikeFrame.hpp"
 #include "ShrikeCanvas.hpp"
 #include "Shader.hpp"
+#include "Globals.hpp"
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -596,7 +597,7 @@ wxTreeCtrl* ShrikeFrame::initShaderList(wxWindow* parent)
 
   std::map<std::string, wxTreeItemId> nodes;
   
-  for (Shader::iterator I = Shader::begin(); I != Shader::end(); ++I) {
+  for (ShaderList::iterator I = GetShaders().begin(); I != GetShaders().end(); ++I) {
     Shader* shader = *I;
     std::list<std::string> nodelist;
     std::string name = shader->name();

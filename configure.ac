@@ -21,6 +21,17 @@ WX_CONFIG_GL_LIBS
 GL_WITH_GL_DIR
 GL_CHECK_GL_HEADERS
 
+dnl Check if shaders should be loaded at runtime from DLLs
+AC_ARG_ENABLE(dynamic-shaders,
+[  --enable-dynamic-shaders Turn on dynamic shader loading],
+[case "${enableval}" in
+  yes) dynamic_shaders=true ;;
+  no)  dynamic_shaders=false ;;
+  *) AC_MSG_ERROR(bad value ${enableval} for --enable-dynamic-shaders) ;;
+esac],[dynamic_shaders=false])
+AM_CONDITIONAL(SHRIKE_DYNAMIC_SHADERS, test x$dynamic_shaders = xtrue)
+
 AC_CONFIG_FILES([Makefile
-		 src/Makefile])
+		 src/Makefile
+     src/shaders/Makefile])
 AC_OUTPUT

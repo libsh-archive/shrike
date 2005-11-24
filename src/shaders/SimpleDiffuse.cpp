@@ -28,7 +28,7 @@ using namespace ShUtil;
 
 class SimpleDiffuse : public Shader {
 public:
-  SimpleDiffuse();
+  SimpleDiffuse(const Globals &);
   ~SimpleDiffuse();
 
   bool init();
@@ -37,12 +37,10 @@ public:
   ShProgram fragment() { return fsh;}
 
   ShProgram vsh, fsh;
-
-  static SimpleDiffuse instance;
 };
 
-SimpleDiffuse::SimpleDiffuse()
-  : Shader("Basic Lighting Models: Diffuse: Simple")
+SimpleDiffuse::SimpleDiffuse(const Globals &globals)
+  : Shader("Basic Lighting Models: Diffuse: Simple", globals)
 {
 }
 
@@ -61,11 +59,11 @@ bool SimpleDiffuse::init()
     ShInOutTexCoord2f tc; // pass through tex coords
     ShOutputVector3f lightv; // direction to light
 
-    opos = Globals::mvp | ipos; // Compute NDC position
-    onorm = Globals::mv | inorm; // Compute view-space normal
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    onorm = m_globals.mv | inorm; // Compute view-space normal
 
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
-    lightv = normalize(Globals::lightPos - posv); // Compute light direction
+    ShPoint3f posv = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
+    lightv = normalize(m_globals.lightPos - posv); // Compute light direction
   } SH_END;
   
   ShColor3f SH_DECL(color) = ShColor3f(.2, 0.5, 0.9);
@@ -86,6 +84,15 @@ bool SimpleDiffuse::init()
   return true;
 }
 
-SimpleDiffuse SimpleDiffuse::instance = SimpleDiffuse();
-
-
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new SimpleDiffuse(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<SimpleDiffuse> instance = 
+       StaticLinkedShader<SimpleDiffuse>();
+#endif

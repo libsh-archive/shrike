@@ -28,7 +28,7 @@ using namespace ShUtil;
 
 class TexShader : public Shader {
 public:
-  TexShader();
+  TexShader(const Globals&);
   ~TexShader();
 
   bool init();
@@ -37,12 +37,10 @@ public:
   ShProgram fragment() { return fsh;}
   
   ShProgram vsh, fsh;
-
-  static TexShader instance;
 };
 
-TexShader::TexShader()
-  : Shader("Debugging: Texture Coordinates")
+TexShader::TexShader(const Globals& globals)
+  : Shader("Debugging: Texture Coordinates", globals)
 {
 }
 
@@ -53,7 +51,7 @@ TexShader::~TexShader()
 bool TexShader::init()
 {
   std::cerr << "Initializing " << name() << std::endl;
-  vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
+  vsh = ShKernelLib::shVsh( m_globals.mv, m_globals.mvp );
   vsh = shSwizzle("texcoord", "posh") << vsh;
   fsh = SH_BEGIN_FRAGMENT_PROGRAM {
     ShInputTexCoord2f i;
@@ -62,6 +60,15 @@ bool TexShader::init()
   return true;
 }
 
-
-TexShader TexShader::instance = TexShader();
-
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new TexShader(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<TexShader> instance = 
+       StaticLinkedShader<TexShader>();
+#endif

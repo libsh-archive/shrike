@@ -28,7 +28,7 @@ using namespace ShUtil;
 
 class SimplePhong : public Shader {
 public:
-  SimplePhong();
+  SimplePhong(const Globals &);
   ~SimplePhong();
 
   bool init();
@@ -37,12 +37,10 @@ public:
   ShProgram fragment() { return fsh;}
 
   ShProgram vsh, fsh;
-
-  static SimplePhong instance;
 };
 
-SimplePhong::SimplePhong()
-  : Shader("Basic Lighting Models: Phong: Classic Phong")
+SimplePhong::SimplePhong(const Globals &globals)
+  : Shader("Basic Lighting Models: Phong: Classic Phong", globals)
 {
 }
 
@@ -62,11 +60,11 @@ bool SimplePhong::init()
     ShOutputVector3f view;
     ShOutputVector3f lightv; // direction to light
 
-    opos = Globals::mvp | ipos; // Compute NDC position
-    onorm = Globals::mv | inorm; // Compute view-space normal
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    onorm = m_globals.mv | inorm; // Compute view-space normal
 
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
-    lightv = normalize(Globals::lightPos - posv); // Compute light direction
+    ShPoint3f posv = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
+    lightv = normalize(m_globals.lightPos - posv); // Compute light direction
 
     ShPoint3f viewv = -normalize(posv); // Compute view vector
     view = normalize(viewv - posv);
@@ -95,13 +93,12 @@ bool SimplePhong::init()
   return true;
 }
 
-SimplePhong SimplePhong::instance = SimplePhong();
 
 
 // the modified Phong model
 class ModifiedPhong : public Shader {
 public:
-  ModifiedPhong();
+  ModifiedPhong(const Globals &);
   ~ModifiedPhong();
 
   bool init();
@@ -110,12 +107,10 @@ public:
   ShProgram fragment() { return fsh;}
 
   ShProgram vsh, fsh;
-
-  static ModifiedPhong instance;
 };
 
-ModifiedPhong::ModifiedPhong()
-  : Shader("Basic Lighting Models: Phong: Modified Phong")
+ModifiedPhong::ModifiedPhong(const Globals &globals)
+  : Shader("Basic Lighting Models: Phong: Modified Phong", globals)
 {
 }
 
@@ -135,11 +130,11 @@ bool ModifiedPhong::init()
     ShOutputVector3f view;
     ShOutputVector3f lightv; // direction to light
 
-    opos = Globals::mvp | ipos; // Compute NDC position
-    onorm = Globals::mv | inorm; // Compute view-space normal
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    onorm = m_globals.mv | inorm; // Compute view-space normal
 
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
-    lightv = normalize(Globals::lightPos - posv); // Compute light direction
+    ShPoint3f posv = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
+    lightv = normalize(m_globals.lightPos - posv); // Compute light direction
 
     ShPoint3f viewv = -normalize(posv); // Compute view vector
     view = normalize(viewv - posv);
@@ -170,12 +165,11 @@ bool ModifiedPhong::init()
   return true;
 }
 
-ModifiedPhong ModifiedPhong::instance = ModifiedPhong();
 
 // the Blinn-Phong model
 class BlinnPhong : public Shader {
 public:
-  BlinnPhong();
+  BlinnPhong(const Globals &);
   ~BlinnPhong();
 
   bool init();
@@ -184,12 +178,10 @@ public:
   ShProgram fragment() { return fsh;}
 
   ShProgram vsh, fsh;
-
-  static BlinnPhong instance;
 };
 
-BlinnPhong::BlinnPhong()
-  : Shader("Basic Lighting Models: Phong: Blinn-Phong")
+BlinnPhong::BlinnPhong(const Globals &globals)
+  : Shader("Basic Lighting Models: Phong: Blinn-Phong", globals)
 {
 }
 
@@ -209,11 +201,11 @@ bool BlinnPhong::init()
     ShOutputVector3f halfv;
     ShOutputVector3f lightv; // direction to light
 
-    opos = Globals::mvp | ipos; // Compute NDC position
-    onorm = Globals::mv | inorm; // Compute view-space normal
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    onorm = m_globals.mv | inorm; // Compute view-space normal
 
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
-    lightv = normalize(Globals::lightPos - posv); // Compute light direction
+    ShPoint3f posv = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
+    lightv = normalize(m_globals.lightPos - posv); // Compute light direction
 
     ShPoint3f viewv = -normalize(posv); // Compute view vector
     halfv = normalize(viewv + lightv); // Compute half vector
@@ -244,6 +236,21 @@ bool BlinnPhong::init()
   return true;
 }
 
-BlinnPhong BlinnPhong::instance = BlinnPhong();
-
-
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new SimplePhong(globals));
+    list.push_back(new ModifiedPhong(globals));
+    list.push_back(new BlinnPhong(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<SimplePhong> sp_instance = 
+       StaticLinkedShader<SimplePhong>();
+static StaticLinkedShader<ModifiedPhong> mp_instance = 
+       StaticLinkedShader<ModifiedPhong>();
+static StaticLinkedShader<BlinnPhong> bp_instance = 
+       StaticLinkedShader<BlinnPhong>();
+#endif

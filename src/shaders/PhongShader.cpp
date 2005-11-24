@@ -28,7 +28,7 @@ using namespace ShUtil;
 
 class PhongShader : public Shader {
 public:
-  PhongShader();
+  PhongShader(const Globals &);
   ~PhongShader();
 
   bool init();
@@ -39,8 +39,8 @@ public:
   ShProgram vsh, fsh;
 };
 
-PhongShader::PhongShader()
-  : Shader("Basic Lighting Models: Phong: Algebra")
+PhongShader::PhongShader(const Globals &globals)
+  : Shader("Basic Lighting Models: Phong: Algebra", globals)
 {
 }
 
@@ -50,8 +50,8 @@ PhongShader::~PhongShader()
 
 bool PhongShader::init()
 {
-  vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
-  vsh = vsh << shExtract("lightPos") << Globals::lightPos; 
+  vsh = ShKernelLib::shVsh( m_globals.mv, m_globals.mvp );
+  vsh = vsh << shExtract("lightPos") << m_globals.lightPos; 
   vsh = shSwizzle("normal","halfVec", "lightVec", "posh", "texcoord") << vsh;
 
   ShColor3f SH_DECL(specular) = ShColor3f(0.5, 1.0, 1.0);
@@ -75,5 +75,15 @@ bool PhongShader::init()
   return true;
 }
 
-PhongShader the_phong_shader;
-
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new PhongShader(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<PhongShader> instance = 
+       StaticLinkedShader<PhongShader>();
+#endif

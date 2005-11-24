@@ -31,7 +31,7 @@ using namespace ShUtil;
 
 class Textures : public Shader {
 public:
-  Textures();
+  Textures(const Globals&);
   ~Textures();
 
   bool init();
@@ -40,12 +40,10 @@ public:
   ShProgram fragment() { return fsh;}
 
   ShProgram vsh, fsh;
-
-  static Textures instance;
 };
 
-Textures::Textures()
-  : Shader("Textures: Simple")
+Textures::Textures(const Globals& globals)
+  : Shader("Textures: Simple", globals)
 {
 }
 
@@ -68,7 +66,7 @@ bool Textures::init()
     //   ShOutputTexCoord2f tc = itc;
     ShInOutTexCoord2f tc; // pass through tex coords
 
-    opos = Globals::mvp | ipos; // Compute NDC position
+    opos = m_globals.mvp | ipos; // Compute NDC position
   } SH_END;
 
   // Declare an image on the host. ShImage can load and save PNG
@@ -119,6 +117,16 @@ bool Textures::init()
   return true;
 }
 
-Textures Textures::instance = Textures();
-
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new Textures(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<Textures> instance = 
+       StaticLinkedShader<Textures>();
+#endif
 

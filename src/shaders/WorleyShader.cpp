@@ -30,8 +30,8 @@ using namespace ShUtil;
 
 class WorleyShader : public Shader {
 public:
-  WorleyShader(std::string name, bool tex)
-    : Shader(std::string("Worley: ") + (tex ? " Texture Hash: " : " Procedural: ") + name), useTexture(tex) {}
+  WorleyShader(std::string name, bool tex, const Globals &globals)
+    : Shader(std::string("Worley: ") + (tex ? " Texture Hash: " : " Procedural: ") + name, globals), useTexture(tex) {}
   virtual ~WorleyShader() {}
 
   ShProgram vertex() { return vsh;}
@@ -81,7 +81,7 @@ bool WorleyShader::init()
   color2.name("color2");
   color2.range(-2.0f, 2.0f);
 
-  vsh = ShKernelLib::shVsh(Globals::mv, Globals::mvp, 1) << shExtract("lightPos") << Globals::lightPos; 
+  vsh = ShKernelLib::shVsh(m_globals.mv, m_globals.mvp, 1) << shExtract("lightPos") << m_globals.lightPos; 
 
   ShConstColor3f lightColor(1.0f, 1.0f, 1.0f);
   fsh = ShKernelSurface::phong<ShColor3f>() << shExtract("specExp") << exponent;
@@ -93,7 +93,8 @@ bool WorleyShader::init()
 
 class GradientWorley: public WorleyShader {
 public:
-  GradientWorley(bool useTexture): WorleyShader("Gradients", useTexture) {}
+  GradientWorley(bool useTexture, const Globals &globals)
+    : WorleyShader("Gradients", useTexture, globals) {}
 
   void initfsh()
   {
@@ -128,7 +129,8 @@ public:
 
 class OrganicWorley: public WorleyShader {
 public:
-  OrganicWorley(bool useTexture): WorleyShader("Organic", useTexture) {}
+  OrganicWorley(bool useTexture, const Globals &globals)
+    : WorleyShader("Organic", useTexture, globals) {}
 
   void initfsh()
   {
@@ -179,7 +181,8 @@ public:
 
 class BlueOrbWorley: public WorleyShader {
 public:
-  BlueOrbWorley(bool useTexture): WorleyShader("BlueOrb", useTexture) {}
+  BlueOrbWorley(bool useTexture, const Globals &globals)
+    : WorleyShader("BlueOrb", useTexture, globals) {}
 
   void initfsh()
   {
@@ -262,7 +265,8 @@ public:
 
 class PolkaDotWorley: public WorleyShader {
 public:
-  PolkaDotWorley(bool useTexture): WorleyShader("Polka Dot", useTexture) {}
+  PolkaDotWorley(bool useTexture, const Globals& globals)
+    : WorleyShader("Polka Dot", useTexture, globals) {}
 
   void initfsh()
   {
@@ -290,7 +294,8 @@ public:
 
 class LavaWorley: public WorleyShader {
 public:
-  LavaWorley(bool useTexture): WorleyShader("Lava", useTexture) {}
+  LavaWorley(bool useTexture, const Globals& globals)
+    : WorleyShader("Lava", useTexture, globals) {}
 
   void initfsh()
   {
@@ -326,7 +331,8 @@ public:
 
 class GiraffeWorley: public WorleyShader {
 public:
-  GiraffeWorley(bool useTexture): WorleyShader("Giraffe", useTexture) {}
+  GiraffeWorley(bool useTexture, const Globals& globals)
+    : WorleyShader("Giraffe", useTexture, globals) {}
 
   void initfsh()
   {
@@ -370,7 +376,8 @@ public:
 
 class CircuitWorley: public WorleyShader {
 public:
-  CircuitWorley(bool useTexture): WorleyShader("Circuit", useTexture) {}
+  CircuitWorley(bool useTexture, const Globals& globals)
+    : WorleyShader("Circuit", useTexture, globals) {}
 
   void initfsh()
   {
@@ -415,9 +422,9 @@ public:
   bool m_animate;
   ShAttrib1f m_old, m_enable, m_time, m_speed;
 
-  CrackedWorley(bool useTexture, bool animate) 
-    : WorleyShader(std::string("Cracked") + (animate ? " Animating" : ""), useTexture), 
-      m_animate(animate)
+  CrackedWorley(bool useTexture, bool animate, const Globals &globals) 
+    : WorleyShader(std::string("Cracked") + (animate ? " Animating" : ""), 
+        useTexture, globals), m_animate(animate)
   {
     m_old = m_enable = 1.0f;
     m_enable.name("Enable Animation");
@@ -468,20 +475,21 @@ public:
     vsh = namedAlign(vsh, fsh);
   }
 
-  void render()
+  bool render(const ShObjMesh&)
   {
     if((m_enable != m_old).getValue(0) > 0.5f) {
       m_time += m_speed;
       m_old = m_enable;
     }
-    Shader::render();
+    return false;
   }
 
 };
 
 class StoneWorley: public WorleyShader {
 public:
-  StoneWorley(bool useTexture): WorleyShader("Stone Tile", useTexture) {}
+  StoneWorley(bool useTexture, const Globals &globals)
+    : WorleyShader("Stone Tile", useTexture, globals) {}
 
   void initfsh()
   {
@@ -585,7 +593,8 @@ public:
 
 class TurbulentWorley: public WorleyShader {
 public:
-  TurbulentWorley(bool useTexture): WorleyShader("Turbulence", useTexture) {}
+  TurbulentWorley(bool useTexture, const Globals& globals)
+    : WorleyShader("Turbulence", useTexture, globals) {}
 
   void initfsh()
   {
@@ -633,7 +642,8 @@ public:
 
 class MosaicWorley: public WorleyShader {
 public:
-  MosaicWorley(bool useTexture): WorleyShader("Mosaic", useTexture) {}
+  MosaicWorley(bool useTexture, const Globals& globals)
+    : WorleyShader("Mosaic", useTexture, globals) {}
 
   void initfsh()
   {
@@ -698,8 +708,8 @@ public:
       fres = fresnel(viewVec,normal,theta); // Compute fresnel term
 
       // actually do reflection and refraction lookup in model space
-      reflv = Globals::mv_inverse | reflv;
-      refrv = Globals::mv_inverse | refrv;
+      reflv = m_globals.mv_inverse | reflv;
+      refrv = m_globals.mv_inverse | refrv;
     } SH_END;
     vsh = namedConnect(vsh, vshAddon, true);
 
@@ -746,7 +756,8 @@ public:
 
 class Worley3D: public WorleyShader {
 public:
-  Worley3D(bool useTexture): WorleyShader("3D", useTexture) {}
+  Worley3D(bool useTexture, const Globals& globals)
+    : WorleyShader("3D", useTexture, globals) {}
 
   void initfsh()
   {
@@ -769,8 +780,8 @@ public:
 // replace these with inline nibbles later on
 class Worley2D: public WorleyShader {
 public:
-  Worley2D(bool useTexture, ShConstAttrib4f c, PropertyFactory<1, 2, float> *distFactory, std::string name)
-    : WorleyShader(std::string("2D: ") + name, useTexture),
+  Worley2D(bool useTexture, ShConstAttrib4f c, PropertyFactory<1, 2, float> *distFactory, std::string name, const Globals& globals)
+    : WorleyShader(std::string("2D: ") + name, useTexture, globals),
       m_distFactory(distFactory),
       m_coeff(c)
   {
@@ -848,48 +859,82 @@ public:
 };
 ShAttrib1f Worley2D::m_time = 1.0f;
 
-// Basic Examples:
-Worley2D worley2dNothing(true, ShConstAttrib4f(0.0f, 0.0f, 0.0f, 0.0f), new DistSqPropFactory<2, float>(), "Points Only");
-Worley2D worley2dF1(true, ShConstAttrib4f(1.0f, 0.0f, 0.0f, 0.0f), new DistSqPropFactory<2, float>(), "Euclidean Distance Squared: F1");
-Worley2D worley2dF2(true, ShConstAttrib4f(0.0f, 1.0f, 0.0f, 0.0f), new DistSqPropFactory<2, float>(), "Euclidean Distance Squared: F2");
-Worley2D worley2dF3(true, ShConstAttrib4f(0.0f, 0.0f, 1.0f, 0.0f), new DistSqPropFactory<2, float>(), "Euclidean Distance Squared: F3");
-Worley2D worley2dF4(true, ShConstAttrib4f(0.0f, 0.0f, 0.0f, 1.0f), new DistSqPropFactory<2, float>(), "Euclidean Distance Squared: F4");
+void WorleyCreate(ShaderList &list, const Globals &globals)
+{
+  // Basic Examples:
+  list.push_back(new Worley2D(true, ShConstAttrib4f(0.0f, 0.0f, 0.0f, 0.0f), 
+    new DistSqPropFactory<2, float>(), "Points Only", globals));
+  list.push_back(new Worley2D(true, ShConstAttrib4f(1.0f, 0.0f, 0.0f, 0.0f), 
+    new DistSqPropFactory<2, float>(), "Euclidean Distance Squared: F1", globals));
+  list.push_back(new Worley2D(true, ShConstAttrib4f(0.0f, 1.0f, 0.0f, 0.0f), 
+    new DistSqPropFactory<2, float>(), "Euclidean Distance Squared: F2", globals));
+  list.push_back(new Worley2D(true, ShConstAttrib4f(0.0f, 0.0f, 1.0f, 0.0f), 
+    new DistSqPropFactory<2, float>(), "Euclidean Distance Squared: F3", globals));
+  list.push_back(new Worley2D(true, ShConstAttrib4f(0.0f, 0.0f, 0.0f, 1.0f), 
+    new DistSqPropFactory<2, float>(), "Euclidean Distance Squared: F4", globals));
 
-Worley2D worley2dL1F1(true, ShConstAttrib4f(1.0f, 0.0f, 0.0f, 0.0f), new Dist_1PropFactory<2, float>(), "Manhattan(L1) Distance: F1");
-Worley2D worley2dL1F2(true, ShConstAttrib4f(0.0f, 1.0f, 0.0f, 0.0f), new Dist_1PropFactory<2, float>(), "Manhattan(L1) Distance: F2");
-Worley2D worley2dL1F3(true, ShConstAttrib4f(0.0f, 0.0f, 1.0f, 0.0f), new Dist_1PropFactory<2, float>(), "Manhattan(L1) Distance: F3");
-Worley2D worley2dL1F4(true, ShConstAttrib4f(0.0f, 0.0f, 0.0f, 1.0f), new Dist_1PropFactory<2, float>(), "Manhattan(L1) Distance: F4");
+  list.push_back(new Worley2D(true, ShConstAttrib4f(1.0f, 0.0f, 0.0f, 0.0f),
+    new Dist_1PropFactory<2, float>(), "Manhattan(L1) Distance: F1", globals));
+  list.push_back(new Worley2D(true, ShConstAttrib4f(0.0f, 1.0f, 0.0f, 0.0f),
+    new Dist_1PropFactory<2, float>(), "Manhattan(L1) Distance: F2", globals));
+  list.push_back(new Worley2D(true, ShConstAttrib4f(0.0f, 0.0f, 1.0f, 0.0f),
+    new Dist_1PropFactory<2, float>(), "Manhattan(L1) Distance: F3", globals));
+  list.push_back(new Worley2D(true, ShConstAttrib4f(0.0f, 0.0f, 0.0f, 1.0f), 
+    new Dist_1PropFactory<2, float>(), "Manhattan(L1) Distance: F4", globals));
 
-Worley2D worley2dInfF1(true, ShConstAttrib4f(1.0f, 0.0f, 0.0f, 0.0f), new Dist_InfPropFactory<2, float>(), "L Infinity Distance: F1");
-Worley2D worley2dInfF2(true, ShConstAttrib4f(0.0f, 1.0f, 0.0f, 0.0f), new Dist_InfPropFactory<2, float>(), "L Infinity Distance: F2");
-Worley2D worley2dInfF3(true, ShConstAttrib4f(0.0f, 0.0f, 1.0f, 0.0f), new Dist_InfPropFactory<2, float>(), "L Infinity Distance: F3");
-Worley2D worley2dInfF4(true, ShConstAttrib4f(0.0f, 0.0f, 0.0f, 1.0f), new Dist_InfPropFactory<2, float>(), "L Infinity Distance: F4");
+  list.push_back(new Worley2D(true, ShConstAttrib4f(1.0f, 0.0f, 0.0f, 0.0f), 
+    new Dist_InfPropFactory<2, float>(), "L Infinity Distance: F1", globals));
+  list.push_back(new Worley2D(true, ShConstAttrib4f(0.0f, 1.0f, 0.0f, 0.0f), 
+    new Dist_InfPropFactory<2, float>(), "L Infinity Distance: F2", globals));
+  list.push_back(new Worley2D(true, ShConstAttrib4f(0.0f, 0.0f, 1.0f, 0.0f), 
+    new Dist_InfPropFactory<2, float>(), "L Infinity Distance: F3", globals));
+  list.push_back(new Worley2D(true, ShConstAttrib4f(0.0f, 0.0f, 0.0f, 1.0f), 
+    new Dist_InfPropFactory<2, float>(), "L Infinity Distance: F4", globals));
 
-Worley3D worley3d(true);
+  list.push_back(new Worley3D(true, globals));
 
-// Thresholding Examples 
-// (Euclidean and L1 metrics)
-PolkaDotWorley polka(false);
-GiraffeWorley giraffe(false);
-CircuitWorley circuit(false);
+  // Thresholding Examples 
+  // (Euclidean and L1 metrics)
+  list.push_back(new PolkaDotWorley(false, globals));
+  list.push_back(new GiraffeWorley(false, globals));
+  list.push_back(new CircuitWorley(false, globals));
 
-// Fractal examples
-LavaWorley lava(false);
-TurbulentWorley turb(true);
+  // Fractal examples
+  list.push_back(new LavaWorley(false, globals));
+  list.push_back(new TurbulentWorley(true, globals));
 
-// Bump Mapping examples
-OrganicWorley organic(true);
-BlueOrbWorley borg(true);
-//GradientWorley gradworley(true);
+  // Bump Mapping examples
+  list.push_back(new OrganicWorley(true, globals));
+  list.push_back(new BlueOrbWorley(true, globals));
+  //GradientWorley gradworley(true);
 
-// Animated Examples
-CrackedWorley crackedAnim(true, true);
-CrackedWorley crackedProceduralAnim(false, true);
-//CrackedWorley cracked(true, false);
-//CrackedWorley crackedProcedural(false, false);
+  // Animated Examples
+  list.push_back(new CrackedWorley(true, true, globals));
+  list.push_back(new CrackedWorley(false, true, globals));
+  //CrackedWorley cracked(true, false);
+  //CrackedWorley crackedProcedural(false, false);
 
-// Cell-colouring examples (attaching random and texture-lookup
-// cell colours to feature points)
-StoneWorley stone(true);
-MosaicWorley mosaic(true);
-MosaicWorley mosaic2(false);
+  // Cell-colouring examples (attaching random and texture-lookup
+  // cell colours to feature points)
+  list.push_back(new StoneWorley(true, globals));
+  list.push_back(new MosaicWorley(true, globals));
+  list.push_back(new MosaicWorley(false, globals));
+}
+
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    WorleyCreate(list, globals);
+    return list;
+  }
+}
+#else
+struct Creator
+{
+  Creator() {
+    WorleyCreate(GetShaders(), GetGlobals());
+  }
+};
+static Creator creator = Creator();
+#endif

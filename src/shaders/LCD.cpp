@@ -26,8 +26,8 @@
 
 using namespace SH;
 
-LCD::LCD()
-  : Shader("LCD")
+LCD::LCD(const Globals &globals)
+  : Shader("LCD", globals)
 {
 }
 
@@ -139,11 +139,11 @@ bool LCD::init()
     ShInOutTexCoord2f tc; // pass through tex coords
     ShOutputVector3f lightv; // direction to light
 
-    opos = Globals::mvp | ipos; // Compute NDC position
-    onorm = Globals::mv | inorm; // Compute view-space normal
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    onorm = m_globals.mv | inorm; // Compute view-space normal
 
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
-    lightv = normalize(Globals::lightPos - posv); // Compute light direction
+    ShPoint3f posv = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
+    lightv = normalize(m_globals.lightPos - posv); // Compute light direction
   } SH_END;
 
   ShAttrib1f SH_DECL(value);
@@ -174,6 +174,17 @@ bool LCD::init()
   return true;
 }
 
-LCD LCD::instance = LCD();
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new LCD(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<LCD> instance = 
+       StaticLinkedShader<LCD>();
+#endif
 
 

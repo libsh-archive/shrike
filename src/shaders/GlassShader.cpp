@@ -32,7 +32,7 @@ class GlassShader : public Shader {
 public:
   ShProgram vsh, fsh;
 
-  GlassShader();
+  GlassShader(const Globals&);
   ~GlassShader();
 
   bool init();
@@ -41,8 +41,8 @@ public:
   ShProgram fragment() { return fsh;}
 };
 
-GlassShader::GlassShader()
-  : Shader("Refraction: Glass")
+GlassShader::GlassShader(const Globals& globals)
+  : Shader("Refraction: Glass", globals)
 {
 }
 
@@ -82,10 +82,10 @@ bool GlassShader::init()
     ShOutputVector3f SH_DECL(refrv); // Compute refraction vector
     ShOutputAttrib1f SH_DECL(fres); // Compute fresnel term
 
-    opos = Globals::mvp | ipos; // Compute NDC position
-    onorm = Globals::mv | inorm; // Compute view-space normal
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    onorm = m_globals.mv | inorm; // Compute view-space normal
     onorm = normalize(onorm);
-    ShPoint3f SH_DECL(posv) = (Globals::mv | ipos)(0,1,2); // Compute view-space position
+    ShPoint3f SH_DECL(posv) = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
     ShVector3f SH_DECL(viewv) = -normalize(posv); // Compute view vector
 
     reflv = reflect(viewv,onorm); // Compute reflection vector
@@ -93,8 +93,8 @@ bool GlassShader::init()
     fres = fresnel(viewv,onorm,ShAttrib1f(eta)); // Compute fresnel term
 
     // actually do reflection and refraction lookup in model space
-    reflv = Globals::mv_inverse | reflv;
-    refrv = Globals::mv_inverse | refrv;
+    reflv = m_globals.mv_inverse | reflv;
+    refrv = m_globals.mv_inverse | refrv;
   } SH_END;
   vsh.name("GlassShader::vsh");
   
@@ -114,5 +114,15 @@ bool GlassShader::init()
   return true;
 }
 
-
-GlassShader the_glass_shader;
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new GlassShader(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<GlassShader> instance = 
+       StaticLinkedShader<GlassShader>();
+#endif

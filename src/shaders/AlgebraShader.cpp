@@ -23,7 +23,6 @@
 #include <list>
 #include "Shader.hpp"
 #include "Globals.hpp"
-#include "ShrikeCanvas.hpp"
 
 using namespace SH;
 using namespace ShUtil;
@@ -40,11 +39,11 @@ ShAttrib1f invheight;
 
 class AlgebraWrapper: public Shader {
 public:
-  AlgebraWrapper(std::string name, int lightidx, int surfmapidx, int surfidx, int postidx) 
-    : Shader(name), lightidx(lightidx), surfmapidx(surfmapidx), surfidx(surfidx), postidx(postidx) {}
+  AlgebraWrapper(std::string name, int lightidx, int surfmapidx, int surfidx, int postidx, const Globals& globals) 
+    : Shader(name, globals), lightidx(lightidx), surfmapidx(surfmapidx), surfidx(surfidx), postidx(postidx) {}
 
   bool init(); 
-  void render();
+  bool render(const ShObjMesh&);
 
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
@@ -56,7 +55,7 @@ private:
 
 class AlgebraShaders {
 public:
-  AlgebraShaders();
+  AlgebraShaders(ShaderList&, const Globals&);
   ~AlgebraShaders();
 
   static bool init_all();
@@ -81,12 +80,9 @@ private:
   static ShProgram postsh[POST];
   static const char* postName[POST];
 
-  typedef std::list<Shader*> ShaderList;
-  static std::list<Shader*> shaders; 
   static bool doneInit;
 };
 
-AlgebraShaders::ShaderList AlgebraShaders::shaders;
 ShProgram AlgebraShaders::lightsh[AlgebraShaders::LIGHT];
 ShProgram AlgebraShaders::surfmapsh[AlgebraShaders::SURFMAP];
 ShProgram AlgebraShaders::surfsh[AlgebraShaders::SURFACE];
@@ -133,29 +129,28 @@ bool AlgebraWrapper::init() {
   fsh = namedConnect(fsh, surfsh);
   fsh = namedConnect(fsh, postsh);
 
-  vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp, 1);
-  vsh = vsh << shExtract("lightPos") << Globals::lightPos; 
+  vsh = ShKernelLib::shVsh( m_globals.mv, m_globals.mvp, 1);
+  vsh = vsh << shExtract("lightPos") << m_globals.lightPos; 
   vsh = namedAlign(vsh, fsh);
   return true;
 }
 
-void AlgebraWrapper::render() {
-  lightDir = -normalize(Globals::mv | Globals::lightDirW); 
+bool AlgebraWrapper::render(const ShObjMesh&) {
+  lightDir = -normalize(m_globals.mv | m_globals.lightDirW); 
   ShVector3f horiz = cross(lightDir, ShConstVector3f(0.0f, 1.0f, 0.0f));
   lightUp = cross(horiz, lightDir);
 
-  const ShrikeCanvas *canvas = ShrikeCanvas::instance();
-  width = canvas->GetClientSize().GetWidth();
+  width = m_globals.width;
   invwidth = 1.0f / width;
-  height = canvas->GetClientSize().GetHeight();
+  height = m_globals.height;
   invheight = 1.0f / height;
-
+  
   // set up lighting crap
-  Shader::render();
+  return false;
 }
 
 
-AlgebraShaders::AlgebraShaders()
+AlgebraShaders::AlgebraShaders(ShaderList& list, const Globals& globals)
 {
 
   for(int i = 0; i < LIGHT; ++i) {
@@ -169,7 +164,7 @@ AlgebraShaders::AlgebraShaders()
           if (surfName[k]) {name += ": "; name += surfName[k];}
           if (postName[l]) {name += ": "; name += postName[l];}
           
-          shaders.push_back(new AlgebraWrapper(name, i, j, k, l)); 
+          list.push_back(new AlgebraWrapper(name, i, j, k, l, globals)); 
         }
       }
     }
@@ -178,9 +173,9 @@ AlgebraShaders::AlgebraShaders()
 
 AlgebraShaders::~AlgebraShaders()
 {
-  for(ShaderList::iterator I = shaders.begin(); I != shaders.end(); ++I) {
-    delete *I;
-  }
+//  for(ShaderList::iterator I = shaders.begin(); I != shaders.end(); ++I) {
+//    delete *I;
+//  }
 }
 
 // returns a KernelSurface::phong shader with kd filled in by a worley shader
@@ -504,5 +499,19 @@ bool AlgebraShaders::init_all()
   return true;
 }
 
-AlgebraShaders the_algebra_shader;
-
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    AlgebraShaders shaders(list, globals);
+    return list;
+  }
+}
+#else
+struct Creator {
+  Creator() {
+    AlgebraShaders shaders(GetShaders(), GetGlobals());
+  }
+};
+static Creator creator = Creator();
+#endif

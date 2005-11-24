@@ -28,7 +28,7 @@ using namespace ShUtil;
 
 class WobbleShader : public Shader {
 public:
-  WobbleShader();
+  WobbleShader(const Globals&);
   ~WobbleShader();
 
   bool init();
@@ -39,8 +39,8 @@ public:
   ShProgram vsh, fsh;
 };
 
-WobbleShader::WobbleShader()
-  : Shader("Animation: Wobble")
+WobbleShader::WobbleShader(const Globals& globals)
+  : Shader("Animation: Wobble", globals)
 {
 }
 
@@ -51,8 +51,8 @@ WobbleShader::~WobbleShader()
 bool WobbleShader::init()
 {
   std::cerr << "Initializing " << name() << std::endl;
-  vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
-  vsh = vsh << shExtract("normal") << shExtract("lightPos") << Globals::lightPos; 
+  vsh = ShKernelLib::shVsh( m_globals.mv, m_globals.mvp );
+  vsh = vsh << shExtract("normal") << shExtract("lightPos") << m_globals.lightPos; 
   vsh = shSwizzle("normal", "lightVec", "posh") << vsh;
 
   ShAttrib1f SH_DECL(time);
@@ -77,4 +77,15 @@ bool WobbleShader::init()
   return true;
 }
 
-WobbleShader the_wobble_shader;
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new WobbleShader(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<WobbleShader> instance = 
+       StaticLinkedShader<WobbleShader>();
+#endif

@@ -28,7 +28,7 @@ using namespace ShUtil;
 
 class Lafortune : public Shader {
 public:
-  Lafortune();
+  Lafortune(const Globals&);
   ~Lafortune();
 
   bool init();
@@ -37,12 +37,10 @@ public:
   ShProgram fragment() { return fsh;}
 
   ShProgram vsh, fsh;
-
-  static Lafortune instance;
 };
 
-Lafortune::Lafortune()
-  : Shader("Basic Lighting Models: Lafortune")
+Lafortune::Lafortune(const Globals& globals)
+  : Shader("Basic Lighting Models: Lafortune", globals)
 {
 }
 
@@ -65,12 +63,12 @@ bool Lafortune::init()
     ShOutputVector3f lightv; // direction to light
     ShOutputVector3f viewv;
 
-    opos = Globals::mvp | ipos; // Compute NDC position
-    onorm = Globals::mv | inorm; // Compute view-space normal
-    otan = Globals::mv | itan; // Compute view-space tangent
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    onorm = m_globals.mv | inorm; // Compute view-space normal
+    otan = m_globals.mv | itan; // Compute view-space tangent
     osurf = cross(onorm,otan);
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
-    lightv = normalize(Globals::lightPos - posv); // Compute light direction
+    ShPoint3f posv = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
+    lightv = normalize(m_globals.lightPos - posv); // Compute light direction
     ShPoint3f eye = -normalize(posv); // view vector
     viewv = normalize(eye - posv);
 
@@ -113,5 +111,16 @@ bool Lafortune::init()
   return true;
 }
 
-Lafortune Lafortune::instance = Lafortune();
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new Lafortune(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<Lafortune> instance = 
+       StaticLinkedShader<Lafortune>();
+#endif
 

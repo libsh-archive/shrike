@@ -32,7 +32,7 @@ const double DIFFR = 0.05;
 
 class NonPeriodic3D : public Shader {
 public:
-  NonPeriodic3D();
+  NonPeriodic3D(const Globals&);
   ~NonPeriodic3D();
 
   bool init();
@@ -41,12 +41,10 @@ public:
   ShProgram fragment() { return fsh;}
 
   ShProgram vsh, fsh;
-
-  static NonPeriodic3D instance;
 };
 
-NonPeriodic3D::NonPeriodic3D()
-  : Shader("Tiling: 3D Nonperiodic")
+NonPeriodic3D::NonPeriodic3D(const Globals& globals)
+  : Shader("Tiling: 3D Nonperiodic", globals)
 {
 }
 
@@ -115,7 +113,7 @@ bool NonPeriodic3D::init()
     ShOutputPosition4f opos; // Position in NDC
     ShInOutTexCoord2f tc; // pass through tex coords
 
-    opos = Globals::mvp | ipos; // Compute NDC position
+    opos = m_globals.mvp | ipos; // Compute NDC position
   } SH_END;
   
   ShAttrib2f SH_DECL(scale) = ShAttrib2f(10.0, 10.0);
@@ -161,10 +159,15 @@ bool NonPeriodic3D::init()
   return true;
 }
 
-NonPeriodic3D NonPeriodic3D::instance = NonPeriodic3D();
-
-
-
-
-
-
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new NonPeriodic3D(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<NonPeriodic3D> instance = 
+       StaticLinkedShader<NonPeriodic3D>();
+#endif

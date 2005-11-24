@@ -103,19 +103,19 @@ ShrikeCanvas::ShrikeCanvas(wxWindow* parent, ShObjMesh* model)
 {
   m_instance = this;
 
-  Globals::mv.internal(true);
-  Globals::mvp.internal(true);
-  Globals::mv_inverse.internal(true);
-  Globals::lightPos.internal(true);
-  Globals::lightDirW.internal(true);
-  Globals::lightLenW.internal(true);
+  GetGlobals().mv.internal(true);
+  GetGlobals().mvp.internal(true);
+  GetGlobals().mv_inverse.internal(true);
+  GetGlobals().lightPos.internal(true);
+  GetGlobals().lightDirW.internal(true);
+  GetGlobals().lightLenW.internal(true);
 
-  Globals::mv.name("mv");
-  Globals::mvp.name("mvp");
-  Globals::mv_inverse.name("mv_inverse");
-  Globals::lightPos.name("lightPos");
-  Globals::lightDirW.name("lightDirW");
-  Globals::lightLenW.name("lightLenW");
+  GetGlobals().mv.name("mv");
+  GetGlobals().mvp.name("mvp");
+  GetGlobals().mv_inverse.name("mv_inverse");
+  GetGlobals().lightPos.name("lightPos");
+  GetGlobals().lightDirW.name("lightDirW");
+  GetGlobals().lightLenW.name("lightLenW");
 
   resetView();
 }
@@ -178,17 +178,17 @@ void ShrikeCanvas::motion(wxMouseEvent& event)
       ShTrackball t;
       t.resize(GetClientSize().GetWidth(), GetClientSize().GetHeight());
       ShMatrix4x4f m;
-      m = inverse(Globals::mv);
+      m = inverse(GetGlobals().mv);
       m = m | t.rotate(m_last_x, m_last_y, cur_x, cur_y);
-      m = m | Globals::mv;
-      Globals::lightDirW = m | Globals::lightDirW;
+      m = m | GetGlobals().mv;
+      GetGlobals().lightDirW = m | GetGlobals().lightDirW;
     } else {
       m_camera.orbit(m_last_x, m_last_y, cur_x, cur_y, GetClientSize().GetWidth(), GetClientSize().GetHeight());
     }
   }
   if (event.MiddleIsDown()) {
     if (event.ShiftDown()) {
-      Globals::lightLenW += dy/10.0;
+      GetGlobals().lightLenW += dy/10.0;
     } else {
       m_camera.move(0.0, 0.0, dy/3.0);
     }
@@ -222,12 +222,13 @@ void ShrikeCanvas::render()
 
   if (m_shader) {
     m_shader->bind();
-    m_shader->render();
+    if (!m_shader->render(*m_model))
+      renderObject();
   }
 
   shUnbind();
 
-  ShPoint3f lp = Globals::lightDirW * Globals::lightLenW;
+  ShPoint3f lp = GetGlobals().lightDirW * GetGlobals().lightLenW;
   float pos[3];
   lp.getValues(pos);
 
@@ -343,10 +344,10 @@ void ShrikeCanvas::setupView(int nsplit, int x, int y)
   m_camera.glModelView();
   SHRIKE_GL_CHECK_CURRENT_ERROR;
   
-  Globals::mv = m_camera.shModelView();
-  Globals::mv_inverse = inverse(Globals::mv);
-  Globals::mvp = m_camera.shModelViewProjection(split);
-  Globals::lightPos = Globals::mv | ShPoint3f(Globals::lightDirW * Globals::lightLenW);
+  GetGlobals().mv = m_camera.shModelView();
+  GetGlobals().mv_inverse = inverse(GetGlobals().mv);
+  GetGlobals().mvp = m_camera.shModelViewProjection(split);
+  GetGlobals().lightPos = GetGlobals().mv | ShPoint3f(GetGlobals().lightDirW * GetGlobals().lightLenW);
 }
 
 void ShrikeCanvas::screenshot(const wxString& filename)
@@ -425,6 +426,8 @@ void ShrikeCanvas::reshape(wxSizeEvent& event)
   int w, h;
 
   GetClientSize(&w, &h);
+  GetGlobals().width = 1.0f*w;
+  GetGlobals().height = 1.0f*h;
   
   if (m_init && GetContext() && w > 0 && h > 0) {
     SetCurrent();

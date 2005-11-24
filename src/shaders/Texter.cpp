@@ -29,7 +29,7 @@ using namespace ShUtil;
 
 class Texter : public Shader {
 public:
-  Texter(const std::string&);
+  Texter(const std::string&, const Globals&);
   ~Texter();
 
   bool init();
@@ -42,12 +42,10 @@ public:
 private:
   
   std::string m_text;
-
-  static Texter* instance;
 };
 
-Texter::Texter(const std::string& text)
-  : Shader("Vector Graphics: CSG Text: \"" + text + "\""),
+Texter::Texter(const std::string& text, const Globals& globals)
+  : Shader("Vector Graphics: CSG Text: \"" + text + "\"", globals),
     m_text(text)
 {
   setStringParam("text", m_text);
@@ -61,7 +59,7 @@ Texter::~Texter()
 bool Texter::init()
 {
   std::cerr << "Initializing " << name() << std::endl;
-  vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
+  vsh = ShKernelLib::shVsh( m_globals.mv, m_globals.mvp );
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
   ShAttrib2f SH_DECL(scale) = ShAttrib2f(500.0, 500.0);
@@ -93,4 +91,20 @@ bool Texter::init()
 // Due to an ICE in Visual C++ 2005 we need to construct
 // the initializer separately. 
 std::string initializer("Hello World");
-Texter* Texter::instance = new Texter(initializer);
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new Texter(initializer, globals));
+    return list;
+  }
+}
+#else
+struct Creator
+{
+  Creator() {
+    GetShaders().push_back(new Texter(initializer, GetGlobals()));
+  }
+};
+static Creator creator = Creator();
+#endif

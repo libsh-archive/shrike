@@ -28,7 +28,7 @@ using namespace ShUtil;
 
 class Pants : public Shader {
 public:
-  Pants();
+  Pants(const Globals&);
   ~Pants();
 
   bool init();
@@ -37,12 +37,10 @@ public:
   ShProgram fragment() { return fsh;}
 
   ShProgram vsh, fsh;
-
-  static Pants instance;
 };
 
-Pants::Pants()
-  : Shader("Noise: Dad's Pants")
+Pants::Pants(const Globals& globals)
+  : Shader("Noise: Dad's Pants", globals)
 {
 }
 
@@ -58,7 +56,7 @@ bool Pants::init()
     ShOutputPosition4f opos; // Position in NDC
     ShInOutTexCoord2f tc; // pass through tex coords
 
-    opos = Globals::mvp | ipos; // Compute NDC position
+    opos = m_globals.mvp | ipos; // Compute NDC position
   } SH_END;
   
   ShColor3f SH_DECL(color) = ShColor3f(.2, 0.5, 0.9);
@@ -84,4 +82,15 @@ bool Pants::init()
   return true;
 }
 
-Pants Pants::instance = Pants();
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new Pants(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<Pants> instance = 
+       StaticLinkedShader<Pants>();
+#endif

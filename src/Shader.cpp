@@ -18,15 +18,15 @@
 // MA  02110-1301, USA
 //////////////////////////////////////////////////////////////////////////////
 #include "Shader.hpp"
-#include "ShrikeCanvas.hpp"
+//#include "ShrikeCanvas.hpp"
 
-Shader::Shader(const std::string& name)
-  : m_name(name),
+Shader::Shader(const std::string& name, const Globals &globals)
+  : m_globals(globals),
+    m_name(name),
     m_has_been_init(false),
     m_failed(false),
     m_shaders(0)
 {
-  append(this);
 }
 
 Shader::~Shader()
@@ -69,9 +69,9 @@ std::size_t Shader::paramCount() const
   return m_stringParams.size();
 }
 
-void Shader::render()
+bool Shader::render(const ShUtil::ShObjMesh& mesh)
 {
-  ShrikeCanvas::instance()->renderObject();
+  return false;
 }
 
 Shader::StringParamList::iterator Shader::beginStringParams()
@@ -83,7 +83,7 @@ Shader::StringParamList::iterator Shader::endStringParams()
 {
   return m_stringParams.end();
 }
-
+/*
 Shader::iterator Shader::begin()
 {
   return getList()->begin();
@@ -103,13 +103,13 @@ Shader::const_iterator Shader::end_const()
 {
   return getList()->end();
 }
-
+*/
 void Shader::setStringParam(const std::string& name,
                             std::string& param)
 {
   m_stringParams.push_back(StringParam(name, param));
 }
-
+/*
 void Shader::append(Shader* shader)
 {
   getList()->push_back(shader);
@@ -124,3 +124,10 @@ Shader::list* Shader::getList()
 }
 
 Shader::list* Shader::m_list = 0;
+*/
+
+ShaderList &GetShaders()
+{
+  static ShaderList shaders;
+  return shaders;
+}

@@ -28,7 +28,7 @@ using namespace ShUtil;
 
 class Tangents : public Shader {
 public:
-  Tangents();
+  Tangents(const Globals&);
   ~Tangents();
 
   bool init();
@@ -37,12 +37,10 @@ public:
   ShProgram fragment() { return fsh;}
   
   ShProgram vsh, fsh;
-
-  static Tangents instance;
 };
 
-Tangents::Tangents()
-  : Shader("Debugging: Tangents")
+Tangents::Tangents(const Globals& globals)
+  : Shader("Debugging: Tangents", globals)
 {
 }
 
@@ -53,8 +51,8 @@ Tangents::~Tangents()
 bool Tangents::init()
 {
   std::cerr << "Initializing " << name() << std::endl;
-  vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp);
-  vsh = vsh << shExtract("lightPos") << Globals::lightPos;
+  vsh = ShKernelLib::shVsh( m_globals.mv, m_globals.mvp);
+  vsh = vsh << shExtract("lightPos") << m_globals.lightPos;
   vsh = shSwizzle("posh") << vsh;
   ShProgram keeper = SH_BEGIN_PROGRAM() {
     ShInOutVector3f tan; // Pass through untransformed tangents
@@ -68,5 +66,15 @@ bool Tangents::init()
 }
 
 
-Tangents Tangents::instance = Tangents();
-
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new Tangents(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<Tangents> instance = 
+       StaticLinkedShader<Tangents>();
+#endif

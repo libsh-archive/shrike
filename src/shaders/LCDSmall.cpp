@@ -34,9 +34,8 @@
 
 using namespace SH;
 
-
-LCDSmall::LCDSmall()
-  : Shader("LCD: Hand-Optimized")
+LCDSmall::LCDSmall(const Globals &globals)
+  : Shader("LCD: Hand-Optimized", globals)
 {
 }
 
@@ -188,11 +187,11 @@ bool LCDSmall::init()
     ShInOutTexCoord2f tc; // pass through tex coords
     ShOutputVector3f lightv; // direction to light
 
-    opos = Globals::mvp | ipos; // Compute NDC position
-    onorm = Globals::mv | inorm; // Compute view-space normal
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    onorm = m_globals.mv | inorm; // Compute view-space normal
 
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
-    lightv = normalize(Globals::lightPos - posv); // Compute light direction
+    ShPoint3f posv = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
+    lightv = normalize(m_globals.lightPos - posv); // Compute light direction
     tc(1) = 1.0 - tc(1);
     tc *= scale;
     tc -= offset;
@@ -218,6 +217,15 @@ bool LCDSmall::init()
   return true;
 }
 
-LCDSmall LCDSmall::instance = LCDSmall();
-
-
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new LCDSmall(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<LCDSmall> instance = 
+       StaticLinkedShader<LCDSmall>();
+#endif

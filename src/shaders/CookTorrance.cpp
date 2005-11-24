@@ -31,7 +31,7 @@ using namespace ShUtil;
 
 class CookTorranceBeckmann : public Shader {
 public:
-  CookTorranceBeckmann();
+  CookTorranceBeckmann(const Globals&);
   ~CookTorranceBeckmann();
 
   bool init();
@@ -40,12 +40,10 @@ public:
   ShProgram fragment() { return fsh;}
 
   ShProgram vsh, fsh;
-
-  static CookTorranceBeckmann instance;
 };
 
-CookTorranceBeckmann::CookTorranceBeckmann()
-  : Shader("Basic Lighting Models: Cook-Torrance: Beckmann's model")
+CookTorranceBeckmann::CookTorranceBeckmann(const Globals& globals)
+  : Shader("Basic Lighting Models: Cook-Torrance: Beckmann's model", globals)
 {
 }
 
@@ -66,11 +64,11 @@ bool CookTorranceBeckmann::init()
     ShOutputVector3f eyev; // direction to the eye
     ShOutputVector3f halfv; // half vector
 
-    opos = Globals::mvp | ipos; // Compute NDC position
-    onorm = Globals::mv | inorm; // Compute view-space normal
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    onorm = m_globals.mv | inorm; // Compute view-space normal
 
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
-    lightv = normalize(Globals::lightPos - posv); // Compute light direction
+    ShPoint3f posv = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
+    lightv = normalize(m_globals.lightPos - posv); // Compute light direction
     //lightv = (mToTangent | lightv);
 
     ShPoint3f viewv = -normalize(posv); // view vector
@@ -124,11 +122,10 @@ bool CookTorranceBeckmann::init()
   return true;
 }
 
-CookTorranceBeckmann CookTorranceBeckmann::instance = CookTorranceBeckmann();
 
 class CookTorranceBlinn : public Shader {
 public:
-  CookTorranceBlinn();
+  CookTorranceBlinn(const Globals&);
   ~CookTorranceBlinn();
 
   bool init();
@@ -137,12 +134,10 @@ public:
   ShProgram fragment() { return fsh;}
 
   ShProgram vsh, fsh;
-
-  static CookTorranceBlinn instance;
 };
 
-CookTorranceBlinn::CookTorranceBlinn()
-  : Shader("Basic Lighting Models: Cook-Torrance: Blinn's model")
+CookTorranceBlinn::CookTorranceBlinn(const Globals& globals)
+  : Shader("Basic Lighting Models: Cook-Torrance: Blinn's model", globals)
 {
 }
 
@@ -163,11 +158,11 @@ bool CookTorranceBlinn::init()
     ShOutputVector3f eyev; // direction to the eye
     ShOutputVector3f halfv; // half vector
 
-    opos = Globals::mvp | ipos; // Compute NDC position
-    onorm = Globals::mv | inorm; // Compute view-space normal
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    onorm = m_globals.mv | inorm; // Compute view-space normal
 
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
-    lightv = normalize(Globals::lightPos - posv); // Compute light direction
+    ShPoint3f posv = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
+    lightv = normalize(m_globals.lightPos - posv); // Compute light direction
 
     ShPoint3f viewv = -normalize(posv); // view vector
     eyev = normalize(viewv - posv);
@@ -225,6 +220,18 @@ bool CookTorranceBlinn::init()
   return true;
 }
 
-CookTorranceBlinn CookTorranceBlinn::instance = CookTorranceBlinn();
-
-
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new CookTorranceBeckmann(globals));
+    list.push_back(new CookTorranceBlinn(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<CookTorranceBeckmann> instance = 
+       StaticLinkedShader<CookTorranceBeckmann>();
+static StaticLinkedShader<CookTorranceBlinn> instance2 = 
+       StaticLinkedShader<CookTorranceBlinn>();
+#endif

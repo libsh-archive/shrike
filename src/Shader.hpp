@@ -23,10 +23,13 @@
 #include <string>
 #include <list>
 #include <sh/sh.hpp>
+#include <sh/shutil.hpp>
+
+struct Globals;
 
 class Shader {
 public:
-  Shader(const std::string& name);
+  Shader(const std::string& name, const Globals &globals);
   virtual ~Shader();
 
   /// Set this to true if the shader has failed to be initialized, so
@@ -41,7 +44,7 @@ public:
   virtual SH::ShProgram fragment() = 0;
   virtual SH::ShProgram vertex() = 0;
   
-  virtual void render();
+  virtual bool render(const ShUtil::ShObjMesh&);
 
   bool firstTimeInit();
   
@@ -64,20 +67,20 @@ public:
 
   StringParamList::iterator beginStringParams();
   StringParamList::iterator endStringParams();
-  
+/* 
   typedef std::list<Shader*> list;
   typedef list::iterator iterator;
   typedef list::const_iterator const_iterator;
-
   static iterator begin();
   static iterator end();
   static const_iterator begin_const();
   static const_iterator end_const();
-  
+*/
 protected:
   void setStringParam(const std::string& name,
                       std::string& param);
   
+  const Globals &m_globals;
 private:
   std::string m_name;
 
@@ -88,11 +91,24 @@ private:
   StringParamList m_stringParams;
 
   SH::ShProgramSet* m_shaders;
-  
+/*
   static list* getList();
   
   static void append(Shader* shader);
   static list* m_list;
+*/
+};
+
+typedef std::list<Shader*> ShaderList;
+ShaderList &GetShaders();
+
+#include "Globals.hpp"
+template <class T>
+struct StaticLinkedShader {
+  StaticLinkedShader() : shader(new T(GetGlobals())) {
+    GetShaders().push_back(shader);
+  }
+  T *shader;
 };
 
 #endif

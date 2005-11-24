@@ -31,7 +31,7 @@ using namespace ShUtil;
 
 class JeweledShader : public Shader {
 public:
-  JeweledShader();
+  JeweledShader(const Globals&);
   ~JeweledShader();
 
   bool init();
@@ -40,12 +40,10 @@ public:
   ShProgram fragment() { return fsh;}
 
   ShProgram vsh, fsh;
-
-  static JeweledShader instance;
 };
 
-JeweledShader::JeweledShader()
-  : Shader("Homomorphic Factorization: Material Mapping")
+JeweledShader::JeweledShader(const Globals& globals)
+  : Shader("Homomorphic Factorization: Material Mapping", globals)
 {
 }
 
@@ -85,17 +83,17 @@ bool JeweledShader::init()
     ShOutputAttrib1f fres;   // fresnel term
 
     otc = tc * texture_scale;
-    opos = Globals::mvp | ipos; // Compute NDC position
-    ShNormal3f n = Globals::mv | inorm; // Compute view-space normal
-    ShNormal3f t = Globals::mv | itan; // Compute view-space normal
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    ShNormal3f n = m_globals.mv | inorm; // Compute view-space normal
+    ShNormal3f t = m_globals.mv | itan; // Compute view-space normal
     n = normalize(n);
     t = normalize(t);
 
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
-    ShVector3f lightv = normalize(Globals::lightPos - posv); // Compute light direction
+    ShPoint3f posv = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
+    ShVector3f lightv = normalize(m_globals.lightPos - posv); // Compute light direction
     ShVector3f viewv = -normalize(posv); // Compute view vector
     reflv = reflect(viewv,n);  // view-space reflection vector
-    reflv = Globals::mv_inverse | reflv;  // do env map lookup in model space
+    reflv = m_globals.mv_inverse | reflv;  // do env map lookup in model space
     fres = fresnel(viewv,n,theta);
 
     // compute local surface frame (in view space)
@@ -300,6 +298,15 @@ bool JeweledShader::init()
   return true;
 }
 
-JeweledShader JeweledShader::instance = JeweledShader();
-
-
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new JeweledShader(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<JeweledShader> instance = 
+       StaticLinkedShader<JeweledShader>();
+#endif

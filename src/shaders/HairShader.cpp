@@ -45,24 +45,22 @@ using namespace ShUtil;
 
 class Hair : public Shader {
 public:
-  Hair(std::string);
+  Hair(std::string, const Globals&);
   ~Hair();
 
   bool init();
   virtual void initHair() {}
-  virtual void render() {}
+  virtual bool render(const ShObjMesh&) { return false; }
   ShAttrib1f N2(ShAttrib1f eta, ShAttrib1f cosGammai, ShAttrib1f sigmaa);
   
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
 
   ShProgram vsh, fsh;
-
-  static Hair instance;
 };
 
-Hair::Hair(std::string type)
-  : Shader(std::string("Hair: ") + type)
+Hair::Hair(std::string type, const Globals& globals)
+  : Shader(std::string("Hair: ") + type, globals)
 {
 }
 
@@ -225,13 +223,11 @@ bool Hair::init()
 
 class HairShader: public Hair {
 public:
-  HairShader(): Hair("Hair Shader") {};
+  HairShader(const Globals& globals): Hair("Hair Shader", globals) {};
   
-  static HairShader instance;
-    
-  void render()
-{
-    Shader::render();
+  bool render(const ShObjMesh& mesh)
+  {
+    return Shader::render(mesh);
   }
       
   void initHair()
@@ -249,12 +245,12 @@ public:
       ShOutputVector3f eyev;
       ShOutputVector3f halfv;
 
-      opos = Globals::mvp | ipos; // Compute NDC position
-      onorm = Globals::mv | inorm; // Compute view-space normal
-      otan = Globals::mv | itan; // Compute view-space tangent
+      opos = m_globals.mvp | ipos; // Compute NDC position
+      onorm = m_globals.mv | inorm; // Compute view-space normal
+      otan = m_globals.mv | itan; // Compute view-space tangent
     
-      ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
-      lightv = normalize(Globals::lightPos - posv); // Compute light direction
+      ShPoint3f posv = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
+      lightv = normalize(m_globals.lightPos - posv); // Compute light direction
 
       ShPoint3f viewv = -normalize(posv); // view vector
       eyev = normalize(viewv - posv);
@@ -273,17 +269,16 @@ struct hair
 };
 
 
-HairShader HairShader::instance = HairShader();
 
 class HairPhysics: public Hair {
-  HairPhysics(): Hair("Hair with physics"), display_list(0) {};
+public:
+  HairPhysics(const Globals& globals)
+    : Hair("Hair with physics", globals), display_list(0) {};
   
-  static HairPhysics instance;
-
   ShProgram vsh_head;
   ShProgram fsh_head;
 
-  void render();
+  bool render(const ShObjMesh&);
   void initHair();
 
 private:
@@ -291,7 +286,7 @@ private:
   GLuint display_list;
 };
 
-void HairPhysics::render()
+bool HairPhysics::render(const ShObjMesh &)
 {
 #if (RENDER_HEAD) // render a sphere for the head
   shBind(vsh_head);
@@ -339,6 +334,8 @@ void HairPhysics::render()
   glEndList();
 #endif
   glCallList(display_list);
+
+  return true;
 }
 
 void HairPhysics::initHair()
@@ -412,13 +409,13 @@ void HairPhysics::initHair()
     ShAttrib1f inside = sqrt(PosC|PosC)<radius;
     ipos = inside * (center+radius*N) + (1.0-inside)*ipos; // put the hair on the surface of the sphere when there is a collision
     
-    opos = Globals::mvp | ipos; // Compute NDC position
-    onorm = Globals::mv | inorm; // Compute view-space normal
-    otan = Globals::mv | itan; // Compute view-space tangent
-    osurf = Globals::mv | isurf;
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    onorm = m_globals.mv | inorm; // Compute view-space normal
+    otan = m_globals.mv | itan; // Compute view-space tangent
+    osurf = m_globals.mv | isurf;
     
-    ShPoint3f posv = (Globals::mv | ipos); // Compute view-space position
-    lightv = normalize(Globals::lightPos - posv); // Compute light direction
+    ShPoint3f posv = (m_globals.mv | ipos); // Compute view-space position
+    lightv = normalize(m_globals.lightPos - posv); // Compute light direction
 
     ShPoint3f viewv = -normalize(posv); // view vector
     eyev = normalize(viewv - posv);
@@ -438,10 +435,10 @@ void HairPhysics::initHair()
     ipos *= 0.95*radius;
     ipos += center;
     
-    opos = Globals::mvp | ipos; // Compute NDC position
-    onorm = Globals::mv | inorm; // Compute view-space normal
-    ShPoint3f posv = (Globals::mv | ipos); // Compute view-space position
-    lightv = normalize(Globals::lightPos - posv); // Compute light direction
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    onorm = m_globals.mv | inorm; // Compute view-space normal
+    ShPoint3f posv = (m_globals.mv | ipos); // Compute view-space position
+    lightv = normalize(m_globals.lightPos - posv); // Compute light direction
   } SH_END;
 
   ShColor3f SH_DECL(skinColor) = ShColor3f(0.92,0.76,0.7);
@@ -455,4 +452,18 @@ void HairPhysics::initHair()
   } SH_END;
 }
 
-HairPhysics HairPhysics::instance = HairPhysics();
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new HairShader(globals));
+    list.push_back(new HairPhysics(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<HairShader> instance = 
+       StaticLinkedShader<HairShader>();
+static StaticLinkedShader<HairPhysics> instance2 = 
+       StaticLinkedShader<HairPhysics>();
+#endif

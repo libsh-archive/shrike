@@ -24,15 +24,16 @@
 #include "Globals.hpp"
 
 using namespace SH;
+using namespace ShUtil;
 
 class VertexBranching : public Shader {
 public:
-  VertexBranching();
+  VertexBranching(const Globals&);
   ~VertexBranching();
 
   bool init();
 
-  void render();
+  bool render(const ShObjMesh&);
   
   ShProgram vertex() { return vsh;}
   ShProgram fragment() { return fsh;}
@@ -40,12 +41,10 @@ public:
   ShProgram vsh, fsh;
 
   GLuint displayList;
-
-  static VertexBranching instance;
 };
 
-VertexBranching::VertexBranching()
-  : Shader("Branching: Vertex Unit"),
+VertexBranching::VertexBranching(const Globals& globals)
+  : Shader("Branching: Vertex Unit", globals),
     displayList(0)
 {
 }
@@ -54,7 +53,7 @@ VertexBranching::~VertexBranching()
 {
 }
 
-void VertexBranching::render()
+bool VertexBranching::render(const ShObjMesh&)
 {
   int divs = 500;
 
@@ -85,6 +84,7 @@ void VertexBranching::render()
   }
 
   glCallList(displayList);
+  return true;
 }
 
 bool VertexBranching::init()
@@ -133,7 +133,7 @@ bool VertexBranching::init()
     ocol = disp * diffuse * brightness;
 
     ipos(0,1,2) += disp * inorm * height;
-    opos = Globals::mvp | ipos; // Compute NDC position
+    opos = m_globals.mvp | ipos; // Compute NDC position
   } SH_END;
   
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
@@ -142,5 +142,15 @@ bool VertexBranching::init()
   return true;
 }
 
-VertexBranching VertexBranching::instance = VertexBranching();
-
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new VertexBranching(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<VertexBranching> instance = 
+       StaticLinkedShader<VertexBranching>();
+#endif

@@ -24,7 +24,7 @@
 
 class LCD : public Shader {
 public:
-  LCD();
+  LCD(const Globals &);
   ~LCD();
 
   bool init();
@@ -33,8 +33,6 @@ public:
   SH::ShProgram fragment() { return fsh;}
 
   SH::ShProgram vsh, fsh;
-
-  static LCD instance;
 };
 
 SH::ShAttrib1f lcd(const SH::ShTexCoord2f& tc, SH::ShAttrib1f number,

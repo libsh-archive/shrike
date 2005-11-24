@@ -28,7 +28,7 @@ using namespace ShUtil;
 
 class HorizonMapping : public Shader {
 public:
-  HorizonMapping();
+  HorizonMapping(const Globals&);
   ~HorizonMapping();
 
   bool init();
@@ -37,12 +37,10 @@ public:
   ShProgram fragment() { return fsh;}
 
   ShProgram vsh, fsh;
-
-  static HorizonMapping instance;
 };
 
-HorizonMapping::HorizonMapping()
-  : Shader("Horizon Mapping: Horizon Mapping")
+HorizonMapping::HorizonMapping(const Globals& globals)
+  : Shader("Horizon Mapping: Horizon Mapping", globals)
 {
 }
 
@@ -80,12 +78,12 @@ bool HorizonMapping::init()
     ShOutputVector3f osurf;
     ShOutputVector3f lightv; // direction to light
 
-    opos = Globals::mvp | ipos; // Compute NDC position
-    onorm = Globals::mv | inorm; // Compute view-space normal
-    otan = Globals::mv | itan;
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    onorm = m_globals.mv | inorm; // Compute view-space normal
+    otan = m_globals.mv | itan;
     osurf = cross(onorm, otan);
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
-    lightv = normalize(Globals::lightPos - posv); // Compute light direction
+    ShPoint3f posv = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
+    lightv = normalize(m_globals.lightPos - posv); // Compute light direction
 
   } SH_END;
 
@@ -154,15 +152,13 @@ bool HorizonMapping::init()
   return true;
 }
 
-HorizonMapping HorizonMapping::instance = HorizonMapping();
-
 
 /* Used to draw the horizon maps calculated
  * A parameter can be changed to draw a specific direction
  */
 class ViewHorizonMaps : public Shader {
 public:
-  ViewHorizonMaps();
+  ViewHorizonMaps(const Globals&);
   ~ViewHorizonMaps();
 
   bool init();
@@ -171,12 +167,10 @@ public:
   ShProgram fragment() { return fsh;}
 
   ShProgram vsh, fsh;
-
-  static ViewHorizonMaps instance;
 };
 
-ViewHorizonMaps::ViewHorizonMaps()
-  : Shader("Horizon Mapping: Horizon Maps")
+ViewHorizonMaps::ViewHorizonMaps(const Globals& globals)
+  : Shader("Horizon Mapping: Horizon Maps", globals)
 {
 }
 
@@ -201,7 +195,7 @@ bool ViewHorizonMaps::init()
     ShOutputPosition4f opos; // Position in NDC
     ShInOutTexCoord2f tc; // pass through tex coords
 
-    opos = Globals::mvp | ipos; // Compute NDC position
+    opos = m_globals.mvp | ipos; // Compute NDC position
   } SH_END;
 
   ShColor3f SH_DECL(shadowcolor) = ShColor3f(1.0,1.0,0.0);
@@ -231,5 +225,20 @@ bool ViewHorizonMaps::init()
   return true;
 }
 
-ViewHorizonMaps ViewHorizonMaps::instance = ViewHorizonMaps();
+
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new HorizonMapping(globals));
+    list.push_back(new ViewHorizonMaps(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<HorizonMapping> instance = 
+       StaticLinkedShader<HorizonMapping>();
+static StaticLinkedShader<ViewHorizonMaps> instance2 = 
+       StaticLinkedShader<ViewHorizonMaps>();
+#endif
 

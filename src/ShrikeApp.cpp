@@ -19,7 +19,39 @@
 //////////////////////////////////////////////////////////////////////////////
 #include "ShrikeApp.hpp"
 #include "ShrikeFrame.hpp"
+#include "Globals.hpp"
 #include <sh/sh.hpp>
+#include <wx/dir.h>
+#include <wx/dynlib.h>
+#include <wx/filename.h>
+
+struct LibraryTraverser : public wxDirTraverser
+{
+  virtual wxDirTraverseResult OnFile(const wxString &file) {
+    wxFileName fileName(file);
+
+    if ("."+fileName.GetExt() != wxDynamicLibrary::GetDllExt())
+      return wxDIR_CONTINUE;
+
+    wxDynamicLibrary *dl = new wxDynamicLibrary(file);
+    if (dl->IsLoaded()) {
+      typedef ShaderList (*shrike_library_create_func)(const Globals&);
+      shrike_library_create_func f = (shrike_library_create_func)dl->GetSymbol("shrike_library_create");
+      if (f != NULL) { 
+        ShaderList list = (*f)(GetGlobals());
+        std::cout << list.size() << std::endl;
+        for (ShaderList::iterator I = list.begin(); I != list.end(); ++I)
+          GetShaders().push_back(*I);
+    	return wxDIR_CONTINUE;
+      }
+    }
+    delete dl;
+    return wxDIR_CONTINUE;
+  }
+  virtual wxDirTraverseResult OnDir(const wxString &dir) {
+    return wxDIR_CONTINUE;
+  }
+};
 
 IMPLEMENT_APP(ShrikeApp)
 
@@ -37,7 +69,23 @@ bool ShrikeApp::OnInit()
   
   SH::shSetBackend(backend_name);
 
-  ShrikeFrame* frame = new ShrikeFrame;
+  GetGlobals().lightPos = SH::ShPoint3f(0.0, 10.0, 10.0);
+  GetGlobals().lightDirW = SH::ShVector3f(0.0, 1.0, 1.0);
+  GetGlobals().lightLenW = 5.0;
+  GetGlobals().mv = SH::ShMatrix4x4f();
+  GetGlobals().mv_inverse = SH::ShMatrix4x4f();
+  GetGlobals().mvp = SH::ShMatrix4x4f();
+  
+  LibraryTraverser t;
+  wxString envLibDir;
+  if (wxGetEnv("SHRIKE_LIB_DIR", &envLibDir) && envLibDir != "") {
+    wxDir dir(envLibDir);
+    dir.Traverse(t);
+  }
+  wxDir cwd(wxGetCwd());
+  cwd.Traverse(t);
+
+  ShrikeFrame* frame = new ShrikeFrame();
   frame->Show(true);
   
   return true;

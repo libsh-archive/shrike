@@ -32,7 +32,7 @@ class LuciteShader : public Shader {
 public:
   ShProgram vsh, fsh;
 
-  LuciteShader();
+  LuciteShader(const Globals&);
   ~LuciteShader();
 
   bool init();
@@ -41,8 +41,8 @@ public:
   ShProgram fragment() { return fsh;}
 };
 
-LuciteShader::LuciteShader()
-  : Shader("Refraction: Lucite")
+LuciteShader::LuciteShader(const Globals& globals)
+  : Shader("Refraction: Lucite", globals)
 {
 }
 
@@ -86,22 +86,22 @@ bool LuciteShader::init()
     refrv[2].name("refrv[2]");
     ShOutputAttrib3f SH_DECL(fres);      // fresnel terms (per RGB channel)
 
-    opos = Globals::mvp | ipos; // Compute NDC position
-    onorm = Globals::mv | inorm; // Compute view-space normal
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    onorm = m_globals.mv | inorm; // Compute view-space normal
     onorm = normalize(onorm);
-    ShPoint3f SH_DECL(posv) = (Globals::mv | ipos)(0,1,2); // Compute view-space position
+    ShPoint3f SH_DECL(posv) = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
     ShPoint3f SH_DECL(viewv) = -normalize(posv); // Compute view vector
 
     reflv = reflect(viewv,onorm); // Compute reflection vector
 
     // actually do reflection lookup in model space
-    reflv = Globals::mv_inverse | reflv;
+    reflv = m_globals.mv_inverse | reflv;
 
     for (int i=0; i<3; i++) {
     	refrv[i] = refract(-viewv,onorm,1.0/eta[i]); // Compute refraction vectors
 
         // actually do refraction lookup in model space
-        refrv[i] = Globals::mv_inverse | refrv[i];
+        refrv[i] = m_globals.mv_inverse | refrv[i];
 
         fres[i] = fresnel(viewv,onorm,eta[i]); // Compute fresnel term
     }
@@ -130,5 +130,15 @@ bool LuciteShader::init()
   return true;
 }
 
-
-LuciteShader the_lucite_shader;
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new LuciteShader(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<LuciteShader> instance = 
+       StaticLinkedShader<LuciteShader>();
+#endif

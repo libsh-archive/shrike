@@ -28,7 +28,7 @@ using namespace ShUtil;
 
 class FragmentBranching : public Shader {
 public:
-  FragmentBranching();
+  FragmentBranching(const Globals&);
   ~FragmentBranching();
 
   bool init();
@@ -37,12 +37,10 @@ public:
   ShProgram fragment() { return fsh;}
   
   ShProgram vsh, fsh;
-
-  static FragmentBranching instance;
 };
 
-FragmentBranching::FragmentBranching()
-  : Shader("Branching: Fragment Unit")
+FragmentBranching::FragmentBranching(const Globals& globals)
+  : Shader("Branching: Fragment Unit", globals)
 {
 }
 
@@ -52,8 +50,8 @@ FragmentBranching::~FragmentBranching()
 
 bool FragmentBranching::init()
 {
-  vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
-  vsh = vsh << shExtract("lightPos") << Globals::lightPos; 
+  vsh = ShKernelLib::shVsh( m_globals.mv, m_globals.mvp );
+  vsh = vsh << shExtract("lightPos") << m_globals.lightPos; 
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
   ShColor3f SH_DECL(color1) = ShColor3f(1.0, 1.0, 0.0);
@@ -90,6 +88,15 @@ bool FragmentBranching::init()
   return true;
 }
 
-FragmentBranching FragmentBranching::instance = FragmentBranching();
-
-
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new FragmentBranching(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<FragmentBranching> instance = 
+       StaticLinkedShader<FragmentBranching>();
+#endif

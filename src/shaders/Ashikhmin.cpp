@@ -29,7 +29,7 @@ using namespace ShUtil;
 
 class Ashikhmin : public Shader {
 public:
-  Ashikhmin();
+  Ashikhmin(const Globals&);
   ~Ashikhmin();
 
   bool init();
@@ -40,8 +40,8 @@ public:
   ShProgram vsh, fsh;
 };
 
-Ashikhmin::Ashikhmin()
-  : Shader("Basic Lighting Models: Ashikhmin")
+Ashikhmin::Ashikhmin(const Globals& globals)
+  : Shader("Basic Lighting Models: Ashikhmin", globals)
 {
 }
 
@@ -110,11 +110,11 @@ ShColor3f ashikhmin(ShAttrib1f nu, ShAttrib1f nv,
 
 bool Ashikhmin::init()
 {
-  vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
-  vsh = vsh << shExtract("lightPos") << Globals::lightPos;
+  vsh = ShKernelLib::shVsh( m_globals.mv, m_globals.mvp );
+  vsh = vsh << shExtract("lightPos") << m_globals.lightPos;
   ShProgram keeper = SH_BEGIN_PROGRAM() {
     ShInputVector3f itan;
-    ShOutputVector3f otan = Globals::mv | itan;
+    ShOutputVector3f otan = m_globals.mv | itan;
   } SH_END_PROGRAM;
   vsh = (shSwizzle("normal", "viewVec", "halfVec", "lightVec", "posh") << vsh) & keeper;
 
@@ -149,5 +149,16 @@ bool Ashikhmin::init()
   return true;
 }
 
-Ashikhmin ash;
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new Ashikhmin(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<Ashikhmin> instance = 
+       StaticLinkedShader<Ashikhmin>();
+#endif
 

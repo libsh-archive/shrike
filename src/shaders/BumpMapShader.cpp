@@ -30,7 +30,7 @@ using namespace ShUtil;
 
 class BumpMapShader : public Shader {
 public:
-  BumpMapShader();
+  BumpMapShader(const Globals&);
   ~BumpMapShader();
     
   bool init();
@@ -41,12 +41,10 @@ public:
 public:
   ShProgram vsh;
   ShProgram fsh;
-
-  static BumpMapShader instance;
 };
 
-BumpMapShader::BumpMapShader() :
-  Shader("Bump and Frame Mapping: Diffuse Bump Mapping")
+BumpMapShader::BumpMapShader(const Globals& globals) :
+  Shader("Bump and Frame Mapping: Diffuse Bump Mapping", globals)
 {
 }
 
@@ -61,8 +59,8 @@ bool BumpMapShader::init()
   // stock vertex shader, feed in global light, swizzle
   // out texcoord for bumpmap, normal/tanget to build
   // local frame and lightVec for diffuse lighting
-  vsh = ShKernelLib::shVsh(Globals::mv, Globals::mvp, 1, 1);
-  vsh = vsh << shExtract("lightPos") << Globals::lightPos;
+  vsh = ShKernelLib::shVsh(m_globals.mv, m_globals.mvp, 1, 1);
+  vsh = vsh << shExtract("lightPos") << m_globals.lightPos;
   vsh = (shSwizzle("texcoord", "normal", "tangent", "lightVec", "posh") << vsh);
 
   ShImage image;
@@ -103,4 +101,15 @@ bool BumpMapShader::init()
   return true;
 }
 
-BumpMapShader BumpMapShader::instance = BumpMapShader();
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new BumpMapShader(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<BumpMapShader> instance = 
+       StaticLinkedShader<BumpMapShader>();
+#endif

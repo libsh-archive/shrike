@@ -29,7 +29,7 @@ using namespace ShUtil;
 
 class BrickHorizon : public Shader {
 public:
-  BrickHorizon();
+  BrickHorizon(const Globals&);
   ~BrickHorizon();
 
   bool init();
@@ -38,12 +38,10 @@ public:
   ShProgram fragment() { return fsh;}
 
   ShProgram vsh, fsh;
-
-  static BrickHorizon instance;
 };
 
-BrickHorizon::BrickHorizon()
-  : Shader("Brick Wall: Horizon Maps")
+BrickHorizon::BrickHorizon(const Globals& globals)
+  : Shader("Brick Wall: Horizon Maps", globals)
 {
 }
 
@@ -65,12 +63,12 @@ bool BrickHorizon::init()
     ShOutputVector3f osurf;
     ShOutputVector3f lightv; // direction to light
 
-    opos = Globals::mvp | ipos; // Compute NDC position
-    onorm = normalize(Globals::mv | inorm); // Compute view-space normal
-    otan = normalize(Globals::mv | itan); // Compute the view-space tangent
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    onorm = normalize(m_globals.mv | inorm); // Compute view-space normal
+    otan = normalize(m_globals.mv | itan); // Compute the view-space tangent
     osurf = cross(onorm, otan);
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
-    lightv = normalize(Globals::lightPos - posv); // Compute light direction
+    ShPoint3f posv = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
+    lightv = normalize(m_globals.lightPos - posv); // Compute light direction
 
   } SH_END;
 
@@ -317,4 +315,15 @@ bool BrickHorizon::init()
   return true;
 }
 
-BrickHorizon BrickHorizon::instance = BrickHorizon();
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new BrickHorizon(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<BrickHorizon> instance = 
+       StaticLinkedShader<BrickHorizon>();
+#endif

@@ -31,7 +31,7 @@ using namespace ShUtil;
 
 class Banks : public Shader {
 public:
-  Banks();
+  Banks(const Globals&);
   ~Banks();
 
   bool init();
@@ -40,12 +40,10 @@ public:
   ShProgram fragment() { return fsh;}
 
   ShProgram vsh, fsh;
-
-  static Banks instance;
 };
 
-Banks::Banks()
-  : Shader("Basic Lighting Models: Banks")
+Banks::Banks(const Globals& globals)
+  : Shader("Basic Lighting Models: Banks", globals)
 {
 }
 
@@ -68,13 +66,13 @@ bool Banks::init()
     ShOutputVector3f eyev; // direction to the eye
     ShOutputVector3f halfv; // half vector
 
-    opos = Globals::mvp | ipos; // Compute NDC position
-    onorm = Globals::mv | inorm; // Compute view-space normal
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    onorm = m_globals.mv | inorm; // Compute view-space normal
  
-    tangentv = Globals::mv | tangent;
+    tangentv = m_globals.mv | tangent;
     
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
-    lightv = normalize(Globals::lightPos - posv); // Compute light direction
+    ShPoint3f posv = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
+    lightv = normalize(m_globals.lightPos - posv); // Compute light direction
     //lightv = (mToTangent | lightv);
 
     ShPoint3f viewv = -normalize(posv); // view vector
@@ -126,6 +124,15 @@ bool Banks::init()
   return true;
 }
 
-Banks Banks::instance = Banks();
-
-
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new Banks(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<Banks> instance = 
+       StaticLinkedShader<Banks>();
+#endif

@@ -30,7 +30,7 @@ class EnvMapShader : public Shader {
 public:
   ShProgram vsh, fsh;
 
-  EnvMapShader();
+  EnvMapShader(const Globals&);
   ~EnvMapShader();
 
   bool init();
@@ -39,8 +39,8 @@ public:
   ShProgram fragment() { return fsh;}
 };
 
-EnvMapShader::EnvMapShader()
-  : Shader("Reflection: Mirror")
+EnvMapShader::EnvMapShader(const Globals& globals)
+  : Shader("Reflection: Mirror", globals)
 {
 }
 
@@ -72,15 +72,15 @@ bool EnvMapShader::init()
     ShOutputPosition4f opos; // Position in NDC
     ShOutputVector3f reflv; // reflection vector
 
-    opos = Globals::mvp | ipos; // Compute NDC position
-    ShNormal3f onorm = Globals::mv | inorm; // Compute view-space normal
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    ShNormal3f onorm = m_globals.mv | inorm; // Compute view-space normal
     onorm = normalize(onorm);
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
+    ShPoint3f posv = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
     ShPoint3f viewv = -normalize(posv); // Compute view vector
     reflv = reflect(viewv,onorm); // Compute reflection vector
 
     // actually do reflection lookup in model space
-    reflv = Globals::mv_inverse | reflv;
+    reflv = m_globals.mv_inverse | reflv;
   } SH_END;
   
   fsh = SH_BEGIN_PROGRAM("gpu:fragment") {
@@ -95,4 +95,15 @@ bool EnvMapShader::init()
   return true;
 }
 
-EnvMapShader the_envmap_shader;
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new EnvMapShader(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<EnvMapShader> instance = 
+       StaticLinkedShader<EnvMapShader>();
+#endif

@@ -28,7 +28,7 @@ using namespace ShUtil;
 
 class DiffuseShader : public Shader {
 public:
-  DiffuseShader();
+  DiffuseShader(const Globals &globals);
   ~DiffuseShader();
 
   bool init();
@@ -37,12 +37,10 @@ public:
   ShProgram fragment() { return fsh;}
   
   ShProgram vsh, fsh;
-
-  static DiffuseShader instance;
 };
 
-DiffuseShader::DiffuseShader()
-  : Shader("Basic Lighting Models: Diffuse: Algebra")
+DiffuseShader::DiffuseShader(const Globals &globals)
+  : Shader("Basic Lighting Models: Diffuse: Algebra", globals)
 {
 }
 
@@ -53,8 +51,8 @@ DiffuseShader::~DiffuseShader()
 bool DiffuseShader::init()
 {
   std::cerr << "Initializing " << name() << std::endl;
-  vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
-  vsh = vsh << shExtract("lightPos") << Globals::lightPos; 
+  vsh = ShKernelLib::shVsh( m_globals.mv, m_globals.mvp );
+  vsh = vsh << shExtract("lightPos") << m_globals.lightPos; 
   vsh = shSwizzle("normal", "lightVec", "posh") << vsh;
 
   ShColor3f SH_DECL(color) = ShColor3f(.5, 0.9, 0.2);
@@ -63,6 +61,15 @@ bool DiffuseShader::init()
   return true;
 }
 
-DiffuseShader DiffuseShader::instance = DiffuseShader();
-
-
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new DiffuseShader(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<DiffuseShader> instance = 
+       StaticLinkedShader<DiffuseShader>();
+#endif

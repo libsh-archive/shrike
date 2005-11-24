@@ -38,7 +38,7 @@ ShAttrib1f tanh( ShAttrib1f x)
 
 class BrickWall : public Shader {
 public:
-  BrickWall();
+  BrickWall(const Globals&);
   ~BrickWall();
 
   bool init();
@@ -47,12 +47,10 @@ public:
   ShProgram fragment() { return fsh;}
 
   ShProgram vsh, fsh;
-
-  static BrickWall instance;
 };
 
-BrickWall::BrickWall()
-  : Shader("Brick Wall: Brick Wall")
+BrickWall::BrickWall(const Globals& globals)
+  : Shader("Brick Wall: Brick Wall", globals)
 {
 }
 
@@ -72,11 +70,11 @@ bool BrickWall::init()
     ShOutputVector3f halfv;
     ShOutputVector3f lightv; // direction to light
 
-    opos = Globals::mvp | ipos; // Compute NDC position
-    onorm = Globals::mv | inorm; // Compute view-space normal
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    onorm = m_globals.mv | inorm; // Compute view-space normal
 
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
-    lightv = normalize(Globals::lightPos - posv); // Compute light direction
+    ShPoint3f posv = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
+    lightv = normalize(m_globals.lightPos - posv); // Compute light direction
 
     ShPoint3f viewv = -normalize(posv); // Compute view vector
     halfv = normalize(viewv + lightv); // Compute half vector
@@ -193,4 +191,15 @@ bool BrickWall::init()
   return true;
 }
 
-BrickWall BrickWall::instance = BrickWall();
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new BrickWall(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<BrickWall> instance = 
+       StaticLinkedShader<BrickWall>();
+#endif

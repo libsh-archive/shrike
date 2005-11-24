@@ -28,7 +28,7 @@ using namespace ShUtil;
 
 class Derivatives : public Shader {
 public:
-  Derivatives();
+  Derivatives(const Globals&);
   ~Derivatives();
 
   bool init();
@@ -37,12 +37,10 @@ public:
   ShProgram fragment() { return fsh;}
   
   ShProgram vsh, fsh;
-
-  static Derivatives instance;
 };
 
-Derivatives::Derivatives()
-  : Shader("Debugging: Derivatives")
+Derivatives::Derivatives(const Globals& globals)
+  : Shader("Debugging: Derivatives", globals)
 {
 }
 
@@ -53,7 +51,7 @@ Derivatives::~Derivatives()
 bool Derivatives::init()
 {
   std::cerr << "Initializing " << name() << std::endl;
-  vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
+  vsh = ShKernelLib::shVsh( m_globals.mv, m_globals.mvp );
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
   ShAttrib1f SH_DECL(scale_x) = 1.0;
@@ -78,5 +76,16 @@ bool Derivatives::init()
 }
 
 
-Derivatives Derivatives::instance = Derivatives();
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new Derivatives(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<Derivatives> instance = 
+       StaticLinkedShader<Derivatives>();
+#endif
 

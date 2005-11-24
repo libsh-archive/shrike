@@ -28,7 +28,7 @@ using namespace ShUtil;
 
 class FragmentLooping : public Shader {
 public:
-  FragmentLooping();
+  FragmentLooping(const Globals&);
   ~FragmentLooping();
 
   bool init();
@@ -37,12 +37,10 @@ public:
   ShProgram fragment() { return fsh;}
 
   ShProgram vsh, fsh;
-
-  static FragmentLooping instance;
 };
 
-FragmentLooping::FragmentLooping()
-  : Shader("Branching: Loops in Fragment Unit")
+FragmentLooping::FragmentLooping(const Globals& globals)
+  : Shader("Branching: Loops in Fragment Unit", globals)
 {
 }
 
@@ -52,8 +50,8 @@ FragmentLooping::~FragmentLooping()
 
 bool FragmentLooping::init()
 {
-  vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
-  vsh = vsh << shExtract("lightPos") << Globals::lightPos; 
+  vsh = ShKernelLib::shVsh( m_globals.mv, m_globals.mvp );
+  vsh = vsh << shExtract("lightPos") << m_globals.lightPos; 
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
   
@@ -100,5 +98,15 @@ bool FragmentLooping::init()
   return true;
 }
 
-FragmentLooping FragmentLooping::instance = FragmentLooping();
-
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new FragmentLooping(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<FragmentLooping> instance = 
+       StaticLinkedShader<FragmentLooping>();
+#endif

@@ -31,7 +31,7 @@ using namespace ShUtil;
 
 class SatinShader : public Shader {
 public:
-  SatinShader();
+  SatinShader(const Globals&);
   ~SatinShader();
 
   bool init();
@@ -40,12 +40,10 @@ public:
   ShProgram fragment() { return fsh;}
 
   ShProgram vsh, fsh;
-
-  static SatinShader instance;
 };
 
-SatinShader::SatinShader()
-  : Shader("Homomorphic Factorization: Satin")
+SatinShader::SatinShader(const Globals& globals)
+  : Shader("Homomorphic Factorization: Satin", globals)
 {
 }
 
@@ -65,14 +63,14 @@ bool SatinShader::init()
     ShOutputVector3f light; // direction to light (surface frame)
     ShOutputVector3f view;
 
-    opos = Globals::mvp | ipos; // Compute NDC position
-    ShNormal3f n = Globals::mv | inorm; // Compute view-space normal
-    ShNormal3f t = Globals::mv | itan; // Compute view-space normal
+    opos = m_globals.mvp | ipos; // Compute NDC position
+    ShNormal3f n = m_globals.mv | inorm; // Compute view-space normal
+    ShNormal3f t = m_globals.mv | itan; // Compute view-space normal
     n = normalize(n);
     t = normalize(t);
 
-    ShPoint3f posv = (Globals::mv | ipos)(0,1,2); // Compute view-space position
-    ShVector3f lightv = normalize(Globals::lightPos - posv); // Compute light direction
+    ShPoint3f posv = (m_globals.mv | ipos)(0,1,2); // Compute view-space position
+    ShVector3f lightv = normalize(m_globals.lightPos - posv); // Compute light direction
     ShVector3f viewv = -normalize(posv); // Compute view vector
 
     // compute local surface frame (in view space)
@@ -167,6 +165,15 @@ bool SatinShader::init()
 // are normalized more than once in the code, the final assembly should
 // only do it once.
 
-SatinShader SatinShader::instance = SatinShader();
-
-
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new SatinShader(globals));
+    return list;
+  }
+}
+#else
+static StaticLinkedShader<SatinShader> instance = 
+       StaticLinkedShader<SatinShader>();
+#endif

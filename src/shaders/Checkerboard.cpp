@@ -30,7 +30,7 @@ using namespace ShUtil;
 
 class Checkerboard : public Shader {
 public:
-  Checkerboard(bool aa);
+  Checkerboard(bool aa, const Globals&);
   ~Checkerboard();
 
   bool init();
@@ -48,8 +48,8 @@ private:
   static ShColor3f m_color1, m_color2;
 };
 
-Checkerboard::Checkerboard(bool aa)
-  : Shader(std::string("Tiling: Checkerboard") + (aa ? ": Antialiased" : ": Aliased")),
+Checkerboard::Checkerboard(bool aa, const Globals& globals)
+  : Shader(std::string("Tiling: Checkerboard") + (aa ? ": Antialiased" : ": Aliased"), globals),
     m_aa(aa)
 {
   if (!m_done_init) {
@@ -78,7 +78,7 @@ ShColor3f debugScalar(const ShAttrib1f& scalar)
 bool Checkerboard::init()
 {
   std::cerr << "Initializing " << name() << std::endl;
-  vsh = ShKernelLib::shVsh( Globals::mv, Globals::mvp );
+  vsh = ShKernelLib::shVsh( m_globals.mv, m_globals.mvp );
   vsh = shSwizzle("texcoord", "posh") << vsh;
 
 
@@ -121,6 +121,21 @@ ShAttrib1f Checkerboard::m_frequency = ShAttrib1f(1.0);
 ShColor3f Checkerboard::m_color1 = ShColor3f(0.0, 0.0, 0.0);
 ShColor3f Checkerboard::m_color2 = ShColor3f(1.0, 1.0, 1.0);
 
-Checkerboard cb_with_aa = Checkerboard(true);
-Checkerboard cb_without_aa = Checkerboard(false);
-
+#ifdef SHRIKE_LIBRARY_SHADER
+extern "C" {
+  ShaderList shrike_library_create(const Globals &globals) {
+    ShaderList list;
+    list.push_back(new Checkerboard(true, globals));
+    list.push_back(new Checkerboard(false, globals));
+    return list;
+  }
+}
+#else
+struct Creator {
+  Creator() {
+    GetShaders().push_back(new Checkerboard(true, GetGlobals()));
+    GetShaders().push_back(new Checkerboard(false, GetGlobals()));
+  }
+};
+static Creator creator = Creator();
+#endif

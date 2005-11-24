@@ -17,6 +17,15 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 ShrikeGl.cpp ShrikeGl.hpp \
 		 util.hpp util.cpp 
 
+if SHRIKE_DYNAMIC_SHADERS
+
+SUBDIRS = . shaders
+shrike_SOURCES += shaders/LCDSmall.hpp shaders/LCDSmall.cpp
+
+lib_LIBRARIES = libshrike.a
+libshrike_a_SOURCES = Shader.hpp Shader.cpp
+
+else
 shrike_SOURCES += shaders/DiffuseShader.cpp
 shrike_SOURCES += shaders/DiscoShader.cpp
 shrike_SOURCES += shaders/PhongShader.cpp
@@ -60,6 +69,7 @@ shrike_SOURCES += shaders/BumpMapShader.cpp
 shrike_SOURCES += shaders/FragmentBranching.cpp
 shrike_SOURCES += shaders/FragmentLooping.cpp
 shrike_SOURCES += shaders/PaletteExample.cpp
+endif
 
 AM_CXXFLAGS = `${WX_CONFIG} --cxxflags` -Wall
 AM_CPPFLAGS = `${WX_CONFIG} --cppflags`
