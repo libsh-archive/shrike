@@ -39,7 +39,6 @@ struct LibraryTraverser : public wxDirTraverser
       shrike_library_create_func f = (shrike_library_create_func)dl->GetSymbol("shrike_library_create");
       if (f != NULL) { 
         ShaderList list = (*f)(GetGlobals());
-        std::cout << list.size() << std::endl;
         for (ShaderList::iterator I = list.begin(); I != list.end(); ++I)
           GetShaders().push_back(*I);
     	return wxDIR_CONTINUE;
@@ -79,11 +78,13 @@ bool ShrikeApp::OnInit()
   LibraryTraverser t;
   wxString envLibDir;
   if (wxGetEnv("SHRIKE_LIB_DIR", &envLibDir) && envLibDir != "") {
+    std::cout << "Loading shaders in " << envLibDir << std::endl;
     wxDir dir(envLibDir);
     dir.Traverse(t);
   }
-  wxDir cwd(wxGetCwd());
-  cwd.Traverse(t);
+  std::cout << "Loading shaders in " << SHRIKE_LIB_DIR << std::endl;
+  wxDir libDir(SHRIKE_LIB_DIR);
+  libDir.Traverse(t);
 
   ShrikeFrame* frame = new ShrikeFrame();
   frame->Show(true);

@@ -73,6 +73,7 @@ endif
 
 AM_CXXFLAGS = `${WX_CONFIG} --cxxflags` -Wall
 AM_CPPFLAGS = `${WX_CONFIG} --cppflags`
+shrike_CPPFLAGS = -DSHRIKE_LIB_DIR=\"$(prefix)/lib/shrike\"
 shrike_LDFLAGS = `${WX_CONFIG} --libs --gl-libs`
 shrike_LDADD = $(GL_LIBS) -lsh -lshutil
 
