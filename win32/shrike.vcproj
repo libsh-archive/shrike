@@ -281,7 +281,7 @@
 				RelativePath="..\src\UniformPanel.cpp">
 			</File>
 			<File
-				RelativePath="..\src\util.cpp">
+				RelativePath="..\src\shaders\util.cpp">
 			</File>
 			<File
 				RelativePath="..\src\shaders\VertexBranching.cpp">
@@ -340,7 +340,7 @@
 				RelativePath="..\src\UniformPanel.hpp">
 			</File>
 			<File
-				RelativePath="..\src\util.hpp">
+				RelativePath="..\src\shaders\util.hpp">
 			</File>
 			<File
 				RelativePath="..\src\utilimpl.hpp">

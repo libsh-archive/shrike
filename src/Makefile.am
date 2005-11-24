@@ -14,8 +14,7 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 Camera.hpp Camera.cpp \
 		 ShTrackball.hpp ShTrackball.cpp \
 		 Timer.hpp Timer.cpp \
-		 ShrikeGl.cpp ShrikeGl.hpp \
-		 util.hpp util.cpp 
+		 ShrikeGl.cpp ShrikeGl.hpp
 
 if SHRIKE_DYNAMIC_SHADERS
 
@@ -26,6 +25,8 @@ lib_LIBRARIES = libshrike.a
 libshrike_a_SOURCES = Shader.hpp Shader.cpp
 
 else
+shrike_SOURCES += shaders/util.hpp
+shrike_SOURCES += shaders/util.cpp 
 shrike_SOURCES += shaders/DiffuseShader.cpp
 shrike_SOURCES += shaders/DiscoShader.cpp
 shrike_SOURCES += shaders/PhongShader.cpp
