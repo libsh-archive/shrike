@@ -79,12 +79,16 @@ bool ShrikeApp::OnInit()
   wxString envLibDir;
   if (wxGetEnv(wxT("SHRIKE_LIB_DIR"), &envLibDir) && envLibDir != wxT("")) {
     std::cout << "Loading shaders in " << envLibDir << std::endl;
-    wxDir dir(envLibDir);
-    dir.Traverse(t);
+    if (wxDir::Exists(envLibDir)) {
+      wxDir dir(envLibDir);
+      dir.Traverse(t);
+    }
   }
   std::cout << "Loading shaders in " << SHRIKE_LIB_DIR << std::endl;
-  wxDir libDir(wxT(SHRIKE_LIB_DIR));
-  libDir.Traverse(t);
+  if (wxDir::Exists(wxT(SHRIKE_LIB_DIR))) {
+    wxDir libDir(wxT(SHRIKE_LIB_DIR));
+    libDir.Traverse(t);
+  }
 
   ShrikeFrame* frame = new ShrikeFrame();
   frame->Show(true);

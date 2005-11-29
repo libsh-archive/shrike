@@ -1,3 +1,8 @@
+2005-11-29  Francois Marier  <francois@serioushack.com>
+
+	* src/ShrikeApp.cpp (OnInit): Check whether the directories exist
+	before traversing them.
+
 2005-11-21  Francois Marier  <francois@serioushack.com>
 
 	* src/ShrikeFrame.cpp, src/shaders/Logo.cpp: Warn about missing
