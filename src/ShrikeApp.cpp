@@ -30,13 +30,13 @@ struct LibraryTraverser : public wxDirTraverser
   virtual wxDirTraverseResult OnFile(const wxString &file) {
     wxFileName fileName(file);
 
-    if ("."+fileName.GetExt() != wxDynamicLibrary::GetDllExt())
+    if (wxT(".")+fileName.GetExt() != wxDynamicLibrary::GetDllExt())
       return wxDIR_CONTINUE;
 
     wxDynamicLibrary *dl = new wxDynamicLibrary(file);
     if (dl->IsLoaded()) {
       typedef ShaderList (*shrike_library_create_func)(const Globals&);
-      shrike_library_create_func f = (shrike_library_create_func)dl->GetSymbol("shrike_library_create");
+      shrike_library_create_func f = (shrike_library_create_func)dl->GetSymbol(wxT("shrike_library_create"));
       if (f != NULL) { 
         ShaderList list = (*f)(GetGlobals());
         for (ShaderList::iterator I = list.begin(); I != list.end(); ++I)
@@ -77,13 +77,13 @@ bool ShrikeApp::OnInit()
   
   LibraryTraverser t;
   wxString envLibDir;
-  if (wxGetEnv("SHRIKE_LIB_DIR", &envLibDir) && envLibDir != "") {
+  if (wxGetEnv(wxT("SHRIKE_LIB_DIR"), &envLibDir) && envLibDir != wxT("")) {
     std::cout << "Loading shaders in " << envLibDir << std::endl;
     wxDir dir(envLibDir);
     dir.Traverse(t);
   }
   std::cout << "Loading shaders in " << SHRIKE_LIB_DIR << std::endl;
-  wxDir libDir(SHRIKE_LIB_DIR);
+  wxDir libDir(wxT(SHRIKE_LIB_DIR));
   libDir.Traverse(t);
 
   ShrikeFrame* frame = new ShrikeFrame();
