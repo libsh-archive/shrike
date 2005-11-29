@@ -3,6 +3,16 @@
 	* src/ShrikeApp.cpp (OnInit): Check whether the directories exist
 	before traversing them.
 
+2005-11-29  Paul Redmond  <paul.redmond@gmail.com>
+
+	* src/ShrikeApp.cpp: Fix build when compiling with wx 2.6.
+	
+2005-11-24  Paul Redmond  <paul.redmond@gmail.com>
+
+	* src, src/shaders: Initial support for loading shaders at
+	runtime.  Shrike looks recursively for .so files in in
+	$(prefix)/lib/shrike and, if exported, SHRIKE_LIB_DIR for shaders.
+	
 2005-11-21  Francois Marier  <francois@serioushack.com>
 
 	* src/ShrikeFrame.cpp, src/shaders/Logo.cpp: Warn about missing
