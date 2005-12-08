@@ -20,6 +20,7 @@
 #include "ShrikeApp.hpp"
 #include "ShrikeFrame.hpp"
 #include "Globals.hpp"
+#include "Project.hpp"
 #include <sh/sh.hpp>
 #include <wx/dir.h>
 #include <wx/dynlib.h>
@@ -33,18 +34,18 @@ struct LibraryTraverser : public wxDirTraverser
     if (wxT(".")+fileName.GetExt() != wxDynamicLibrary::GetDllExt())
       return wxDIR_CONTINUE;
 
-    wxDynamicLibrary *dl = new wxDynamicLibrary(file);
-    if (dl->IsLoaded()) {
-      typedef ShaderList (*shrike_library_create_func)(const Globals&);
-      shrike_library_create_func f = (shrike_library_create_func)dl->GetSymbol(wxT("shrike_library_create"));
-      if (f != NULL) { 
-        ShaderList list = (*f)(GetGlobals());
-        for (ShaderList::iterator I = list.begin(); I != list.end(); ++I)
-          GetShaders().push_back(*I);
-    	return wxDIR_CONTINUE;
-      }
+    // this is a hack to load the demos
+    Project *project = new Project();
+    project->workspace(fileName.GetPath());
+    project->target(fileName.GetName());
+    project->load_shaders();
+    if (project->begin_shaders() == project->end_shaders()) {
+      delete project;
     }
-    delete dl;
+    else {
+      for (ShaderList::iterator I = project->begin_shaders(); I != project->end_shaders(); ++I)
+        GetShaders().push_back(*I);
+    }
     return wxDIR_CONTINUE;
   }
   virtual wxDirTraverseResult OnDir(const wxString &dir) {

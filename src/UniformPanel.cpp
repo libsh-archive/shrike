@@ -294,7 +294,7 @@ public:
     if (!m_node->evaluator()) return;
 
     ShProgram prg(m_node->evaluator());
-    ShrikeFrame::instance()->showIR(prg, wxConvLibc.cMB2WX(m_node->name().c_str()) );
+    ShrikeFrame::instance()->show_ir(prg, wxConvLibc.cMB2WX(m_node->name().c_str()) );
   }
   
 private:

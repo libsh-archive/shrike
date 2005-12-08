@@ -83,7 +83,6 @@ BEGIN_EVENT_TABLE(ShrikeCanvas, wxGLCanvas)
   EVT_PAINT(ShrikeCanvas::paint)
   EVT_SIZE(ShrikeCanvas::reshape)
   EVT_MOTION(ShrikeCanvas::motion)
-  EVT_KEY_DOWN(ShrikeCanvas::keyDown)
 END_EVENT_TABLE()
 
 ShrikeCanvas* ShrikeCanvas::m_instance = 0;
@@ -469,9 +468,4 @@ void ShrikeCanvas::setShowFps(bool fps) {
 
   SetCurrent();
   render();
-}
-
-void ShrikeCanvas::keyDown(wxKeyEvent& evt)
-{
-  ShrikeFrame::instance()->keyDown(evt);
 }

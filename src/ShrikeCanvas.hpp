@@ -51,8 +51,6 @@ public:
 
   void setShowFps(bool);
 
-  void keyDown(wxKeyEvent& event);
-  
   static ShrikeCanvas* instance();
   
 private:

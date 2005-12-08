@@ -14,7 +14,9 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 Camera.hpp Camera.cpp \
 		 ShTrackball.hpp ShTrackball.cpp \
 		 Timer.hpp Timer.cpp \
-		 ShrikeGl.cpp ShrikeGl.hpp
+		 ShrikeGl.cpp ShrikeGl.hpp \
+		 Project.cpp Project.hpp \
+		 Build.cpp Build.hpp
 
 if SHRIKE_DYNAMIC_SHADERS
 
