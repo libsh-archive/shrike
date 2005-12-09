@@ -72,6 +72,8 @@ enum ShrikeId {
   SHRIKE_MENU_VIEW_FPS,
   SHRIKE_MENU_VIEW_WIREFRAME,
 
+  SHRIKE_MENU_HELP_ABOUT,
+
   SHRIKE_TREECTRL_SHADERS,
   SHRIKE_TREECTRL_PROJECTS
 };
@@ -121,6 +123,8 @@ private:
   void on_wireframe(wxCommandEvent& event);
   void on_screenshot(wxCommandEvent& event);
   void on_fps(wxCommandEvent& event);
+
+  void on_about(wxCommandEvent& event);
 
   void set_fullscreen(bool);
   void set_fps(bool);

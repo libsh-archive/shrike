@@ -27,6 +27,7 @@
 #include <wx/treectrl.h>
 #include <wx/txtstrm.h>
 #include <wx/wfstream.h>
+#include "AboutDialog.hpp"
 #include "Build.hpp"
 #include "Globals.hpp"
 #include "Project.hpp"
@@ -62,6 +63,8 @@ BEGIN_EVENT_TABLE(ShrikeFrame, wxFrame)
   EVT_MENU(SHRIKE_MENU_VIEW_FULLSCREEN, ShrikeFrame::on_fullscreen)
   EVT_MENU(SHRIKE_MENU_VIEW_WIREFRAME, ShrikeFrame::on_wireframe)
   EVT_MENU(SHRIKE_MENU_VIEW_FPS, ShrikeFrame::on_fps)
+
+  EVT_MENU(SHRIKE_MENU_HELP_ABOUT, ShrikeFrame::on_about)
 
   EVT_CLOSE(ShrikeFrame::on_close)
   EVT_KEY_DOWN(ShrikeFrame::on_keydown)
@@ -297,11 +300,15 @@ ShrikeFrame::ShrikeFrame()
   m_viewMenu->AppendCheckItem(SHRIKE_MENU_VIEW_FPS, wxT("Show framera&te") );
   m_viewMenu->Append(SHRIKE_MENU_VIEW_SCREENSHOT, wxT("&Screenshot...") );
 
+  wxMenu* help = new wxMenu();
+  help->Append(SHRIKE_MENU_HELP_ABOUT, wxT("&About") );
+  
   wxMenuBar* menuBar = new wxMenuBar();
   menuBar->Append(fileMenu, wxT("&File") );
   menuBar->Append(m_project_menu, wxT("&Project") );
   menuBar->Append(m_shader_menu, wxT("&Shader") );
   menuBar->Append(m_viewMenu, wxT("&View") );
+  menuBar->Append(help, wxT("&Help") );
   
   SetMenuBar(menuBar);
 
@@ -668,7 +675,12 @@ void ShrikeFrame::on_screenshot(wxCommandEvent& event)
   }
 }
 
-#include <wx/artprov.h>
+void ShrikeFrame::on_about(wxCommandEvent& event)
+{
+  AboutDialog dialog(this);
+  dialog.ShowModal();
+}
+
 wxTreeCtrl* ShrikeFrame::init_project_tree(wxWindow* parent)
 {
   wxTreeCtrl* tree = new wxTreeCtrl(parent, SHRIKE_TREECTRL_PROJECTS,
