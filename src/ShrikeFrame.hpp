@@ -105,6 +105,7 @@ public:
   static ShrikeFrame* instance();
 private:
   ShUtil::ShObjMesh* init_model();
+  wxTreeCtrl* init_project_tree(wxWindow* parent);
   wxTreeCtrl* init_shader_list(wxWindow* parent);
 
   void on_quit(wxCommandEvent& event);

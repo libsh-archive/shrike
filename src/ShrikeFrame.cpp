@@ -332,15 +332,7 @@ ShrikeFrame::ShrikeFrame()
   wxSplitterWindow* canvas_output = new wxSplitterWindow(col2_col3, -1);
 
   m_shaderList = init_shader_list(shaders_projects);
-  m_project_tree = new wxTreeCtrl(shaders_projects, SHRIKE_TREECTRL_PROJECTS,
-    wxDefaultPosition, wxDefaultSize, wxTR_HAS_BUTTONS | wxTR_HIDE_ROOT | 
-#ifndef WIN32
-    wxTR_NO_LINES);
-#else
-    wxTR_LINES_AT_ROOT);
-#endif
-  m_project_tree->AddRoot(wxT(""));
-
+  m_project_tree = init_project_tree(shaders_projects); 
   m_panel = new UniformPanel(col2_col3);
 
   ShObjMesh* model = init_model();
@@ -426,9 +418,15 @@ void ShrikeFrame::on_open_model(wxCommandEvent& event)
   if (dialog.ShowModal() == wxID_OK) {
     std::ifstream infile(dialog.GetPath().fn_str());
     if (infile) {
-      ShObjMesh* model = new ShObjMesh(infile);
-      m_canvas->setModel(model);
-    } // TODO: Complain if opening file failed
+      try {
+        ShObjMesh* model = new ShObjMesh(infile);
+        m_canvas->setModel(model);
+      }
+      catch (const ShException& e) {
+        show_error(wxT("The model ") + dialog.GetPath() + wxT(" failed to load"),
+                   e.message());
+      }
+    }
   }
 }
 
@@ -668,6 +666,21 @@ void ShrikeFrame::on_screenshot(wxCommandEvent& event)
   if (dialog->ShowModal() == wxID_OK) {
     m_canvas->screenshot(dialog->GetPath().c_str());
   }
+}
+
+#include <wx/artprov.h>
+wxTreeCtrl* ShrikeFrame::init_project_tree(wxWindow* parent)
+{
+  wxTreeCtrl* tree = new wxTreeCtrl(parent, SHRIKE_TREECTRL_PROJECTS,
+    wxDefaultPosition, wxDefaultSize, wxTR_HAS_BUTTONS | wxTR_HIDE_ROOT | 
+#ifndef WIN32
+    wxTR_NO_LINES);
+#else
+    wxTR_LINES_AT_ROOT);
+#endif
+  tree->AddRoot(wxT(""));
+
+  return tree;
 }
 
 wxTreeCtrl* ShrikeFrame::init_shader_list(wxWindow* parent)
