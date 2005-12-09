@@ -4,7 +4,7 @@
 #include <wx/tokenzr.h>
 
 Project::Project()
-  : m_dll(0), m_saved(false)
+  : m_saved(false), m_dll(0)
 {
 }
 
