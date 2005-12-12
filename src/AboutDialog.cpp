@@ -42,5 +42,8 @@ AboutDialog::AboutDialog(wxWindow* parent)
     wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE|wxTE_READONLY);
   sizer->Add(license, 1, wxEXPAND);
 
+  wxButton* button = new wxButton(this, wxID_OK, wxT("Ok"));
+  sizer->Add(button, 0, wxEXPAND);
+
   SetSizer(sizer);
 }
