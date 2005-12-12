@@ -25,6 +25,7 @@
 #include <wx/minifram.h>
 
 #include "Project.hpp"
+#include "ProjectTree.hpp"
 #include "Shader.hpp"
 #include "ShrikePropsDialog.hpp"
 #include "UniformPanel.hpp"
@@ -107,7 +108,7 @@ public:
   static ShrikeFrame* instance();
 private:
   ShUtil::ShObjMesh* init_model();
-  wxTreeCtrl* init_project_tree(wxWindow* parent);
+  ProjectTree* init_project_tree(wxWindow* parent);
   wxTreeCtrl* init_shader_list(wxWindow* parent);
 
   void on_quit(wxCommandEvent& event);
@@ -146,7 +147,7 @@ private:
   wxFrame* m_preview;
   wxListBox* m_output;
 
-  wxTreeCtrl* m_project_tree;
+  ProjectTree* m_project_tree;
   wxTreeCtrl* m_shaderList;
   Shader* m_shader;
 

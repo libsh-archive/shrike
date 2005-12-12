@@ -681,9 +681,9 @@ void ShrikeFrame::on_about(wxCommandEvent& event)
   dialog.ShowModal();
 }
 
-wxTreeCtrl* ShrikeFrame::init_project_tree(wxWindow* parent)
+ProjectTree* ShrikeFrame::init_project_tree(wxWindow* parent)
 {
-  wxTreeCtrl* tree = new wxTreeCtrl(parent, SHRIKE_TREECTRL_PROJECTS,
+  ProjectTree* tree = new ProjectTree(parent, SHRIKE_TREECTRL_PROJECTS,
     wxDefaultPosition, wxDefaultSize, wxTR_HAS_BUTTONS | wxTR_HIDE_ROOT | 
 #ifndef WIN32
     wxTR_NO_LINES);
@@ -752,119 +752,62 @@ wxTreeCtrl* ShrikeFrame::init_shader_list(wxWindow* parent)
   tree->SortChildren(root);
   return tree;
 }
-struct ProjectCommon
-{
-  ProjectCommon(Project* project, wxTreeItemId root, wxTreeItemId shaders, wxTreeItemId sources)
-    : m_project(project), m_root(root), m_shaders(shaders), m_sources(sources)
-  {
-  }
-  ~ProjectCommon() { delete m_project; }
-
-  Project* m_project;
-  wxTreeItemId m_root, m_shaders, m_sources;
-};
-
-struct ProjectItem : public wxTreeItemData
-{
-  enum Type {
-    Root,
-    Parent,
-    Source,
-    Shader
-  };
-
-  ProjectItem(ProjectCommon* common, Type type) : m_common(common), m_type(type) {}
-  ~ProjectItem() 
-  { 
-    if (type() == Root) delete m_common; 
-  }
-
-  Type type() const { return m_type; }
-  ProjectCommon* common() { return m_common; }
-private:
-  // FIXME: must delete common
-  ProjectCommon* m_common;
-  Type m_type;
-};
-
-struct ShaderItem : public ProjectItem
-{
-  ShaderItem(ProjectCommon* common, ::Shader* shader) 
-    : ProjectItem(common, ProjectItem::Shader), m_shader(shader)
-  {}
-  ~ShaderItem() {}
-
-  ::Shader* shader() { return m_shader; }
-private:
-  ::Shader* m_shader;
-};
-
-struct SourceItem : public ProjectItem
-{
-  SourceItem(ProjectCommon* common, const wxString &name) 
-    : ProjectItem(common, ProjectItem::Source), m_name(name) 
-  {}
-  ~SourceItem() {}
-
-  const wxString& name() const { return m_name; }
-private:
-  wxString m_name;
-};
 
 void ShrikeFrame::on_project_item_select(wxTreeEvent& event)
 {
   wxTreeItemId item = event.GetItem();
-  if (ProjectItem* item_data = dynamic_cast<ProjectItem*>(m_project_tree->GetItemData(item))) {
-    Project* project = item_data->common()->m_project;
+  Project* project = m_project_tree->get_project(item);
 
-    set_project(project);
-
-    switch (item_data->type()) {
-      case ProjectItem::Shader: {
-        ShaderItem* shader_item = static_cast<ShaderItem*>(item_data);
-        if (!set_shader(shader_item->shader()))
-          m_project_tree->SetItemTextColour(item, *wxRED);
-        break;
-      }
-      case ProjectItem::Source: break;
-      default: break;
-    }
-  }
-  else
+  if (!project) {
     set_project(0);
+    return;
+  }
+
+  set_project(project);
+
+  switch (m_project_tree->get_item_type(item)) {
+    case ProjectTree::Shader: {
+      if (!set_shader(m_project_tree->get_shader(item)))
+        m_project_tree->SetItemTextColour(item, *wxRED);
+      break;
+    }
+    case ProjectTree::Source: break;
+    default: break;
+  }
 }
 
 void ShrikeFrame::on_project_item_activated(wxTreeEvent& event)
 {
   wxTreeItemId item = event.GetItem();
-  if (ProjectItem* item_data = dynamic_cast<ProjectItem*>(m_project_tree->GetItemData(item))) {
-    Project* project = item_data->common()->m_project;
+  Project* project = m_project_tree->get_project(item);
 
-    switch (item_data->type()) {
-      case ProjectItem::Shader: break;
-      case ProjectItem::Source: {
-        wxConfig config(wxT("shrike"));
-        wxString value;
-        if (!config.Read(wxT("/Editor/Editor"), &value)) {
-          // This is temporary until a preference panel is made
-          wxFileDialog dialog(this, wxT("Choose your favourite C/C++ editor"), 
-            wxT(""), wxT(""), wxT("*"));
-          if (dialog.ShowModal() != wxID_OK)
-            return;
-          value = dialog.GetPath();
-          config.Write(wxT("/Editor/Editor"), value);
-        }
-        SourceItem* source_item = static_cast<SourceItem*>(item_data);
-        wxFileName fname(project->workspace(), source_item->name());
-        wxExecute(value+wxT(" ")+fname.GetFullPath(), wxEXEC_ASYNC, 0);
-        break;
-      }
-      default:
-        break;
-    }
-  }
-  else
+  if (!project) {
     set_project(0);
+    return;
+  }
+
+  switch (m_project_tree->get_item_type(item)) {
+    case ProjectTree::Shader: 
+      break;
+    case ProjectTree::Source: {
+      wxConfig config(wxT("shrike"));
+      wxString value;
+      if (!config.Read(wxT("/Editor/Editor"), &value)) {
+        // This is temporary until a preference panel is made
+        wxFileDialog dialog(this, wxT("Choose your favourite C/C++ editor"), 
+          wxT(""), wxT(""), wxT("*"));
+        if (dialog.ShowModal() != wxID_OK)
+          return;
+        value = dialog.GetPath();
+        config.Write(wxT("/Editor/Editor"), value);
+      }
+      wxFileName fname(project->workspace(), m_project_tree->get_source(item));
+      wxExecute(value+wxT(" ")+fname.GetFullPath(), wxEXEC_ASYNC, 0);
+      break;
+    }
+    default:
+      break;
+  }
 }
 
 void ShrikeFrame::on_project_item_right_click(wxTreeEvent& event)
@@ -872,58 +815,6 @@ void ShrikeFrame::on_project_item_right_click(wxTreeEvent& event)
   wxPoint a=event.GetPoint(), b=m_project_tree->GetPosition();
   wxPoint p(a.x+b.x, a.y+b.y);
   PopupMenu(m_project_menu, p);
-}
-
-void create_shader_tree(ProjectCommon* common, wxTreeCtrl* tree)
-{
-  tree->DeleteChildren(common->m_shaders);
-
-  Project* project = common->m_project;
-
-  if (project->begin_shaders() == project->end_shaders()) {
-    tree->SetItemTextColour(common->m_shaders, *wxRED);
-    return;
-  }
-  tree->SetItemTextColour(common->m_shaders, tree->GetItemTextColour(tree->GetRootItem()));
-  for (ShaderList::iterator I = project->begin_shaders(); I != project->end_shaders(); ++I) { 
-    Shader* shader = *I;
-    
-    ShaderItem* item_data = new ShaderItem(common, shader);
-    tree->AppendItem(common->m_shaders, wxConvLibc.cMB2WX(shader->name().c_str()), 
-      -1, -1, item_data);
-  }
-}
-
-void create_source_tree(ProjectCommon* common, wxTreeCtrl* tree)
-{
-  tree->DeleteChildren(common->m_sources);
-
-  for (Project::FileList::const_iterator I = common->m_project->begin_sources(); 
-    I != common->m_project->end_sources(); ++I) {
-
-    SourceItem* item_data = new SourceItem(common, *I);
-    tree->AppendItem(common->m_sources, *I, -1, -1, item_data);
-  }
-}
-
-void create_project_tree(Project* project, wxTreeCtrl* tree)
-{
-  wxTreeItemId root_id = tree->GetRootItem();
-  wxTreeItemId project_id = tree->AppendItem(root_id, project->name());
-  wxTreeItemId shaders_id = tree->AppendItem(project_id, wxT("Shaders"));
-  wxTreeItemId sources_id = tree->AppendItem(project_id, wxT("Source"));
-
-  ProjectCommon* common = new ProjectCommon(project, project_id, shaders_id, sources_id);
-
-  tree->SetItemData(project_id, new ProjectItem(common, ProjectItem::Root));
-  tree->SetItemData(shaders_id, new ProjectItem(common, ProjectItem::Parent));
-  tree->SetItemData(sources_id, new ProjectItem(common, ProjectItem::Parent));
-
-  create_shader_tree(common, tree);
-  create_source_tree(common, tree);
-
-  tree->SortChildren(project_id);
-  tree->SelectItem(project_id);
 }
 
 void ShrikeFrame::on_project_new(wxCommandEvent& event)
@@ -940,7 +831,7 @@ void ShrikeFrame::on_project_new(wxCommandEvent& event)
   p->workspace(workspace.GetPath());
   p->config(project.GetValue()+wxT(".proj"));
   p->target(target.GetValue());
-  create_project_tree(p, m_project_tree);
+  m_project_tree->insert(p);
 }
 
 void ShrikeFrame::on_project_open(wxCommandEvent& event)
@@ -954,27 +845,21 @@ void ShrikeFrame::on_project_open(wxCommandEvent& event)
     delete project;
     return;
   }
-  create_project_tree(project, m_project_tree);
+  m_project_tree->insert(project);
 }
 
 void ShrikeFrame::on_project_save(wxCommandEvent& event)
 {
-  wxTreeItemId item = m_project_tree->GetSelection();
-  ProjectItem* data = dynamic_cast<ProjectItem*>(m_project_tree->GetItemData(item));
-
-  if (!data || !data->common()->m_project) return;
-
-  data->common()->m_project->save();
+  Project* project = m_project_tree->get_project(m_project_tree->GetSelection());
+  if (project)
+    project->save();
 }
 
 void ShrikeFrame::on_project_close(wxCommandEvent& event)
 {
-  wxTreeItemId item = m_project_tree->GetSelection();
-  ProjectItem* data = dynamic_cast<ProjectItem*>(m_project_tree->GetItemData(item));
-
-  if (!data) return;
-
-  Project* project = data->common()->m_project;
+  Project* project = m_project_tree->get_project(m_project_tree->GetSelection());
+  if (!project) 
+    return;
   
   if (!project->saved()) {
     wxMessageDialog dialog(this, 
@@ -989,21 +874,17 @@ void ShrikeFrame::on_project_close(wxCommandEvent& event)
   
   set_shader(0); 
 
-  m_project_tree->DeleteChildren(data->common()->m_root);
-  m_project_tree->Delete(data->common()->m_root);
+  m_project_tree->remove();
 }
 
 void ShrikeFrame::on_project_new_source(wxCommandEvent& event)
 {
-  wxTreeItemId item = m_project_tree->GetSelection();
-  ProjectItem* item_data = dynamic_cast<ProjectItem*>(m_project_tree->GetItemData(item));
-
-  if (!item_data) return;
+  Project* project = m_project_tree->get_project(m_project_tree->GetSelection());
+  if (!project) 
+    return;
 
   wxTextEntryDialog dialog(this, wxT("Enter source file name"));
   if (dialog.ShowModal() != wxID_OK) return;
-  
-  Project* project = item_data->common()->m_project;
   
   wxFile file;
   wxFileName fname(project->workspace(), dialog.GetValue());
@@ -1012,21 +893,17 @@ void ShrikeFrame::on_project_new_source(wxCommandEvent& event)
   }
   
   project->sources().push_back(dialog.GetValue()); 
-  create_source_tree(item_data->common(), m_project_tree);
+  m_project_tree->update();
 }
 
 void ShrikeFrame::on_project_add_source(wxCommandEvent& event)
 {
-  wxTreeItemId item = m_project_tree->GetSelection();
-  ProjectItem* item_data = dynamic_cast<ProjectItem*>(m_project_tree->GetItemData(item));
-
-  if (!item_data) return;
+  Project* project = m_project_tree->get_project(m_project_tree->GetSelection());
+  if (!project) return;
 
   wxFileDialog dialog(this, wxT("Choose a source file"), wxT(""), wxT(""), wxT("*.cpp"));
   if (dialog.ShowModal() != wxID_OK)
     return;
-  
-  Project* project = item_data->common()->m_project;
   
   wxFileName fname(dialog.GetPath());
   if (fname.GetPath() != project->workspace()) {
@@ -1036,17 +913,13 @@ void ShrikeFrame::on_project_add_source(wxCommandEvent& event)
   }
   
   project->sources().push_back(fname.GetFullName()); 
-  create_source_tree(item_data->common(), m_project_tree);
+  m_project_tree->update();
 }
 
 void ShrikeFrame::on_project_build(wxCommandEvent& event)
 {
-  wxTreeItemId item = m_project_tree->GetSelection();
-  ProjectItem* item_data = dynamic_cast<ProjectItem*>(m_project_tree->GetItemData(item));
-
-  if (!item_data || !item_data->common()->m_project) return;
-
-  Project* project = item_data->common()->m_project;
+  Project* project = m_project_tree->get_project(m_project_tree->GetSelection());
+  if (!project) return;
 
   output()->Clear();
   output()->Insert(wxT("Building ")+project->name()+wxT("..."),0);
@@ -1085,7 +958,7 @@ void ShrikeFrame::on_project_build(wxCommandEvent& event)
     else {
       project->load_shaders();
     }
-    create_shader_tree(item_data->common(), m_project_tree);
+    m_project_tree->update();
     output()->Insert(wxT("Build successful"), output()->GetCount());
   }
   delete process;

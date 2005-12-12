@@ -16,6 +16,7 @@ shrike_SOURCES = ShrikeApp.hpp ShrikeApp.cpp \
 		 Timer.hpp Timer.cpp \
 		 ShrikeGl.cpp ShrikeGl.hpp \
 		 Project.cpp Project.hpp \
+		 ProjectTree.cpp ProjectTree.hpp \
 		 AboutDialog.cpp AboutDialog.hpp \
 		 Build.cpp Build.hpp
 
