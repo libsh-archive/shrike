@@ -1,3 +1,24 @@
+2005-12-12  Paul Redmond  <paul.redmond@gmail.com>
+
+	* src: many uniform panel improvements.
+	Organize variables into catagories (textures, colors, palettes, etc.)
+	Preview textures, colors, and palettes
+	Sliders support integer attributes
+
+2005-12-12  Paul Redmond  <paul.redmond@gmail.com>
+	
+	* src, shaders: Project tree cleanup. Put shaders directly under shader root.  Add some icons to the tree.
+
+2005-12-09  Paul Redmond  <paul.redmond@gmail.com>
+
+	* src: Add an about dialog box
+	Some cleanup and show an error message if an obj failed to load.
+
+2005-12-08  Paul Redmond  <paul.redmond@gmail.com>
+
+	* src: Basic shader project support.  You can now create projects, edit
+	sources, build and load shaders all from within Shrike :)
+	
 2005-11-29  Francois Marier  <francois@serioushack.com>
 
 	* src/ShrikeApp.cpp (OnInit): Check whether the directories exist
