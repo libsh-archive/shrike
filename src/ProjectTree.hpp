@@ -25,7 +25,7 @@ public:
   ItemType get_item_type(wxTreeItemId) const;
   Project* get_project(wxTreeItemId item);
   ::Shader* get_shader(wxTreeItemId item);
-  const wxString& get_source(wxTreeItemId item);
+  wxString get_source(wxTreeItemId item);
 
   void insert(Project* project);
   void remove();

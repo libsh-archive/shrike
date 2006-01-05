@@ -89,7 +89,7 @@ Shader* ProjectTree::get_shader(wxTreeItemId item)
   return 0;
 }
 
-const wxString& ProjectTree::get_source(wxTreeItemId item)
+wxString ProjectTree::get_source(wxTreeItemId item)
 {
   SourceItem* data = dynamic_cast<SourceItem*>(GetItemData(item));
   if (data)
