@@ -20,7 +20,7 @@
 #include <sstream>
 
 #include <sh/sh.hpp>
-#include <sh/shutil.hpp>
+#include <shutil/shutil.hpp>
 #include "ShrikeGl.hpp"
 #include <wx/glcanvas.h>
 #include "ShrikeCanvas.hpp"

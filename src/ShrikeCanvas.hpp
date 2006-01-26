@@ -22,7 +22,7 @@
 
 #include <wx/wx.h>
 #include <wx/glcanvas.h>
-#include <sh/ShObjMesh.hpp>
+#include <shutil/ShObjMesh.hpp>
 #include "Camera.hpp"
 #include "Shader.hpp"
 

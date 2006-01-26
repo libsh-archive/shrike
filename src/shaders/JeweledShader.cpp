@@ -19,7 +19,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // multiple homomorphic materials blended with a material map
 #include <sh/sh.hpp>
-#include <sh/shutil.hpp>
+#include <shutil/shutil.hpp>
 #include <iostream>
 #include "Shader.hpp"
 #include "Globals.hpp"

@@ -19,7 +19,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // HACK: really a copy of SatinShader, with different defaults
 #include <sh/sh.hpp>
-#include <sh/shutil.hpp>
+#include <shutil/shutil.hpp>
 #include <iostream>
 #include "Shader.hpp"
 #include "Globals.hpp"

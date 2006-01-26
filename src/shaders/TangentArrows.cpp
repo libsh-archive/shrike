@@ -18,9 +18,8 @@
 // MA  02110-1301, USA
 //////////////////////////////////////////////////////////////////////////////
 
-//#include <wx/wx.h>
 #include <sh/sh.hpp>
-#include <sh/shutil.hpp>
+#include <shutil/shutil.hpp>
 #include "ShrikeGl.hpp"
 #include <iostream>
 #include "Shader.hpp"

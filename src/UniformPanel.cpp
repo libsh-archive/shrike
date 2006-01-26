@@ -18,7 +18,7 @@
 // MA  02110-1301, USA
 //////////////////////////////////////////////////////////////////////////////
 #include "UniformPanel.hpp"
-#include <sh/shutil.hpp>
+#include <shutil/shutil.hpp>
 #include <sh/ShProgram.hpp>
 #include <iostream>
 #include <cmath>

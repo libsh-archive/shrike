@@ -19,7 +19,7 @@
 //////////////////////////////////////////////////////////////////////////////
 #include <iostream>
 #include <fstream>
-#include <sh/ShObjMesh.hpp>
+#include <shutil/ShObjMesh.hpp>
 #include <wx/colordlg.h>
 #include <wx/config.h>
 #include <wx/propdlg.h>

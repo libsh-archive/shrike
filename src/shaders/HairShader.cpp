@@ -22,7 +22,7 @@
 #include <list>
 #include <cmath>
 #include <sh/sh.hpp>
-#include <sh/shutil.hpp>
+#include <shutil/shutil.hpp>
 #include "ShrikeGl.hpp"
 #include "Shader.hpp"
 #include "Globals.hpp"

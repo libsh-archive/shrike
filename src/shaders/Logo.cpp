@@ -20,7 +20,7 @@
 #include <iostream>
 #include <fstream>
 #include <sh/sh.hpp>
-#include <sh/shutil.hpp>
+#include <shutil/shutil.hpp>
 #include "ShrikeGl.hpp"
 #include "Shader.hpp"
 #include "Globals.hpp"
@@ -28,7 +28,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-#include <sh/ShObjMesh.hpp>
+#include <shutil/ShObjMesh.hpp>
 
 using namespace SH;
 using namespace ShUtil;

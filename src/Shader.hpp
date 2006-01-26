@@ -23,7 +23,7 @@
 #include <string>
 #include <list>
 #include <sh/sh.hpp>
-#include <sh/shutil.hpp>
+#include <shutil/shutil.hpp>
 
 struct Globals;
 
