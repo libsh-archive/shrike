@@ -351,8 +351,12 @@ ShrikeFrame::ShrikeFrame()
   canvas_output->SplitHorizontally(m_canvas, m_output);
   shaders_projects->SplitHorizontally(m_shaderList, m_project_tree);
 
+#if wxMAJOR_VERSION==2 && wxMINOR_VERSION==6
+    /*empty*/
+#else
   col2_col3->SetSashGravity(1.0);
   canvas_output->SetSashGravity(1.0);
+#endif
   canvas_output->SetMinimumPaneSize(40);
 //  m_right_window->SetMinimumPaneSize(40);
 
