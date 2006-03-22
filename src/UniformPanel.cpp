@@ -483,7 +483,9 @@ private:
   void collapse()
   {
     m_vsizer->Show(1, m_collapsed);
-    m_parent->Layout();
+    //m_parent->Layout();
+    m_parent->FitInside();
+    m_parent->Refresh();
   }
   void on_button(wxCommandEvent& event)
   {
