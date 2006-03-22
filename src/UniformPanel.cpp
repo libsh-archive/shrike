@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <wx/colordlg.h>
 #include <wx/event.h>
+#include <wx/image.h>
 #include "ShrikeCanvas.hpp"
 #include "ShrikeFrame.hpp"
 
@@ -303,7 +304,8 @@ public:
 private:
   void relabel()
   {
-    unsigned char data[m_node->width()*m_node->height()*3];
+    size_t data_size = m_node->width()*m_node->height()*3;
+    unsigned char *data = new unsigned char[data_size];
     bool copied = false;
 
     ShHostStoragePtr storage = shref_dynamic_cast<ShHostStorage>(m_node->memory(0)->findStorage("host"));
@@ -341,6 +343,7 @@ private:
     else {
       SetBitmapLabel(wxBitmap(64,64));
     }
+    delete [] data;
   }
 
   ShTextureNodePtr m_node;

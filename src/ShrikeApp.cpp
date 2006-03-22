@@ -26,6 +26,8 @@
 #include <wx/dynlib.h>
 #include <wx/filename.h>
 
+#define SHRIKE_LIB_DIR ""
+
 struct LibraryTraverser : public wxDirTraverser
 {
   virtual wxDirTraverseResult OnFile(const wxString &file) {

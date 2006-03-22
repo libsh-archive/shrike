@@ -1,6 +1,6 @@
 #include "ProjectTree.hpp"
 #include <wx/artprov.h>
-
+#include <wx/imaglist.h>
 struct ProjectCommon
 {
   ProjectCommon(Project* project, wxTreeItemId root)

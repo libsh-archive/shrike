@@ -1,0 +1,25 @@
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual C++ Express 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shrike", "shrike.vcproj", "{C46C8D66-766A-47C0-A942-8168602C0996}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libshrike", "libshrike.vcproj", "{3E6CF064-457B-4EE8-B58A-6ADEFDF9CE02}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C46C8D66-766A-47C0-A942-8168602C0996}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C46C8D66-766A-47C0-A942-8168602C0996}.Debug|Win32.Build.0 = Debug|Win32
+		{C46C8D66-766A-47C0-A942-8168602C0996}.Release|Win32.ActiveCfg = Release|Win32
+		{C46C8D66-766A-47C0-A942-8168602C0996}.Release|Win32.Build.0 = Release|Win32
+		{3E6CF064-457B-4EE8-B58A-6ADEFDF9CE02}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3E6CF064-457B-4EE8-B58A-6ADEFDF9CE02}.Debug|Win32.Build.0 = Debug|Win32
+		{3E6CF064-457B-4EE8-B58A-6ADEFDF9CE02}.Release|Win32.ActiveCfg = Release|Win32
+		{3E6CF064-457B-4EE8-B58A-6ADEFDF9CE02}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
