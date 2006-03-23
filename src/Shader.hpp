@@ -111,4 +111,10 @@ struct StaticLinkedShader {
   T *shader;
 };
 
+#ifdef _WIN32
+# define SHRIKE_DLLEXPORT __declspec(dllexport)
+#else
+# define SHRIKE_DLLEXPORT
+#endif
+
 #endif

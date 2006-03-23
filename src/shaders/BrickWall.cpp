@@ -191,11 +191,17 @@ bool BrickWall::init()
   return true;
 }
 
+void create(ShaderList &list, const Globals &globals) {
+  list.push_back(new BrickWall(globals));
+}
+
 #ifdef SHRIKE_LIBRARY_SHADER
 extern "C" {
+  SHRIKE_DLLEXPORT
   ShaderList shrike_library_create(const Globals &globals) {
     ShaderList list;
-    list.push_back(new BrickWall(globals));
+    create(list, globals);
+    //list.push_back(new BrickWall(globals));
     return list;
   }
 }

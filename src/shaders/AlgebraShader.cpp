@@ -501,6 +501,7 @@ bool AlgebraShaders::init_all()
 
 #ifdef SHRIKE_LIBRARY_SHADER
 extern "C" {
+  SHRIKE_DLLEXPORT
   ShaderList shrike_library_create(const Globals &globals) {
     ShaderList list;
     AlgebraShaders shaders(list, globals);

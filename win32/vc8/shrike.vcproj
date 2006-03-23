@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="shrike"
 	ProjectGUID="{C46C8D66-766A-47C0-A942-8168602C0996}"
+	RootNamespace="shrike"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -68,6 +69,7 @@
 				OutputFile="$(OutDir)/shriked.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="Debug\;..\..\..\sh\win32\vc8\Debug\;&quot;..\..\..\wxWidgets-2.6.2\lib\vc_lib&quot;;..\..\install\lib"
+				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="msvcrt.lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/shriked.pdb"
@@ -230,10 +232,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\Shader.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\ShrikeApp.cpp"
 				>
 			</File>
@@ -359,12 +357,6 @@
 				RelativePath="..\..\src\utilimpl.hpp"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
-			>
 		</Filter>
 	</Files>
 	<Globals>

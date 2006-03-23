@@ -1,8 +1,21 @@
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual C++ Express 2005
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "shrike", "shrike.vcproj", "{C46C8D66-766A-47C0-A942-8168602C0996}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3E6CF064-457B-4EE8-B58A-6ADEFDF9CE02} = {3E6CF064-457B-4EE8-B58A-6ADEFDF9CE02}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libshrike", "libshrike.vcproj", "{3E6CF064-457B-4EE8-B58A-6ADEFDF9CE02}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libalgebra", "libalgebra.vcproj", "{F8EA3954-9E23-4678-841D-F28934D89C9F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3E6CF064-457B-4EE8-B58A-6ADEFDF9CE02} = {3E6CF064-457B-4EE8-B58A-6ADEFDF9CE02}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libbrickwall", "libbrickwall.vcproj", "{E61A8940-6C65-433D-BB98-AD79C5F8F30F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3E6CF064-457B-4EE8-B58A-6ADEFDF9CE02} = {3E6CF064-457B-4EE8-B58A-6ADEFDF9CE02}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,6 +31,14 @@ Global
 		{3E6CF064-457B-4EE8-B58A-6ADEFDF9CE02}.Debug|Win32.Build.0 = Debug|Win32
 		{3E6CF064-457B-4EE8-B58A-6ADEFDF9CE02}.Release|Win32.ActiveCfg = Release|Win32
 		{3E6CF064-457B-4EE8-B58A-6ADEFDF9CE02}.Release|Win32.Build.0 = Release|Win32
+		{F8EA3954-9E23-4678-841D-F28934D89C9F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F8EA3954-9E23-4678-841D-F28934D89C9F}.Debug|Win32.Build.0 = Debug|Win32
+		{F8EA3954-9E23-4678-841D-F28934D89C9F}.Release|Win32.ActiveCfg = Release|Win32
+		{F8EA3954-9E23-4678-841D-F28934D89C9F}.Release|Win32.Build.0 = Release|Win32
+		{E61A8940-6C65-433D-BB98-AD79C5F8F30F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E61A8940-6C65-433D-BB98-AD79C5F8F30F}.Debug|Win32.Build.0 = Debug|Win32
+		{E61A8940-6C65-433D-BB98-AD79C5F8F30F}.Release|Win32.ActiveCfg = Release|Win32
+		{E61A8940-6C65-433D-BB98-AD79C5F8F30F}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -26,7 +26,7 @@
 #include <wx/dynlib.h>
 #include <wx/filename.h>
 
-#define SHRIKE_LIB_DIR ""
+#define SHRIKE_LIB_DIR "."
 
 struct LibraryTraverser : public wxDirTraverser
 {
@@ -77,7 +77,7 @@ bool ShrikeApp::OnInit()
   GetGlobals().mv = SH::ShMatrix4x4f();
   GetGlobals().mv_inverse = SH::ShMatrix4x4f();
   GetGlobals().mvp = SH::ShMatrix4x4f();
-  
+ 
   LibraryTraverser t;
   wxString envLibDir;
   if (wxGetEnv(wxT("SHRIKE_LIB_DIR"), &envLibDir) && envLibDir != wxT("")) {

@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="libshrike"
-	ProjectGUID="{3E6CF064-457B-4EE8-B58A-6ADEFDF9CE02}"
-	RootNamespace="libshrike"
+	Name="libalgebra"
+	ProjectGUID="{F8EA3954-9E23-4678-841D-F28934D89C9F}"
+	RootNamespace="libalgebra"
 	Keyword="ManagedCProj"
 	>
 	<Platforms>
@@ -19,9 +19,9 @@
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="4"
+			ConfigurationType="2"
 			CharacterSet="1"
-			ManagedExtensions="0"
+			ManagedExtensions="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -41,8 +41,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\sh\src\"
-				PreprocessorDefinitions="WIN32;_DEBUG"
+				AdditionalIncludeDirectories="..\..\..\install\vc8\include\;..\..\src\"
+				PreprocessorDefinitions="WIN32;_DEBUG;SHMEDIA_DIR=&quot;&quot;&quot;&quot;;M_PI=3.1415926535;SHRIKE_LIBRARY_SHADER"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
 				WarningLevel="1"
@@ -58,10 +58,19 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
+				Name="VCLinkerTool"
+				AdditionalDependencies="libsh_debug.lib libshutil_debug.lib"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories="..\..\..\install\vc8\lib"
+				GenerateDebugInformation="true"
+				AssemblyDebug="1"
+				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -71,6 +80,12 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -102,6 +117,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="..\..\..\install\vc8\include\;..\..\src\"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -121,6 +137,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="$(NoInherit)"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="..\..\..\install\vc8\lib"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
 			/>
@@ -171,7 +188,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\Shader.cpp"
+				RelativePath="..\..\src\shaders\AlgebraShader.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\shaders\util.cpp"
 				>
 			</File>
 		</Filter>
@@ -181,15 +202,9 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\src\Shader.hpp"
+				RelativePath="..\..\src\shaders\util.hpp"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
-			>
 		</Filter>
 	</Files>
 	<Globals>
