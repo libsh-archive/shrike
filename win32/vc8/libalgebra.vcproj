@@ -20,6 +20,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
+			InheritedPropertySheets=".\shader.vsprops"
 			CharacterSet="1"
 			ManagedExtensions="1"
 			>
@@ -61,7 +62,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libsh_debug.lib libshutil_debug.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\install\vc8\lib"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
 				TargetMachine="1"
